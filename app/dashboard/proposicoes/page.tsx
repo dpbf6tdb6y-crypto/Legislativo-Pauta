@@ -30,7 +30,7 @@ const emptyForm = {
   origemTipo: "vereador", autorVereadorId: "", autorExterno: "",
   dataEntrada: new Date().toISOString().slice(0, 10),
   dispensaParecer: false, dispensaIntersticio: false, regimeUrgencia: false,
-  numVotacoes: 1,
+  numVotacoes: 1, status: "em_tramitacao",
   comissoes: [] as { comissaoId: string; ordem: number }[],
 };
 
@@ -54,44 +54,26 @@ function buildEtapas(p: Proposicao): Etapa[] {
 function Stepper({ p, onAvancar }: { p: Proposicao; onAvancar: (key: string) => void }) {
   const etapas = buildEtapas(p);
   const idx = etapas.findIndex(e => e.key === p.etapaAtual);
-
   return (
-    <div className="flex items-end gap-1 flex-wrap mt-4 pt-4 border-t border-gray-100">
+    <div className="flex items-end gap-2 flex-wrap mt-4 pt-4 border-t border-gray-100">
       {etapas.map((e, i) => {
         const concluida = i < idx;
         const atual = i === idx;
         return (
-          <button
-            key={e.key}
-            onClick={() => onAvancar(e.key)}
-            title={`Marcar como: ${e.label}`}
-            className="flex flex-col items-center gap-1 group"
-            style={{ minWidth: 64 }}
-          >
-            <div
-              className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold transition-all"
+          <button key={e.key} onClick={() => onAvancar(e.key)} title={`Marcar: ${e.label}`}
+            className="flex flex-col items-center gap-1" style={{ minWidth: 60 }}>
+            <div className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold transition-all"
               style={{
                 background: concluida ? "#8B0000" : atual ? "#d4a017" : "#e5e7eb",
                 color: concluida || atual ? "#fff" : "#9ca3af",
                 boxShadow: atual ? "0 0 0 3px #d4a01740" : "none",
-              }}
-            >
+              }}>
               {concluida ? "✓" : i + 1}
             </div>
-            <span
-              className="text-center leading-tight"
-              style={{
-                fontSize: 10,
-                color: concluida ? "#8B0000" : atual ? "#92400e" : "#9ca3af",
-                fontWeight: atual ? 600 : 400,
-                maxWidth: 64,
-              }}
-            >
+            <span className="text-center leading-tight"
+              style={{ fontSize: 10, color: concluida ? "#8B0000" : atual ? "#92400e" : "#9ca3af", fontWeight: atual ? 600 : 400, maxWidth: 60 }}>
               {e.label}
             </span>
-            {i < etapas.length - 1 && (
-              <div style={{ position: "absolute", display: "none" }} />
-            )}
           </button>
         );
       })}
@@ -104,8 +86,13 @@ export default function ProposicoesPage() {
   const [vereadores, setVereadores] = useState<Vereador[]>([]);
   const [executivo, setExecutivo] = useState<Vereador[]>([]);
   const [comissoes, setComissoes] = useState<Comissao[]>([]);
+
   const [modal, setModal] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+
+  const [verProp, setVerProp] = useState<Proposicao | null>(null);
+
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
 
@@ -126,6 +113,33 @@ export default function ProposicoesPage() {
 
   useEffect(() => { carregar(); }, [filtroTipo, filtroStatus]);
 
+  function abrirNova() {
+    setForm(emptyForm);
+    setEditId(null);
+    setModal(true);
+  }
+
+  function abrirEditar(p: Proposicao) {
+    setForm({
+      numero: p.numero,
+      ano: p.ano,
+      tipo: p.tipo,
+      ementa: p.ementa,
+      origemTipo: p.origemTipo,
+      autorVereadorId: p.autorVereador?.id || "",
+      autorExterno: p.autorExterno || "",
+      dataEntrada: p.dataEntrada.slice(0, 10),
+      dispensaParecer: p.dispensaParecer,
+      dispensaIntersticio: p.dispensaIntersticio,
+      regimeUrgencia: p.regimeUrgencia,
+      numVotacoes: p.numVotacoes,
+      status: p.status,
+      comissoes: p.comissoes.map(c => ({ comissaoId: c.comissao.id, ordem: c.ordem })),
+    });
+    setEditId(p.id);
+    setModal(true);
+  }
+
   function setComissaoOrdem(idx: number, comissaoId: string) {
     const novas = [...form.comissoes];
     novas[idx] = { comissaoId, ordem: idx + 1 };
@@ -133,9 +147,8 @@ export default function ProposicoesPage() {
   }
 
   function addComissao() {
-    if (form.comissoes.length < 3) {
+    if (form.comissoes.length < 3)
       setForm({ ...form, comissoes: [...form.comissoes, { comissaoId: "", ordem: form.comissoes.length + 1 }] });
-    }
   }
 
   function removeComissao(idx: number) {
@@ -144,13 +157,23 @@ export default function ProposicoesPage() {
   }
 
   async function salvar() {
-    await fetch("/api/proposicoes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, comissoes: form.comissoes.filter(c => c.comissaoId) }),
-    });
+    const payload = { ...form, comissoes: form.comissoes.filter(c => c.comissaoId) };
+    if (editId) {
+      await fetch(`/api/proposicoes/${editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      await fetch("/api/proposicoes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    }
     setModal(false);
     setForm(emptyForm);
+    setEditId(null);
     carregar();
   }
 
@@ -163,6 +186,9 @@ export default function ProposicoesPage() {
     carregar();
   }
 
+  const autorNome = (p: Proposicao) =>
+    p.origemTipo === "vereador" ? (p.autorVereador?.nome || "—") : (p.autorExterno || "Executivo");
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -170,12 +196,11 @@ export default function ProposicoesPage() {
           <h1 className="text-2xl font-bold text-gray-800">Proposições</h1>
           <p className="text-gray-500 text-sm">{lista.length} registros</p>
         </div>
-        <button onClick={() => { setForm(emptyForm); setModal(true); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+        <button onClick={abrirNova} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
           + Nova Proposição
         </button>
       </div>
 
-      {/* Filtros */}
       <div className="flex gap-3 mb-5">
         <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
           <option value="">Todos os tipos</option>
@@ -187,7 +212,6 @@ export default function ProposicoesPage() {
         </select>
       </div>
 
-      {/* Cards */}
       <div className="space-y-4">
         {lista.length === 0 && (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-400">Nenhuma proposição encontrada.</div>
@@ -204,17 +228,31 @@ export default function ProposicoesPage() {
                   {p.regimeUrgencia && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">Urgência</span>}
                   <span className="text-xs text-gray-400">{new Date(p.dataEntrada).toLocaleDateString("pt-BR")}</span>
                 </div>
-                <p className="text-sm text-gray-600 line-clamp-2 mb-1">{p.ementa}</p>
+                <p className="text-sm text-gray-600 mb-1">{p.ementa}</p>
                 <p className="text-xs text-gray-400">
-                  Autor: <span className="text-gray-600 font-medium">
-                    {p.origemTipo === "vereador" ? (p.autorVereador?.nome || "—") : (p.autorExterno || "Executivo")}
-                  </span>
+                  Autor: <span className="text-gray-600 font-medium">{autorNome(p)}</span>
                   {p.comissoes.length > 0 && (
                     <span className="ml-3">
                       Comissões: <span className="text-gray-600">{p.comissoes.map(c => c.comissao.sigla || c.comissao.nome).join(" → ")}</span>
                     </span>
                   )}
                 </p>
+              </div>
+              {/* Botões */}
+              <div className="flex gap-2 flex-shrink-0">
+                <button onClick={() => setVerProp(p)} title="Visualizar"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+                <button onClick={() => abrirEditar(p)} title="Editar"
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -223,13 +261,77 @@ export default function ProposicoesPage() {
         ))}
       </div>
 
+      {/* Modal visualizar */}
+      {verProp && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h2 className="font-bold text-lg text-gray-800">{tipoLabel[verProp.tipo]} {verProp.numero}/{verProp.ano}</h2>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[verProp.status]}`}>{statusLabel[verProp.status]}</span>
+              </div>
+              <button onClick={() => setVerProp(null)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 font-medium mb-1">Ementa</p>
+                <p className="text-gray-800">{verProp.ementa}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 font-medium mb-1">Autor</p>
+                  <p className="text-gray-800">{autorNome(verProp)}</p>
+                  <p className="text-xs text-gray-400 capitalize">{verProp.origemTipo}</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 font-medium mb-1">Data de Entrada</p>
+                  <p className="text-gray-800">{new Date(verProp.dataEntrada).toLocaleDateString("pt-BR")}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 font-medium mb-1">Votações</p>
+                  <p className="text-gray-800">{verProp.numVotacoes === 1 ? "1 votação" : "2 votações"}</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 font-medium mb-1">Regime</p>
+                  <p className="text-gray-800">{verProp.regimeUrgencia ? "Urgência" : "Normal"}</p>
+                </div>
+              </div>
+              {verProp.comissoes.length > 0 && (
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 font-medium mb-1">Comissões</p>
+                  {verProp.comissoes.map((c, i) => (
+                    <p key={i} className="text-gray-800">{i + 1}. {c.comissao.nome} {c.comissao.sigla ? `(${c.comissao.sigla})` : ""}</p>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2 flex-wrap">
+                {verProp.dispensaParecer && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Dispensa de Parecer</span>}
+                {verProp.dispensaIntersticio && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Dispensa de Interstício</span>}
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-medium mb-2">Fluxo</p>
+                <Stepper p={verProp} onAvancar={async (key) => { await avancarEtapa(verProp.id, key); setVerProp({ ...verProp, etapaAtual: key }); }} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setVerProp(null)} className="flex-1 border border-gray-300 text-gray-700 rounded-lg py-2 text-sm hover:bg-gray-50">Fechar</button>
+              <button onClick={() => { setVerProp(null); abrirEditar(verProp); }} className="flex-1 bg-amber-500 text-white rounded-lg py-2 text-sm font-medium hover:bg-amber-600">Editar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal cadastrar / editar */}
       {modal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="font-bold text-lg text-gray-800 mb-4">Nova Proposição</h2>
+            <h2 className="font-bold text-lg text-gray-800 mb-4">{editId ? "Editar" : "Nova"} Proposição</h2>
             <div className="grid grid-cols-2 gap-4">
 
-              {/* Tipo */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
                 <select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
@@ -237,7 +339,6 @@ export default function ProposicoesPage() {
                 </select>
               </div>
 
-              {/* Número e Ano */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Número</label>
@@ -249,13 +350,11 @@ export default function ProposicoesPage() {
                 </div>
               </div>
 
-              {/* Ementa */}
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Ementa</label>
                 <textarea value={form.ementa} onChange={(e) => setForm({ ...form, ementa: e.target.value })} rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
               </div>
 
-              {/* Origem + Autor */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Origem</label>
                 <select value={form.origemTipo} onChange={(e) => setForm({ ...form, origemTipo: e.target.value, autorVereadorId: "", autorExterno: "" })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
@@ -263,6 +362,7 @@ export default function ProposicoesPage() {
                   <option value="executivo">Executivo Municipal</option>
                 </select>
               </div>
+
               <div>
                 {form.origemTipo === "vereador" ? (
                   <>
@@ -287,13 +387,18 @@ export default function ProposicoesPage() {
                 )}
               </div>
 
-              {/* Data */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Data de Entrada</label>
                 <input type="date" value={form.dataEntrada} onChange={(e) => setForm({ ...form, dataEntrada: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" />
               </div>
 
-              {/* Votações */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  {Object.entries(statusLabel).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Número de Votações</label>
                 <div className="flex gap-3 pt-1">
@@ -306,10 +411,9 @@ export default function ProposicoesPage() {
                 </div>
               </div>
 
-              {/* Etapas do fluxo */}
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Etapas do fluxo</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                     <input type="checkbox" checked={form.regimeUrgencia} onChange={(e) => setForm({ ...form, regimeUrgencia: e.target.checked })} />
                     Regime de urgência
@@ -320,18 +424,17 @@ export default function ProposicoesPage() {
                   </label>
                   <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                     <input type="checkbox" checked={form.dispensaIntersticio} onChange={(e) => setForm({ ...form, dispensaIntersticio: e.target.checked })} />
-                    Dispensa de interstício
+                    Disp. interstício
                   </label>
                 </div>
               </div>
 
-              {/* Comissões */}
               {!form.dispensaParecer && (
                 <div className="col-span-2">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-medium text-gray-700">Comissões (até 3)</label>
                     {form.comissoes.length < 3 && (
-                      <button onClick={addComissao} className="text-blue-600 text-xs hover:underline">+ Adicionar comissão</button>
+                      <button onClick={addComissao} className="text-blue-600 text-xs hover:underline">+ Adicionar</button>
                     )}
                   </div>
                   {form.comissoes.map((c, i) => (
@@ -349,10 +452,9 @@ export default function ProposicoesPage() {
                 </div>
               )}
 
-              {/* Preview do fluxo */}
               <div className="col-span-2 bg-gray-50 rounded-xl p-4">
                 <p className="text-xs font-medium text-gray-500 mb-3">Prévia do fluxo</p>
-                <div className="flex flex-wrap gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-end">
                   {[
                     { show: true, label: "Protocolado" },
                     { show: true, label: "Pautado" },
@@ -363,22 +465,27 @@ export default function ProposicoesPage() {
                     { show: form.dispensaIntersticio, label: "Disp. Interstício" },
                     { show: true, label: "1ª Votação" },
                     { show: form.numVotacoes >= 2, label: "2ª Votação" },
-                  ].filter(e => e.show).map((e, i) => (
+                  ].filter(e => e.show).map((e, i, arr) => (
                     <div key={i} className="flex items-center gap-1">
                       <div className="flex flex-col items-center gap-0.5">
-                        <div className="w-7 h-7 rounded text-xs font-bold flex items-center justify-center text-white" style={{ background: i === 0 ? "#d4a017" : "#d1d5db", color: i === 0 ? "#fff" : "#6b7280" }}>{i + 1}</div>
+                        <div className="w-7 h-7 rounded text-xs font-bold flex items-center justify-center"
+                          style={{ background: i === 0 ? "#d4a017" : "#d1d5db", color: i === 0 ? "#fff" : "#6b7280" }}>
+                          {i + 1}
+                        </div>
                         <span className="text-center text-gray-500" style={{ fontSize: 9, maxWidth: 56 }}>{e.label}</span>
                       </div>
-                      {i < 8 && <div className="w-3 h-px bg-gray-300 mb-4" />}
+                      {i < arr.length - 1 && <div className="w-3 h-px bg-gray-300 mb-4" />}
                     </div>
                   ))}
                 </div>
               </div>
-
             </div>
+
             <div className="flex gap-3 mt-5">
-              <button onClick={() => setModal(false)} className="flex-1 border border-gray-300 text-gray-700 rounded-lg py-2 text-sm hover:bg-gray-50">Cancelar</button>
-              <button onClick={salvar} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700">Cadastrar</button>
+              <button onClick={() => { setModal(false); setEditId(null); }} className="flex-1 border border-gray-300 text-gray-700 rounded-lg py-2 text-sm hover:bg-gray-50">Cancelar</button>
+              <button onClick={salvar} className="flex-1 bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700">
+                {editId ? "Salvar Alterações" : "Cadastrar"}
+              </button>
             </div>
           </div>
         </div>

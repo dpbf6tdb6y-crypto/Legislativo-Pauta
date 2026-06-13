@@ -25,6 +25,18 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   const { comissoes, ...rest } = body;
   if (rest.dataEntrada) rest.dataEntrada = new Date(rest.dataEntrada);
   const data = await prisma.proposicao.update({ where: { id: params.id }, data: rest });
+  if (comissoes !== undefined) {
+    await prisma.proposicaoComissao.deleteMany({ where: { proposicaoId: params.id } });
+    if (comissoes.length > 0) {
+      await prisma.proposicaoComissao.createMany({
+        data: comissoes.map((c: { comissaoId: string; ordem: number }) => ({
+          proposicaoId: params.id,
+          comissaoId: c.comissaoId,
+          ordem: c.ordem,
+        })),
+      });
+    }
+  }
   return NextResponse.json(data);
 }
 
