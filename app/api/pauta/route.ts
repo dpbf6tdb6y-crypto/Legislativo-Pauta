@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { sessaoId, proposicaoIds } = await req.json();
+  const { sessaoId, proposicaoIds, secao = "votacao" } = await req.json();
 
   const itensExistentes = await prisma.pautaItem.findMany({
     where: { sessaoId },
@@ -18,13 +18,14 @@ export async function POST(req: Request) {
       data: novas.map((proposicaoId, i) => ({
         sessaoId,
         proposicaoId,
+        secao,
         ordem: proximaOrdem + i,
       })),
     });
 
     await prisma.proposicao.updateMany({
       where: { id: { in: novas } },
-      data: { etapaAtual: "pautado" },
+      data: { etapaAtual: "pautado", status: "em_tramitacao" },
     });
   }
 

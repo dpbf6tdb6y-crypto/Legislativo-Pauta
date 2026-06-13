@@ -29,10 +29,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     await prisma.proposicaoComissao.deleteMany({ where: { proposicaoId: params.id } });
     if (comissoes.length > 0) {
       await prisma.proposicaoComissao.createMany({
-        data: comissoes.map((c: { comissaoId: string; ordem: number }) => ({
+        data: comissoes.map((c: { comissaoId: string; ordem: number; parecerConjunto?: boolean }) => ({
           proposicaoId: params.id,
           comissaoId: c.comissaoId,
           ordem: c.ordem,
+          parecerConjunto: c.parecerConjunto ?? false,
         })),
       });
     }

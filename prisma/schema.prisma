@@ -164,6 +164,7 @@ model PautaItem {
   sessaoId     String
   proposicaoId String
   ordem        Int
+  secao        String   @default("votacao")
   resultado    String?
   observacoes  String?
   createdAt    DateTime @default(now())

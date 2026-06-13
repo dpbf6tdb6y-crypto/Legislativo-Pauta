@@ -3,27 +3,37 @@ import { useEffect, useState } from "react";
 
 type Vereador = { id: string; nome: string; partido: string; poder: string; cargo?: string };
 type Comissao = { id: string; nome: string; sigla?: string };
+type ComissaoItem = { comissao: Comissao; ordem: number; parecerConjunto: boolean };
 type Proposicao = {
   id: string; numero: string; ano: number; tipo: string; ementa: string;
   origemTipo: string; autorVereador?: Vereador; autorExterno?: string;
   dataEntrada: string; status: string;
   dispensaParecer: boolean; dispensaIntersticio: boolean;
   regimeUrgencia: boolean; numVotacoes: number; etapaAtual: string;
-  comissoes: { comissao: Comissao; ordem: number }[];
+  comissoes: ComissaoItem[];
 };
 
 const tipoLabel: Record<string, string> = {
   pl: "PL", resolucao: "Resolução", requerimento: "Requerimento", mocao: "Moção",
 };
 const statusLabel: Record<string, string> = {
-  em_tramitacao: "Em tramitação", aprovada: "Aprovada", rejeitada: "Rejeitada", arquivada: "Arquivada",
+  em_tramitacao: "Em tramitação", aprovada: "Aprovada", rejeitada: "Rejeitada",
+  arquivada: "Arquivada", aguardando_sancao: "Ag. Sanção",
 };
 const statusColor: Record<string, string> = {
   em_tramitacao: "bg-yellow-100 text-yellow-800",
   aprovada: "bg-green-100 text-green-800",
   rejeitada: "bg-red-100 text-red-800",
   arquivada: "bg-gray-100 text-gray-800",
+  aguardando_sancao: "bg-purple-100 text-purple-800",
 };
+
+const secaoOpts = [
+  { value: "apresentacao", label: "I-c — Apresentação de proposições", desc: "Nova proposição sendo introduzida na sessão" },
+  { value: "parecer", label: "I-d — Leitura de Parecer", desc: "Parecer de comissão pronto para ser lido" },
+  { value: "votacao", label: "II-a — Discussão e Votação", desc: "Projeto em pauta para votação" },
+  { value: "requerimento", label: "III-a — Requerimentos e Moções", desc: "Indicações, moções e requerimentos" },
+];
 
 const emptyForm = {
   numero: "", ano: new Date().getFullYear(), tipo: "pl", ementa: "",
@@ -31,26 +41,42 @@ const emptyForm = {
   dataEntrada: new Date().toISOString().slice(0, 10),
   dispensaParecer: false, dispensaIntersticio: false, regimeUrgencia: false,
   numVotacoes: 1, status: "em_tramitacao",
-  comissoes: [] as { comissaoId: string; ordem: number }[],
+  comissoes: [] as { comissaoId: string; ordem: number; parecerConjunto: boolean }[],
 };
 
-type Etapa = { key: string; label: string };
+type Etapa = { key: string; label: string; grupo?: boolean };
 
 function buildEtapas(p: Proposicao): Etapa[] {
   const etapas: Etapa[] = [
     { key: "protocolado", label: "Protocolado" },
     { key: "pautado", label: "Pautado" },
   ];
-  if (p.comissoes.length >= 1) etapas.push({ key: "comissao1", label: p.comissoes[0]?.comissao?.sigla || "Comissão 1" });
-  if (p.comissoes.length >= 2) etapas.push({ key: "comissao2", label: p.comissoes[1]?.comissao?.sigla || "Comissão 2" });
-  if (p.comissoes.length >= 3) etapas.push({ key: "comissao3", label: p.comissoes[2]?.comissao?.sigla || "Comissão 3" });
-  if (p.comissoes.length >= 4) etapas.push({ key: "comissao4", label: p.comissoes[3]?.comissao?.sigla || "Comissão 4" });
-  if (p.comissoes.length >= 5) etapas.push({ key: "comissao5", label: p.comissoes[4]?.comissao?.sigla || "Comissão 5" });
+
+  const sequenciais = p.comissoes.filter(c => !c.parecerConjunto);
+  const conjuntos = p.comissoes.filter(c => c.parecerConjunto);
+
+  sequenciais.forEach((c, i) => {
+    etapas.push({ key: `comissao${c.ordem}`, label: c.comissao?.sigla || `Com. ${i + 1}` });
+  });
+
+  if (conjuntos.length > 0) {
+    const siglas = conjuntos.map(c => c.comissao?.sigla || "Com.").join("+");
+    etapas.push({ key: "parecer_conjunto", label: siglas, grupo: true });
+  }
+
   if (p.dispensaParecer) etapas.push({ key: "disp_parecer", label: "Disp. Parecer" });
   if (p.dispensaIntersticio) etapas.push({ key: "disp_intersticio", label: "Disp. Interstício" });
   etapas.push({ key: "primeira_votacao", label: "1ª Votação" });
   if (p.numVotacoes >= 2) etapas.push({ key: "segunda_votacao", label: "2ª Votação" });
+  etapas.push({ key: "aguardando_sancao", label: "Ag. Sanção" });
   return etapas;
+}
+
+function autoSecao(p: Proposicao): string {
+  if (p.tipo === "requerimento" || p.tipo === "mocao") return "requerimento";
+  if (p.etapaAtual === "protocolado") return "apresentacao";
+  if (p.etapaAtual.startsWith("comissao") || p.etapaAtual === "parecer_conjunto") return "parecer";
+  return "votacao";
 }
 
 function Stepper({ p, onAvancar }: { p: Proposicao; onAvancar: (key: string) => void }) {
@@ -63,17 +89,18 @@ function Stepper({ p, onAvancar }: { p: Proposicao; onAvancar: (key: string) => 
         const atual = i === idx;
         return (
           <button key={e.key} onClick={() => onAvancar(e.key)} title={`Marcar: ${e.label}`}
-            className="flex flex-col items-center gap-1" style={{ minWidth: 60 }}>
+            className="flex flex-col items-center gap-1" style={{ minWidth: e.grupo ? 70 : 56 }}>
             <div className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold transition-all"
               style={{
                 background: concluida ? "#8B0000" : atual ? "#d4a017" : "#e5e7eb",
                 color: concluida || atual ? "#fff" : "#9ca3af",
                 boxShadow: atual ? "0 0 0 3px #d4a01740" : "none",
+                outline: e.grupo ? "2px dashed #6b7280" : "none",
               }}>
-              {concluida ? "✓" : i + 1}
+              {concluida ? "✓" : e.grupo ? "⊕" : i + 1}
             </div>
             <span className="text-center leading-tight"
-              style={{ fontSize: 10, color: concluida ? "#8B0000" : atual ? "#92400e" : "#9ca3af", fontWeight: atual ? 600 : 400, maxWidth: 60 }}>
+              style={{ fontSize: 9, color: concluida ? "#8B0000" : atual ? "#92400e" : "#9ca3af", fontWeight: atual ? 600 : 400, maxWidth: 70 }}>
               {e.label}
             </span>
           </button>
@@ -100,6 +127,8 @@ export default function ProposicoesPage() {
 
   const [selecionadas, setSelecionadas] = useState<Set<string>>(new Set());
   const [enviando, setEnviando] = useState(false);
+  const [modalSecao, setModalSecao] = useState(false);
+  const [secaoSelecionada, setSecaoSelecionada] = useState("votacao");
 
   const [filtroTipo, setFiltroTipo] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("");
@@ -144,7 +173,7 @@ export default function ProposicoesPage() {
       regimeUrgencia: p.regimeUrgencia,
       numVotacoes: p.numVotacoes,
       status: p.status,
-      comissoes: p.comissoes.map(c => ({ comissaoId: c.comissao.id, ordem: c.ordem })),
+      comissoes: p.comissoes.map(c => ({ comissaoId: c.comissao.id, ordem: c.ordem, parecerConjunto: c.parecerConjunto })),
     });
     setEditId(p.id);
     setModal(true);
@@ -152,17 +181,23 @@ export default function ProposicoesPage() {
 
   function setComissaoOrdem(idx: number, comissaoId: string) {
     const novas = [...form.comissoes];
-    novas[idx] = { comissaoId, ordem: idx + 1 };
+    novas[idx] = { ...novas[idx], comissaoId, ordem: idx + 1 };
     setForm({ ...form, comissoes: novas });
   }
 
   function addComissao() {
     if (form.comissoes.length < 5)
-      setForm({ ...form, comissoes: [...form.comissoes, { comissaoId: "", ordem: form.comissoes.length + 1 }] });
+      setForm({ ...form, comissoes: [...form.comissoes, { comissaoId: "", ordem: form.comissoes.length + 1, parecerConjunto: false }] });
   }
 
   function removeComissao(idx: number) {
     const novas = form.comissoes.filter((_, i) => i !== idx).map((c, i) => ({ ...c, ordem: i + 1 }));
+    setForm({ ...form, comissoes: novas });
+  }
+
+  function toggleConjunto(idx: number) {
+    const novas = [...form.comissoes];
+    novas[idx] = { ...novas[idx], parecerConjunto: !novas[idx].parecerConjunto };
     setForm({ ...form, comissoes: novas });
   }
 
@@ -210,17 +245,32 @@ export default function ProposicoesPage() {
     return `${d.getUTCDate()} de ${meses[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
   }
 
-  async function enviarParaPauta() {
+  function abrirModalSecao() {
+    if (!proximaSessao) return;
+    // Auto-detect secao from first selected proposition
+    const primeiraId = Array.from(selecionadas)[0];
+    const primeira = lista.find(p => p.id === primeiraId);
+    if (primeira) setSecaoSelecionada(autoSecao(primeira));
+    else setSecaoSelecionada("votacao");
+    setModalSecao(true);
+  }
+
+  async function confirmarEnvioParaPauta() {
     if (!proximaSessao) return;
     setEnviando(true);
     const res = await fetch("/api/pauta", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessaoId: proximaSessao.id, proposicaoIds: Array.from(selecionadas) }),
+      body: JSON.stringify({
+        sessaoId: proximaSessao.id,
+        proposicaoIds: Array.from(selecionadas),
+        secao: secaoSelecionada,
+      }),
     });
     const result = await res.json();
     setEnviando(false);
     setSelecionadas(new Set());
+    setModalSecao(false);
     carregar();
     if (result.duplicadas > 0) alert(`${result.adicionadas} adicionada(s). ${result.duplicadas} já estavam na pauta.`);
   }
@@ -232,10 +282,24 @@ export default function ProposicoesPage() {
   }
 
   async function avancarEtapa(id: string, etapaAtual: string) {
+    const statusAtualizado =
+      etapaAtual === "aguardando_sancao" ? "aguardando_sancao" : undefined;
     await fetch(`/api/proposicoes/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ etapaAtual }),
+      body: JSON.stringify({ etapaAtual, ...(statusAtualizado ? { status: statusAtualizado } : {}) }),
+    });
+    carregar();
+  }
+
+  async function sancionar(id: string, vetado: boolean) {
+    await fetch(`/api/proposicoes/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        etapaAtual: vetado ? "vetada" : "sancionada",
+        status: vetado ? "rejeitada" : "aprovada",
+      }),
     });
     carregar();
   }
@@ -256,7 +320,7 @@ export default function ProposicoesPage() {
           {selecionadas.size > 0 && (
             proximaSessao ? (
               <button
-                onClick={enviarParaPauta}
+                onClick={abrirModalSecao}
                 disabled={enviando}
                 className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white shadow-md transition disabled:opacity-60"
                 style={{ background: "#8B0000" }}
@@ -264,7 +328,7 @@ export default function ProposicoesPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                {enviando ? "Enviando..." : `Enviar para pauta de ${formatarDataSessao(proximaSessao.data)}`}
+                Enviar para pauta de {formatarDataSessao(proximaSessao.data)}
               </button>
             ) : (
               <div className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-amber-700 bg-amber-50 border border-amber-200">
@@ -300,7 +364,6 @@ export default function ProposicoesPage() {
             className="bg-white rounded-xl shadow-sm p-5 transition"
             style={selecionadas.has(p.id) ? { outline: "2px solid #8B0000", outlineOffset: 2 } : {}}>
             <div className="flex items-start justify-between gap-4">
-              {/* Checkbox de seleção */}
               <div className="flex-shrink-0 pt-0.5">
                 <input
                   type="checkbox"
@@ -312,8 +375,8 @@ export default function ProposicoesPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <span className="font-bold text-gray-800">{tipoLabel[p.tipo]} {p.numero}/{p.ano}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[p.status]}`}>
-                    {statusLabel[p.status]}
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[p.status] || "bg-gray-100 text-gray-800"}`}>
+                    {statusLabel[p.status] || p.status}
                   </span>
                   {p.regimeUrgencia && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">Urgência</span>}
                   <span className="text-xs text-gray-400">{new Date(p.dataEntrada).toLocaleDateString("pt-BR")}</span>
@@ -323,13 +386,31 @@ export default function ProposicoesPage() {
                   Autor: <span className="text-gray-600 font-medium">{autorNome(p)}</span>
                   {p.comissoes.length > 0 && (
                     <span className="ml-3">
-                      Comissões: <span className="text-gray-600">{p.comissoes.map(c => c.comissao.sigla || c.comissao.nome).join(" → ")}</span>
+                      Comissões: <span className="text-gray-600">
+                        {p.comissoes.filter(c => !c.parecerConjunto).map(c => c.comissao.sigla || c.comissao.nome).join(" → ")}
+                        {p.comissoes.some(c => c.parecerConjunto) && (
+                          <span className="ml-1 text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-medium">
+                            Conjunto: {p.comissoes.filter(c => c.parecerConjunto).map(c => c.comissao.sigla || c.comissao.nome).join(" + ")}
+                          </span>
+                        )}
+                      </span>
                     </span>
                   )}
                 </p>
               </div>
-              {/* Botões */}
-              <div className="flex gap-1.5 flex-shrink-0">
+              <div className="flex gap-1.5 flex-shrink-0 items-center">
+                {p.etapaAtual === "aguardando_sancao" && (
+                  <>
+                    <button onClick={() => sancionar(p.id, false)}
+                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 transition">
+                      Sancionar
+                    </button>
+                    <button onClick={() => sancionar(p.id, true)}
+                      className="px-3 py-1 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 transition">
+                      Vetar
+                    </button>
+                  </>
+                )}
                 <button onClick={() => setVerProp(p)}
                   className="px-3 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition">
                   Ver
@@ -350,6 +431,45 @@ export default function ProposicoesPage() {
         ))}
       </div>
 
+      {/* Modal Seção da Pauta */}
+      {modalSecao && proximaSessao && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+            <h2 className="font-bold text-lg text-gray-800 mb-1">Enviar para Pauta</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              {selecionadas.size} proposição(ões) → sessão de {formatarDataSessao(proximaSessao.data)}
+            </p>
+            <p className="text-sm font-medium text-gray-700 mb-3">Em qual seção da Ordem do Dia?</p>
+            <div className="space-y-2">
+              {secaoOpts.map(opt => (
+                <label key={opt.value}
+                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition ${secaoSelecionada === opt.value ? "border-red-800 bg-red-50" : "border-gray-200 hover:border-gray-300"}`}>
+                  <input type="radio" name="secao" value={opt.value}
+                    checked={secaoSelecionada === opt.value}
+                    onChange={() => setSecaoSelecionada(opt.value)}
+                    className="mt-0.5 accent-red-800" />
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">{opt.label}</p>
+                    <p className="text-xs text-gray-500">{opt.desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setModalSecao(false)} className="flex-1 border border-gray-300 text-gray-700 rounded-lg py-2 text-sm hover:bg-gray-50">Cancelar</button>
+              <button
+                onClick={confirmarEnvioParaPauta}
+                disabled={enviando}
+                className="flex-1 text-white rounded-lg py-2 text-sm font-medium disabled:opacity-60"
+                style={{ background: "#8B0000" }}
+              >
+                {enviando ? "Enviando..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal visualizar */}
       {verProp && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -357,7 +477,7 @@ export default function ProposicoesPage() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h2 className="font-bold text-lg text-gray-800">{tipoLabel[verProp.tipo]} {verProp.numero}/{verProp.ano}</h2>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[verProp.status]}`}>{statusLabel[verProp.status]}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[verProp.status] || "bg-gray-100 text-gray-800"}`}>{statusLabel[verProp.status] || verProp.status}</span>
               </div>
               <button onClick={() => setVerProp(null)} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -392,9 +512,17 @@ export default function ProposicoesPage() {
               {verProp.comissoes.length > 0 && (
                 <div className="bg-gray-50 rounded-lg p-3">
                   <p className="text-xs text-gray-500 font-medium mb-1">Comissões</p>
-                  {verProp.comissoes.map((c, i) => (
-                    <p key={i} className="text-gray-800">{i + 1}. {c.comissao.nome} {c.comissao.sigla ? `(${c.comissao.sigla})` : ""}</p>
+                  {verProp.comissoes.filter(c => !c.parecerConjunto).map((c, i) => (
+                    <p key={i} className="text-gray-800">{i + 1}. {c.comissao.nome}</p>
                   ))}
+                  {verProp.comissoes.some(c => c.parecerConjunto) && (
+                    <div className="mt-1 bg-indigo-50 rounded p-2">
+                      <p className="text-xs font-medium text-indigo-700">Parecer Conjunto:</p>
+                      {verProp.comissoes.filter(c => c.parecerConjunto).map((c, i) => (
+                        <p key={i} className="text-xs text-indigo-800">{c.comissao.nome}</p>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex gap-2 flex-wrap">
@@ -533,11 +661,18 @@ export default function ProposicoesPage() {
                         <option value="">Selecione...</option>
                         {comissoes.map((cm) => <option key={cm.id} value={cm.id}>{cm.sigla ? `${cm.sigla} — ` : ""}{cm.nome}</option>)}
                       </select>
+                      <label className="flex items-center gap-1 text-xs text-indigo-700 whitespace-nowrap cursor-pointer">
+                        <input type="checkbox" checked={c.parecerConjunto} onChange={() => toggleConjunto(i)} className="accent-indigo-600" />
+                        Conjunto
+                      </label>
                       <button onClick={() => removeComissao(i)} className="text-red-400 hover:text-red-600">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
                     </div>
                   ))}
+                  {form.comissoes.some(c => c.parecerConjunto) && (
+                    <p className="text-xs text-indigo-600 mt-1">Comissões marcadas como "Conjunto" emitem um único parecer conjunto.</p>
+                  )}
                 </div>
               )}
 
@@ -547,16 +682,20 @@ export default function ProposicoesPage() {
                   {[
                     { show: true, label: "Protocolado" },
                     { show: true, label: "Pautado" },
-                    { show: form.comissoes.length >= 1, label: comissoes.find(c => c.id === form.comissoes[0]?.comissaoId)?.sigla || "Comissão 1" },
-                    { show: form.comissoes.length >= 2, label: comissoes.find(c => c.id === form.comissoes[1]?.comissaoId)?.sigla || "Comissão 2" },
-                    { show: form.comissoes.length >= 3, label: comissoes.find(c => c.id === form.comissoes[2]?.comissaoId)?.sigla || "Comissão 3" },
-                    { show: form.comissoes.length >= 4, label: comissoes.find(c => c.id === form.comissoes[3]?.comissaoId)?.sigla || "Comissão 4" },
-                    { show: form.comissoes.length >= 5, label: comissoes.find(c => c.id === form.comissoes[4]?.comissaoId)?.sigla || "Comissão 5" },
+                    ...form.comissoes.filter(c => !c.parecerConjunto).map((c, i) => ({
+                      show: !!c.comissaoId,
+                      label: comissoes.find(cm => cm.id === c.comissaoId)?.sigla || `Com. ${i + 1}`,
+                    })),
+                    form.comissoes.some(c => c.parecerConjunto) ? {
+                      show: true,
+                      label: "Conj. " + form.comissoes.filter(c => c.parecerConjunto && c.comissaoId).map(c => comissoes.find(cm => cm.id === c.comissaoId)?.sigla || "?").join("+"),
+                    } : null,
                     { show: form.dispensaParecer, label: "Disp. Parecer" },
                     { show: form.dispensaIntersticio, label: "Disp. Interstício" },
                     { show: true, label: "1ª Votação" },
                     { show: form.numVotacoes >= 2, label: "2ª Votação" },
-                  ].filter(e => e.show).map((e, i, arr) => (
+                    { show: true, label: "Ag. Sanção" },
+                  ].filter((e): e is { show: boolean; label: string } => e !== null && e.show).map((e, i, arr) => (
                     <div key={i} className="flex items-center gap-1">
                       <div className="flex flex-col items-center gap-0.5">
                         <div className="w-7 h-7 rounded text-xs font-bold flex items-center justify-center"

@@ -31,10 +31,11 @@ export async function POST(req: Request) {
   });
   if (comissoes?.length) {
     await prisma.proposicaoComissao.createMany({
-      data: comissoes.map((c: { comissaoId: string; ordem: number }) => ({
+      data: comissoes.map((c: { comissaoId: string; ordem: number; parecerConjunto?: boolean }) => ({
         proposicaoId: proposicao.id,
         comissaoId: c.comissaoId,
         ordem: c.ordem,
+        parecerConjunto: c.parecerConjunto ?? false,
       })),
     });
   }

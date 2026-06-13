@@ -7,6 +7,7 @@ type Comissao = { id: string; nome: string; membros: Membro[] };
 type Voto = { id: string; vereador: Vereador; aprovado: boolean };
 type Tramitacao = {
   id: string; ordem: number; status: string; parecer?: string; parecerTexto?: string;
+  parecerConjunto: boolean;
   comissao: Comissao; analista?: { id: string; nome: string };
   votos: Voto[];
 };
@@ -108,7 +109,12 @@ export default function TramitacaoPage() {
               <div key={tram.id} className={`bg-white rounded-xl shadow-sm p-5 ${tram.status === "aprovado" ? "opacity-70" : ""}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <p className="font-semibold text-gray-800">{tram.ordem}ª Comissão: {tram.comissao.nome}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-gray-800">{tram.ordem}ª Comissão: {tram.comissao.nome}</p>
+                      {tram.parecerConjunto && (
+                        <span className="text-xs px-1.5 py-0.5 rounded font-semibold bg-indigo-100 text-indigo-700">CONJUNTO</span>
+                      )}
+                    </div>
                     {tram.analista && <p className="text-xs text-gray-500">Analista: {tram.analista.nome}</p>}
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor[tram.status]}`}>{statusLabel[tram.status]}</span>

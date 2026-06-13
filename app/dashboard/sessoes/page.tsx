@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
-type Proposicao = { id: string; numero: string; ano: number; tipo: string; ementa: string; status: string };
-type PautaItem = { id: string; proposicao: Proposicao; ordem: number; resultado?: string };
+type Proposicao = { id: string; numero: string; ano: number; tipo: string; ementa: string; status: string; etapaAtual: string };
+type PautaItem = { id: string; proposicao: Proposicao; ordem: number; secao: string; resultado?: string };
 type Sessao = { id: string; data: string; tipo: string; numero?: number; ano?: number; local?: string; status: string; itens: PautaItem[] };
 
 const tipoLabel: Record<string, string> = { pl: "PL", resolucao: "Res.", requerimento: "Req.", mocao: "Moção" };
@@ -20,8 +20,32 @@ const resultadoColor: Record<string, string> = {
   adiado: "bg-yellow-100 text-yellow-700",
 };
 
+const secaoLabel: Record<string, string> = {
+  apresentacao: "c) Apresentação de proposições",
+  parecer: "d) Leitura de Parecer",
+  votacao: "a) Discussão e votação",
+  requerimento: "a) Indicações, moções e requerimentos",
+};
+
 function formatData(data: string) {
   return new Date(data).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
+}
+
+function SecaoHeader({ label }: { label: string }) {
+  return (
+    <div className="px-5 py-2 bg-gray-50 border-b border-gray-100">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+    </div>
+  );
+}
+
+function ItemFixo({ label }: { label: string }) {
+  return (
+    <div className="px-5 py-3 flex items-center gap-2 border-b border-gray-50">
+      <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0" />
+      <p className="text-sm text-gray-400 italic">{label}</p>
+    </div>
+  );
 }
 
 export default function SessoesPage() {
@@ -90,6 +114,7 @@ export default function SessoesPage() {
         itens: novosItens.map(i => ({
           proposicaoId: i.proposicao.id,
           ordem: i.ordem,
+          secao: i.secao,
           resultado: i.resultado,
         })),
       }),
@@ -98,8 +123,29 @@ export default function SessoesPage() {
     carregar();
   }
 
+  async function encaminharSancao(proposicaoId: string) {
+    await fetch(`/api/proposicoes/${proposicaoId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ etapaAtual: "aguardando_sancao", status: "aguardando_sancao" }),
+    });
+    if (detalhe) carregarDetalhe(detalhe.id);
+  }
+
   const agendadas = lista.filter(s => s.status === "agendada");
   const encerradas = lista.filter(s => s.status === "encerrada" || s.status === "realizada" || s.status === "cancelada");
+
+  // Organizar itens por seção
+  function organizarItens(itens: PautaItem[]) {
+    return {
+      apresentacao: itens.filter(i => i.secao === "apresentacao"),
+      parecer: itens.filter(i => i.secao === "parecer"),
+      votacao: itens.filter(i => i.secao === "votacao" || !i.secao),
+      requerimento: itens.filter(i => i.secao === "requerimento"),
+    };
+  }
+
+  const partes = detalhe ? organizarItens(detalhe.itens) : null;
 
   return (
     <div className="p-6">
@@ -120,7 +166,6 @@ export default function SessoesPage() {
         {/* Lista de sessões */}
         <div className="w-72 flex-shrink-0 space-y-3">
 
-          {/* Sessões em aberto - verde */}
           {agendadas.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Em aberto</p>
@@ -143,7 +188,6 @@ export default function SessoesPage() {
             </div>
           )}
 
-          {/* Sessões encerradas - vermelho */}
           {encerradas.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-4">Encerradas</p>
@@ -171,7 +215,7 @@ export default function SessoesPage() {
         </div>
 
         {/* Detalhe da sessão */}
-        {detalhe && (
+        {detalhe && partes && (
           <div className="flex-1">
             {/* Cabeçalho */}
             <div className="rounded-xl p-5 mb-4 border-2"
@@ -218,49 +262,98 @@ export default function SessoesPage() {
               </div>
             </div>
 
-            {/* Itens da Pauta */}
+            {/* ORDEM DO DIA — 4 partes */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">Ordem do Dia</h3>
-                {detalhe.status === "agendada" && (
-                  <p className="text-xs text-gray-400">Adicione proposições pela tela de Proposições → Enviar para Pauta</p>
-                )}
+              <div className="px-5 py-3 border-b border-gray-200" style={{ background: "#8B0000" }}>
+                <h3 className="font-bold text-white text-sm tracking-wide">ORDEM DO DIA</h3>
               </div>
-              {detalhe.itens.length === 0 ? (
-                <p className="text-gray-400 text-sm text-center py-10">
-                  Nenhum item na pauta.<br />
-                  <span className="text-xs">Marque proposições e clique em "Enviar para Pauta".</span>
-                </p>
-              ) : (
-                <div className="divide-y divide-gray-100">
-                  {detalhe.itens.map((item) => (
-                    <div key={item.id} className="px-5 py-4 flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800">
-                          {item.ordem}. {tipoLabel[item.proposicao.tipo]} {item.proposicao.numero}/{item.proposicao.ano}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-0.5">{item.proposicao.ementa}</p>
-                        {item.resultado && (
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium mt-1 inline-block ${resultadoColor[item.resultado]}`}>
-                            {resultadoOpts.find(r => r.value === item.resultado)?.label}
-                          </span>
-                        )}
-                      </div>
-                      {detalhe.status === "agendada" && (
-                        <select
-                          value={item.resultado || ""}
-                          onChange={(e) => atualizarResultado(item, e.target.value)}
-                          className="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-32"
-                        >
-                          <option value="">Sem resultado</option>
-                          {resultadoOpts.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                        </select>
-                      )}
-                    </div>
-                  ))}
+
+              {/* I – PRIMEIRA PARTE */}
+              <div className="border-b border-gray-200">
+                <div className="px-5 py-2.5" style={{ background: "#fef9f0" }}>
+                  <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">I — Primeira Parte</p>
                 </div>
-              )}
+                <ItemFixo label="a) Leitura, discussão e votação da ata da reunião anterior" />
+                <ItemFixo label="b) Leitura de correspondências" />
+
+                {/* c) Apresentação de proposições */}
+                <SecaoHeader label="c) Apresentação de proposições" />
+                {partes.apresentacao.length === 0 ? (
+                  <div className="px-5 py-3">
+                    <p className="text-xs text-gray-400 italic">Nenhuma proposição para apresentação.</p>
+                  </div>
+                ) : partes.apresentacao.map((item) => (
+                  <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
+                    onResultado={(r) => atualizarResultado(item, r)}
+                    onSancao={() => encaminharSancao(item.proposicao.id)} />
+                ))}
+
+                {/* d) Leitura de Parecer */}
+                <SecaoHeader label="d) Leitura de Parecer" />
+                {partes.parecer.length === 0 ? (
+                  <div className="px-5 py-3">
+                    <p className="text-xs text-gray-400 italic">Nenhum parecer para leitura.</p>
+                  </div>
+                ) : partes.parecer.map((item) => (
+                  <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
+                    onResultado={(r) => atualizarResultado(item, r)}
+                    onSancao={() => encaminharSancao(item.proposicao.id)} />
+                ))}
+              </div>
+
+              {/* II – SEGUNDA PARTE */}
+              <div className="border-b border-gray-200">
+                <div className="px-5 py-2.5" style={{ background: "#fef9f0" }}>
+                  <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">II — Segunda Parte</p>
+                </div>
+                <SecaoHeader label="a) Discussão e votação de projetos" />
+                {partes.votacao.length === 0 ? (
+                  <div className="px-5 py-3">
+                    {detalhe.status === "agendada" && (
+                      <p className="text-xs text-gray-400">Adicione proposições pela tela de Proposições → Enviar para Pauta.</p>
+                    )}
+                    {detalhe.status !== "agendada" && (
+                      <p className="text-xs text-gray-400 italic">Nenhum item.</p>
+                    )}
+                  </div>
+                ) : partes.votacao.map((item) => (
+                  <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
+                    onResultado={(r) => atualizarResultado(item, r)}
+                    onSancao={() => encaminharSancao(item.proposicao.id)} />
+                ))}
+              </div>
+
+              {/* III – TERCEIRA PARTE */}
+              <div className="border-b border-gray-200">
+                <div className="px-5 py-2.5" style={{ background: "#fef9f0" }}>
+                  <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">III — Terceira Parte</p>
+                </div>
+                <SecaoHeader label="a) Discussão e votação de indicações, moções e requerimentos" />
+                {partes.requerimento.length === 0 ? (
+                  <div className="px-5 py-3">
+                    <p className="text-xs text-gray-400 italic">Nenhum item.</p>
+                  </div>
+                ) : partes.requerimento.map((item) => (
+                  <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
+                    onResultado={(r) => atualizarResultado(item, r)}
+                    onSancao={() => encaminharSancao(item.proposicao.id)} />
+                ))}
+              </div>
+
+              {/* IV – QUARTA PARTE */}
+              <div>
+                <div className="px-5 py-2.5" style={{ background: "#fef9f0" }}>
+                  <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">IV — Quarta Parte</p>
+                </div>
+                <ItemFixo label="a) Apresentação de oradores inscritos" />
+              </div>
             </div>
+          </div>
+        )}
+
+        {!detalhe && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-gray-400 text-sm">Selecione uma sessão para ver a Ordem do Dia.</p>
           </div>
         )}
       </div>
@@ -302,6 +395,68 @@ export default function SessoesPage() {
             </div>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function PautaItemRow({
+  item, sessaoAberta, onResultado, onSancao,
+}: {
+  item: PautaItem;
+  sessaoAberta: boolean;
+  onResultado: (r: string) => void;
+  onSancao: () => void;
+}) {
+  const resultadoOpts = [
+    { value: "aprovado", label: "Aprovado" },
+    { value: "rejeitado", label: "Rejeitado" },
+    { value: "retirado", label: "Retirado" },
+    { value: "adiado", label: "Adiado" },
+  ];
+  const resultadoColor: Record<string, string> = {
+    aprovado: "bg-green-100 text-green-700",
+    rejeitado: "bg-red-100 text-red-700",
+    retirado: "bg-gray-100 text-gray-600",
+    adiado: "bg-yellow-100 text-yellow-700",
+  };
+  const tipoLabel: Record<string, string> = { pl: "PL", resolucao: "Res.", requerimento: "Req.", mocao: "Moção" };
+
+  return (
+    <div className="px-5 py-4 flex items-start justify-between gap-4 border-b border-gray-50 last:border-b-0">
+      <div className="flex-1">
+        <p className="text-sm font-medium text-gray-800">
+          {item.ordem}. {tipoLabel[item.proposicao.tipo] || item.proposicao.tipo} {item.proposicao.numero}/{item.proposicao.ano}
+        </p>
+        <p className="text-xs text-gray-500 mt-0.5">{item.proposicao.ementa}</p>
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          {item.resultado && (
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${resultadoColor[item.resultado] || "bg-gray-100 text-gray-600"}`}>
+              {resultadoOpts.find(r => r.value === item.resultado)?.label || item.resultado}
+            </span>
+          )}
+          {item.resultado === "aprovado" && item.proposicao.etapaAtual !== "aguardando_sancao" && item.proposicao.etapaAtual !== "sancionada" && (
+            <button
+              onClick={onSancao}
+              className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition"
+            >
+              → Encaminhar à Sanção
+            </button>
+          )}
+          {(item.proposicao.etapaAtual === "aguardando_sancao") && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700">Ag. Sanção</span>
+          )}
+        </div>
+      </div>
+      {sessaoAberta && (
+        <select
+          value={item.resultado || ""}
+          onChange={(e) => onResultado(e.target.value)}
+          className="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-32"
+        >
+          <option value="">Sem resultado</option>
+          {resultadoOpts.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+        </select>
       )}
     </div>
   );

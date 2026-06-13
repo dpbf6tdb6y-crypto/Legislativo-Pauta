@@ -30,10 +30,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (itens) {
     await prisma.pautaItem.deleteMany({ where: { sessaoId: params.id } });
     await prisma.pautaItem.createMany({
-      data: itens.map((item: { proposicaoId: string; ordem: number; resultado?: string; observacoes?: string }) => ({
+      data: itens.map((item: { proposicaoId: string; ordem: number; secao?: string; resultado?: string; observacoes?: string }) => ({
         sessaoId: params.id,
         proposicaoId: item.proposicaoId,
         ordem: item.ordem,
+        secao: item.secao ?? "votacao",
         resultado: item.resultado,
         observacoes: item.observacoes,
       })),
