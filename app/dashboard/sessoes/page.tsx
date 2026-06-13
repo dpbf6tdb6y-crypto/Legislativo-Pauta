@@ -82,12 +82,8 @@ export default function SessoesPage() {
   }
 
   async function fecharSessao(id: string) {
-    if (!confirm("Fechar esta sessão? Ela não poderá receber novas proposições.")) return;
-    await fetch(`/api/sessoes/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "encerrada" }),
-    });
+    if (!confirm("Fechar esta sessão? As proposições serão automaticamente encaminhadas conforme seu destino.")) return;
+    await fetch(`/api/sessoes/${id}/fechar`, { method: "POST" });
     carregar();
     if (detalhe?.id === id) carregarDetalhe(id);
   }

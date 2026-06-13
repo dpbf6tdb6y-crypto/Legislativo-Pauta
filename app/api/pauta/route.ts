@@ -26,30 +26,37 @@ export async function POST(req: Request) {
     })),
   });
 
-  // Buscar proposições com suas comissões para definir etapa inicial
   const proposicoes = await prisma.proposicao.findMany({
     where: { id: { in: novas } },
     include: { comissoes: { orderBy: { ordem: "asc" } } },
   });
 
   for (const prop of proposicoes) {
-    const primeiraComissao = prop.comissoes[0];
+    const comissoesNaoAprovadas = prop.comissoes.filter(c => c.status !== "aprovado");
 
-    if (primeiraComissao) {
-      // Tem comissão → vai direto para tramitação na comissão 1
+    if (prop.etapaAtual === "segunda_votacao") {
+      // Já está marcada para 2ª votação, não mudar
+    } else if (
+      prop.etapaAtual === "pronto_votar" ||
+      prop.dispensaParecer ||
+      prop.comissoes.length === 0 ||
+      comissoesNaoAprovadas.length === 0
+    ) {
+      // Pronto para votação (comissões concluídas ou dispensadas)
       await prisma.proposicao.update({
         where: { id: prop.id },
-        data: { etapaAtual: "comissao1", status: "em_tramitacao" },
-      });
-      await prisma.proposicaoComissao.update({
-        where: { id: primeiraComissao.id },
-        data: { status: "em_analise" },
+        data: { etapaAtual: "primeira_votacao", status: "em_tramitacao" },
       });
     } else {
-      // Sem comissão → fica em pautado aguardando votação
+      // Tem comissão pendente → vai para comissão
+      const primeira = comissoesNaoAprovadas[0];
       await prisma.proposicao.update({
         where: { id: prop.id },
-        data: { etapaAtual: "pautado", status: "em_tramitacao" },
+        data: { etapaAtual: `comissao${primeira.ordem}`, status: "em_tramitacao" },
+      });
+      await prisma.proposicaoComissao.update({
+        where: { id: primeira.id },
+        data: { status: "em_analise" },
       });
     }
   }

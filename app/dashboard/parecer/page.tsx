@@ -1,0 +1,407 @@
+"use client";
+import { useEffect, useState } from "react";
+
+type Vereador = { id: string; nome: string; cargo?: string };
+type Membro = { id: string; vereador: Vereador; papel: string };
+type Analista = { id: string; nome: string };
+type Comissao = { id: string; nome: string; sigla?: string; membros: Membro[]; analistas: Analista[] };
+type Voto = { id: string; vereador: Vereador; aprovado: boolean };
+type ProposicaoComissao = {
+  id: string; ordem: number; status: string;
+  parecer?: string; parecerTexto?: string; parecerConjunto: boolean;
+  comissao: Comissao; analista?: Analista; votos: Voto[];
+};
+type Proposicao = {
+  id: string; numero: string; ano: number; tipo: string; ementa: string;
+  etapaAtual: string; numVotacoes: number;
+  origemTipo: string; autorVereador?: Vereador; autorExterno?: string;
+  comissoes: ProposicaoComissao[];
+};
+
+const tipoLabel: Record<string, string> = { pl: "PL", resolucao: "Res.", requerimento: "Req.", mocao: "Moção" };
+const parecerLabel: Record<string, string> = {
+  favoravel: "Favorável",
+  contrario: "Contrário",
+  favoravel_com_emenda: "Favorável com Emenda",
+};
+const statusColor: Record<string, string> = {
+  aguardando: "bg-gray-100 text-gray-600",
+  em_analise: "bg-yellow-100 text-yellow-700",
+  aprovado: "bg-green-100 text-green-700",
+  rejeitado: "bg-red-100 text-red-700",
+};
+const statusLabel: Record<string, string> = {
+  aguardando: "Aguardando", em_analise: "Em análise", aprovado: "Aprovado", rejeitado: "Rejeitado",
+};
+
+export default function ParecerPage() {
+  const [lista, setLista] = useState<Proposicao[]>([]);
+  const [selecionada, setSelecionada] = useState<Proposicao | null>(null);
+  const [modalParecer, setModalParecer] = useState<ProposicaoComissao | null>(null);
+  const [parecerForm, setParecerForm] = useState({ parecer: "favoravel", parecerTexto: "", analistaId: "" });
+
+  const etapasComissao = ["comissao1","comissao2","comissao3","comissao4","comissao5","parecer_conjunto"];
+
+  async function carregar() {
+    const res = await fetch("/api/proposicoes");
+    const data = await res.json();
+    const filtradas = data.filter((p: Proposicao) => etapasComissao.includes(p.etapaAtual));
+    setLista(filtradas);
+    if (selecionada) {
+      const atualizada = filtradas.find((p: Proposicao) => p.id === selecionada.id);
+      setSelecionada(atualizada || null);
+    }
+  }
+
+  async function carregarDetalhe(id: string) {
+    const res = await fetch(`/api/proposicoes/${id}`);
+    setSelecionada(await res.json());
+  }
+
+  useEffect(() => { carregar(); }, []);
+
+  async function registrarParecer() {
+    if (!modalParecer) return;
+    await fetch("/api/tramitacao/parecer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        proposicaoComissaoId: modalParecer.id,
+        parecer: parecerForm.parecer,
+        parecerTexto: parecerForm.parecerTexto,
+        analistaId: parecerForm.analistaId || modalParecer.analista?.id || undefined,
+      }),
+    });
+    setModalParecer(null);
+    await carregar();
+    if (selecionada) carregarDetalhe(selecionada.id);
+  }
+
+  async function votar(proposicaoComissaoId: string, vereadorId: string, aprovado: boolean) {
+    await fetch("/api/tramitacao/voto", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ proposicaoComissaoId, vereadorId, aprovado }),
+    });
+    if (selecionada) carregarDetalhe(selecionada.id);
+  }
+
+  const comissaoAtiva = selecionada?.comissoes.find(
+    c => c.status === "em_analise" || c.status === "aguardando"
+  );
+
+  const autorNome = (p: Proposicao) =>
+    p.origemTipo === "vereador" ? (p.autorVereador?.nome || "—") : (p.autorExterno || "Executivo");
+
+  return (
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Parecer de Comissão</h1>
+        <p className="text-gray-500 text-sm">{lista.length} proposição(ões) aguardando parecer</p>
+      </div>
+
+      <div className="flex gap-6">
+        {/* Lista */}
+        <div className="w-80 flex-shrink-0 space-y-3">
+          {lista.length === 0 && (
+            <div className="bg-white rounded-xl shadow-sm p-6 text-center text-gray-400 text-sm">
+              Nenhuma proposição aguardando parecer de comissão.
+            </div>
+          )}
+          {lista.map((p) => {
+            const comissaoAtualCard = p.comissoes.find(c => `comissao${c.ordem}` === p.etapaAtual);
+            return (
+              <button key={p.id} onClick={() => carregarDetalhe(p.id)}
+                className={`w-full text-left bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition ${selecionada?.id === p.id ? "ring-2 ring-amber-500" : ""}`}>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">{tipoLabel[p.tipo]} {p.numero}/{p.ano}</p>
+                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{p.ementa}</p>
+                  </div>
+                </div>
+                {comissaoAtualCard && (
+                  <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs font-medium text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                      {comissaoAtualCard.comissao.sigla || comissaoAtualCard.comissao.nome}
+                    </span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${statusColor[comissaoAtualCard.status] || "bg-gray-100 text-gray-600"}`}>
+                      {statusLabel[comissaoAtualCard.status] || comissaoAtualCard.status}
+                    </span>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Detalhe */}
+        {selecionada && (
+          <div className="flex-1 space-y-4">
+            {/* Cabeçalho da proposição */}
+            <div className="bg-white rounded-xl shadow-sm p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="font-bold text-gray-800 text-lg">
+                    {tipoLabel[selecionada.tipo]} {selecionada.numero}/{selecionada.ano}
+                  </h2>
+                  <p className="text-gray-600 text-sm mt-1 max-w-2xl">{selecionada.ementa}</p>
+                  <p className="text-xs text-gray-400 mt-1">Autor: {autorNome(selecionada)}</p>
+                </div>
+              </div>
+
+              {/* Progresso das comissões */}
+              <div className="mt-4 flex items-center gap-2 flex-wrap">
+                {selecionada.comissoes.map((c, i) => (
+                  <div key={c.id} className="flex items-center gap-1">
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                      c.status === "aprovado" ? "bg-green-50 border-green-200 text-green-700" :
+                      c.status === "rejeitado" ? "bg-red-50 border-red-200 text-red-700" :
+                      c.status === "em_analise" ? "bg-amber-50 border-amber-300 text-amber-800" :
+                      "bg-gray-50 border-gray-200 text-gray-500"
+                    }`}>
+                      {c.status === "aprovado" && <span>✓</span>}
+                      {c.status === "rejeitado" && <span>✗</span>}
+                      {c.status === "em_analise" && <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse inline-block" />}
+                      {c.comissao.sigla || c.comissao.nome}
+                      {c.parecerConjunto && <span className="ml-1 opacity-60">CONJ.</span>}
+                    </div>
+                    {i < selecionada.comissoes.length - 1 && <span className="text-gray-300">→</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Comissão ativa — painel principal */}
+            {comissaoAtiva && (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between"
+                  style={{ background: "#fffbeb" }}>
+                  <div>
+                    <p className="font-bold text-amber-900">
+                      {comissaoAtiva.ordem}ª Comissão: {comissaoAtiva.comissao.nome}
+                    </p>
+                    {comissaoAtiva.comissao.sigla && (
+                      <p className="text-xs text-amber-700">{comissaoAtiva.comissao.sigla}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${statusColor[comissaoAtiva.status] || "bg-gray-100 text-gray-600"}`}>
+                      {statusLabel[comissaoAtiva.status] || comissaoAtiva.status}
+                    </span>
+                    {!comissaoAtiva.parecer && (
+                      <button
+                        onClick={() => {
+                          setModalParecer(comissaoAtiva);
+                          setParecerForm({
+                            parecer: "favoravel",
+                            parecerTexto: "",
+                            analistaId: comissaoAtiva.analista?.id || comissaoAtiva.comissao.analistas?.[0]?.id || "",
+                          });
+                        }}
+                        className="text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition"
+                        style={{ background: "#8B0000" }}
+                      >
+                        Registrar Parecer
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-5 grid grid-cols-2 gap-6">
+                  {/* Membros da comissão */}
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-3">Membros da Comissão</p>
+                    <div className="space-y-2">
+                      {comissaoAtiva.comissao.membros.map((m) => {
+                        const voto = comissaoAtiva.votos.find(v => v.vereador.id === m.vereador.id);
+                        return (
+                          <div key={m.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                            <div>
+                              <p className="text-sm text-gray-800 font-medium">{m.vereador.nome}</p>
+                              <p className="text-xs text-gray-500 capitalize">{m.papel}</p>
+                            </div>
+                            {!comissaoAtiva.parecer && (
+                              <div className="flex gap-1.5">
+                                <button
+                                  onClick={() => votar(comissaoAtiva.id, m.vereador.id, true)}
+                                  className={`text-xs px-2 py-1 rounded font-medium transition ${voto?.aprovado === true ? "bg-green-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-green-100"}`}>
+                                  Sim
+                                </button>
+                                <button
+                                  onClick={() => votar(comissaoAtiva.id, m.vereador.id, false)}
+                                  className={`text-xs px-2 py-1 rounded font-medium transition ${voto?.aprovado === false ? "bg-red-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-red-100"}`}>
+                                  Não
+                                </button>
+                              </div>
+                            )}
+                            {comissaoAtiva.parecer && voto && (
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${voto.aprovado ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                {voto.aprovado ? "Sim" : "Não"}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {comissaoAtiva.comissao.membros.length === 0 && (
+                        <p className="text-xs text-gray-400">Nenhum membro cadastrado nesta comissão.</p>
+                      )}
+                    </div>
+                    {!comissaoAtiva.parecer && comissaoAtiva.comissao.membros.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-2">
+                        Votos registrados: {comissaoAtiva.votos.filter(v => v.aprovado).length} sim / {comissaoAtiva.votos.filter(v => !v.aprovado).length} não
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Analista e Parecer */}
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-3">Analista Responsável</p>
+                    {comissaoAtiva.analista ? (
+                      <div className="bg-indigo-50 rounded-lg px-3 py-2 mb-4">
+                        <p className="text-sm font-medium text-indigo-800">{comissaoAtiva.analista.nome}</p>
+                        <p className="text-xs text-indigo-600">Analista</p>
+                      </div>
+                    ) : comissaoAtiva.comissao.analistas?.length > 0 ? (
+                      <div className="bg-indigo-50 rounded-lg px-3 py-2 mb-4">
+                        <p className="text-sm font-medium text-indigo-800">{comissaoAtiva.comissao.analistas[0].nome}</p>
+                        <p className="text-xs text-indigo-600">Analista da comissão</p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 mb-4">Nenhum analista atribuído.</p>
+                    )}
+
+                    {comissaoAtiva.parecer && (
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-2">Parecer Registrado</p>
+                        <div className={`rounded-lg p-3 ${
+                          comissaoAtiva.parecer === "contrario" ? "bg-red-50 border border-red-200" :
+                          "bg-green-50 border border-green-200"
+                        }`}>
+                          <p className={`text-sm font-bold ${comissaoAtiva.parecer === "contrario" ? "text-red-800" : "text-green-800"}`}>
+                            {parecerLabel[comissaoAtiva.parecer] || comissaoAtiva.parecer}
+                          </p>
+                          {comissaoAtiva.parecerTexto && (
+                            <p className={`text-xs mt-1 ${comissaoAtiva.parecer === "contrario" ? "text-red-700" : "text-green-700"}`}>
+                              {comissaoAtiva.parecerTexto}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Comissões concluídas */}
+            {selecionada.comissoes.filter(c => c.status === "aprovado" || c.status === "rejeitado").map((c) => (
+              <div key={c.id} className="bg-white rounded-xl shadow-sm p-4 opacity-70">
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-gray-700 text-sm">{c.ordem}ª Comissão: {c.comissao.nome}</p>
+                  <div className="flex items-center gap-2">
+                    {c.parecer && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.parecer === "contrario" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
+                        {parecerLabel[c.parecer]}
+                      </span>
+                    )}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[c.status]}`}>
+                      {statusLabel[c.status]}
+                    </span>
+                  </div>
+                </div>
+                {c.parecerTexto && <p className="text-xs text-gray-500 mt-1">{c.parecerTexto}</p>}
+              </div>
+            ))}
+
+            {/* Proposição pronta para pautar */}
+            {selecionada.etapaAtual === "pronto_votar" && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
+                <p className="font-bold text-emerald-800 text-lg">✓ Parecer(es) concluído(s)</p>
+                <p className="text-emerald-700 text-sm mt-1">
+                  Esta proposição está pronta para ser incluída na pauta de votação.
+                </p>
+                <p className="text-emerald-600 text-xs mt-2">
+                  Acesse a tela de Proposições, selecione-a e envie para a próxima sessão.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!selecionada && lista.length > 0 && (
+          <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+            Selecione uma proposição para ver os detalhes.
+          </div>
+        )}
+      </div>
+
+      {/* Modal Registrar Parecer */}
+      {modalParecer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg">
+            <h2 className="font-bold text-lg text-gray-800 mb-1">Registrar Parecer</h2>
+            <p className="text-sm text-gray-500 mb-4">{modalParecer.comissao.nome}</p>
+
+            <div className="space-y-4">
+              {/* Analista */}
+              {modalParecer.comissao.analistas?.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Analista</label>
+                  <select value={parecerForm.analistaId} onChange={(e) => setParecerForm({ ...parecerForm, analistaId: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <option value="">Selecione...</option>
+                    {modalParecer.comissao.analistas.map(a => (
+                      <option key={a.id} value={a.id}>{a.nome}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Conclusão */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Conclusão do Parecer</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: "favoravel", label: "Favorável", color: "#16a34a" },
+                    { value: "favoravel_com_emenda", label: "Favorável c/ Emenda", color: "#ca8a04" },
+                    { value: "contrario", label: "Contrário", color: "#dc2626" },
+                  ].map(opt => (
+                    <button key={opt.value} type="button"
+                      onClick={() => setParecerForm({ ...parecerForm, parecer: opt.value })}
+                      className="py-2 px-3 rounded-xl border-2 text-xs font-semibold transition text-center"
+                      style={parecerForm.parecer === opt.value
+                        ? { borderColor: opt.color, background: opt.color + "15", color: opt.color }
+                        : { borderColor: "#e5e7eb", color: "#374151" }}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Texto */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Texto do Parecer</label>
+                <textarea value={parecerForm.parecerTexto}
+                  onChange={(e) => setParecerForm({ ...parecerForm, parecerTexto: e.target.value })}
+                  rows={4} placeholder="Redija o texto do parecer..."
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-5">
+              <button onClick={() => setModalParecer(null)}
+                className="flex-1 border border-gray-300 text-gray-700 rounded-lg py-2 text-sm hover:bg-gray-50">
+                Cancelar
+              </button>
+              <button onClick={registrarParecer}
+                className="flex-1 text-white rounded-lg py-2 text-sm font-semibold"
+                style={{ background: parecerForm.parecer === "contrario" ? "#dc2626" : "#8B0000" }}>
+                Confirmar Parecer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

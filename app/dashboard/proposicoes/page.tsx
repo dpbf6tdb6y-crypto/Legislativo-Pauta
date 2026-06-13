@@ -28,6 +28,12 @@ const statusColor: Record<string, string> = {
   arquivada: "bg-gray-100 text-gray-800",
   aguardando_sancao: "bg-purple-100 text-purple-800",
 };
+const etapaBadge: Record<string, { label: string; color: string }> = {
+  pronto_votar: { label: "✓ Comissões OK — Pronto para Pautar", color: "bg-emerald-100 text-emerald-700" },
+  segunda_votacao: { label: "Ag. 2ª Votação", color: "bg-blue-100 text-blue-700" },
+  rejeitada: { label: "Rejeitada", color: "bg-red-100 text-red-700" },
+  aguardando_sancao: { label: "Ag. Sanção/Promulgação", color: "bg-purple-100 text-purple-700" },
+};
 
 const secaoOpts = [
   { value: "apresentacao", label: "I-c — Apresentação de proposições", desc: "Nova proposição sendo introduzida na sessão" },
@@ -65,6 +71,11 @@ function buildEtapas(p: Proposicao): Etapa[] {
     etapas.push({ key: "parecer_conjunto", label: siglas, grupo: true });
   }
 
+  if (p.dispensaParecer) etapas.push({ key: "disp_parecer", label: "Disp. Parecer" });
+  if (p.dispensaIntersticio) etapas.push({ key: "disp_intersticio", label: "Disp. Interstício" });
+  if (p.comissoes.length > 0 && !p.dispensaParecer) {
+    etapas.push({ key: "pronto_votar", label: "Ag. Pautar" });
+  }
   if (p.dispensaParecer) etapas.push({ key: "disp_parecer", label: "Disp. Parecer" });
   if (p.dispensaIntersticio) etapas.push({ key: "disp_intersticio", label: "Disp. Interstício" });
   etapas.push({ key: "primeira_votacao", label: "1ª Votação" });
@@ -382,10 +393,11 @@ export default function ProposicoesPage() {
       </div>
 
       {(() => {
+        const aPautarEtapas = ["protocolado", "pronto_votar", "segunda_votacao"];
         const listaFiltrada = lista.filter(p => {
           if (p.status === "arquivada") return false;
-          if (filtroPauta === "a_pautar") return p.etapaAtual === "protocolado";
-          if (filtroPauta === "pautadas") return p.etapaAtual !== "protocolado";
+          if (filtroPauta === "a_pautar") return aPautarEtapas.includes(p.etapaAtual);
+          if (filtroPauta === "pautadas") return !aPautarEtapas.includes(p.etapaAtual);
           return true;
         });
         return (
@@ -413,6 +425,11 @@ export default function ProposicoesPage() {
                     {statusLabel[p.status] || p.status}
                   </span>
                   {p.regimeUrgencia && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">Urgência</span>}
+                  {etapaBadge[p.etapaAtual] && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${etapaBadge[p.etapaAtual].color}`}>
+                      {etapaBadge[p.etapaAtual].label}
+                    </span>
+                  )}
                   <span className="text-xs text-gray-400">{new Date(p.dataEntrada).toLocaleDateString("pt-BR")}</span>
                 </div>
                 <p className="text-sm text-gray-600 mb-1">{p.ementa}</p>
