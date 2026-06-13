@@ -225,6 +225,12 @@ export default function ProposicoesPage() {
     if (result.duplicadas > 0) alert(`${result.adicionadas} adicionada(s). ${result.duplicadas} já estavam na pauta.`);
   }
 
+  async function excluir(id: string) {
+    if (!confirm("Arquivar esta proposição?")) return;
+    await fetch(`/api/proposicoes/${id}`, { method: "DELETE" });
+    carregar();
+  }
+
   async function avancarEtapa(id: string, etapaAtual: string) {
     await fetch(`/api/proposicoes/${id}`, {
       method: "PUT",
@@ -323,19 +329,18 @@ export default function ProposicoesPage() {
                 </p>
               </div>
               {/* Botões */}
-              <div className="flex gap-2 flex-shrink-0">
-                <button onClick={() => setVerProp(p)} title="Visualizar"
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
+              <div className="flex gap-1.5 flex-shrink-0">
+                <button onClick={() => setVerProp(p)}
+                  className="px-3 py-1 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition">
+                  Ver
                 </button>
-                <button onClick={() => abrirEditar(p)} title="Editar"
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
+                <button onClick={() => abrirEditar(p)}
+                  className="px-3 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 transition">
+                  Editar
+                </button>
+                <button onClick={() => excluir(p.id)}
+                  className="px-3 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 hover:bg-red-100 transition">
+                  Excluir
                 </button>
               </div>
             </div>
