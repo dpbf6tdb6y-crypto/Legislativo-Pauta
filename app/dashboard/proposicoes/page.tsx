@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-type Vereador = { id: string; nome: string; partido: string };
+type Vereador = { id: string; nome: string; partido: string; poder: string; cargo?: string };
 type Comissao = { id: string; nome: string };
 type Proposicao = {
   id: string; numero: string; ano: number; tipo: string; ementa: string;
@@ -28,6 +28,7 @@ const emptyForm = {
 export default function ProposicoesPage() {
   const [lista, setLista] = useState<Proposicao[]>([]);
   const [vereadores, setVereadores] = useState<Vereador[]>([]);
+  const [executivo, setExecutivo] = useState<Vereador[]>([]);
   const [comissoes, setComissoes] = useState<Comissao[]>([]);
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -44,7 +45,8 @@ export default function ProposicoesPage() {
       fetch("/api/comissoes").then(r => r.json()),
     ]);
     setLista(p);
-    setVereadores(v.filter((vr: any) => vr.ativo));
+    setVereadores(v.filter((vr: any) => vr.ativo && vr.poder === "legislativo"));
+    setExecutivo(v.filter((vr: any) => vr.ativo && vr.poder === "executivo"));
     setComissoes(c.filter((c: any) => c.ativa));
   }
 
@@ -188,8 +190,15 @@ export default function ProposicoesPage() {
                   </>
                 ) : (
                   <>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Identificação do Executivo</label>
-                    <input value={form.autorExterno} onChange={(e) => setForm({ ...form, autorExterno: e.target.value })} placeholder="Ex: Prefeitura Municipal" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Autor (Executivo)</label>
+                    {executivo.length > 0 ? (
+                      <select value={form.autorExterno} onChange={(e) => setForm({ ...form, autorExterno: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Selecione...</option>
+                        {executivo.map(e => <option key={e.id} value={e.nome}>{e.nome} ({e.cargo === "prefeito" ? "Prefeito" : "Vice-Prefeito"})</option>)}
+                      </select>
+                    ) : (
+                      <input value={form.autorExterno} onChange={(e) => setForm({ ...form, autorExterno: e.target.value })} placeholder="Ex: Prefeitura Municipal" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    )}
                   </>
                 )}
               </div>

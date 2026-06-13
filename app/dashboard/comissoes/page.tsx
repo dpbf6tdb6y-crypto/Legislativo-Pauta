@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-type Vereador = { id: string; nome: string; partido: string; cargo?: string };
+type Vereador = { id: string; nome: string; partido: string; cargo?: string; poder: string };
 type Membro = { id: string; vereador: Vereador; papel: string };
 type Comissao = { id: string; nome: string; sigla?: string; tipo: string; ativa: boolean; membros: Membro[]; analistas: { id: string; nome: string }[] };
 
@@ -39,7 +39,7 @@ export default function ComissoesPage() {
   }
   useEffect(() => { carregar(); }, []);
 
-  const vereadoresSemPresidente = vereadores.filter(v => v.cargo !== "presidente");
+  const vereadoresSemPresidente = vereadores.filter(v => v.poder === "legislativo" && v.cargo !== "presidente");
 
   function verificarSimilaridade(nomeDigitado: string) {
     if (!nomeDigitado.trim()) { setAvisoSimilar(null); return; }
