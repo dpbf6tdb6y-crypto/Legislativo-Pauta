@@ -14,8 +14,8 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { nome, tipo, membros } = body;
-  const comissao = await prisma.comissao.create({ data: { nome, tipo } });
+  const { nome, sigla, tipo, membros } = body;
+  const comissao = await prisma.comissao.create({ data: { nome, sigla, tipo } });
   if (membros?.length) {
     await prisma.comissaoMembro.createMany({
       data: membros.map((m: { vereadorId: string; papel: string }) => ({

@@ -36,6 +36,7 @@ model Vereador {
 model Comissao {
   id        String   @id @default(cuid())
   nome      String
+  sigla     String?
   tipo      String   @default("permanente")
   ativa     Boolean  @default(true)
   createdAt DateTime @default(now())

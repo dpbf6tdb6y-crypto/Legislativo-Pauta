@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 type Vereador = { id: string; nome: string; partido: string };
 type Membro = { id: string; vereador: Vereador; papel: string };
-type Comissao = { id: string; nome: string; tipo: string; ativa: boolean; membros: Membro[]; analistas: { id: string; nome: string }[] };
+type Comissao = { id: string; nome: string; sigla?: string; tipo: string; ativa: boolean; membros: Membro[]; analistas: { id: string; nome: string }[] };
 
 const papeis = ["presidente", "vice", "relator"];
 const papelLabel: Record<string, string> = { presidente: "Presidente", vice: "Vice-Presidente", relator: "Relator" };
@@ -14,6 +14,7 @@ export default function ComissoesPage() {
   const [modal, setModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [nome, setNome] = useState("");
+  const [sigla, setSigla] = useState("");
   const [tipo, setTipo] = useState("permanente");
   const [membros, setMembros] = useState<{ papel: string; vereadorId: string }[]>(
     papeis.map((p) => ({ papel: p, vereadorId: "" }))
@@ -27,13 +28,13 @@ export default function ComissoesPage() {
   useEffect(() => { carregar(); }, []);
 
   function abrirNovo() {
-    setNome(""); setTipo("permanente"); setEditId(null);
+    setNome(""); setSigla(""); setTipo("permanente"); setEditId(null);
     setMembros(papeis.map((p) => ({ papel: p, vereadorId: "" })));
     setModal(true);
   }
 
   function editar(c: Comissao) {
-    setNome(c.nome); setTipo(c.tipo); setEditId(c.id);
+    setNome(c.nome); setSigla(c.sigla || ""); setTipo(c.tipo); setEditId(c.id);
     setMembros(papeis.map((p) => {
       const m = c.membros.find((mb) => mb.papel === p);
       return { papel: p, vereadorId: m?.vereador.id || "" };
@@ -42,7 +43,7 @@ export default function ComissoesPage() {
   }
 
   async function salvar() {
-    const body = { nome, tipo, membros: membros.filter((m) => m.vereadorId) };
+    const body = { nome, sigla, tipo, membros: membros.filter((m) => m.vereadorId) };
     if (editId) {
       await fetch(`/api/comissoes/${editId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     } else {
@@ -69,7 +70,14 @@ export default function ComissoesPage() {
           <div key={c.id} className="bg-white rounded-xl shadow-sm p-5">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="font-semibold text-gray-800">{c.nome}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-gray-800">{c.nome}</p>
+                  {c.sigla && (
+                    <span className="text-xs px-2 py-0.5 rounded font-bold border" style={{ color: "#8B0000", borderColor: "#8B0000", background: "#fff5f5" }}>
+                      {c.sigla}
+                    </span>
+                  )}
+                </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.tipo === "permanente" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>
                   {c.tipo === "permanente" ? "Permanente" : "Especial"}
                 </span>
@@ -104,6 +112,10 @@ export default function ComissoesPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Comissão</label>
                 <input value={nome} onChange={(e) => setNome(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sigla</label>
+                <input value={sigla} onChange={(e) => setSigla(e.target.value)} placeholder="Ex: CLJ" className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>

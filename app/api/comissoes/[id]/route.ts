@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const body = await req.json();
-  const { nome, tipo, membros } = body;
-  await prisma.comissao.update({ where: { id: params.id }, data: { nome, tipo } });
+  const { nome, sigla, tipo, membros } = body;
+  await prisma.comissao.update({ where: { id: params.id }, data: { nome, sigla, tipo } });
   if (membros) {
     await prisma.comissaoMembro.deleteMany({ where: { comissaoId: params.id } });
     await prisma.comissaoMembro.createMany({
