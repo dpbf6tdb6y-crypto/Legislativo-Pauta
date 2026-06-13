@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  perfil    String   @default("operador")
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Vereador {
+  id          String   @id @default(cuid())
+  nome        String
+  partido     String
+  legislatura String
+  telefone    String?
+  email       String?
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  comissoes      ComissaoMembro[]
+  propostaAutor  Proposicao[]         @relation("AutorVereador")
+  votosPareceres VotoParecerVereador[]
+  emendas        Emenda[]             @relation("EmendaAutorVereador")
+}
+
+model Comissao {
+  id        String   @id @default(cuid())
+  nome      String
+  tipo      String   @default("permanente")
+  ativa     Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  membros     ComissaoMembro[]
+  analistas   Analista[]
+  tramitacoes ProposicaoComissao[]
+}
+
+model ComissaoMembro {
+  id         String   @id @default(cuid())
+  comissaoId String
+  vereadorId String
+  papel      String
+  createdAt  DateTime @default(now())
+
+  comissao Comissao @relation(fields: [comissaoId], references: [id])
+  vereador Vereador @relation(fields: [vereadorId], references: [id])
+
+  @@unique([comissaoId, papel])
+}
+
+model Analista {
+  id         String   @id @default(cuid())
+  nome       String
+  email      String?
+  telefone   String?
+  comissaoId String   @unique
+  ativo      Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  comissao  Comissao           @relation(fields: [comissaoId], references: [id])
+  pareceres ProposicaoComissao[]
+}
+
+model Proposicao {
+  id              String   @id @default(cuid())
+  numero          String
+  ano             Int
+  tipo            String
+  ementa          String
+  origemTipo      String
+  autorVereadorId String?
+  autorExterno    String?
+  dataEntrada     DateTime
+  status          String   @default("em_tramitacao")
+  dispensaParecer Boolean  @default(false)
+  regimeUrgencia  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  autorVereador Vereador?           @relation("AutorVereador", fields: [autorVereadorId], references: [id])
+  comissoes     ProposicaoComissao[]
+  emendas       Emenda[]
+  pautaItens    PautaItem[]
+}
+
+model ProposicaoComissao {
+  id              String    @id @default(cuid())
+  proposicaoId    String
+  comissaoId      String
+  analistaId      String?
+  ordem           Int
+  status          String    @default("aguardando")
+  parecer         String?
+  parecerTexto    String?
+  parecerConjunto Boolean   @default(false)
+  dataEnvio       DateTime?
+  dataVotacao     DateTime?
+  createdAt       DateTime  @default(now())
+
+  proposicao Proposicao          @relation(fields: [proposicaoId], references: [id])
+  comissao   Comissao            @relation(fields: [comissaoId], references: [id])
+  analista   Analista?           @relation(fields: [analistaId], references: [id])
+  votos      VotoParecerVereador[]
+}
+
+model VotoParecerVereador {
+  id                   String   @id @default(cuid())
+  proposicaoComissaoId String
+  vereadorId           String
+  aprovado             Boolean
+  createdAt            DateTime @default(now())
+
+  proposicaoComissao ProposicaoComissao @relation(fields: [proposicaoComissaoId], references: [id])
+  vereador           Vereador           @relation(fields: [vereadorId], references: [id])
+
+  @@unique([proposicaoComissaoId, vereadorId])
+}
+
+model Emenda {
+  id              String   @id @default(cuid())
+  proposicaoId    String
+  tipo            String
+  autorVereadorId String?
+  autorNome       String?
+  artigo          String
+  texto           String
+  createdAt       DateTime @default(now())
+
+  proposicao    Proposicao @relation(fields: [proposicaoId], references: [id])
+  autorVereador Vereador?  @relation("EmendaAutorVereador", fields: [autorVereadorId], references: [id])
+}
+
+model Sessao {
+  id        String   @id @default(cuid())
+  data      DateTime
+  tipo      String
+  numero    Int?
+  ano       Int?
+  local     String?
+  status    String   @default("agendada")
+  ata       String?
+  createdAt DateTime @default(now())
+
+  itens PautaItem[]
+}
+
+model PautaItem {
+  id           String   @id @default(cuid())
+  sessaoId     String
+  proposicaoId String
+  ordem        Int
+  resultado    String?
+  observacoes  String?
+  createdAt    DateTime @default(now())
+
+  sessao     Sessao     @relation(fields: [sessaoId], references: [id])
+  proposicao Proposicao @relation(fields: [proposicaoId], references: [id])
+}
