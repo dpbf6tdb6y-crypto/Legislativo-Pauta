@@ -123,6 +123,17 @@ export default function SessoesPage() {
     carregar();
   }
 
+  async function retirarDePauta(proposicaoId: string) {
+    if (!confirm("Retirar esta proposição da pauta? Ela voltará para o status 'Protocolado'.")) return;
+    await fetch("/api/pauta/remover", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ proposicaoId }),
+    });
+    if (detalhe) carregarDetalhe(detalhe.id);
+    carregar();
+  }
+
   async function encaminharSancao(proposicaoId: string) {
     await fetch(`/api/proposicoes/${proposicaoId}`, {
       method: "PUT",
@@ -285,7 +296,8 @@ export default function SessoesPage() {
                 ) : partes.apresentacao.map((item) => (
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
-                    onSancao={() => encaminharSancao(item.proposicao.id)} />
+                    onSancao={() => encaminharSancao(item.proposicao.id)}
+                    onRetirar={() => retirarDePauta(item.proposicao.id)} />
                 ))}
 
                 {/* d) Leitura de Parecer */}
@@ -297,7 +309,8 @@ export default function SessoesPage() {
                 ) : partes.parecer.map((item) => (
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
-                    onSancao={() => encaminharSancao(item.proposicao.id)} />
+                    onSancao={() => encaminharSancao(item.proposicao.id)}
+                    onRetirar={() => retirarDePauta(item.proposicao.id)} />
                 ))}
               </div>
 
@@ -319,7 +332,8 @@ export default function SessoesPage() {
                 ) : partes.votacao.map((item) => (
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
-                    onSancao={() => encaminharSancao(item.proposicao.id)} />
+                    onSancao={() => encaminharSancao(item.proposicao.id)}
+                    onRetirar={() => retirarDePauta(item.proposicao.id)} />
                 ))}
               </div>
 
@@ -336,7 +350,8 @@ export default function SessoesPage() {
                 ) : partes.requerimento.map((item) => (
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
-                    onSancao={() => encaminharSancao(item.proposicao.id)} />
+                    onSancao={() => encaminharSancao(item.proposicao.id)}
+                    onRetirar={() => retirarDePauta(item.proposicao.id)} />
                 ))}
               </div>
 
@@ -401,12 +416,13 @@ export default function SessoesPage() {
 }
 
 function PautaItemRow({
-  item, sessaoAberta, onResultado, onSancao,
+  item, sessaoAberta, onResultado, onSancao, onRetirar,
 }: {
   item: PautaItem;
   sessaoAberta: boolean;
   onResultado: (r: string) => void;
   onSancao: () => void;
+  onRetirar: () => void;
 }) {
   const resultadoOpts = [
     { value: "aprovado", label: "Aprovado" },
@@ -449,14 +465,21 @@ function PautaItemRow({
         </div>
       </div>
       {sessaoAberta && (
-        <select
-          value={item.resultado || ""}
-          onChange={(e) => onResultado(e.target.value)}
-          className="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-32"
-        >
-          <option value="">Sem resultado</option>
-          {resultadoOpts.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-        </select>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <select
+            value={item.resultado || ""}
+            onChange={(e) => onResultado(e.target.value)}
+            className="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-32"
+          >
+            <option value="">Sem resultado</option>
+            {resultadoOpts.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+          </select>
+          <button onClick={onRetirar}
+            className="px-2 py-1 rounded-lg text-xs font-medium bg-orange-50 text-orange-700 hover:bg-orange-100 transition whitespace-nowrap"
+            title="Retirar desta pauta">
+            Retirar
+          </button>
+        </div>
       )}
     </div>
   );

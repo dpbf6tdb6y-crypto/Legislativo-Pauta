@@ -131,12 +131,11 @@ export default function ProposicoesPage() {
   const [secaoSelecionada, setSecaoSelecionada] = useState("votacao");
 
   const [filtroTipo, setFiltroTipo] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroPauta, setFiltroPauta] = useState<"" | "a_pautar" | "pautadas">("");
 
   async function carregar() {
     const params = new URLSearchParams();
     if (filtroTipo) params.set("tipo", filtroTipo);
-    if (filtroStatus) params.set("status", filtroStatus);
     const [p, v, c, s] = await Promise.all([
       fetch(`/api/proposicoes?${params}`).then(r => r.json()),
       fetch("/api/vereadores").then(r => r.json()),
@@ -150,7 +149,7 @@ export default function ProposicoesPage() {
     setSessoes(s.filter((ss: any) => ss.status === "agendada"));
   }
 
-  useEffect(() => { carregar(); }, [filtroTipo, filtroStatus]);
+  useEffect(() => { carregar(); }, [filtroTipo]);
 
   function abrirNova() {
     setForm(emptyForm);
@@ -275,6 +274,16 @@ export default function ProposicoesPage() {
     if (result.duplicadas > 0) alert(`${result.adicionadas} adicionada(s). ${result.duplicadas} já estavam na pauta.`);
   }
 
+  async function retirarDePauta(id: string) {
+    if (!confirm("Retirar esta proposição da pauta? Ela voltará para o status 'Protocolado'.")) return;
+    await fetch("/api/pauta/remover", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ proposicaoId: id }),
+    });
+    carregar();
+  }
+
   async function excluir(id: string) {
     if (!confirm("Arquivar esta proposição?")) return;
     await fetch(`/api/proposicoes/${id}`, { method: "DELETE" });
@@ -344,22 +353,42 @@ export default function ProposicoesPage() {
         </button>
       </div>
 
-      <div className="flex gap-3 mb-5">
+      <div className="flex items-center gap-3 mb-5">
         <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
           <option value="">Todos os tipos</option>
           {Object.entries(tipoLabel).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
-        <select value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-          <option value="">Todos os status</option>
-          {Object.entries(statusLabel).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
+        <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+          {[
+            { key: "" as const, label: "Todas" },
+            { key: "a_pautar" as const, label: "A Pautar" },
+            { key: "pautadas" as const, label: "Já Pautadas" },
+          ].map(opt => (
+            <button key={opt.key}
+              onClick={() => setFiltroPauta(opt.key)}
+              className="px-4 py-2 text-sm font-medium transition"
+              style={filtroPauta === opt.key
+                ? { background: "#8B0000", color: "#fff" }
+                : { background: "#fff", color: "#374151" }}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {(() => {
+        const listaFiltrada = lista.filter(p => {
+          if (p.status === "arquivada") return false;
+          if (filtroPauta === "a_pautar") return p.etapaAtual === "protocolado";
+          if (filtroPauta === "pautadas") return p.etapaAtual !== "protocolado";
+          return true;
+        });
+        return (
       <div className="space-y-4">
-        {lista.length === 0 && (
+        {listaFiltrada.length === 0 && (
           <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-400">Nenhuma proposição encontrada.</div>
         )}
-        {lista.map((p) => (
+        {listaFiltrada.map((p) => (
           <div key={p.id}
             className="bg-white rounded-xl shadow-sm p-5 transition"
             style={selecionadas.has(p.id) ? { outline: "2px solid #8B0000", outlineOffset: 2 } : {}}>
@@ -419,6 +448,12 @@ export default function ProposicoesPage() {
                   className="px-3 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-700 hover:bg-amber-100 transition">
                   Editar
                 </button>
+                {p.etapaAtual !== "protocolado" && p.status === "em_tramitacao" && (
+                  <button onClick={() => retirarDePauta(p.id)}
+                    className="px-3 py-1 rounded-lg text-xs font-medium bg-orange-50 text-orange-700 hover:bg-orange-100 transition">
+                    Retirar de Pauta
+                  </button>
+                )}
                 <button onClick={() => excluir(p.id)}
                   className="px-3 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 hover:bg-red-100 transition">
                   Excluir
@@ -430,6 +465,8 @@ export default function ProposicoesPage() {
           </div>
         ))}
       </div>
+        );
+      })()}
 
       {/* Modal Seção da Pauta */}
       {modalSecao && proximaSessao && (
