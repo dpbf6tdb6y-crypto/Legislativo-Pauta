@@ -24,6 +24,7 @@ model Vereador {
   legislatura String
   telefone    String?
   email       String?
+  cargo       String?
   ativo       Boolean  @default(true)
   createdAt   DateTime @default(now())
 
