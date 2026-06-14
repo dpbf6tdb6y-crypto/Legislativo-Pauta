@@ -39,7 +39,15 @@ function getCurrentIndex(etapaAtual: string, steps: { key: string }[]): number {
   return idx >= 0 ? idx : 0;
 }
 
-function MiniStepper({ prop }: { prop: Proposicao }) {
+function MiniStepper({
+  prop,
+  sessaoAberta = false,
+  onEtapa,
+}: {
+  prop: Proposicao;
+  sessaoAberta?: boolean;
+  onEtapa?: (key: string) => void;
+}) {
   const steps = buildSteps(prop);
   const current = getCurrentIndex(prop.etapaAtual, steps);
 
@@ -48,19 +56,31 @@ function MiniStepper({ prop }: { prop: Proposicao }) {
       {steps.map((step, i) => {
         const done = i < current;
         const active = i === current;
+        // Protocolado (i=0) não é clicável — é ponto de partida
+        const clickable = sessaoAberta && i > 0 && !active;
+
         return (
           <div key={step.key} className="flex items-center">
-            {/* Circle */}
             <div className="flex flex-col items-center" style={{ minWidth: 44 }}>
               <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 flex-shrink-0"
-                style={
-                  done
+                onClick={() => clickable && onEtapa?.(step.key)}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 flex-shrink-0 transition-transform"
+                style={{
+                  ...(done
                     ? { background: "#8B0000", borderColor: "#8B0000", color: "#fff" }
                     : active
                     ? { background: "#d4a017", borderColor: "#d4a017", color: "#fff" }
-                    : { background: "#f3f4f6", borderColor: "#d1d5db", color: "#9ca3af" }
-                }
+                    : { background: "#f3f4f6", borderColor: "#d1d5db", color: "#9ca3af" }),
+                  cursor: clickable ? "pointer" : "default",
+                  boxShadow: clickable ? "0 0 0 2px transparent" : undefined,
+                }}
+                title={clickable ? `Mover para: ${step.label}` : undefined}
+                onMouseEnter={e => {
+                  if (clickable) (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 2px #d4a017";
+                }}
+                onMouseLeave={e => {
+                  if (clickable) (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 2px transparent";
+                }}
               >
                 {done ? (
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,12 +98,13 @@ function MiniStepper({ prop }: { prop: Proposicao }) {
                   color: done ? "#8B0000" : active ? "#b5860f" : "#9ca3af",
                   fontWeight: active ? 700 : 400,
                   wordBreak: "break-word",
+                  cursor: clickable ? "pointer" : "default",
                 }}
+                onClick={() => clickable && onEtapa?.(step.key)}
               >
                 {step.label}
               </span>
             </div>
-            {/* Connector */}
             {i < steps.length - 1 && (
               <div
                 className="h-0.5 flex-shrink-0"
@@ -221,6 +242,23 @@ export default function SessoesPage() {
       body: JSON.stringify({ etapaAtual: "aguardando_sancao", status: "aguardando_sancao" }),
     });
     if (detalhe) carregarDetalhe(detalhe.id);
+  }
+
+  async function moverEtapa(proposicaoId: string, etapa: string) {
+    // Determina status correspondente à etapa
+    const statusMap: Record<string, string> = {
+      aguardando_sancao: "aguardando_sancao",
+      promulgada: "promulgada",
+      sancionada: "sancionada",
+    };
+    const status = statusMap[etapa] ?? "em_tramitacao";
+    await fetch(`/api/proposicoes/${proposicaoId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ etapaAtual: etapa, status }),
+    });
+    if (detalhe) carregarDetalhe(detalhe.id);
+    carregar();
   }
 
   const agendadas = lista.filter(s => s.status === "agendada");
@@ -377,7 +415,8 @@ export default function SessoesPage() {
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
                     onSancao={() => encaminharSancao(item.proposicao.id)}
-                    onRetirar={() => retirarDePauta(item.proposicao.id)} />
+                    onRetirar={() => retirarDePauta(item.proposicao.id)}
+                    onMoverEtapa={(etapa) => moverEtapa(item.proposicao.id, etapa)} />
                 ))}
 
                 {/* d) Leitura de Parecer */}
@@ -390,7 +429,8 @@ export default function SessoesPage() {
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
                     onSancao={() => encaminharSancao(item.proposicao.id)}
-                    onRetirar={() => retirarDePauta(item.proposicao.id)} />
+                    onRetirar={() => retirarDePauta(item.proposicao.id)}
+                    onMoverEtapa={(etapa) => moverEtapa(item.proposicao.id, etapa)} />
                 ))}
               </div>
 
@@ -413,7 +453,8 @@ export default function SessoesPage() {
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
                     onSancao={() => encaminharSancao(item.proposicao.id)}
-                    onRetirar={() => retirarDePauta(item.proposicao.id)} />
+                    onRetirar={() => retirarDePauta(item.proposicao.id)}
+                    onMoverEtapa={(etapa) => moverEtapa(item.proposicao.id, etapa)} />
                 ))}
               </div>
 
@@ -431,7 +472,8 @@ export default function SessoesPage() {
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
                     onSancao={() => encaminharSancao(item.proposicao.id)}
-                    onRetirar={() => retirarDePauta(item.proposicao.id)} />
+                    onRetirar={() => retirarDePauta(item.proposicao.id)}
+                    onMoverEtapa={(etapa) => moverEtapa(item.proposicao.id, etapa)} />
                 ))}
               </div>
 
@@ -496,13 +538,14 @@ export default function SessoesPage() {
 }
 
 function PautaItemRow({
-  item, sessaoAberta, onResultado, onSancao, onRetirar,
+  item, sessaoAberta, onResultado, onSancao, onRetirar, onMoverEtapa,
 }: {
   item: PautaItem;
   sessaoAberta: boolean;
   onResultado: (r: string) => void;
   onSancao: () => void;
   onRetirar: () => void;
+  onMoverEtapa: (etapa: string) => void;
 }) {
   const resultadoOpts = [
     { value: "aprovado", label: "✓ Aprovado" },
@@ -531,8 +574,12 @@ function PautaItemRow({
 
         {/* Coluna direita: stepper + ações */}
         <div className="flex-shrink-0 flex flex-col items-end gap-2" style={{ minWidth: 0 }}>
-          {/* Mini stepper */}
-          <MiniStepper prop={item.proposicao} />
+          {/* Mini stepper — clicável em sessão aberta */}
+          <MiniStepper
+            prop={item.proposicao}
+            sessaoAberta={sessaoAberta}
+            onEtapa={onMoverEtapa}
+          />
 
           {/* Resultado + Retirar */}
           {sessaoAberta && (
