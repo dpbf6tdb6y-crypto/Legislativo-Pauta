@@ -725,18 +725,10 @@ export default function ProposicoesPage() {
                     <input type="checkbox" checked={form.regimeUrgencia} onChange={(e) => setForm({ ...form, regimeUrgencia: e.target.checked })} />
                     Regime de urgência
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" checked={form.dispensaParecer} onChange={(e) => setForm({ ...form, dispensaParecer: e.target.checked, comissoes: e.target.checked ? [] : form.comissoes })} />
-                    Dispensa de parecer
-                  </label>
-                  <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input type="checkbox" checked={form.dispensaIntersticio} onChange={(e) => setForm({ ...form, dispensaIntersticio: e.target.checked })} />
-                    Disp. interstício
-                  </label>
                 </div>
               </div>
 
-              {!form.dispensaParecer && (
+              {true && (
                 <div className="col-span-3">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-medium text-gray-700">Comissões (até 5)</label>
