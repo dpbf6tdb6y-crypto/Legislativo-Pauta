@@ -40,10 +40,18 @@ export default function ParecerPage() {
   const [modalParecer, setModalParecer] = useState<ProposicaoComissao | null>(null);
   const [parecerForm, setParecerForm] = useState({ parecer: "favoravel", parecerTexto: "", analistaId: "" });
 
-  // Estado local de votos (não salva a cada clique)
+  // Estado local de votos — comissão ativa
   const [votosLocais, setVotosLocais] = useState<Record<string, boolean | null>>({});
   const [modoEditar, setModoEditar] = useState(false);
   const [salvandoVotos, setSalvandoVotos] = useState(false);
+
+  // Estado para comissões concluídas (expandir / editar)
+  const [expandidas, setExpandidas] = useState<Set<string>>(new Set());
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [votosEdicao, setVotosEdicao] = useState<Record<string, boolean | null>>({});
+  const [parecerEdicao, setParecerEdicao] = useState("favoravel");
+  const [parecerTextoEdicao, setParecerTextoEdicao] = useState("");
+  const [salvandoEdicao, setSalvandoEdicao] = useState(false);
 
   const etapasComissao = ["comissao1","comissao2","comissao3","comissao4","comissao5","parecer_conjunto"];
 
@@ -133,6 +141,58 @@ export default function ParecerPage() {
 
   function cancelarEdicao() {
     inicializarVotos(comissaoAtiva);
+  }
+
+  function toggleExpandida(id: string) {
+    setExpandidas(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function iniciarEdicao(c: ProposicaoComissao) {
+    const init: Record<string, boolean | null> = {};
+    c.comissao.membros.forEach(m => {
+      const voto = c.votos.find(v => v.vereador.id === m.vereador.id);
+      init[m.vereador.id] = voto !== undefined ? voto.aprovado : null;
+    });
+    setVotosEdicao(init);
+    setParecerEdicao(c.parecer || "favoravel");
+    setParecerTextoEdicao(c.parecerTexto || "");
+    setEditandoId(c.id);
+    setExpandidas(prev => new Set(prev).add(c.id));
+  }
+
+  function cancelarEdicaoComissao() {
+    setEditandoId(null);
+  }
+
+  async function salvarEdicaoComissao(c: ProposicaoComissao) {
+    setSalvandoEdicao(true);
+    // Salva votos
+    for (const [vereadorId, aprovado] of Object.entries(votosEdicao)) {
+      if (aprovado !== null) {
+        await fetch("/api/tramitacao/voto", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ proposicaoComissaoId: c.id, vereadorId, aprovado }),
+        });
+      }
+    }
+    // Salva parecer
+    await fetch("/api/tramitacao/parecer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        proposicaoComissaoId: c.id,
+        parecer: parecerEdicao,
+        parecerTexto: parecerTextoEdicao,
+      }),
+    });
+    setSalvandoEdicao(false);
+    setEditandoId(null);
+    if (selecionada) carregarDetalhe(selecionada.id);
   }
 
   const autorNome = (p: Proposicao) =>
@@ -402,24 +462,140 @@ export default function ParecerPage() {
             )}
 
             {/* Comissões concluídas */}
-            {selecionada.comissoes.filter(c => c.status === "aprovado" || c.status === "rejeitado").map((c) => (
-              <div key={c.id} className="bg-white rounded-xl shadow-sm p-4 opacity-70">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium text-gray-700 text-sm">{c.ordem}ª Comissão: {c.comissao.nome}</p>
-                  <div className="flex items-center gap-2">
-                    {c.parecer && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.parecer === "contrario" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
-                        {parecerLabel[c.parecer]}
+            {selecionada.comissoes.filter(c => c.status === "aprovado" || c.status === "rejeitado").map((c) => {
+              const aberta = expandidas.has(c.id);
+              const editando = editandoId === c.id;
+              return (
+                <div key={c.id} className="bg-white rounded-xl shadow-sm overflow-hidden">
+                  {/* Cabeçalho */}
+                  <div className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 transition"
+                    onClick={() => !editando && toggleExpandida(c.id)}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400 text-xs">{aberta ? "▲" : "▼"}</span>
+                      <p className="font-medium text-gray-700 text-sm">{c.ordem}ª Comissão: {c.comissao.nome}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {c.parecer && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.parecer === "contrario" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
+                          {parecerLabel[c.parecer]}
+                        </span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[c.status]}`}>
+                        {statusLabel[c.status]}
                       </span>
-                    )}
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[c.status]}`}>
-                      {statusLabel[c.status]}
-                    </span>
+                      {!editando && (
+                        <button
+                          onClick={e => { e.stopPropagation(); iniciarEdicao(c); }}
+                          className="text-xs px-2 py-1 rounded-lg border border-gray-300 text-gray-500 hover:bg-gray-100 transition ml-1"
+                        >
+                          ✏️ Editar
+                        </button>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Conteúdo expandido */}
+                  {aberta && (
+                    <div className="border-t border-gray-100 px-4 py-4 grid grid-cols-2 gap-6">
+                      {/* Votos dos membros */}
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-3">Votos dos Membros</p>
+                        <div className="space-y-2">
+                          {c.comissao.membros.map(m => {
+                            const votoEd = editando ? votosEdicao[m.vereador.id] : (c.votos.find(v => v.vereador.id === m.vereador.id)?.aprovado ?? null);
+                            return (
+                              <div key={m.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                                <div>
+                                  <p className="text-sm text-gray-800 font-medium">{m.vereador.nome}</p>
+                                  <p className="text-xs text-gray-500 capitalize">{m.papel}</p>
+                                </div>
+                                {editando ? (
+                                  <div className="flex gap-1.5">
+                                    <button
+                                      onClick={() => setVotosEdicao(prev => ({ ...prev, [m.vereador.id]: prev[m.vereador.id] === true ? null : true }))}
+                                      className={`text-xs px-3 py-1 rounded-lg font-medium border transition ${votoEd === true ? "bg-green-500 text-white border-green-500" : "bg-white text-gray-600 border-gray-300 hover:bg-green-50"}`}>
+                                      ✓ Sim
+                                    </button>
+                                    <button
+                                      onClick={() => setVotosEdicao(prev => ({ ...prev, [m.vereador.id]: prev[m.vereador.id] === false ? null : false }))}
+                                      className={`text-xs px-3 py-1 rounded-lg font-medium border transition ${votoEd === false ? "bg-red-500 text-white border-red-500" : "bg-white text-gray-600 border-gray-300 hover:bg-red-50"}`}>
+                                      ✗ Não
+                                    </button>
+                                  </div>
+                                ) : (
+                                  votoEd !== null ? (
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${votoEd ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                      {votoEd ? "✓ Sim" : "✗ Não"}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Não votou</span>
+                                  )
+                                )}
+                              </div>
+                            );
+                          })}
+                          {c.comissao.membros.length === 0 && <p className="text-xs text-gray-400">Sem membros cadastrados.</p>}
+                        </div>
+                      </div>
+
+                      {/* Parecer */}
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-3">Parecer</p>
+                        {editando ? (
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-1 gap-2">
+                              {[
+                                { value: "favoravel", label: "Favorável", color: "#16a34a" },
+                                { value: "favoravel_com_emenda", label: "Favorável c/ Emenda", color: "#ca8a04" },
+                                { value: "contrario", label: "Contrário", color: "#dc2626" },
+                              ].map(opt => (
+                                <button key={opt.value} type="button"
+                                  onClick={() => setParecerEdicao(opt.value)}
+                                  className="py-2 px-3 rounded-xl border-2 text-xs font-semibold transition text-left"
+                                  style={parecerEdicao === opt.value
+                                    ? { borderColor: opt.color, background: opt.color + "15", color: opt.color }
+                                    : { borderColor: "#e5e7eb", color: "#374151" }}>
+                                  {opt.label}
+                                </button>
+                              ))}
+                            </div>
+                            <textarea
+                              value={parecerTextoEdicao}
+                              onChange={e => setParecerTextoEdicao(e.target.value)}
+                              rows={3} placeholder="Texto do parecer (opcional)..."
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <div className="flex gap-2">
+                              <button onClick={cancelarEdicaoComissao}
+                                className="flex-1 border border-gray-300 text-gray-600 rounded-lg py-1.5 text-xs hover:bg-gray-50 transition">
+                                Cancelar
+                              </button>
+                              <button onClick={() => salvarEdicaoComissao(c)}
+                                disabled={salvandoEdicao}
+                                className="flex-1 text-white rounded-lg py-1.5 text-xs font-semibold transition"
+                                style={{ background: "#8B0000" }}>
+                                {salvandoEdicao ? "Salvando..." : "Salvar"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={`rounded-lg p-3 ${c.parecer === "contrario" ? "bg-red-50 border border-red-200" : "bg-green-50 border border-green-200"}`}>
+                            <p className={`text-sm font-bold ${c.parecer === "contrario" ? "text-red-800" : "text-green-800"}`}>
+                              {parecerLabel[c.parecer || ""] || c.parecer}
+                            </p>
+                            {c.parecerTexto && (
+                              <p className={`text-xs mt-1 ${c.parecer === "contrario" ? "text-red-700" : "text-green-700"}`}>
+                                {c.parecerTexto}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {c.parecerTexto && <p className="text-xs text-gray-500 mt-1">{c.parecerTexto}</p>}
-              </div>
-            ))}
+              );
+            })}
 
             {/* Proposição pronta para pautar */}
             {selecionada.etapaAtual === "pronto_votar" && (
