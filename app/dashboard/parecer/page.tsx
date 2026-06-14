@@ -329,7 +329,7 @@ export default function ParecerPage() {
                       </p>
                     )}
 
-                    {/* Botões Salvar / Cancelar */}
+                    {/* Botões Cancelar / Registrar Parecer */}
                     {!comissaoAtiva.parecer && modoEditar && (
                       <div className="flex gap-2 mt-3">
                         <button
@@ -339,12 +339,20 @@ export default function ParecerPage() {
                           Cancelar
                         </button>
                         <button
-                          onClick={salvarVotos}
+                          onClick={async () => {
+                            await salvarVotos();
+                            setModalParecer(comissaoAtiva);
+                            setParecerForm({
+                              parecer: "favoravel",
+                              parecerTexto: "",
+                              analistaId: comissaoAtiva.analista?.id || comissaoAtiva.comissao.analistas?.[0]?.id || "",
+                            });
+                          }}
                           disabled={salvandoVotos}
                           className="flex-1 text-white rounded-lg py-1.5 text-xs font-semibold transition"
                           style={{ background: "#8B0000" }}
                         >
-                          {salvandoVotos ? "Salvando..." : "Salvar votos"}
+                          {salvandoVotos ? "Salvando..." : "Registrar Parecer"}
                         </button>
                       </div>
                     )}
