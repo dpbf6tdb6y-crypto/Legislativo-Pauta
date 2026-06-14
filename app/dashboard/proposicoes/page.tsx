@@ -585,7 +585,7 @@ export default function ProposicoesPage() {
       {/* Modal visualizar */}
       {verProp && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h2 className="font-bold text-lg text-gray-800">{tipoLabel[verProp.tipo]} {verProp.numero}/{verProp.ano}</h2>
@@ -630,16 +630,20 @@ export default function ProposicoesPage() {
               </div>
               {verProp.comissoes.length > 0 && (
                 <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-500 font-medium mb-1">Comissões</p>
-                  {verProp.comissoes.filter(c => !c.parecerConjunto).map((c, i) => (
-                    <p key={i} className="text-gray-800">{i + 1}. {c.comissao.nome}</p>
-                  ))}
+                  <p className="text-xs text-gray-500 font-medium mb-2">Comissões</p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                    {verProp.comissoes.filter(c => !c.parecerConjunto).map((c, i) => (
+                      <p key={i} className="text-gray-800 text-sm">{i + 1}. {c.comissao.nome}</p>
+                    ))}
+                  </div>
                   {verProp.comissoes.some(c => c.parecerConjunto) && (
-                    <div className="mt-1 bg-indigo-50 rounded p-2">
-                      <p className="text-xs font-medium text-indigo-700">Parecer Conjunto:</p>
-                      {verProp.comissoes.filter(c => c.parecerConjunto).map((c, i) => (
-                        <p key={i} className="text-xs text-indigo-800">{c.comissao.nome}</p>
-                      ))}
+                    <div className="mt-2 bg-indigo-50 rounded p-2">
+                      <p className="text-xs font-medium text-indigo-700 mb-1">Parecer Conjunto:</p>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        {verProp.comissoes.filter(c => c.parecerConjunto).map((c, i) => (
+                          <p key={i} className="text-xs text-indigo-800">{c.comissao.nome}</p>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
