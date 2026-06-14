@@ -620,22 +620,32 @@ function PautaItemRow({
   onResultado: (r: string) => void;
   onRetirar: () => void;
 }) {
-  const resultadoOpts: { value: string; label: string; active: string }[] = [
-    { value: "comissao", label: "Comissão", active: "bg-blue-100 text-blue-700 border-blue-300" },
-    { value: "parecer_conjunto", label: "Par. Conjunto", active: "bg-indigo-100 text-indigo-700 border-indigo-300" },
-    { value: "dispensa_parecer", label: "Disp. Parecer", active: "bg-purple-100 text-purple-700 border-purple-300" },
-    { value: "dispensa_intersticio", label: "Disp. Interstício", active: "bg-violet-100 text-violet-700 border-violet-300" },
-    { value: "primeira_votacao", label: "1ª Votação", active: "bg-amber-100 text-amber-700 border-amber-300" },
+  const resultadoOpts: { value: string; label: string }[] = [
+    { value: "comissao", label: "Comissão" },
+    { value: "parecer_conjunto", label: "Par. Conjunto" },
+    { value: "dispensa_parecer", label: "Disp. Parecer" },
+    { value: "dispensa_intersticio", label: "Disp. Interstício" },
+    { value: "primeira_votacao", label: "1ª Votação" },
     ...((item.proposicao.numVotacoes ?? 1) >= 2
-      ? [{ value: "segunda_votacao", label: "2ª Votação", active: "bg-orange-100 text-orange-700 border-orange-300" }]
+      ? [{ value: "segunda_votacao", label: "2ª Votação" }]
       : []),
-    { value: "votacao1", label: "Votação 1", active: "bg-green-100 text-green-700 border-green-300" },
+    { value: "votacao1", label: "Votação 1" },
     ...((item.proposicao.numVotacoes ?? 1) >= 2
-      ? [{ value: "votacao2", label: "Votação 2", active: "bg-emerald-100 text-emerald-700 border-emerald-300" }]
+      ? [{ value: "votacao2", label: "Votação 2" }]
       : []),
-    { value: "promulgacao", label: "Promulgação", active: "bg-teal-100 text-teal-700 border-teal-300" },
-    { value: "sancao", label: "Sanção", active: "bg-rose-100 text-rose-700 border-rose-300" },
+    { value: "promulgacao", label: "Promulgação" },
+    { value: "sancao", label: "Sanção" },
   ];
+
+  const selectedIdx = resultadoOpts.findIndex(r => r.value === item.resultado);
+
+  function btnClass(i: number) {
+    if (selectedIdx < 0) return "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100";
+    if (i < selectedIdx)  return "bg-green-100 text-green-700 border-green-400";
+    if (i === selectedIdx) return "bg-amber-100 text-amber-700 border-amber-400 font-semibold";
+    return "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100";
+  }
+
   const tipoLabel: Record<string, string> = { pl: "PL", resolucao: "Res.", requerimento: "Req.", mocao: "Moção" };
 
   return (
@@ -656,15 +666,11 @@ function PautaItemRow({
           {/* Resultado + Retirar */}
           {sessaoAberta && (
             <div className="flex flex-wrap items-center gap-1 justify-end" style={{ maxWidth: 520 }}>
-              {resultadoOpts.map(r => (
+              {resultadoOpts.map((r, i) => (
                 <button
                   key={r.value}
                   onClick={() => onResultado(item.resultado === r.value ? "" : r.value)}
-                  className={`px-1.5 py-0.5 rounded-full text-xs font-medium border transition whitespace-nowrap ${
-                    item.resultado === r.value
-                      ? r.active
-                      : "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100"
-                  }`}
+                  className={`px-1.5 py-0.5 rounded-full text-xs border transition whitespace-nowrap ${btnClass(i)}`}
                 >
                   {r.label}
                 </button>
