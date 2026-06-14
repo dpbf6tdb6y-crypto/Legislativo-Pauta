@@ -94,7 +94,7 @@ function autoSecao(p: Proposicao): string {
   return "votacao";
 }
 
-function Stepper({ p, onAvancar }: { p: Proposicao; onAvancar: (key: string) => void }) {
+function Stepper({ p }: { p: Proposicao }) {
   const etapas = buildEtapas(p);
   const idx = etapas.findIndex(e => e.key === p.etapaAtual);
   return (
@@ -103,9 +103,8 @@ function Stepper({ p, onAvancar }: { p: Proposicao; onAvancar: (key: string) => 
         const concluida = i < idx;
         const atual = i === idx;
         return (
-          <button key={e.key} onClick={() => onAvancar(e.key)} title={`Marcar: ${e.label}`}
-            className="flex flex-col items-center gap-1" style={{ minWidth: e.grupo ? 70 : 56 }}>
-            <div className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold transition-all"
+          <div key={e.key} className="flex flex-col items-center gap-1" style={{ minWidth: e.grupo ? 70 : 56 }}>
+            <div className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold"
               style={{
                 background: concluida ? "#8B0000" : atual ? "#d4a017" : "#e5e7eb",
                 color: concluida || atual ? "#fff" : "#9ca3af",
@@ -118,7 +117,7 @@ function Stepper({ p, onAvancar }: { p: Proposicao; onAvancar: (key: string) => 
               style={{ fontSize: 9, color: concluida ? "#8B0000" : atual ? "#92400e" : "#9ca3af", fontWeight: atual ? 600 : 400, maxWidth: 70 }}>
               {e.label}
             </span>
-          </button>
+          </div>
         );
       })}
     </div>
@@ -489,7 +488,7 @@ export default function ProposicoesPage() {
               </div>
             </div>
 
-            <Stepper p={p} onAvancar={(key) => avancarEtapa(p.id, key)} />
+            <Stepper p={p} />
           </div>
         ))}
       </div>
@@ -603,7 +602,7 @@ export default function ProposicoesPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium mb-2">Fluxo</p>
-                <Stepper p={verProp} onAvancar={async (key) => { await avancarEtapa(verProp.id, key); setVerProp({ ...verProp, etapaAtual: key }); }} />
+                <Stepper p={verProp} />
               </div>
             </div>
             <div className="flex gap-3 mt-5">
