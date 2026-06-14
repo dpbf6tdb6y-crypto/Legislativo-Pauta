@@ -393,7 +393,7 @@ export default function ProposicoesPage() {
       </div>
 
       {(() => {
-        const aPautarEtapas = ["protocolado", "pronto_votar", "segunda_votacao"];
+        const aPautarEtapas = ["protocolado"];
         const listaFiltrada = lista.filter(p => {
           if (p.status === "arquivada") return false;
           if (filtroPauta === "a_pautar") return aPautarEtapas.includes(p.etapaAtual);
