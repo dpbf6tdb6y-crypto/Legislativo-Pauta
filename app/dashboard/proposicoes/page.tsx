@@ -537,7 +537,7 @@ export default function ProposicoesPage() {
       {/* Modal visualizar */}
       {verProp && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h2 className="font-bold text-lg text-gray-800">{tipoLabel[verProp.tipo]} {verProp.numero}/{verProp.ano}</h2>
