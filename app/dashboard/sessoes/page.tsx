@@ -39,15 +39,7 @@ function getCurrentIndex(etapaAtual: string, steps: { key: string }[]): number {
   return idx >= 0 ? idx : 0;
 }
 
-function MiniStepper({
-  prop,
-  sessaoAberta = false,
-  onEtapa,
-}: {
-  prop: Proposicao;
-  sessaoAberta?: boolean;
-  onEtapa?: (key: string) => void;
-}) {
+function MiniStepper({ prop }: { prop: Proposicao }) {
   const steps = buildSteps(prop);
   const current = getCurrentIndex(prop.etapaAtual, steps);
 
@@ -56,31 +48,18 @@ function MiniStepper({
       {steps.map((step, i) => {
         const done = i < current;
         const active = i === current;
-        // Protocolado (i=0) não é clicável — é ponto de partida
-        const clickable = sessaoAberta && i > 0 && !active;
-
         return (
           <div key={step.key} className="flex items-center">
             <div className="flex flex-col items-center" style={{ minWidth: 44 }}>
               <div
-                onClick={() => clickable && onEtapa?.(step.key)}
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 flex-shrink-0 transition-transform"
-                style={{
-                  ...(done
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 flex-shrink-0"
+                style={
+                  done
                     ? { background: "#8B0000", borderColor: "#8B0000", color: "#fff" }
                     : active
                     ? { background: "#d4a017", borderColor: "#d4a017", color: "#fff" }
-                    : { background: "#f3f4f6", borderColor: "#d1d5db", color: "#9ca3af" }),
-                  cursor: clickable ? "pointer" : "default",
-                  boxShadow: clickable ? "0 0 0 2px transparent" : undefined,
-                }}
-                title={clickable ? `Mover para: ${step.label}` : undefined}
-                onMouseEnter={e => {
-                  if (clickable) (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 2px #d4a017";
-                }}
-                onMouseLeave={e => {
-                  if (clickable) (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 2px transparent";
-                }}
+                    : { background: "#f3f4f6", borderColor: "#d1d5db", color: "#9ca3af" }
+                }
               >
                 {done ? (
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -98,9 +77,7 @@ function MiniStepper({
                   color: done ? "#8B0000" : active ? "#b5860f" : "#9ca3af",
                   fontWeight: active ? 700 : 400,
                   wordBreak: "break-word",
-                  cursor: clickable ? "pointer" : "default",
                 }}
-                onClick={() => clickable && onEtapa?.(step.key)}
               >
                 {step.label}
               </span>
@@ -108,11 +85,7 @@ function MiniStepper({
             {i < steps.length - 1 && (
               <div
                 className="h-0.5 flex-shrink-0"
-                style={{
-                  width: 14,
-                  background: i < current ? "#8B0000" : "#e5e7eb",
-                  marginBottom: 14,
-                }}
+                style={{ width: 14, background: i < current ? "#8B0000" : "#e5e7eb", marginBottom: 14 }}
               />
             )}
           </div>
@@ -416,7 +389,7 @@ export default function SessoesPage() {
                     onResultado={(r) => atualizarResultado(item, r)}
                     onSancao={() => encaminharSancao(item.proposicao.id)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
-                    onMoverEtapa={(etapa) => moverEtapa(item.proposicao.id, etapa)} />
+                    />
                 ))}
 
                 {/* d) Leitura de Parecer */}
@@ -430,7 +403,7 @@ export default function SessoesPage() {
                     onResultado={(r) => atualizarResultado(item, r)}
                     onSancao={() => encaminharSancao(item.proposicao.id)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
-                    onMoverEtapa={(etapa) => moverEtapa(item.proposicao.id, etapa)} />
+                    />
                 ))}
               </div>
 
@@ -454,7 +427,7 @@ export default function SessoesPage() {
                     onResultado={(r) => atualizarResultado(item, r)}
                     onSancao={() => encaminharSancao(item.proposicao.id)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
-                    onMoverEtapa={(etapa) => moverEtapa(item.proposicao.id, etapa)} />
+                    />
                 ))}
               </div>
 
@@ -473,7 +446,7 @@ export default function SessoesPage() {
                     onResultado={(r) => atualizarResultado(item, r)}
                     onSancao={() => encaminharSancao(item.proposicao.id)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
-                    onMoverEtapa={(etapa) => moverEtapa(item.proposicao.id, etapa)} />
+                    />
                 ))}
               </div>
 
@@ -545,7 +518,6 @@ function PautaItemRow({
   onResultado: (r: string) => void;
   onSancao: () => void;
   onRetirar: () => void;
-  onMoverEtapa: (etapa: string) => void;
 }) {
   const resultadoOpts = [
     { value: "aprovado", label: "✓ Aprovado" },
@@ -574,12 +546,7 @@ function PautaItemRow({
 
         {/* Coluna direita: stepper + ações */}
         <div className="flex-shrink-0 flex flex-col items-end gap-2" style={{ minWidth: 0 }}>
-          {/* Mini stepper — clicável em sessão aberta */}
-          <MiniStepper
-            prop={item.proposicao}
-            sessaoAberta={sessaoAberta}
-            onEtapa={onMoverEtapa}
-          />
+          <MiniStepper prop={item.proposicao} />
 
           {/* Resultado + Retirar */}
           {sessaoAberta && (
