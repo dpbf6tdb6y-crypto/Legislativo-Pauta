@@ -1,6 +1,27 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+// Constrói a sequência de etapas de uma proposição (mesma lógica do stepper no cliente)
+function buildEtapas(prop: {
+  dispensaParecer: boolean;
+  numVotacoes: number;
+  destinoFinal: string;
+  comissoes: { ordem: number }[];
+}): string[] {
+  const etapas = ["protocolado"];
+
+  if (!prop.dispensaParecer && prop.comissoes.length > 0) {
+    prop.comissoes.forEach(c => etapas.push(`comissao${c.ordem}`));
+    etapas.push("pronto_votar");
+  }
+
+  etapas.push("primeira_votacao");
+  if (prop.numVotacoes >= 2) etapas.push("segunda_votacao");
+  etapas.push(prop.destinoFinal === "promulgacao" ? "promulgada" : "aguardando_sancao");
+
+  return etapas;
+}
+
 export async function POST(req: Request) {
   const { sessaoId, proposicaoIds, secao = "votacao" } = await req.json();
 
@@ -32,31 +53,30 @@ export async function POST(req: Request) {
   });
 
   for (const prop of proposicoes) {
-    const comissoesNaoAprovadas = prop.comissoes.filter(c => c.status !== "aprovado");
+    const etapas = buildEtapas(prop);
+    const idxAtual = etapas.indexOf(prop.etapaAtual);
 
-    if (prop.etapaAtual === "segunda_votacao") {
-      // Já está marcada para 2ª votação, não mudar
-    } else if (
-      prop.etapaAtual === "pronto_votar" ||
-      prop.dispensaParecer ||
-      prop.comissoes.length === 0 ||
-      comissoesNaoAprovadas.length === 0
-    ) {
-      // Pronto para votação (comissões concluídas ou dispensadas)
+    // Etapas finais ou de votação específica: não mexer
+    const etapasFixas = ["segunda_votacao", "aguardando_sancao", "sancionada", "vetada", "promulgada", "rejeitada"];
+    if (etapasFixas.includes(prop.etapaAtual)) continue;
+
+    // Etapas intermediárias (comissaoN, primeira_votacao): a proposição já está na etapa certa
+    // para a sessão atual — não auto-avançar, o stepper da sessão decide o próximo passo
+    if (prop.etapaAtual.startsWith("comissao") || prop.etapaAtual === "primeira_votacao") {
+      // Garante status em tramitação
       await prisma.proposicao.update({
         where: { id: prop.id },
-        data: { etapaAtual: "primeira_votacao", status: "em_tramitacao" },
+        data: { status: "em_tramitacao" },
       });
-    } else {
-      // Tem comissão pendente → vai para comissão
-      const primeira = comissoesNaoAprovadas[0];
+      continue;
+    }
+
+    // protocolado ou pronto_votar → avançar para a próxima etapa
+    if (idxAtual >= 0 && idxAtual < etapas.length - 1) {
+      const proximaEtapa = etapas[idxAtual + 1];
       await prisma.proposicao.update({
         where: { id: prop.id },
-        data: { etapaAtual: `comissao${primeira.ordem}`, status: "em_tramitacao" },
-      });
-      await prisma.proposicaoComissao.update({
-        where: { id: primeira.id },
-        data: { status: "em_analise" },
+        data: { etapaAtual: proximaEtapa, status: "em_tramitacao" },
       });
     }
   }
