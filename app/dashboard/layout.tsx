@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? "w-64" : "w-16"} flex flex-col transition-all duration-300 flex-shrink-0 shadow-lg`}
+      <aside className={`${sidebarOpen ? "w-64" : "w-16"} flex flex-col transition-all duration-300 flex-shrink-0 shadow-lg sticky top-0 h-screen`}
         style={{ background: "linear-gradient(180deg, #6B0000 0%, #8B0000 40%, #a93226 100%)" }}>
 
         {/* Header da sidebar */}
