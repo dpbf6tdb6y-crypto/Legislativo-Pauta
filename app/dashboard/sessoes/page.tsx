@@ -103,6 +103,7 @@ const secaoLabel: Record<string, string> = {
   parecer: "d) Leitura de Parecer",
   votacao: "a) Discussão e votação",
   requerimento: "a) Indicações, moções e requerimentos",
+  redacao_final: "Comissão de Redação Final",
 };
 
 function formatData(data: string) {
@@ -178,9 +179,46 @@ export default function SessoesPage() {
 
   async function atualizarResultado(item: PautaItem, resultado: string) {
     if (!detalhe) return;
-    const novosItens = detalhe.itens.map(i =>
+    let novosItens = detalhe.itens.map(i =>
       i.id === item.id ? { ...i, resultado } : i
     );
+
+    if (resultado === "dispensa_intersticio") {
+      // Adiciona automaticamente na segunda parte (votação) se ainda não estiver
+      const jaEmVotacao = novosItens.some(
+        i => i.proposicao.id === item.proposicao.id && i.secao === "votacao"
+      );
+      if (!jaEmVotacao) {
+        const itensVotacao = novosItens.filter(i => i.secao === "votacao");
+        const maxOrdem = itensVotacao.length > 0 ? Math.max(...itensVotacao.map(i => i.ordem)) : 0;
+        novosItens = [
+          ...novosItens,
+          { id: `_auto_${Date.now()}`, proposicao: item.proposicao, ordem: maxOrdem + 1, secao: "votacao" },
+        ];
+      }
+    } else if (resultado === "votacao1" || resultado === "votacao2") {
+      // Aprovado na votação: adiciona automaticamente na Comissão de Redação Final
+      const jaEmRedacao = novosItens.some(
+        i => i.proposicao.id === item.proposicao.id && i.secao === "redacao_final"
+      );
+      if (!jaEmRedacao) {
+        const itensRedacao = novosItens.filter(i => i.secao === "redacao_final");
+        const maxOrdem = itensRedacao.length > 0 ? Math.max(...itensRedacao.map(i => i.ordem)) : 0;
+        novosItens = [
+          ...novosItens,
+          { id: `_redacao_${Date.now()}`, proposicao: item.proposicao, ordem: maxOrdem + 1, secao: "redacao_final" },
+        ];
+      }
+    } else if (resultado === "") {
+      // Ao desmarcar, remove itens auto-inseridos sem resultado
+      novosItens = novosItens.filter(
+        i => !(i.proposicao.id === item.proposicao.id && i.secao === "votacao" && !i.resultado)
+      );
+      novosItens = novosItens.filter(
+        i => !(i.proposicao.id === item.proposicao.id && i.secao === "redacao_final" && !i.resultado)
+      );
+    }
+
     await fetch(`/api/sessoes/${detalhe.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -208,16 +246,7 @@ export default function SessoesPage() {
     carregar();
   }
 
-  async function encaminharSancao(proposicaoId: string) {
-    await fetch(`/api/proposicoes/${proposicaoId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ etapaAtual: "aguardando_sancao", status: "aguardando_sancao" }),
-    });
-    if (detalhe) carregarDetalhe(detalhe.id);
-  }
-
-  async function moverEtapa(proposicaoId: string, etapa: string) {
+async function moverEtapa(proposicaoId: string, etapa: string) {
     // Determina status correspondente à etapa
     const statusMap: Record<string, string> = {
       aguardando_sancao: "aguardando_sancao",
@@ -244,6 +273,7 @@ export default function SessoesPage() {
       parecer: itens.filter(i => i.secao === "parecer"),
       votacao: itens.filter(i => i.secao === "votacao" || !i.secao),
       requerimento: itens.filter(i => i.secao === "requerimento"),
+      redacao_final: itens.filter(i => i.secao === "redacao_final"),
     };
   }
 
@@ -387,7 +417,6 @@ export default function SessoesPage() {
                 ) : partes.apresentacao.map((item) => (
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
-                    onSancao={() => encaminharSancao(item.proposicao.id)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
                     />
                 ))}
@@ -401,7 +430,6 @@ export default function SessoesPage() {
                 ) : partes.parecer.map((item) => (
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
-                    onSancao={() => encaminharSancao(item.proposicao.id)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
                     />
                 ))}
@@ -425,7 +453,6 @@ export default function SessoesPage() {
                 ) : partes.votacao.map((item) => (
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
-                    onSancao={() => encaminharSancao(item.proposicao.id)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
                     />
                 ))}
@@ -444,11 +471,27 @@ export default function SessoesPage() {
                 ) : partes.requerimento.map((item) => (
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
-                    onSancao={() => encaminharSancao(item.proposicao.id)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
                     />
                 ))}
               </div>
+
+              {/* Redação Final — aparece automaticamente quando há aprovação */}
+              {partes.redacao_final.length > 0 && (
+                <div className="border-b border-gray-200">
+                  <div className="px-5 py-2.5" style={{ background: "#f0fdf4" }}>
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#166534" }}>
+                      Comissão de Redação Final
+                    </p>
+                  </div>
+                  {partes.redacao_final.map((item) => (
+                    <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
+                      onResultado={(r) => atualizarResultado(item, r)}
+                      onRetirar={() => retirarDePauta(item.proposicao.id)}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* IV – QUARTA PARTE */}
               <div>
@@ -511,26 +554,29 @@ export default function SessoesPage() {
 }
 
 function PautaItemRow({
-  item, sessaoAberta, onResultado, onSancao, onRetirar, onMoverEtapa,
+  item, sessaoAberta, onResultado, onRetirar,
 }: {
   item: PautaItem;
   sessaoAberta: boolean;
   onResultado: (r: string) => void;
-  onSancao: () => void;
   onRetirar: () => void;
 }) {
-  const resultadoOpts = [
-    { value: "aprovado", label: "✓ Aprovado" },
-    { value: "rejeitado", label: "✗ Rejeitado" },
-    { value: "retirado", label: "↩ Retirado" },
-    { value: "adiado", label: "⏸ Adiado" },
+  const resultadoOpts: { value: string; label: string; active: string }[] = [
+    { value: "comissao", label: "Comissão", active: "bg-blue-100 text-blue-700 border-blue-300" },
+    { value: "parecer_conjunto", label: "Par. Conjunto", active: "bg-indigo-100 text-indigo-700 border-indigo-300" },
+    { value: "dispensa_parecer", label: "Disp. Parecer", active: "bg-purple-100 text-purple-700 border-purple-300" },
+    { value: "dispensa_intersticio", label: "Disp. Interstício", active: "bg-violet-100 text-violet-700 border-violet-300" },
+    { value: "primeira_votacao", label: "1ª Votação", active: "bg-amber-100 text-amber-700 border-amber-300" },
+    ...((item.proposicao.numVotacoes ?? 1) >= 2
+      ? [{ value: "segunda_votacao", label: "2ª Votação", active: "bg-orange-100 text-orange-700 border-orange-300" }]
+      : []),
+    { value: "votacao1", label: "Votação 1", active: "bg-green-100 text-green-700 border-green-300" },
+    ...((item.proposicao.numVotacoes ?? 1) >= 2
+      ? [{ value: "votacao2", label: "Votação 2", active: "bg-emerald-100 text-emerald-700 border-emerald-300" }]
+      : []),
+    { value: "promulgacao", label: "Promulgação", active: "bg-teal-100 text-teal-700 border-teal-300" },
+    { value: "sancao", label: "Sanção", active: "bg-rose-100 text-rose-700 border-rose-300" },
   ];
-  const resultadoColor: Record<string, string> = {
-    aprovado: "bg-green-100 text-green-700 border-green-300",
-    rejeitado: "bg-red-100 text-red-700 border-red-300",
-    retirado: "bg-gray-100 text-gray-600 border-gray-300",
-    adiado: "bg-yellow-100 text-yellow-700 border-yellow-300",
-  };
   const tipoLabel: Record<string, string> = { pl: "PL", resolucao: "Res.", requerimento: "Req.", mocao: "Moção" };
 
   return (
@@ -550,15 +596,14 @@ function PautaItemRow({
 
           {/* Resultado + Retirar */}
           {sessaoAberta && (
-            <div className="flex items-center gap-2">
-              {/* Botões de resultado */}
+            <div className="flex flex-wrap items-center gap-1 justify-end" style={{ maxWidth: 520 }}>
               {resultadoOpts.map(r => (
                 <button
                   key={r.value}
                   onClick={() => onResultado(item.resultado === r.value ? "" : r.value)}
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium border transition ${
+                  className={`px-1.5 py-0.5 rounded-full text-xs font-medium border transition whitespace-nowrap ${
                     item.resultado === r.value
-                      ? resultadoColor[r.value]
+                      ? r.active
                       : "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100"
                   }`}
                 >
@@ -567,7 +612,7 @@ function PautaItemRow({
               ))}
               <button
                 onClick={onRetirar}
-                className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition whitespace-nowrap"
+                className="px-1.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition whitespace-nowrap"
                 title="Retirar desta pauta"
               >
                 ↩ Retirar
@@ -575,15 +620,6 @@ function PautaItemRow({
             </div>
           )}
 
-          {/* Ação de sanção/promulgação */}
-          {item.resultado === "aprovado" && item.proposicao.etapaAtual !== "aguardando_sancao" && item.proposicao.etapaAtual !== "sancionada" && (
-            <button
-              onClick={onSancao}
-              className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition border border-purple-200"
-            >
-              → {item.proposicao.destinoFinal === "promulgacao" ? "Promulgar" : "Encaminhar à Sanção"}
-            </button>
-          )}
         </div>
       </div>
     </div>

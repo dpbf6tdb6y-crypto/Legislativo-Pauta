@@ -22,59 +22,108 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
   for (const item of sessao.itens) {
     const prop = item.proposicao;
     const resultado = item.resultado;
+    if (!resultado) continue;
 
-    if (item.secao === "votacao") {
-      if (resultado === "aprovado") {
-        const ehFinal =
-          (prop.etapaAtual === "primeira_votacao" && prop.numVotacoes === 1) ||
-          prop.etapaAtual === "segunda_votacao" ||
-          (prop.etapaAtual === "pautado" && prop.numVotacoes === 1);
-
-        if (ehFinal) {
-          await prisma.proposicao.update({
-            where: { id: prop.id },
-            data: { etapaAtual: "aguardando_sancao", status: "aguardando_sancao" },
-          });
-        } else if (prop.etapaAtual === "primeira_votacao" && prop.numVotacoes >= 2) {
-          // Precisa de 2ª votação em sessão futura
-          await prisma.proposicao.update({
-            where: { id: prop.id },
-            data: { etapaAtual: "segunda_votacao" },
-          });
-        }
-      } else if (resultado === "rejeitado") {
-        await prisma.proposicao.update({
-          where: { id: prop.id },
-          data: { status: "rejeitada", etapaAtual: "rejeitada" },
-        });
-      } else if (resultado === "adiado") {
-        await prisma.proposicao.update({
-          where: { id: prop.id },
-          data: { etapaAtual: "pronto_votar" },
-        });
-      }
-    } else if (item.secao === "parecer") {
-      // Após leitura do parecer na sessão, avança para próxima comissão ou pronto_votar
-      const comissaoAtualIdx = prop.comissoes.findIndex(
-        c => `comissao${c.ordem}` === prop.etapaAtual && c.status === "aprovado"
-      );
-      if (comissaoAtualIdx >= 0) {
-        const proxima = prop.comissoes[comissaoAtualIdx + 1];
+    switch (resultado) {
+      case "comissao": {
+        // Encaminhada à primeira comissão pendente
+        const proxima = prop.comissoes.find(c => c.status === "pendente");
         if (proxima) {
           await prisma.proposicao.update({
             where: { id: prop.id },
-            data: { etapaAtual: `comissao${proxima.ordem}` },
+            data: { etapaAtual: `comissao${proxima.ordem}`, status: "em_tramitacao" },
           });
           await prisma.proposicaoComissao.update({
             where: { id: proxima.id },
             data: { status: "em_analise" },
           });
+        }
+        break;
+      }
+      case "parecer_conjunto": {
+        // Parecer conjunto: marca todas comissões como em_analise
+        const pendentes = prop.comissoes.filter(c => c.status === "pendente");
+        if (pendentes.length > 0) {
+          await prisma.proposicao.update({
+            where: { id: prop.id },
+            data: { etapaAtual: `comissao${pendentes[0].ordem}`, status: "em_tramitacao" },
+          });
+          for (const c of pendentes) {
+            await prisma.proposicaoComissao.update({
+              where: { id: c.id },
+              data: { status: "em_analise", parecerConjunto: true },
+            });
+          }
+        }
+        break;
+      }
+      case "dispensa_parecer": {
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: "primeira_votacao", status: "em_tramitacao", dispensaParecer: true },
+        });
+        break;
+      }
+      case "dispensa_intersticio": {
+        // Dispensa do interstício: avança da primeira para segunda votação diretamente
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: "segunda_votacao", status: "em_tramitacao" },
+        });
+        break;
+      }
+      case "primeira_votacao": {
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: "primeira_votacao", status: "em_tramitacao" },
+        });
+        break;
+      }
+      case "segunda_votacao": {
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: "segunda_votacao", status: "em_tramitacao" },
+        });
+        break;
+      }
+      case "votacao1": {
+        // Primeira votação realizada e aprovada
+        if ((prop.numVotacoes ?? 1) <= 1) {
+          const destino = prop.destinoFinal === "promulgacao" ? "promulgada" : "aguardando_sancao";
+          await prisma.proposicao.update({
+            where: { id: prop.id },
+            data: { etapaAtual: destino, status: destino },
+          });
         } else {
           await prisma.proposicao.update({
             where: { id: prop.id },
-            data: { etapaAtual: "pronto_votar" },
+            data: { etapaAtual: "segunda_votacao", status: "em_tramitacao" },
           });
         }
+        break;
+      }
+      case "votacao2": {
+        // Segunda votação realizada e aprovada
+        const destino = prop.destinoFinal === "promulgacao" ? "promulgada" : "aguardando_sancao";
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: destino, status: destino },
+        });
+        break;
+      }
+      case "promulgacao": {
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: "promulgada", status: "promulgada", destinoFinal: "promulgacao" },
+        });
+        break;
+      }
+      case "sancao": {
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: "aguardando_sancao", status: "aguardando_sancao" },
+        });
+        break;
       }
     }
   }
