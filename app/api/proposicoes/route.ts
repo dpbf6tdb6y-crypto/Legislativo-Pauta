@@ -11,7 +11,7 @@ export async function GET(req: Request) {
       ...(tipo ? { tipo } : {}),
       ...(status ? { status } : {}),
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ ano: "asc" }, { numero: "asc" }],
     include: {
       autores: { include: { vereador: true } },
       comissoes: {
