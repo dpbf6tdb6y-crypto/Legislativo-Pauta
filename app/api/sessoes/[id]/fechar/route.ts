@@ -26,16 +26,22 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
 
     switch (resultado) {
       case "comissao": {
-        // Encaminhada à primeira comissão pendente
-        const proxima = prop.comissoes.find(c => c.status === "pendente");
+        // Marca comissão atual como concluída e avança para a próxima (ou pronto_votar)
+        const atual = prop.comissoes.find(c => c.status === "em_analise") ?? prop.comissoes.find(c => c.status === "pendente");
+        if (atual) {
+          await prisma.proposicaoComissao.update({ where: { id: atual.id }, data: { status: "concluido" } });
+        }
+        const proxima = prop.comissoes.find(c => c.status === "pendente" && c.ordem > (atual?.ordem ?? 0));
         if (proxima) {
           await prisma.proposicao.update({
             where: { id: prop.id },
             data: { etapaAtual: `comissao${proxima.ordem}`, status: "em_tramitacao" },
           });
-          await prisma.proposicaoComissao.update({
-            where: { id: proxima.id },
-            data: { status: "em_analise" },
+          await prisma.proposicaoComissao.update({ where: { id: proxima.id }, data: { status: "em_analise" } });
+        } else {
+          await prisma.proposicao.update({
+            where: { id: prop.id },
+            data: { etapaAtual: "pronto_votar", status: "em_tramitacao" },
           });
         }
         break;

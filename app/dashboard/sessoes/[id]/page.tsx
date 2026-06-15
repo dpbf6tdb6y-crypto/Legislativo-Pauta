@@ -32,7 +32,7 @@ function proximaComissao(prop: Proposicao): string | null {
   if (isNaN(ordem)) return null
   const regulares = (prop.comissoes || []).filter(c => !isCRF(c)).sort((a, b) => a.ordem - b.ordem)
   const prox = regulares.find(c => c.ordem > ordem)
-  return prox ? `comissao${prox.ordem}` : "pronto_votar"
+  return prox ? `comissao${prox.ordem}` : null
 }
 
 export default function SessaoDetalhePage() {
