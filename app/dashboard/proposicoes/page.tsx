@@ -454,10 +454,10 @@ export default function ProposicoesPage() {
 
       {(() => {
         const aPautarEtapas = ["protocolado"];
-        const votadasStatus = ["aguardando_sancao", "promulgada", "aprovada", "rejeitada", "arquivada"];
+        const votadasStatus = ["aguardando_sancao", "promulgada", "aprovada", "rejeitada", "arquivada", "vetada"];
         const listaFiltrada = lista.filter(p => {
           if (filtroPauta === "votadas") return votadasStatus.includes(p.status);
-          if (p.status === "arquivada") return false;
+          if (votadasStatus.includes(p.status)) return false;
           if (filtroPauta === "a_pautar") return aPautarEtapas.includes(p.etapaAtual);
           if (filtroPauta === "pautadas") return !aPautarEtapas.includes(p.etapaAtual);
           return true;
