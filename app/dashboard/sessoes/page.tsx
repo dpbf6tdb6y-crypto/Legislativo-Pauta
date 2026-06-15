@@ -20,6 +20,16 @@ function isCRF(c: ComissaoInfo) {
   return c.comissao.sigla === "CRF" || c.comissao.nome.toLowerCase().includes("redação final") || c.comissao.nome.toLowerCase().includes("redacao final");
 }
 
+function proximaComissaoEtapa(prop: Proposicao): string | null {
+  const etapa = prop.etapaAtual;
+  if (!etapa.startsWith("comissao")) return null;
+  const currentOrdem = parseInt(etapa.replace("comissao", ""));
+  if (isNaN(currentOrdem)) return null;
+  const regulares = (prop.comissoes || []).filter(c => !isCRF(c)).sort((a, b) => a.ordem - b.ordem);
+  const proxima = regulares.find(c => c.ordem > currentOrdem);
+  return proxima ? `comissao${proxima.ordem}` : "pronto_votar";
+}
+
 type Step = { key: string; label: string; parecerConjunto?: boolean };
 
 function buildSteps(prop: Proposicao): Step[] {
@@ -544,13 +554,17 @@ async function moverEtapa(proposicaoId: string, etapa: string) {
                   <div className="px-5 py-3">
                     <p className="text-xs text-gray-400 italic">Nenhum parecer para leitura.</p>
                   </div>
-                ) : partes.parecer.map((item) => (
-                  <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
-                    onResultado={(r) => atualizarResultado(item, r)}
-                    onRetirar={() => retirarDePauta(item.proposicao.id)}
-                    propEmVotacao={propIdsEmVotacao.has(item.proposicao.id)}
+                ) : partes.parecer.map((item) => {
+                  const nextEtapa = proximaComissaoEtapa(item.proposicao);
+                  return (
+                    <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
+                      onResultado={(r) => atualizarResultado(item, r)}
+                      onRetirar={() => retirarDePauta(item.proposicao.id)}
+                      propEmVotacao={propIdsEmVotacao.has(item.proposicao.id)}
+                      onProximaComissao={nextEtapa ? () => moverEtapa(item.proposicao.id, nextEtapa) : undefined}
                     />
-                ))}
+                  );
+                })}
               </div>
 
               {/* II – SEGUNDA PARTE */}
@@ -672,13 +686,14 @@ async function moverEtapa(proposicaoId: string, etapa: string) {
 }
 
 function PautaItemRow({
-  item, sessaoAberta, onResultado, onRetirar, propEmVotacao,
+  item, sessaoAberta, onResultado, onRetirar, propEmVotacao, onProximaComissao,
 }: {
   item: PautaItem;
   sessaoAberta: boolean;
   onResultado: (r: string) => void;
   onRetirar: () => void;
   propEmVotacao?: boolean;
+  onProximaComissao?: () => void;
 }) {
   const numVotacoes = item.proposicao.numVotacoes ?? 1;
   const secao = item.secao;
@@ -752,6 +767,14 @@ function PautaItemRow({
                     {opt.label}
                   </button>
                 ))}
+                {!locked && sessaoAberta && onProximaComissao && secao === "parecer" && (
+                  <button
+                    onClick={onProximaComissao}
+                    className={`${B} font-semibold bg-blue-600 text-white border-blue-600 hover:bg-blue-700`}
+                  >
+                    Próxima Comissão →
+                  </button>
+                )}
                 {!locked && retirarBtn}
               </div>
             )}
