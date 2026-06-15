@@ -75,9 +75,20 @@ export default function MiniStepper({ prop, resultado, secao }: {
   const steps = buildSteps(prop)
   let cur = curIdx(prop.etapaAtual, steps)
 
-  if (resultado === "dispensa_intersticio") {
-    const v = steps.findIndex(s => s.key === "primeira_votacao")
-    if (v > cur) cur = v
+  // Avança o cursor visual baseado no resultado da sessão
+  const resultadoParaEtapa: Record<string, string> = {
+    dispensa_intersticio: "primeira_votacao",
+    primeira_votacao:     "primeira_votacao",
+    segunda_votacao:      "segunda_votacao",
+    aprovado:   prop.destinoFinal === "promulgacao" ? "promulgada" : "aguardando_sancao",
+    sancao:     "aguardando_sancao",
+    promulgacao: "promulgada",
+    reprovado:  prop.destinoFinal === "promulgacao" ? "promulgada" : "aguardando_sancao",
+    arquivo:    prop.destinoFinal === "promulgacao" ? "promulgada" : "aguardando_sancao",
+  }
+  if (resultado && resultadoParaEtapa[resultado]) {
+    const rIdx = steps.findIndex(s => s.key === resultadoParaEtapa[resultado])
+    if (rIdx > cur) cur = rIdx
   }
 
   const { keys: bKeys, type: bType } = calcBracket(prop, resultado ?? "", secao)
