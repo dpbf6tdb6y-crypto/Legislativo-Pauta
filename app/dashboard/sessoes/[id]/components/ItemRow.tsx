@@ -1,6 +1,7 @@
 "use client"
 import { ReactNode } from "react"
 import { PautaItem, Proposicao, TIPO, isCRF } from "./types"
+import MiniStepper from "./MiniStepper"
 
 const B = "px-1.5 py-0.5 rounded-full text-xs border transition whitespace-nowrap"
 
@@ -37,14 +38,31 @@ export default function ItemRow({ item, aberta, onResultado, onRetirar, propEmVo
     </button>
   )
 
+  // Label do que acontece nesta sessão
+  const labelSessao: Record<string, string> = {
+    apresentacao: "📋 Apresentação de proposição",
+    parecer: "📄 Leitura de parecer de comissão",
+    votacao: "🗳️ Discussão e votação",
+    requerimento: "📌 Votação de requerimento / moção",
+    redacao_final: "✏️ Redação Final (CRF)",
+  }
+
   return (
     <div className="px-5 py-4 border-b border-gray-50 last:border-b-0">
+      {/* Label do que ocorre nesta sessão */}
+      <div className="mb-2">
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fef3c7", color: "#92400e" }}>
+          {labelSessao[secao] || secao}
+        </span>
+      </div>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-gray-800">
             {item.ordem}. {TIPO[prop.tipo] || prop.tipo} {prop.numero}/{prop.ano}
           </p>
           <p className="text-xs text-gray-500 mt-0.5 truncate">{prop.ementa}</p>
+          {/* Stepper — histórico completo da proposição */}
+          <MiniStepper prop={prop} resultado={resultado} secao={secao} />
         </div>
         <div className="flex-shrink-0 flex flex-col items-end gap-2">
           {aberta && (
