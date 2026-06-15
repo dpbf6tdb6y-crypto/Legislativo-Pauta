@@ -1,7 +1,6 @@
 "use client"
 import { ReactNode } from "react"
 import { PautaItem, Proposicao, TIPO, isCRF } from "./types"
-import MiniStepper from "./MiniStepper"
 
 const B = "px-1.5 py-0.5 rounded-full text-xs border transition whitespace-nowrap"
 
@@ -48,7 +47,6 @@ export default function ItemRow({ item, aberta, onResultado, onRetirar, propEmVo
           <p className="text-xs text-gray-500 mt-0.5 truncate">{prop.ementa}</p>
         </div>
         <div className="flex-shrink-0 flex flex-col items-end gap-2">
-          <MiniStepper prop={prop} resultado={resultado} secao={secao} />
           {aberta && (
             <div className="flex flex-wrap items-center gap-1 justify-end" style={{ maxWidth: 520 }}>
               {(secao === "apresentacao" || secao === "parecer") && (
