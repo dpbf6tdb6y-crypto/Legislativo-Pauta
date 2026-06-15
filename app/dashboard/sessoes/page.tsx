@@ -720,22 +720,30 @@ function PautaItemRow({
 
   // ── Primeira Parte: Apresentação / Parecer ─────────────────────────────────
   if (secao === "apresentacao" || secao === "parecer") {
-    const opts: Array<{ value: string; label: string; readOnly?: boolean }> = [
+    // "Disp. Parecer" bloqueado se já passou da primeira comissão regular
+    const regulares = (item.proposicao.comissoes || []).filter(c => !isCRF(c)).sort((a, b) => a.ordem - b.ordem);
+    const primeiraOrdem = regulares.length > 0 ? regulares[0].ordem : 0;
+    const etapaOrdem = item.proposicao.etapaAtual.startsWith("comissao")
+      ? parseInt(item.proposicao.etapaAtual.replace("comissao", ""))
+      : 0;
+    const dispensaParecerBloqueada = etapaOrdem > primeiraOrdem;
+
+    const opts: Array<{ value: string; label: string; readOnly?: boolean; extraDisabled?: boolean }> = [
       { value: "comissao", label: "Comissão", readOnly: true },
       { value: "parecer_conjunto", label: "Par. Conjunto" },
-      { value: "dispensa_parecer", label: "Disp. Parecer" },
+      { value: "dispensa_parecer", label: "Disp. Parecer", extraDisabled: dispensaParecerBloqueada },
       { value: "dispensa_intersticio", label: "Disp. Interstício" },
     ];
     const selIdx = resultado ? opts.findIndex(o => o.value === resultado) : -1;
     // "permanent" = não pode desfazer nem regredir, mas pode avançar para opções posteriores
     const isPermanent = resultado === "parecer_conjunto" || resultado === "dispensa_parecer";
-    const canClick = (i: number, opt: { readOnly?: boolean }) => {
-      if (opt.readOnly || locked) return false;
+    const canClick = (i: number, opt: { readOnly?: boolean; extraDisabled?: boolean }) => {
+      if (opt.readOnly || opt.extraDisabled || locked) return false;
       if (isPermanent && i <= selIdx) return false; // não pode regredir nem desfazer
       return true;
     };
 
-    const btnCls = (i: number, opt: { readOnly?: boolean }) => {
+    const btnCls = (i: number, opt: { readOnly?: boolean; extraDisabled?: boolean }) => {
       if (!canClick(i, opt)) return `${B} bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed opacity-50`;
       if (selIdx < 0) {
         if (i === 0) return `${B} bg-amber-100 text-amber-700 border-amber-400 font-semibold cursor-default`;
