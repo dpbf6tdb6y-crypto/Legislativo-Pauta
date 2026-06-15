@@ -73,48 +73,71 @@ function gruposConjunto(steps: Step[]): { start: number; end: number }[] {
 
 function MiniStepper({ prop, resultado }: { prop: Proposicao; resultado?: string }) {
   const baseSteps = buildSteps(prop);
-  const current = getCurrentIndex(prop.etapaAtual, baseSteps);
+  let current = getCurrentIndex(prop.etapaAtual, baseSteps);
 
-  // Calcula quais comissões recebem o bracket de parecer conjunto
-  let conjuntoKeys: Set<string> = new Set();
+  // Dispensa de Interstício: mostra 1ª Votação como etapa ativa
+  if (resultado === "dispensa_intersticio") {
+    const pivIdx = baseSteps.findIndex(s => s.key === "primeira_votacao");
+    if (pivIdx >= 0 && pivIdx > current) current = pivIdx;
+  }
+
+  let bracketType: "parecer_conjunto" | "dispensa_parecer" | null = null;
+  const bracketKeys: Set<string> = new Set();
+
   if (resultado === "parecer_conjunto") {
+    bracketType = "parecer_conjunto";
     const regulares = (prop.comissoes || []).filter(c => !isCRF(c));
     const comissaoAtual = regulares.find(c => `comissao${c.ordem}` === prop.etapaAtual);
-    // Se já tem parecer de uma comissão, bracket nas próximas; senão, em todas
     const pendentes = comissaoAtual
       ? regulares.filter(c => c.ordem >= comissaoAtual.ordem)
       : regulares;
-    pendentes.forEach(c => conjuntoKeys.add(`comissao${c.ordem}`));
+    pendentes.forEach(c => bracketKeys.add(`comissao${c.ordem}`));
+  } else if (resultado === "dispensa_parecer") {
+    bracketType = "dispensa_parecer";
+    (prop.comissoes || []).filter(c => !isCRF(c)).forEach(c => bracketKeys.add(`comissao${c.ordem}`));
   } else {
-    // Usa os dados da proposição (parecerConjunto salvo no banco)
-    (prop.comissoes || []).filter(c => c.parecerConjunto && !isCRF(c)).forEach(c => {
-      conjuntoKeys.add(`comissao${c.ordem}`);
-    });
+    const conjuntoComissoes = (prop.comissoes || []).filter(c => c.parecerConjunto && !isCRF(c));
+    if (conjuntoComissoes.length > 0) {
+      bracketType = "parecer_conjunto";
+      conjuntoComissoes.forEach(c => bracketKeys.add(`comissao${c.ordem}`));
+    }
   }
 
-  const steps = baseSteps.map(s => ({ ...s, parecerConjunto: conjuntoKeys.has(s.key) }));
-  const grupos = gruposConjunto(steps);
+  const steps = baseSteps.map(s => ({
+    ...s,
+    parecerConjunto: bracketType === "parecer_conjunto" && bracketKeys.has(s.key),
+  }));
+
+  // Computa grupos de bracket a partir de bracketKeys
+  const grupos: { start: number; end: number }[] = [];
+  {
+    let gStart = -1;
+    baseSteps.forEach((s, i) => {
+      if (bracketKeys.has(s.key)) { if (gStart === -1) gStart = i; }
+      else { if (gStart !== -1) { grupos.push({ start: gStart, end: i - 1 }); gStart = -1; } }
+    });
+    if (gStart !== -1) grupos.push({ start: gStart, end: baseSteps.length - 1 });
+  }
   const temConjunto = grupos.length > 0;
+  const bracketColor = bracketType === "dispensa_parecer" ? "#7c3aed" : "#4338ca";
+  const bracketLabel = bracketType === "dispensa_parecer" ? "Disp. Parecer" : "Parecer Conjunto";
 
   return (
     <div className="overflow-x-auto py-1">
       <div className="relative inline-flex flex-col" style={{ paddingTop: temConjunto ? 26 : 0 }}>
 
-        {/* Brackets de parecer conjunto */}
+        {/* Brackets (Parecer Conjunto ou Dispensa de Parecer) */}
         {grupos.map((g, gi) => {
           const left = g.start * (STEP_W + CONN_W);
           const width = (g.end - g.start) * (STEP_W + CONN_W) + STEP_W;
           return (
             <div key={gi} style={{ position: "absolute", top: 0, left, width, height: 24 }}>
-              <span style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", fontSize: 8, fontWeight: 700, color: "#4338ca", whiteSpace: "nowrap" }}>
-                Parecer Conjunto
+              <span style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", fontSize: 8, fontWeight: 700, color: bracketColor, whiteSpace: "nowrap" }}>
+                {bracketLabel}
               </span>
-              {/* linha horizontal */}
-              <div style={{ position: "absolute", bottom: 4, left: 4, right: 4, height: 2, background: "#4338ca", borderRadius: 1 }} />
-              {/* tick esquerdo */}
-              <div style={{ position: "absolute", bottom: 4, left: 4, width: 2, height: 7, background: "#4338ca", borderRadius: 1 }} />
-              {/* tick direito */}
-              <div style={{ position: "absolute", bottom: 4, right: 4, width: 2, height: 7, background: "#4338ca", borderRadius: 1 }} />
+              <div style={{ position: "absolute", bottom: 4, left: 4, right: 4, height: 2, background: bracketColor, borderRadius: 1 }} />
+              <div style={{ position: "absolute", bottom: 4, left: 4, width: 2, height: 7, background: bracketColor, borderRadius: 1 }} />
+              <div style={{ position: "absolute", bottom: 4, right: 4, width: 2, height: 7, background: bracketColor, borderRadius: 1 }} />
             </div>
           );
         })}
@@ -288,18 +311,21 @@ export default function SessoesPage() {
           { id: `_auto_${Date.now()}`, proposicao: item.proposicao, ordem: maxOrdem + 1, secao: "votacao" },
         ];
       }
-    } else if (resultado === "votacao1" || resultado === "votacao2") {
-      // Aprovado na votação: adiciona automaticamente na Comissão de Redação Final
-      const jaEmRedacao = novosItens.some(
-        i => i.proposicao.id === item.proposicao.id && i.secao === "redacao_final"
-      );
-      if (!jaEmRedacao) {
-        const itensRedacao = novosItens.filter(i => i.secao === "redacao_final");
-        const maxOrdem = itensRedacao.length > 0 ? Math.max(...itensRedacao.map(i => i.ordem)) : 0;
-        novosItens = [
-          ...novosItens,
-          { id: `_redacao_${Date.now()}`, proposicao: item.proposicao, ordem: maxOrdem + 1, secao: "redacao_final" },
-        ];
+    } else if (resultado === "aprovado") {
+      // Aprovado: adiciona automaticamente na Comissão de Redação Final (se tiver CRF)
+      const hasCRF = (item.proposicao.comissoes || []).some(c => isCRF(c));
+      if (hasCRF) {
+        const jaEmRedacao = novosItens.some(
+          i => i.proposicao.id === item.proposicao.id && i.secao === "redacao_final"
+        );
+        if (!jaEmRedacao) {
+          const itensRedacao = novosItens.filter(i => i.secao === "redacao_final");
+          const maxOrdem = itensRedacao.length > 0 ? Math.max(...itensRedacao.map(i => i.ordem)) : 0;
+          novosItens = [
+            ...novosItens,
+            { id: `_redacao_${Date.now()}`, proposicao: item.proposicao, ordem: maxOrdem + 1, secao: "redacao_final" },
+          ];
+        }
       }
     } else if (resultado === "") {
       // Ao desmarcar, remove itens auto-inseridos sem resultado
@@ -370,6 +396,7 @@ async function moverEtapa(proposicaoId: string, etapa: string) {
   }
 
   const partes = detalhe ? organizarItens(detalhe.itens) : null;
+  const propIdsEmVotacao = partes ? new Set(partes.votacao.map(i => i.proposicao.id)) : new Set<string>();
 
   return (
     <div className="p-6">
@@ -513,6 +540,7 @@ async function moverEtapa(proposicaoId: string, etapa: string) {
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
+                    propEmVotacao={propIdsEmVotacao.has(item.proposicao.id)}
                     />
                 ))}
 
@@ -526,6 +554,7 @@ async function moverEtapa(proposicaoId: string, etapa: string) {
                   <PautaItemRow key={item.id} item={item} sessaoAberta={detalhe.status === "agendada"}
                     onResultado={(r) => atualizarResultado(item, r)}
                     onRetirar={() => retirarDePauta(item.proposicao.id)}
+                    propEmVotacao={propIdsEmVotacao.has(item.proposicao.id)}
                     />
                 ))}
               </div>
@@ -649,78 +678,172 @@ async function moverEtapa(proposicaoId: string, etapa: string) {
 }
 
 function PautaItemRow({
-  item, sessaoAberta, onResultado, onRetirar,
+  item, sessaoAberta, onResultado, onRetirar, propEmVotacao,
 }: {
   item: PautaItem;
   sessaoAberta: boolean;
   onResultado: (r: string) => void;
   onRetirar: () => void;
+  propEmVotacao?: boolean;
 }) {
-  const resultadoOpts: { value: string; label: string }[] = [
-    { value: "comissao", label: "Comissão" },
-    { value: "parecer_conjunto", label: "Par. Conjunto" },
-    { value: "dispensa_parecer", label: "Disp. Parecer" },
-    { value: "dispensa_intersticio", label: "Disp. Interstício" },
-    { value: "primeira_votacao", label: "1ª Votação" },
-    ...((item.proposicao.numVotacoes ?? 1) >= 2
-      ? [{ value: "segunda_votacao", label: "2ª Votação" }]
-      : []),
-    { value: "votacao1", label: "Votação 1" },
-    ...((item.proposicao.numVotacoes ?? 1) >= 2
-      ? [{ value: "votacao2", label: "Votação 2" }]
-      : []),
-    { value: "promulgacao", label: "Promulgação" },
-    { value: "sancao", label: "Sanção" },
-  ];
+  const numVotacoes = item.proposicao.numVotacoes ?? 1;
+  const secao = item.secao;
+  const resultado = item.resultado ?? "";
+  const destinoFinal = item.proposicao.destinoFinal ?? "sancao";
+  const tipoLabel: Record<string, string> = { pl: "PL", resolucao: "Res.", requerimento: "Req.", mocao: "Moção" };
+  const locked = (secao === "apresentacao" || secao === "parecer") && !!propEmVotacao;
 
-  const selectedIdx = resultadoOpts.findIndex(r => r.value === item.resultado);
+  const propInfo = (
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-medium text-gray-800">
+        {item.ordem}. {tipoLabel[item.proposicao.tipo] || item.proposicao.tipo} {item.proposicao.numero}/{item.proposicao.ano}
+      </p>
+      <p className="text-xs text-gray-500 mt-0.5 truncate">{item.proposicao.ementa}</p>
+    </div>
+  );
 
-  function btnClass(i: number) {
-    if (selectedIdx < 0) return "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100";
-    if (i < selectedIdx)  return "bg-green-100 text-green-700 border-green-400";
-    if (i === selectedIdx) return "bg-amber-100 text-amber-700 border-amber-400 font-semibold";
-    return "bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100";
+  const B = "px-1.5 py-0.5 rounded-full text-xs border transition whitespace-nowrap";
+  const retirarBtn = (
+    <button onClick={onRetirar} className={`${B} font-medium bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100`}>
+      ↩ Retirar
+    </button>
+  );
+
+  // ── Primeira Parte: Apresentação / Parecer ─────────────────────────────────
+  if (secao === "apresentacao" || secao === "parecer") {
+    const opts: Array<{ value: string; label: string; readOnly?: boolean }> = [
+      { value: "comissao", label: "Comissão", readOnly: true },
+      { value: "parecer_conjunto", label: "Par. Conjunto" },
+      { value: "dispensa_parecer", label: "Disp. Parecer" },
+      { value: "dispensa_intersticio", label: "Disp. Interstício" },
+    ];
+    const selIdx = resultado ? opts.findIndex(o => o.value === resultado) : -1;
+    const permanent = resultado === "parecer_conjunto" || resultado === "dispensa_parecer";
+
+    const btnCls = (i: number, opt: { readOnly?: boolean }) => {
+      if (locked) return `${B} bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed opacity-50`;
+      if (selIdx < 0) {
+        if (i === 0) return `${B} bg-amber-100 text-amber-700 border-amber-400 font-semibold cursor-default`;
+        return `${B} bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100`;
+      }
+      if (i < selIdx) return `${B} bg-green-100 text-green-700 border-green-400`;
+      if (i === selIdx) return `${B} bg-amber-100 text-amber-700 border-amber-400 font-semibold${opt.readOnly ? " cursor-default" : ""}`;
+      return `${B} bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100`;
+    };
+
+    return (
+      <div className="px-5 py-4 border-b border-gray-50 last:border-b-0">
+        <div className="flex items-start justify-between gap-4">
+          {propInfo}
+          <div className="flex-shrink-0 flex flex-col items-end gap-2" style={{ minWidth: 0 }}>
+            <MiniStepper prop={item.proposicao} resultado={resultado} />
+            {sessaoAberta && (
+              <div className="flex flex-wrap items-center gap-1 justify-end" style={{ maxWidth: 520 }}>
+                {opts.map((opt, i) => (
+                  <button
+                    key={opt.value}
+                    disabled={opt.readOnly || locked || permanent}
+                    onClick={() => {
+                      if (opt.readOnly || locked || permanent) return;
+                      onResultado(resultado === opt.value ? "" : opt.value);
+                    }}
+                    className={btnCls(i, opt)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+                {!locked && retirarBtn}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  const tipoLabel: Record<string, string> = { pl: "PL", resolucao: "Res.", requerimento: "Req.", mocao: "Moção" };
+  // ── Segunda Parte: Votação ─────────────────────────────────────────────────
+  if (secao === "votacao") {
+    const mainOpts: Array<{ value: string; label: string }> = [
+      { value: "primeira_votacao", label: "1ª Votação" },
+    ];
+    if (numVotacoes >= 2) mainOpts.push({ value: "segunda_votacao", label: "2ª Votação" });
+    mainOpts.push({ value: "aprovado", label: "Aprovado" });
+    if (resultado === "aprovado") {
+      mainOpts.push(destinoFinal === "promulgacao"
+        ? { value: "promulgacao", label: "Promulgação" }
+        : { value: "sancao", label: "Sanção" });
+    }
+    mainOpts.push({ value: "reprovado", label: "Reprovado" });
+    if (resultado === "reprovado") mainOpts.push({ value: "arquivo", label: "Arquivo" });
+
+    const mainSelIdx = mainOpts.findIndex(o => o.value === resultado);
+    const beforePrimeira = !["primeira_votacao","segunda_votacao","aprovado","sancao","promulgacao","reprovado","arquivo"].includes(resultado);
+
+    const mainBtnCls = (i: number) => {
+      if (mainSelIdx < 0) return `${B} bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100`;
+      if (i < mainSelIdx) return `${B} bg-green-100 text-green-700 border-green-400`;
+      if (i === mainSelIdx) return `${B} bg-amber-100 text-amber-700 border-amber-400 font-semibold`;
+      return `${B} bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100`;
+    };
+    const sideCls = (active: boolean) =>
+      active ? `${B} bg-amber-100 text-amber-700 border-amber-400 font-semibold` : `${B} bg-gray-50 text-gray-500 border-gray-300 hover:bg-gray-100`;
+
+    return (
+      <div className="px-5 py-4 border-b border-gray-50 last:border-b-0">
+        <div className="flex items-start justify-between gap-4">
+          {propInfo}
+          <div className="flex-shrink-0 flex flex-col items-end gap-2" style={{ minWidth: 0 }}>
+            <MiniStepper prop={item.proposicao} resultado={resultado} />
+            {sessaoAberta && (
+              <div className="flex flex-wrap items-center gap-1 justify-end" style={{ maxWidth: 520 }}>
+                <button onClick={() => onResultado(resultado === "vista" ? "" : "vista")} className={sideCls(resultado === "vista")}>Vista</button>
+                <button onClick={() => onResultado(resultado === "adiamento" ? "" : "adiamento")} className={sideCls(resultado === "adiamento")}>Adiamento</button>
+                {beforePrimeira && (
+                  <button onClick={() => onResultado(resultado === "emenda" ? "" : "emenda")} className={sideCls(resultado === "emenda")}>Emendas</button>
+                )}
+                <div className="w-px h-4 bg-gray-200 mx-0.5 flex-shrink-0" />
+                {mainOpts.map((opt, i) => (
+                  <button key={opt.value} onClick={() => onResultado(resultado === opt.value ? "" : opt.value)} className={mainBtnCls(i)}>
+                    {opt.label}
+                  </button>
+                ))}
+                {retirarBtn}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Redação Final / Requerimento ───────────────────────────────────────────
+  const defOpts = secao === "redacao_final"
+    ? [{ value: "em_revisao", label: "Em Revisão" }, { value: "revisado", label: "Revisado" }]
+    : [{ value: "aprovado", label: "Aprovado" }, { value: "reprovado", label: "Reprovado" }];
+  const defSelIdx = defOpts.findIndex(o => o.value === resultado);
+  const defBtnCls = (i: number) => {
+    if (defSelIdx < 0) return `${B} bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100`;
+    if (i < defSelIdx) return `${B} bg-green-100 text-green-700 border-green-400`;
+    if (i === defSelIdx) return `${B} bg-amber-100 text-amber-700 border-amber-400 font-semibold`;
+    return `${B} bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100`;
+  };
 
   return (
     <div className="px-5 py-4 border-b border-gray-50 last:border-b-0">
       <div className="flex items-start justify-between gap-4">
-        {/* Info da proposição */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-800">
-            {item.ordem}. {tipoLabel[item.proposicao.tipo] || item.proposicao.tipo} {item.proposicao.numero}/{item.proposicao.ano}
-          </p>
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{item.proposicao.ementa}</p>
-        </div>
-
-        {/* Coluna direita: stepper + ações */}
+        {propInfo}
         <div className="flex-shrink-0 flex flex-col items-end gap-2" style={{ minWidth: 0 }}>
-          <MiniStepper prop={item.proposicao} resultado={item.resultado} />
-
-          {/* Resultado + Retirar */}
+          <MiniStepper prop={item.proposicao} resultado={resultado} />
           {sessaoAberta && (
             <div className="flex flex-wrap items-center gap-1 justify-end" style={{ maxWidth: 520 }}>
-              {resultadoOpts.map((r, i) => (
-                <button
-                  key={r.value}
-                  onClick={() => onResultado(item.resultado === r.value ? "" : r.value)}
-                  className={`px-1.5 py-0.5 rounded-full text-xs border transition whitespace-nowrap ${btnClass(i)}`}
-                >
-                  {r.label}
+              {defOpts.map((opt, i) => (
+                <button key={opt.value} onClick={() => onResultado(resultado === opt.value ? "" : opt.value)} className={defBtnCls(i)}>
+                  {opt.label}
                 </button>
               ))}
-              <button
-                onClick={onRetirar}
-                className="px-1.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition whitespace-nowrap"
-                title="Retirar desta pauta"
-              >
-                ↩ Retirar
-              </button>
+              {retirarBtn}
             </div>
           )}
-
         </div>
       </div>
     </div>

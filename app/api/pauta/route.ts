@@ -44,6 +44,7 @@ export async function POST(req: Request) {
       proposicaoId,
       secao,
       ordem: proximaOrdem + i,
+      resultado: "comissao",
     })),
   });
 
