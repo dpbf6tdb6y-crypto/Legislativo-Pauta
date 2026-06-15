@@ -84,21 +84,8 @@ export default function SessaoDetalhePage() {
     if (resultado === "dispensa_intersticio") {
       const maxVotacao = Math.max(0, ...itens.filter(i => i.secao === "votacao").map(i => i.ordem))
       itens = itens.map(i => i.id === item.id ? { ...i, secao: "votacao", ordem: maxVotacao + 1 } : i)
-    } else if (resultado === "aprovado") {
-      const hasCRF = (item.proposicao.comissoes || []).some(c => isCRF(c))
-      const jaEmRedacao = itens.some(i => i.proposicao.id === item.proposicao.id && i.secao === "redacao_final")
-      if (hasCRF && !jaEmRedacao) {
-        const maxRedacao = Math.max(0, ...itens.filter(i => i.secao === "redacao_final").map(i => i.ordem))
-        itens = [...itens, {
-          id: `_rf_${Date.now()}`,
-          proposicao: item.proposicao,
-          ordem: maxRedacao + 1,
-          secao: "redacao_final",
-        }]
-      }
     } else if (resultado === "") {
       itens = itens.filter(i => !(i.proposicao.id === item.proposicao.id && i.secao === "votacao" && !i.resultado))
-      itens = itens.filter(i => !(i.proposicao.id === item.proposicao.id && i.secao === "redacao_final" && !i.resultado))
     }
 
     await salvarItens(itens)

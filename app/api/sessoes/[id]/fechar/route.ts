@@ -111,6 +111,21 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
         });
         break;
       }
+      case "aprovado": {
+        const destino = prop.destinoFinal === "promulgacao" ? "promulgada" : "aguardando_sancao";
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: destino, status: destino },
+        });
+        break;
+      }
+      case "reprovado": {
+        await prisma.proposicao.update({
+          where: { id: prop.id },
+          data: { etapaAtual: "rejeitada", status: "rejeitada" },
+        });
+        break;
+      }
       case "promulgacao": {
         await prisma.proposicao.update({
           where: { id: prop.id },
