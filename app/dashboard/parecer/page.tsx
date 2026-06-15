@@ -14,7 +14,7 @@ type ProposicaoComissao = {
 type Proposicao = {
   id: string; numero: string; ano: number; tipo: string; ementa: string;
   etapaAtual: string; numVotacoes: number;
-  origemTipo: string; autorVereador?: Vereador; autorExterno?: string;
+  origemTipo: string; autores: { vereador: Vereador }[]; autorExterno?: string;
   comissoes: ProposicaoComissao[];
 };
 
@@ -197,7 +197,7 @@ export default function ParecerPage() {
   }
 
   const autorNome = (p: Proposicao) =>
-    p.origemTipo === "vereador" ? (p.autorVereador?.nome || "—") : (p.autorExterno || "Executivo");
+    p.origemTipo === "vereador" ? (p.autores?.map((a: any) => a.vereador.nome).join(", ") || "—") : (p.autorExterno || "Executivo");
 
   return (
     <div className="p-6">

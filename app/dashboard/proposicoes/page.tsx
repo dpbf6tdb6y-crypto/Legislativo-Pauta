@@ -722,7 +722,7 @@ export default function ProposicoesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Origem</label>
-                <select value={form.origemTipo} onChange={(e) => setForm({ ...form, origemTipo: e.target.value, autorVereadorId: "", autorExterno: "" })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <select value={form.origemTipo} onChange={(e) => setForm({ ...form, origemTipo: e.target.value, autorIds: [], autorExterno: "" })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                   <option value="vereador">Vereador</option>
                   <option value="executivo">Executivo Municipal</option>
                 </select>

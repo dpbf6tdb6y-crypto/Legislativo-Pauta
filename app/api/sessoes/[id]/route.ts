@@ -9,7 +9,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
         include: {
           proposicao: {
             include: {
-              autorVereador: true,
+              autores: { include: { vereador: true } },
               comissoes: { include: { comissao: true }, orderBy: { ordem: "asc" } },
             },
           },

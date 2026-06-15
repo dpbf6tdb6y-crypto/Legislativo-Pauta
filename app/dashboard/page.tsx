@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   const ultimasProposicoes = await prisma.proposicao.findMany({
     take: 5,
     orderBy: { createdAt: "desc" },
-    include: { autorVereador: true },
+    include: { autores: { include: { vereador: true } } },
   });
 
   const proximasSessoes = await prisma.sessao.findMany({
