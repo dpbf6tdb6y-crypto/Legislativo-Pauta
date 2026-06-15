@@ -792,6 +792,7 @@ function PautaItemRow({
               <div className="flex flex-wrap items-center gap-1 justify-end" style={{ maxWidth: 520 }}>
                 <button onClick={() => onResultado(resultado === "vista" ? "" : "vista")} className={sideCls(resultado === "vista")}>Vista</button>
                 <button onClick={() => onResultado(resultado === "adiamento" ? "" : "adiamento")} className={sideCls(resultado === "adiamento")}>Adiamento</button>
+                <button onClick={() => onResultado(resultado === "dispensa_intersticio" ? "" : "dispensa_intersticio")} className={sideCls(resultado === "dispensa_intersticio")}>Disp. Interstício</button>
                 {beforePrimeira && (
                   <button onClick={() => onResultado(resultado === "emenda" ? "" : "emenda")} className={sideCls(resultado === "emenda")}>Emendas</button>
                 )}
