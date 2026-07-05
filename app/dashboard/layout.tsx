@@ -21,6 +21,7 @@ const configItems = [
 ];
 
 const auditoriaItem = { href: "/dashboard/auditoria", label: "Auditoria", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" };
+const backupItem = { href: "/dashboard/backup", label: "Backup", icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 8a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2M4 8V6a2 2 0 012-2h8l2 2h2a2 2 0 012 2v2" };
 
 // Cores do tema executivo baseadas na logomarca
 const SIDEBAR_BG = "linear-gradient(180deg, #0a0f1e 0%, #0f172a 60%, #111827 100%)";
@@ -35,7 +36,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isAdmin = (session?.user as any)?.perfil === "admin";
-  const configItemsVisiveis = isAdmin ? [...configItems, auditoriaItem] : configItems;
+  const configItemsVisiveis = isAdmin ? [...configItems, backupItem, auditoriaItem] : configItems;
   const [configAberto, setConfigAberto] = useState(
     configItemsVisiveis.some(i => pathname.startsWith(i.href))
   );

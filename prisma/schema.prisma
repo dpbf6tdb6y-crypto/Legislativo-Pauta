@@ -270,3 +270,9 @@ model AuditLog {
   usuarioNome String?
   criadoEm    DateTime @default(now())
 }
+
+model Config {
+  id    String @id @default(cuid())
+  chave String @unique
+  valor String
+}
