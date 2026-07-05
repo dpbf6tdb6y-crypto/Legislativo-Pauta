@@ -12,8 +12,8 @@ function base64UrlEncode(str: Buffer | string) {
   return Buffer.from(str).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function encodeSubject(subject: string) {
-  return `=?UTF-8?B?${Buffer.from(subject, "utf-8").toString("base64")}?=`;
+function encodeHeaderWord(texto: string) {
+  return `=?UTF-8?B?${Buffer.from(texto, "utf-8").toString("base64")}?=`;
 }
 
 interface Anexo {
@@ -34,9 +34,9 @@ export async function enviarEmail({ to, subject, html, attachments = [] }: Envia
   const from = process.env.EMAIL_USER;
 
   const linhas = [
-    `From: "Legislativo Pauta - Câmara de Nova Lima" <${from}>`,
+    `From: ${encodeHeaderWord("Legislativo Pauta - Câmara de Nova Lima")} <${from}>`,
     `To: ${to}`,
-    `Subject: ${encodeSubject(subject)}`,
+    `Subject: ${encodeHeaderWord(subject)}`,
     "MIME-Version: 1.0",
     `Content-Type: multipart/mixed; boundary="${boundary}"`,
     "",
