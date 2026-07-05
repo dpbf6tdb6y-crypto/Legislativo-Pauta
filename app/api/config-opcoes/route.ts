@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+
   const { searchParams } = new URL(req.url);
   const tipo = searchParams.get("tipo");
   const opcoes = await prisma.configOpcao.findMany({
@@ -12,6 +17,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+
   const body = await req.json();
   const { tipo, nome } = body;
   if (!tipo || !nome) return NextResponse.json({ error: "tipo e nome obrigatórios" }, { status: 400 });
