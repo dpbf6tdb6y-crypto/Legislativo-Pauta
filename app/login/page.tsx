@@ -93,7 +93,12 @@ export default function LoginPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Senha</label>
+                  <a href="/esqueci-senha" className="text-xs font-medium" style={{ color: "#a855f7" }}>
+                    Esqueci a senha
+                  </a>
+                </div>
                 <input
                   type="password"
                   value={senha}

@@ -276,3 +276,12 @@ model Config {
   chave String @unique
   valor String
 }
+
+model ResetSenha {
+  id       String   @id @default(cuid())
+  token    String   @unique
+  email    String
+  expiraEm DateTime
+  usado    Boolean  @default(false)
+  criadoEm DateTime @default(now())
+}
