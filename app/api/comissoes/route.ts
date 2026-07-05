@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -33,5 +34,15 @@ export async function POST(req: Request) {
       })),
     });
   }
+
+  await registrarAuditoria({
+    acao: "criar_comissao",
+    entidade: "Comissao",
+    entidadeId: comissao.id,
+    referencia: comissao.nome,
+    usuarioId: (session.user as any).id,
+    usuarioNome: session.user?.name ?? undefined,
+  });
+
   return NextResponse.json(comissao);
 }

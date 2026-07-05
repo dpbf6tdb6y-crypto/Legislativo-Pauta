@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -36,6 +37,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     },
     include: { vereador: true },
   });
+
+  await registrarAuditoria({
+    acao: "atualizar_requerimento",
+    entidade: "Requerimento",
+    entidadeId: item.id,
+    referencia: item.referencia,
+    usuarioId: (session.user as any).id,
+    usuarioNome: session.user?.name ?? undefined,
+  });
+
   return NextResponse.json(item);
 }
 
@@ -44,6 +55,16 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   if ((session.user as any).perfil !== "admin") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
-  await prisma.requerimento.delete({ where: { id: params.id } });
+  const item = await prisma.requerimento.delete({ where: { id: params.id } });
+
+  await registrarAuditoria({
+    acao: "excluir_requerimento",
+    entidade: "Requerimento",
+    entidadeId: item.id,
+    referencia: item.referencia,
+    usuarioId: (session.user as any).id,
+    usuarioNome: session.user?.name ?? undefined,
+  });
+
   return NextResponse.json({ ok: true });
 }

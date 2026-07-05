@@ -258,3 +258,15 @@ model Tag {
 
   vereador Vereador? @relation("TagAutor", fields: [vereadorId], references: [id])
 }
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  acao        String
+  entidade    String
+  entidadeId  String?
+  referencia  String?
+  detalhes    String?
+  usuarioId   String?
+  usuarioNome String?
+  criadoEm    DateTime @default(now())
+}

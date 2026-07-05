@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -54,6 +55,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       });
     }
   }
+
+  await registrarAuditoria({
+    acao: "atualizar_proposicao",
+    entidade: "Proposicao",
+    entidadeId: data.id,
+    referencia: `${data.tipo} ${data.numero}/${data.ano}`,
+    usuarioId: (session.user as any).id,
+    usuarioNome: session.user?.name ?? undefined,
+  });
+
   return NextResponse.json(data);
 }
 
@@ -62,6 +73,16 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   if ((session.user as any).perfil !== "admin") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
-  await prisma.proposicao.update({ where: { id: params.id }, data: { status: "arquivada" } });
+  const data = await prisma.proposicao.update({ where: { id: params.id }, data: { status: "arquivada" } });
+
+  await registrarAuditoria({
+    acao: "arquivar_proposicao",
+    entidade: "Proposicao",
+    entidadeId: data.id,
+    referencia: `${data.tipo} ${data.numero}/${data.ano}`,
+    usuarioId: (session.user as any).id,
+    usuarioNome: session.user?.name ?? undefined,
+  });
+
   return NextResponse.json({ ok: true });
 }

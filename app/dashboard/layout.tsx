@@ -20,6 +20,8 @@ const configItems = [
   { href: "/dashboard/configuracoes", label: "Configurações Gerais", icon: "M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" },
 ];
 
+const auditoriaItem = { href: "/dashboard/auditoria", label: "Auditoria", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" };
+
 // Cores do tema executivo baseadas na logomarca
 const SIDEBAR_BG = "linear-gradient(180deg, #0a0f1e 0%, #0f172a 60%, #111827 100%)";
 const ACCENT_GRADIENT = "linear-gradient(135deg, #f97316 0%, #a855f7 100%)";
@@ -32,8 +34,10 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isAdmin = (session?.user as any)?.perfil === "admin";
+  const configItemsVisiveis = isAdmin ? [...configItems, auditoriaItem] : configItems;
   const [configAberto, setConfigAberto] = useState(
-    configItems.some(i => pathname.startsWith(i.href))
+    configItemsVisiveis.some(i => pathname.startsWith(i.href))
   );
 
   useEffect(() => {
@@ -41,7 +45,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   }, [status, router]);
 
   useEffect(() => {
-    if (configItems.some(i => pathname.startsWith(i.href))) setConfigAberto(true);
+    if (configItemsVisiveis.some(i => pathname.startsWith(i.href))) setConfigAberto(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   if (status === "loading") {
@@ -56,7 +61,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     );
   }
 
-  const configAtiva = configItems.some(i => pathname.startsWith(i.href));
+  const configAtiva = configItemsVisiveis.some(i => pathname.startsWith(i.href));
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
@@ -149,7 +154,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           </button>
           {sidebarOpen && configAberto && (
             <div className="ml-3 mt-0.5 space-y-0.5 pl-2" style={{ borderLeft: `2px solid rgba(168,85,247,0.3)` }}>
-              {configItems.map((item) => {
+              {configItemsVisiveis.map((item) => {
                 const active = pathname.startsWith(item.href);
                 return (
                   <Link key={item.href} href={item.href}

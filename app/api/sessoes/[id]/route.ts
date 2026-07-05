@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -32,7 +33,17 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
   if ((session.user as any).perfil !== "admin") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   await prisma.pautaItem.deleteMany({ where: { sessaoId: params.id } });
-  await prisma.sessao.delete({ where: { id: params.id } });
+  const sessao = await prisma.sessao.delete({ where: { id: params.id } });
+
+  await registrarAuditoria({
+    acao: "excluir_sessao",
+    entidade: "Sessao",
+    entidadeId: sessao.id,
+    referencia: `${sessao.tipo} — ${new Date(sessao.data).toLocaleDateString("pt-BR")}`,
+    usuarioId: (session.user as any).id,
+    usuarioNome: session.user?.name ?? undefined,
+  });
+
   return NextResponse.json({ ok: true });
 }
 
@@ -58,5 +69,15 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       })),
     });
   }
+
+  await registrarAuditoria({
+    acao: "atualizar_sessao",
+    entidade: "Sessao",
+    entidadeId: data.id,
+    referencia: `${data.tipo} — ${new Date(data.data).toLocaleDateString("pt-BR")}`,
+    usuarioId: (session.user as any).id,
+    usuarioNome: session.user?.name ?? undefined,
+  });
+
   return NextResponse.json(data);
 }
