@@ -36,8 +36,9 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const isAdmin = (session?.user as any)?.perfil === "admin";
-  const configItemsVisiveis = isAdmin ? [...configItems, usuariosItem, backupItem, auditoriaItem] : configItems;
+  const perfilAtual = (session?.user as any)?.perfil;
+  const isAdminOuMaster = perfilAtual === "admin" || perfilAtual === "master";
+  const configItemsVisiveis = isAdminOuMaster ? [...configItems, usuariosItem, backupItem, auditoriaItem] : configItems;
   const [configAberto, setConfigAberto] = useState(
     configItemsVisiveis.some(i => pathname.startsWith(i.href))
   );
@@ -180,9 +181,23 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         {/* Footer */}
         <div className="p-3 space-y-2" style={{ borderTop: `1px solid ${BORDER_COLOR}` }}>
           {sidebarOpen && (
-            <p className="text-xs px-1" style={{ color: "rgba(255,255,255,0.35)" }}>
-              <span style={{ color: "rgba(255,255,255,0.5)" }}>Usuário:</span> {session?.user?.name}
-            </p>
+            <div className="px-1 space-y-1">
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                <span style={{ color: "rgba(255,255,255,0.5)" }}>Usuário:</span> {session?.user?.name}
+              </p>
+              <span
+                className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                style={
+                  perfilAtual === "master"
+                    ? { background: "rgba(249,115,22,0.15)", color: "#f97316" }
+                    : perfilAtual === "admin"
+                    ? { background: "rgba(168,85,247,0.15)", color: "#a855f7" }
+                    : { background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }
+                }
+              >
+                {perfilAtual === "master" ? "👑 Master" : perfilAtual === "admin" ? "Administrador" : "Operador"}
+              </span>
+            </div>
           )}
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}

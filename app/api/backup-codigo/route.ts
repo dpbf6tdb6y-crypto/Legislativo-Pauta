@@ -6,7 +6,7 @@ import { enviarCodigoFonteEmail } from "@/lib/backup-codigo";
 export async function POST() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  if ((session.user as any).perfil !== "admin") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  if (!["admin", "master"].includes((session.user as any).perfil)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const destino = session.user?.email;
   if (!destino) return NextResponse.json({ error: "Usuário sem e-mail cadastrado" }, { status: 400 });

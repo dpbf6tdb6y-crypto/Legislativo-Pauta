@@ -8,12 +8,27 @@ import { registrarAuditoria } from "@/lib/auditoria";
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  if ((session.user as any).perfil !== "admin") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  const meuPerfil = (session.user as any).perfil;
+  if (!["admin", "master"].includes(meuPerfil)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+
+  const alvo = await prisma.user.findUnique({ where: { id: params.id } });
+  if (!alvo) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+
+  // Somente master pode editar outro master
+  if (alvo.perfil === "master" && meuPerfil !== "master") {
+    return NextResponse.json({ error: "Apenas o Master pode editar este usuário." }, { status: 403 });
+  }
 
   const body = await req.json();
+  const perfilSolicitado = body.perfil === "master" ? "master" : body.perfil === "admin" ? "admin" : "operador";
+
+  if ((perfilSolicitado === "admin" || perfilSolicitado === "master") && meuPerfil !== "master") {
+    return NextResponse.json({ error: "Apenas o Master pode definir perfil Administrador." }, { status: 403 });
+  }
+
   const data: any = {
     nome: body.nome,
-    perfil: body.perfil === "admin" ? "admin" : "operador",
+    perfil: perfilSolicitado,
     ativo: !!body.ativo,
   };
 
@@ -46,8 +61,19 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  if ((session.user as any).perfil !== "admin") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  const meuPerfil = (session.user as any).perfil;
+  if (!["admin", "master"].includes(meuPerfil)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   if ((session.user as any).id === params.id) return NextResponse.json({ error: "Não é possível excluir o próprio usuário." }, { status: 400 });
+
+  const alvo = await prisma.user.findUnique({ where: { id: params.id } });
+  if (!alvo) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+
+  // Master nunca pode ser excluído por ninguém
+  if (alvo.perfil === "master") return NextResponse.json({ error: "O usuário Master não pode ser excluído." }, { status: 403 });
+  // Admin só pode ser excluído pelo master
+  if (alvo.perfil === "admin" && meuPerfil !== "master") {
+    return NextResponse.json({ error: "Apenas o Master pode excluir usuários Administradores." }, { status: 403 });
+  }
 
   const usuario = await prisma.user.delete({ where: { id: params.id } });
 

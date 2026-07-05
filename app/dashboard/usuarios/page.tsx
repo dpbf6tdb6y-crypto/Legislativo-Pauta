@@ -144,9 +144,13 @@ export default function UsuariosPage() {
                 <td className="px-4 py-3 text-gray-500">{item.email}</td>
                 <td className="px-4 py-3">
                   <span className={`inline-block text-xs font-semibold px-2 py-1 rounded-full border ${
-                    item.perfil === "admin" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-gray-100 text-gray-600 border-gray-200"
+                    item.perfil === "master"
+                      ? "bg-orange-50 text-orange-700 border-orange-200"
+                      : item.perfil === "admin"
+                      ? "bg-purple-50 text-purple-700 border-purple-200"
+                      : "bg-gray-100 text-gray-600 border-gray-200"
                   }`}>
-                    {item.perfil === "admin" ? "Administrador" : "Operador"}
+                    {item.perfil === "master" ? "👑 Master" : item.perfil === "admin" ? "Administrador" : "Operador"}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -161,7 +165,7 @@ export default function UsuariosPage() {
                     <button onClick={() => abrirModal(item)} className="text-xs font-semibold text-blue-600 hover:text-blue-800">
                       Editar
                     </button>
-                    {item.id !== meuId && (
+                    {item.id !== meuId && item.perfil !== "master" && (
                       <button onClick={() => handleExcluir(item.id)} className="text-xs font-semibold text-red-600 hover:text-red-800">
                         Excluir
                       </button>
@@ -202,6 +206,7 @@ export default function UsuariosPage() {
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Perfil</label>
                   <select name="perfil" defaultValue={u?.perfil ?? "operador"}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40 bg-white text-gray-800">
+                    {u?.perfil === "master" && <option value="master">👑 Master</option>}
                     <option value="admin">Administrador</option>
                     <option value="operador">Operador</option>
                   </select>

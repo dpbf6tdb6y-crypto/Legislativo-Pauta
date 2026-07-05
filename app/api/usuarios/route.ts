@@ -8,7 +8,7 @@ import { registrarAuditoria } from "@/lib/auditoria";
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  if ((session.user as any).perfil !== "admin") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  if (!["admin", "master"].includes((session.user as any).perfil)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const usuarios = await prisma.user.findMany({
     orderBy: { nome: "asc" },
@@ -20,7 +20,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  if ((session.user as any).perfil !== "admin") return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  const meuPerfil = (session.user as any).perfil;
+  if (!["admin", "master"].includes(meuPerfil)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const body = await req.json();
   const nome = String(body.nome || "");
@@ -28,6 +29,9 @@ export async function POST(req: Request) {
   const perfil = body.perfil === "admin" ? "admin" : "operador";
   const senha = String(body.senha || "");
 
+  if (perfil === "admin" && meuPerfil !== "master") {
+    return NextResponse.json({ error: "Apenas o Master pode criar usuários Administradores." }, { status: 403 });
+  }
   if (!nome || !email || !senha) return NextResponse.json({ error: "Campos obrigatórios" }, { status: 400 });
   if (senha.length < 6) return NextResponse.json({ error: "A senha deve ter no mínimo 6 caracteres." }, { status: 400 });
 
