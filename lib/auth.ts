@@ -26,6 +26,7 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = (user as any).id;
         token.perfil = (user as any).perfil;
         token.podeVerIndicacoes = (user as any).podeVerIndicacoes;
       }
@@ -33,6 +34,7 @@ export const authOptions: AuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
+        (session.user as any).id = token.id as string;
         (session.user as any).perfil = token.perfil;
         (session.user as any).podeVerIndicacoes = token.podeVerIndicacoes;
       }

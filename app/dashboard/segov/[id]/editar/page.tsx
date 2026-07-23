@@ -260,11 +260,14 @@ export default function EditarSeggovPage() {
         : 'border-green-300 bg-green-50'
 
     const circle = (
-      <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-        done ? 'bg-green-500 text-white' : 'bg-white border border-gray-300'
-      }`}>
+      <button type="button"
+        onClick={() => done ? desmarcar(def.key) : marcar(def.key)}
+        title={done ? 'Clique para desmarcar' : 'Clique para marcar'}
+        className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition ${
+          done ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-white border border-gray-300 hover:border-green-400'
+        }`}>
         {done && <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-      </div>
+      </button>
     )
 
     const btnMarcar = done
