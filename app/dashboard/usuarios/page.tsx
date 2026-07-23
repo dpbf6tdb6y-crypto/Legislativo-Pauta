@@ -8,6 +8,7 @@ type Usuario = {
   email: string;
   perfil: string;
   ativo: boolean;
+  podeVerIndicacoes: boolean;
   createdAt: string;
 };
 
@@ -61,6 +62,7 @@ export default function UsuariosPage() {
             email: fd.get("email"),
             perfil: fd.get("perfil"),
             senha: fd.get("senha"),
+            podeVerIndicacoes: fd.get("podeVerIndicacoes") === "on",
           }),
         });
         const d = await r.json();
@@ -74,6 +76,7 @@ export default function UsuariosPage() {
             perfil: fd.get("perfil"),
             ativo: fd.get("ativo") === "true",
             novaSenha: fd.get("novaSenha") || undefined,
+            podeVerIndicacoes: fd.get("podeVerIndicacoes") === "on",
           }),
         });
         const d = await r.json();
@@ -223,6 +226,12 @@ export default function UsuariosPage() {
                   </select>
                 </div>
               )}
+
+              <label className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 cursor-pointer">
+                <input type="checkbox" name="podeVerIndicacoes" defaultChecked={u?.podeVerIndicacoes ?? false}
+                  className="w-4 h-4 accent-amber-600" />
+                <span className="text-sm text-amber-800">🔒 Pode acessar Indicações de Cargos (dados sigilosos)</span>
+              </label>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">

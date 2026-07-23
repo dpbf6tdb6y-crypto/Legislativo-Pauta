@@ -19,17 +19,23 @@ export const authOptions: AuthOptions = {
         if (!user || !user.ativo) return null;
         const ok = await bcrypt.compare(credentials.senha, user.senha);
         if (!ok) return null;
-        return { id: user.id, name: user.nome, email: user.email, perfil: user.perfil } as any;
+        return { id: user.id, name: user.nome, email: user.email, perfil: user.perfil, podeVerIndicacoes: user.podeVerIndicacoes } as any;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.perfil = (user as any).perfil;
+      if (user) {
+        token.perfil = (user as any).perfil;
+        token.podeVerIndicacoes = (user as any).podeVerIndicacoes;
+      }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) (session.user as any).perfil = token.perfil;
+      if (session.user) {
+        (session.user as any).perfil = token.perfil;
+        (session.user as any).podeVerIndicacoes = token.podeVerIndicacoes;
+      }
       return session;
     },
   },

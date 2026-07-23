@@ -30,6 +30,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     nome: body.nome,
     perfil: perfilSolicitado,
     ativo: !!body.ativo,
+    podeVerIndicacoes: !!body.podeVerIndicacoes,
   };
 
   if (body.novaSenha) {
@@ -42,7 +43,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const usuario = await prisma.user.update({
     where: { id: params.id },
     data,
-    select: { id: true, nome: true, email: true, perfil: true, ativo: true },
+    select: { id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true },
   });
 
   await registrarAuditoria({

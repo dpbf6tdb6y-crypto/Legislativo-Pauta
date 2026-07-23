@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TopbarProvider, useTopbar } from "@/contexts/topbar";
+import AprovacaoRelatorioListener from "./_components/AprovacaoRelatorioListener";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -21,6 +22,7 @@ const configItems = [
 ];
 
 const auditoriaItem = { href: "/dashboard/auditoria", label: "Auditoria", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" };
+const indicacoesItem = { href: "/dashboard/indicacoes", label: "Indicações de Cargos", icon: "M12 15a3 3 0 100-6 3 3 0 000 6z M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" };
 const backupItem = { href: "/dashboard/backup", label: "Backup", icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 8a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2M4 8V6a2 2 0 012-2h8l2 2h2a2 2 0 012 2v2" };
 const usuariosItem = { href: "/dashboard/usuarios", label: "Usuários", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zM3 7a3 3 0 116 0 3 3 0 01-6 0z" };
 
@@ -38,6 +40,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const perfilAtual = (session?.user as any)?.perfil;
   const isAdminOuMaster = perfilAtual === "admin" || perfilAtual === "master";
+  const podeVerIndicacoes = perfilAtual === "master" || !!(session?.user as any)?.podeVerIndicacoes;
   const configItemsVisiveis = isAdminOuMaster ? [...configItems, usuariosItem, backupItem, auditoriaItem] : configItems;
   const [configAberto, setConfigAberto] = useState(
     configItemsVisiveis.some(i => pathname.startsWith(i.href))
@@ -129,6 +132,25 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          {podeVerIndicacoes && (() => {
+            const active = pathname.startsWith(indicacoesItem.href);
+            return (
+              <Link href={indicacoesItem.href}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all"
+                style={active
+                  ? { background: "linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)", color: "#fff", fontWeight: 600 }
+                  : { color: "#fca5a5" }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = "rgba(185,28,28,0.15)"; e.currentTarget.style.color = "#fff"; } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fca5a5"; } }}>
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+                </svg>
+                {sidebarOpen && <span>{indicacoesItem.label} 🔒</span>}
+              </Link>
+            )
+          })()}
         </nav>
 
         {/* Configurações */}
@@ -235,6 +257,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {podeVerIndicacoes && <AprovacaoRelatorioListener />}
     </div>
   );
 }

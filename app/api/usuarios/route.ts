@@ -12,7 +12,7 @@ export async function GET() {
 
   const usuarios = await prisma.user.findMany({
     orderBy: { nome: "asc" },
-    select: { id: true, nome: true, email: true, perfil: true, ativo: true, createdAt: true },
+    select: { id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true, createdAt: true },
   });
   return NextResponse.json(usuarios);
 }
@@ -36,9 +36,10 @@ export async function POST(req: Request) {
   if (senha.length < 6) return NextResponse.json({ error: "A senha deve ter no mínimo 6 caracteres." }, { status: 400 });
 
   try {
+    const podeVerIndicacoes = !!body.podeVerIndicacoes;
     const usuario = await prisma.user.create({
-      data: { nome, email, perfil, senha: await bcrypt.hash(senha, 10) },
-      select: { id: true, nome: true, email: true, perfil: true, ativo: true },
+      data: { nome, email, perfil, senha: await bcrypt.hash(senha, 10), podeVerIndicacoes },
+      select: { id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true },
     });
 
     await registrarAuditoria({

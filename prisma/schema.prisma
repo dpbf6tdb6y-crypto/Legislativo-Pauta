@@ -8,13 +8,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  nome      String
-  email     String   @unique
-  senha     String
-  perfil    String   @default("operador")
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id                String   @id @default(cuid())
+  nome              String
+  email             String   @unique
+  senha             String
+  perfil            String   @default("operador")
+  ativo             Boolean  @default(true)
+  podeVerIndicacoes Boolean  @default(false)
+  createdAt         DateTime @default(now())
 }
 
 model Vereador {
@@ -36,6 +37,44 @@ model Vereador {
   segov          Segov[]
   requerimentos  Requerimento[]       @relation("RequerimentoAutor")
   tags           Tag[]                @relation("TagAutor")
+  indicacoes     IndicacaoCargo[]
+}
+
+model Empresa {
+  id        String   @id @default(cuid())
+  nome      String   @unique
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  indicacoes IndicacaoCargo[]
+}
+
+model IndicacaoCargo {
+  id           String    @id @default(cuid())
+  vereadorId   String?
+  indicado     String
+  empresaId    String?
+  cargo        String
+  salario      Float?
+  status       String    @default("Aguardando")
+  dataInicio   DateTime?
+  dataFim      DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  vereador Vereador? @relation(fields: [vereadorId], references: [id])
+  empresa  Empresa?  @relation(fields: [empresaId], references: [id])
+}
+
+model SolicitacaoRelatorio {
+  id              String    @id @default(cuid())
+  solicitanteId   String
+  solicitanteNome String
+  aprovadorId     String
+  aprovadorNome   String
+  status          String    @default("pendente")
+  createdAt       DateTime  @default(now())
+  respondidoEm    DateTime?
 }
 
 model Comissao {
