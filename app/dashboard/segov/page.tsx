@@ -18,14 +18,28 @@ const FLUXO_DEF = [
   { key: 'pedidoVista',         labelCurto: 'P. Vista' },
   { key: 'pedidoAdiamento',     labelCurto: 'P. Adj.'  },
   { key: 'emenda',              labelCurto: 'Emenda'    },
-  { key: 'emendaNumero',        labelCurto: 'Nº Emenda' },
   { key: 'emendaVotacao1',      labelCurto: '1ª V. Emd.' },
   { key: 'emendaVotacao2',      labelCurto: '2ª V. Emd.' },
   { key: 'emendaResultado',     labelCurto: 'Res. Emd.'  },
   { key: 'votacao1',            labelCurto: '1ª Vot.'   },
   { key: 'votacao2',            labelCurto: '2ª Vot.'   },
   { key: 'resultadoFinal',      labelCurto: 'Resultado'  },
+  { key: 'sancaoVeto',          labelCurto: 'Sanção/Veto' },
+  { key: 'vetoManutencao',      labelCurto: 'V. Veto'    },
+  { key: 'promulgacao',         labelCurto: 'Promul.'    },
 ]
+
+const NEGATIVOS = new Set(['reprovado', 'vetado'])
+const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [string, string] }> = {
+  sancaoVeto: { valores: ['sancionado', 'vetado'], labels: ['Sancionado', 'Vetado'] },
+  vetoManutencao: { valores: ['aprovado', 'reprovado'], labels: ['Manter Veto', 'Derrubar Veto'] },
+}
+function labelResultadoCurto(key: string, valor?: string) {
+  if (!valor) return ''
+  const { valores, labels } = OPCOES_POR_CHAVE[key] || { valores: ['aprovado', 'reprovado'], labels: ['Aprov.', 'Reprov.'] }
+  const i = valores.indexOf(valor)
+  return i >= 0 ? labels[i] : valor
+}
 
 function fmtFluxoData(iso?: string) {
   if (!iso) return ''
@@ -356,8 +370,8 @@ export default function SeggovPage() {
                               <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center">{step.data.comissaoNome}</span>
                             )}
                             {step.data?.resultado && (
-                              <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${step.data.resultado === 'aprovado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                {step.data.resultado === 'aprovado' ? 'Aprov.' : 'Reprov.'}
+                              <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${NEGATIVOS.has(step.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                                {labelResultadoCurto(step.key, step.data.resultado)}
                               </span>
                             )}
                             {step.data?.numero && (

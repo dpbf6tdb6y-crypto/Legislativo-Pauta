@@ -16,13 +16,10 @@ type StepData = {
   nome3?: string
   data?: string
   resultado?: string
-  numero?: string
-  ano?: string
-  emendaTipo?: string
 }
 type StepState = { done: boolean; doneAt?: string; data?: StepData }
 type FluxoState = Record<string, StepState>
-type StepTipo = 'simples' | 'comissao' | 'comissao3nomes' | 'nome1' | 'data' | 'resultado' | 'emendaInfo'
+type StepTipo = 'simples' | 'comissao' | 'comissao3nomes' | 'nome1' | 'data' | 'resultado' | 'sancao'
 type StepDef = { key: string; label: string; labelCurto: string; tipo: StepTipo }
 
 const FLUXO_DEF: StepDef[] = [
@@ -38,14 +35,35 @@ const FLUXO_DEF: StepDef[] = [
   { key: 'pedidoVista',        label: 'Pedido de Vista',                labelCurto: 'P. Vista',   tipo: 'nome1' },
   { key: 'pedidoAdiamento',    label: 'Pedido de Adiamento de Votação', labelCurto: 'P. Adj.',    tipo: 'nome1' },
   { key: 'emenda',             label: 'Emenda(s)',                      labelCurto: 'Emenda',     tipo: 'resultado' },
-  { key: 'emendaNumero',       label: 'Identificação da Emenda',        labelCurto: 'Id. Emenda', tipo: 'emendaInfo' },
   { key: 'emendaVotacao1',     label: '1ª Votação da Emenda',           labelCurto: '1ª V. Emd.', tipo: 'resultado' },
   { key: 'emendaVotacao2',     label: '2ª Votação da Emenda',           labelCurto: '2ª V. Emd.', tipo: 'resultado' },
   { key: 'emendaResultado',    label: 'Resultado da Emenda',            labelCurto: 'Res. Emd.',  tipo: 'resultado' },
   { key: 'votacao1',           label: '1ª Votação do Projeto de Lei',   labelCurto: '1ª Vot.',    tipo: 'resultado' },
   { key: 'votacao2',           label: '2ª Votação do Projeto de Lei',   labelCurto: '2ª Vot.',    tipo: 'resultado' },
   { key: 'resultadoFinal',     label: 'Resultado Final do Projeto',     labelCurto: 'Resultado',  tipo: 'resultado' },
+  { key: 'sancaoVeto',         label: 'Sanção / Veto',                  labelCurto: 'Sanção/Veto',tipo: 'sancao' },
+  { key: 'vetoManutencao',     label: 'Votação de Manutenção do Veto',  labelCurto: 'V. Veto',    tipo: 'resultado' },
+  { key: 'promulgacao',        label: 'Promulgação',                    labelCurto: 'Promul.',    tipo: 'data' },
 ]
+
+const NEGATIVOS = new Set(['reprovado', 'vetado'])
+const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [string, string] }> = {
+  sancaoVeto: { valores: ['sancionado', 'vetado'], labels: ['Sancionado', 'Vetado'] },
+  vetoManutencao: { valores: ['aprovado', 'reprovado'], labels: ['Manter Veto', 'Derrubar Veto'] },
+}
+function getOpcoes(key: string) {
+  return OPCOES_POR_CHAVE[key] || { valores: ['aprovado', 'reprovado'] as [string, string], labels: ['Aprovado', 'Reprovado'] as [string, string] }
+}
+function labelResultado(key: string, valor?: string) {
+  if (!valor) return ''
+  const { valores, labels } = getOpcoes(key)
+  const i = valores.indexOf(valor)
+  return i >= 0 ? labels[i] : valor
+}
+
+function primeiroNome(nome: string) {
+  return nome.trim().split(/\s+/)[0]
+}
 
 function formatNumero(n: string) {
   return n.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')
@@ -164,10 +182,8 @@ export default function EditarSeggovPage() {
       data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '' }
     } else if (def.tipo === 'nome1') {
       data = { nome1: p.nome1 || '' }
-    } else if (def.tipo === 'resultado') {
-      data = { resultado: p.resultado || 'aprovado' }
-    } else if (def.tipo === 'emendaInfo') {
-      data = { emendaTipo: p.emendaTipo || 'PL', numero: p.numero || '', ano: p.ano || '' }
+    } else if (def.tipo === 'resultado' || def.tipo === 'sancao') {
+      data = { resultado: p.resultado || getOpcoes(def.key).valores[0] }
     } else if (def.tipo === 'data') {
       if (!p.data) { alert('Selecione a data antes de marcar.'); return }
       doneAt = p.data + 'T12:00:00.000Z'
@@ -236,12 +252,12 @@ export default function EditarSeggovPage() {
     const state = fluxo[def.key]
     const done = !!state?.done
     const p = pending[def.key] || {}
-    const inline = def.tipo === 'data' || def.tipo === 'comissao3nomes' || def.tipo === 'resultado' || def.tipo === 'emendaInfo'
+    const destaque = ['resultadoFinal', 'emendaResultado', 'sancaoVeto', 'vetoManutencao'].includes(def.key)
 
     const cardClass = !done
       ? 'border-gray-200 bg-white'
-      : (def.key === 'resultadoFinal' || def.key === 'emendaResultado')
-        ? (state?.data?.resultado === 'reprovado' ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-100')
+      : destaque
+        ? (NEGATIVOS.has(state?.data?.resultado || '') ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-100')
         : 'border-green-300 bg-green-50'
 
     const circle = (
@@ -261,102 +277,98 @@ export default function EditarSeggovPage() {
           className="text-xs px-2.5 py-1 rounded-md bg-green-500 text-white hover:bg-green-600 transition font-medium shadow-sm whitespace-nowrap flex-shrink-0">Marcar</button>
 
     return (
-      <div key={def.key} className={`rounded-xl border-2 shadow-sm transition-all ${cardClass}`}>
-        {inline ? (
-          <div className="flex items-center gap-3 p-3 flex-wrap">
-            {circle}
-            <span className={`text-sm font-medium flex-shrink-0 ${done ? 'text-green-700' : 'text-gray-700'}`}>{def.label}</span>
-            {!done && def.tipo === 'data' && (
-              <input type="date" value={p.data || ''} onChange={e => setPendingData(def.key, 'data', e.target.value)} className={`flex-1 ${inpSm}`} />
-            )}
-            {!done && def.tipo === 'comissao3nomes' && (
-              <>
-                <input placeholder="Membro 1" value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={`flex-1 ${inpSm}`} />
-                <input placeholder="Membro 2" value={p.nome2 || ''} onChange={e => setPendingData(def.key, 'nome2', e.target.value)} className={`flex-1 ${inpSm}`} />
-                <input placeholder="Membro 3" value={p.nome3 || ''} onChange={e => setPendingData(def.key, 'nome3', e.target.value)} className={`flex-1 ${inpSm}`} />
-              </>
-            )}
-            {!done && def.tipo === 'resultado' && (
-              <div className="flex gap-1.5 flex-shrink-0">
-                {(['aprovado', 'reprovado'] as const).map(r => (
-                  <button key={r} type="button"
-                    onClick={() => setPendingData(def.key, 'resultado', r)}
-                    className={`text-xs px-2.5 py-1 rounded-md border transition font-medium ${
-                      p.resultado === r
-                        ? r === 'aprovado' ? 'border-green-400 bg-green-50 text-green-700' : 'border-red-400 bg-red-50 text-red-700'
-                        : 'border-gray-200 text-gray-400 hover:border-gray-300'
-                    }`}>
-                    {r === 'aprovado' ? 'Aprovado' : 'Reprovado'}
-                  </button>
-                ))}
-              </div>
-            )}
-            {!done && def.tipo === 'emendaInfo' && (
-              <>
-                <select value={p.emendaTipo || 'PL'} onChange={e => setPendingData(def.key, 'emendaTipo', e.target.value)} className={`w-20 flex-shrink-0 ${inpSm}`}>
-                  {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-                <input placeholder="Número" value={p.numero || ''} onChange={e => setPendingData(def.key, 'numero', e.target.value)} className={`flex-1 ${inpSm}`} />
-                <input placeholder="Ano" value={p.ano || ''} onChange={e => setPendingData(def.key, 'ano', e.target.value)} className={`w-20 flex-shrink-0 ${inpSm}`} />
-              </>
-            )}
-            {done && (
-              <div className="flex-1 flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-gray-400">{fmtData(state.doneAt)}</span>
-                {state.data?.resultado && (
-                  <span className={`text-xs px-2 py-0.5 rounded font-semibold ${state.data.resultado === 'aprovado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {state.data.resultado === 'aprovado' ? 'Aprovado' : 'Reprovado'}
-                  </span>
-                )}
-                {state.data?.numero && (
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                    {state.data.emendaTipo ? `${state.data.emendaTipo} ` : ''}{state.data.numero}{state.data.ano ? `/${state.data.ano}` : ''}
-                  </span>
-                )}
-                {[state.data?.nome1, state.data?.nome2, state.data?.nome3].filter(Boolean).map((n, i) => (
-                  <span key={i} className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{n}</span>
-                ))}
-              </div>
-            )}
+      <div key={def.key} className={`rounded-xl border-2 shadow-sm transition-all p-3 ${cardClass}`}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 min-w-0">
+            <div className="mt-0.5">{circle}</div>
+            <span className={`text-sm font-medium leading-tight ${done ? 'text-green-700' : 'text-gray-700'}`}>{def.label}</span>
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {done && <span className="text-xs text-gray-400 whitespace-nowrap">{fmtData(state.doneAt)}</span>}
             {btnMarcar}
           </div>
-        ) : (
-          <div className="flex items-start gap-3 p-3">
-            <div className="mt-0.5">{circle}</div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className={`text-sm font-medium leading-tight ${done ? 'text-green-700' : 'text-gray-700'}`}>{def.label}</span>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  {done && <span className="text-xs text-gray-400 whitespace-nowrap">{fmtData(state.doneAt)}</span>}
-                  {btnMarcar}
-                </div>
-              </div>
-              {done && state.data && (
-                <div className="mt-1.5 flex flex-wrap gap-1">
-                  {state.data.comissaoNome && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">{state.data.comissaoNome}</span>}
-                  {[state.data.nome1, state.data.nome2, state.data.nome3].filter(Boolean).map((n, i) => (
-                    <span key={i} className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{n}</span>
-                  ))}
-                </div>
-              )}
-              {!done && def.tipo === 'comissao' && (
-                <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-2 ${inpSm}`}>
-                  <option value="">— Selecionar comissão —</option>
-                  {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
-                </select>
-              )}
-              {!done && def.tipo === 'nome1' && (
-                <input placeholder="Nome do solicitante" value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={`mt-2 ${inpSm}`} />
-              )}
-            </div>
+        </div>
+
+        {!done && def.tipo === 'data' && (
+          <input type="date" value={p.data || ''} onChange={e => setPendingData(def.key, 'data', e.target.value)} className={`mt-2 w-full ${inpSm}`} />
+        )}
+
+        {!done && def.tipo === 'comissao3nomes' && (
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {(['nome1', 'nome2', 'nome3'] as const).map((campo, i) => (
+              <select key={campo} value={p[campo] || ''} onChange={e => setPendingData(def.key, campo, e.target.value)} className={inpSm}>
+                <option value="">— Membro {i + 1} —</option>
+                {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
+              </select>
+            ))}
+          </div>
+        )}
+
+        {!done && (def.tipo === 'resultado' || def.tipo === 'sancao') && (
+          <div className="mt-2 flex gap-1.5 flex-wrap">
+            {getOpcoes(def.key).valores.map((r, i) => (
+              <button key={r} type="button"
+                onClick={() => setPendingData(def.key, 'resultado', r)}
+                className={`text-xs px-2.5 py-1 rounded-md border transition font-medium ${
+                  p.resultado === r
+                    ? NEGATIVOS.has(r) ? 'border-red-400 bg-red-50 text-red-700' : 'border-green-400 bg-green-50 text-green-700'
+                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                }`}>
+                {getOpcoes(def.key).labels[i]}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {!done && def.tipo === 'comissao' && (
+          <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-2 w-full ${inpSm}`}>
+            <option value="">— Selecionar comissão —</option>
+            {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
+          </select>
+        )}
+
+        {!done && def.tipo === 'nome1' && (
+          <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={`mt-2 w-full ${inpSm}`}>
+            <option value="">— Selecionar vereador —</option>
+            {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
+          </select>
+        )}
+
+        {done && (state.data?.resultado || state.data?.comissaoNome || state.data?.nome1) && (
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {state.data?.resultado && (
+              <span className={`text-xs px-2 py-0.5 rounded font-semibold ${NEGATIVOS.has(state.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                {labelResultado(def.key, state.data.resultado)}
+              </span>
+            )}
+            {state.data?.comissaoNome && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">{state.data.comissaoNome}</span>}
+            {[state.data?.nome1, state.data?.nome2, state.data?.nome3].filter(Boolean).map((n, i) => (
+              <span key={i} className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{n}</span>
+            ))}
           </div>
         )}
       </div>
     )
   }
 
+  function renderIdentificacaoCard() {
+    return (
+      <div className="rounded-xl border-2 border-gray-200 bg-gray-50 p-3 flex items-center gap-3">
+        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100 text-blue-600">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Identificação</p>
+          <p className="text-sm font-semibold text-gray-700">{form.tipo} {formatNumero(form.numero)}/{form.ano}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="max-w-5xl mx-auto space-y-5 pb-10">
+    <div className="max-w-7xl mx-auto space-y-5 pb-10">
       <div className="flex items-center">
         <Link href="/dashboard/segov"
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition w-24">
@@ -391,7 +403,7 @@ export default function EditarSeggovPage() {
               {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-          <div className="w-44 flex-shrink-0">
+          <div className="flex-1 min-w-[220px]">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Autor</label>
             <select onChange={e => { adicionarAutor(e.target.value); e.target.value = '' }} className={inp}>
               <option value="">— Selecionar —</option>
@@ -401,13 +413,13 @@ export default function EditarSeggovPage() {
               </optgroup>
             </select>
           </div>
-          <div className="w-36 flex-shrink-0">
+          <div className="flex-1 min-w-[180px]">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
             <select value={form.status} onChange={e => set('status', e.target.value)} className={inp}>
               {STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
-          <div className="w-52 flex-shrink-0">
+          <div className="w-64 flex-shrink-0">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Dias em Aberto</label>
             {diasEmAberto !== null ? (
               <div className="rounded-lg border px-3 py-2 bg-blue-50 border-blue-200">
@@ -489,16 +501,11 @@ export default function EditarSeggovPage() {
                         <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center">{step.data.comissaoNome}</span>
                       )}
                       {step.data?.resultado && (
-                        <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${step.data.resultado === 'aprovado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {step.data.resultado === 'aprovado' ? 'Aprov.' : 'Reprov.'}
+                        <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${NEGATIVOS.has(step.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                          {labelResultado(step.key, step.data.resultado)}
                         </span>
                       )}
-                      {step.data?.numero && (
-                        <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center">
-                          {step.data.emendaTipo ? `${step.data.emendaTipo} ` : ''}{step.data.numero}{step.data.ano ? `/${step.data.ano}` : ''}
-                        </span>
-                      )}
-                      {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.resultado && !step.data?.numero && (
+                      {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.resultado && (
                         <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center truncate max-w-[56px]">{step.data.nome1}</span>
                       )}
                     </div>
@@ -527,8 +534,8 @@ export default function EditarSeggovPage() {
               {renderStepCard('pautado')}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
-              <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+              <div className="flex flex-col gap-4 rounded-2xl border-2 border-green-200 p-3 h-full">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Comissões</h4>
                 {renderStepCard('comissao1')}
                 {renderStepCard('comissao2')}
@@ -537,7 +544,7 @@ export default function EditarSeggovPage() {
                 {renderStepCard('comissaoEspecial')}
               </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 rounded-2xl border-2 border-green-200 p-3 h-full">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Dispensas e Pedidos</h4>
                 {renderStepCard('dispensaParecer')}
                 {renderStepCard('dispensaIntersticio')}
@@ -545,10 +552,10 @@ export default function EditarSeggovPage() {
                 {renderStepCard('pedidoAdiamento')}
               </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 rounded-2xl border-2 border-green-200 p-3 h-full">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Emenda</h4>
                 {renderStepCard('emenda')}
-                {renderStepCard('emendaNumero')}
+                {renderIdentificacaoCard()}
                 <div className="grid grid-cols-2 gap-4">
                   {renderStepCard('emendaVotacao1')}
                   {renderStepCard('emendaVotacao2')}
@@ -557,14 +564,24 @@ export default function EditarSeggovPage() {
               </div>
             </div>
 
-            <div>
+            <div className="rounded-2xl border-2 border-green-200 p-3">
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Projeto de Lei</h4>
               <div className="space-y-4">
+                {renderIdentificacaoCard()}
                 <div className="grid grid-cols-2 gap-4">
                   {renderStepCard('votacao1')}
                   {renderStepCard('votacao2')}
                 </div>
                 {renderStepCard('resultadoFinal')}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border-2 border-green-200 p-3">
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Sanção e Promulgação</h4>
+              <div className="space-y-4">
+                {renderStepCard('sancaoVeto')}
+                {fluxo['sancaoVeto']?.data?.resultado === 'vetado' && renderStepCard('vetoManutencao')}
+                {renderStepCard('promulgacao')}
               </div>
             </div>
           </div>
