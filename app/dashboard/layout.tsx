@@ -88,8 +88,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
                 </svg>
               </div>
               <div>
-                <p className="font-bold text-white text-sm leading-tight">Legislativo</p>
-                <p className="text-xs leading-tight" style={{ color: "#f97316" }}>Nova Lima</p>
+                <p className="font-bold text-white text-sm leading-tight">SEGOV<span style={{ color: "#f97316" }}>.TECH</span></p>
               </div>
             </div>
           )}

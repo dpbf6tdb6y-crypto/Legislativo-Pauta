@@ -15,17 +15,17 @@ export async function enviarResetSenha({
 
   await enviarEmail({
     to: para,
-    subject: "Redefinição de senha — Legislativo Pauta (Câmara de Nova Lima)",
+    subject: "Redefinição de senha — SEGOV.TECH (Câmara de Nova Lima)",
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #f8fafc; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h2 style="color: #1e293b; margin: 0;">Legislativo Pauta</h2>
+          <h2 style="color: #1e293b; margin: 0;">SEGOV.TECH</h2>
           <p style="color: #8B0000; font-weight: bold; margin: 4px 0 0;">Câmara Municipal de Nova Lima</p>
         </div>
 
         <div style="background: white; border-radius: 10px; padding: 24px; border: 1px solid #e2e8f0;">
           <p style="color: #374151; margin-top: 0;">Olá, <strong>${nome}</strong>!</p>
-          <p style="color: #374151;">Recebemos uma solicitação para redefinir a senha da sua conta no sistema Legislativo Pauta.</p>
+          <p style="color: #374151;">Recebemos uma solicitação para redefinir a senha da sua conta no sistema SEGOV.TECH.</p>
           <p style="color: #374151;">Clique no botão abaixo para criar uma nova senha:</p>
 
           <div style="text-align: center; margin: 28px 0;">
@@ -40,7 +40,7 @@ export async function enviarResetSenha({
         </div>
 
         <p style="color: #cbd5e1; font-size: 11px; text-align: center; margin-top: 20px;">
-          Legislativo Pauta · Câmara Municipal de Nova Lima · MG
+          SEGOV.TECH · Câmara Municipal de Nova Lima · MG
         </p>
       </div>
     `,
@@ -60,11 +60,11 @@ export async function enviarBackupSistema({
 
   await enviarEmail({
     to: para,
-    subject: `Backup do Sistema — Legislativo Pauta — ${data}`,
+    subject: `Backup do Sistema — SEGOV.TECH — ${data}`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #f8fafc; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h2 style="color: #1e293b; margin: 0;">Legislativo Pauta</h2>
+          <h2 style="color: #1e293b; margin: 0;">SEGOV.TECH</h2>
           <p style="color: #8B0000; font-weight: bold; margin: 4px 0 0;">Câmara Municipal de Nova Lima</p>
         </div>
         <div style="background: white; border-radius: 10px; padding: 24px; border: 1px solid #e2e8f0;">
@@ -73,7 +73,7 @@ export async function enviarBackupSistema({
           <p style="color: #374151;">O arquivo <strong>${nomeArquivo}</strong> está anexado a este e-mail, contendo todas as abas: Requerimentos, TAGs, Proposições (SEGOV), Sessões, Vereadores, Comissões, Analistas e Log de Auditoria.</p>
         </div>
         <p style="color: #cbd5e1; font-size: 11px; text-align: center; margin-top: 20px;">
-          Legislativo Pauta · Câmara Municipal de Nova Lima · MG
+          SEGOV.TECH · Câmara Municipal de Nova Lima · MG
         </p>
       </div>
     `,
@@ -100,11 +100,11 @@ export async function enviarCodigoFonte({
 
   await enviarEmail({
     to: para,
-    subject: `Backup do código-fonte — Legislativo Pauta — ${data}`,
+    subject: `Backup do código-fonte — SEGOV.TECH — ${data}`,
     html: `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #f8fafc; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <h2 style="color: #1e293b; margin: 0;">Legislativo Pauta</h2>
+          <h2 style="color: #1e293b; margin: 0;">SEGOV.TECH</h2>
           <p style="color: #8B0000; font-weight: bold; margin: 4px 0 0;">Câmara Municipal de Nova Lima</p>
         </div>
         <div style="background: white; border-radius: 10px; padding: 24px; border: 1px solid #e2e8f0;">
@@ -112,7 +112,7 @@ export async function enviarCodigoFonte({
           <p style="color: #374151;">O arquivo contém apenas o código versionado no GitHub — sem dados do sistema e sem variáveis de ambiente/segredos.</p>
         </div>
         <p style="color: #cbd5e1; font-size: 11px; text-align: center; margin-top: 20px;">
-          Legislativo Pauta · Câmara Municipal de Nova Lima · MG
+          SEGOV.TECH · Câmara Municipal de Nova Lima · MG
         </p>
       </div>
     `,

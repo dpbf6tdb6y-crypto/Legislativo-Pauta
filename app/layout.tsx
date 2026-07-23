@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Legislativo Pauta - Câmara Municipal",
-  description: "Legislativo Pauta — Gestão de pautas e proposições legislativas",
+  title: "SEGOV.TECH - Câmara Municipal de Nova Lima",
+  description: "SEGOV.TECH — Gestão de pautas e proposições legislativas",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -49,8 +49,7 @@ export default function LoginPage() {
             </svg>
           </div>
 
-          <h1 className="text-4xl font-bold mb-2 text-white tracking-tight">Legislativo</h1>
-          <h2 className="text-2xl font-semibold mb-1" style={{ color: "#f97316" }}>Nova Lima</h2>
+          <h1 className="text-4xl font-bold mb-2 text-white tracking-tight">SEGOV<span style={{ color: "#f97316" }}>.TECH</span></h1>
           <div className="w-14 h-0.5 mx-auto mt-5 mb-6 rounded"
             style={{ background: "linear-gradient(90deg, #f97316, #a855f7)" }} />
           <p className="text-base opacity-70 font-light tracking-wide">Sistema de Gestão de Pautas</p>
@@ -71,7 +70,7 @@ export default function LoginPage() {
                   d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-gray-800">Legislativo Nova Lima</h1>
+            <h1 className="text-xl font-bold text-gray-800">SEGOV<span style={{ color: "#a855f7" }}>.TECH</span></h1>
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-8">
@@ -126,7 +125,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            Legislativo Nova Lima
+            SEGOV.TECH
           </p>
         </div>
       </div>

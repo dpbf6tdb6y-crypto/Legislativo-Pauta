@@ -34,7 +34,7 @@ export async function enviarEmail({ to, subject, html, attachments = [] }: Envia
   const from = process.env.EMAIL_USER;
 
   const linhas = [
-    `From: ${encodeHeaderWord("Legislativo Pauta - Câmara de Nova Lima")} <${from}>`,
+    `From: ${encodeHeaderWord("SEGOV.TECH - Câmara de Nova Lima")} <${from}>`,
     `To: ${to}`,
     `Subject: ${encodeHeaderWord(subject)}`,
     "MIME-Version: 1.0",
