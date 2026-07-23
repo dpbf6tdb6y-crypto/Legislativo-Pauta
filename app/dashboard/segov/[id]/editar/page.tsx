@@ -248,7 +248,6 @@ export default function EditarSeggovPage() {
 
   function renderStepCard(key: string) {
     const def = FLUXO_DEF.find(d => d.key === key)!
-    const idx = FLUXO_DEF.indexOf(def)
     const state = fluxo[def.key]
     const done = !!state?.done
     const p = pending[def.key] || {}
@@ -261,40 +260,38 @@ export default function EditarSeggovPage() {
         : 'border-green-300 bg-green-50'
 
     const circle = (
-      <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-        done ? 'bg-green-500 text-white shadow-sm shadow-green-200' : 'bg-gray-100 text-gray-400 border border-gray-200'
+      <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+        done ? 'bg-green-500 text-white' : 'bg-white border border-gray-300'
       }`}>
-        {done
-          ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg>
-          : <span className="text-xs font-bold">{idx + 1}</span>}
+        {done && <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
       </div>
     )
 
     const btnMarcar = done
       ? <button type="button" onClick={() => desmarcar(def.key)}
-          className="text-xs text-red-400 hover:text-red-600 transition px-1.5 py-0.5 rounded border border-red-200 hover:border-red-300 hover:bg-red-50 flex-shrink-0">✕</button>
+          className="text-[10px] text-red-400 hover:text-red-600 transition px-1 py-0.5 rounded border border-red-200 hover:border-red-300 hover:bg-red-50 flex-shrink-0">✕</button>
       : <button type="button" onClick={() => marcar(def.key)}
-          className="text-xs px-2.5 py-1 rounded-md bg-green-500 text-white hover:bg-green-600 transition font-medium shadow-sm whitespace-nowrap flex-shrink-0">Marcar</button>
+          className="text-[10px] px-2 py-0.5 rounded-md bg-green-500 text-white hover:bg-green-600 transition font-medium whitespace-nowrap flex-shrink-0">Marcar</button>
 
     return (
-      <div key={def.key} className={`rounded-xl border-2 shadow-sm transition-all p-3 ${cardClass}`}>
+      <div key={def.key} className={`rounded-lg border shadow-sm transition-all p-2 ${cardClass}`}>
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 min-w-0">
+          <div className="flex items-start gap-1.5 min-w-0">
             <div className="mt-0.5">{circle}</div>
-            <span className={`text-sm font-medium leading-tight ${done ? 'text-green-700' : 'text-gray-700'}`}>{def.label}</span>
+            <span className={`text-xs font-medium leading-tight ${done ? 'text-green-700' : 'text-gray-700'}`}>{def.label}</span>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {done && <span className="text-xs text-gray-400 whitespace-nowrap">{fmtData(state.doneAt)}</span>}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {done && <span className="text-[10px] text-gray-400 whitespace-nowrap">{fmtData(state.doneAt)}</span>}
             {btnMarcar}
           </div>
         </div>
 
         {!done && def.tipo === 'data' && (
-          <input type="date" value={p.data || ''} onChange={e => setPendingData(def.key, 'data', e.target.value)} className={`mt-2 w-full ${inpSm}`} />
+          <input type="date" value={p.data || ''} onChange={e => setPendingData(def.key, 'data', e.target.value)} className={`mt-1.5 w-full ${inpSm}`} />
         )}
 
         {!done && def.tipo === 'comissao3nomes' && (
-          <div className="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-3 gap-1.5">
             {(['nome1', 'nome2', 'nome3'] as const).map((campo, i) => (
               <select key={campo} value={p[campo] || ''} onChange={e => setPendingData(def.key, campo, e.target.value)} className={inpSm}>
                 <option value="">— Membro {i + 1} —</option>
@@ -305,11 +302,11 @@ export default function EditarSeggovPage() {
         )}
 
         {!done && (def.tipo === 'resultado' || def.tipo === 'sancao') && (
-          <div className="mt-2 flex gap-1.5 flex-wrap">
+          <div className="mt-1.5 flex gap-1 flex-wrap">
             {getOpcoes(def.key).valores.map((r, i) => (
               <button key={r} type="button"
                 onClick={() => setPendingData(def.key, 'resultado', r)}
-                className={`text-xs px-2.5 py-1 rounded-md border transition font-medium ${
+                className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
                   p.resultado === r
                     ? NEGATIVOS.has(r) ? 'border-red-400 bg-red-50 text-red-700' : 'border-green-400 bg-green-50 text-green-700'
                     : 'border-gray-200 text-gray-400 hover:border-gray-300'
@@ -321,29 +318,29 @@ export default function EditarSeggovPage() {
         )}
 
         {!done && def.tipo === 'comissao' && (
-          <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-2 w-full ${inpSm}`}>
+          <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
             <option value="">— Selecionar comissão —</option>
             {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
           </select>
         )}
 
         {!done && def.tipo === 'nome1' && (
-          <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={`mt-2 w-full ${inpSm}`}>
+          <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
             <option value="">— Selecionar vereador —</option>
             {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
           </select>
         )}
 
         {done && (state.data?.resultado || state.data?.comissaoNome || state.data?.nome1) && (
-          <div className="mt-1.5 flex flex-wrap gap-1">
+          <div className="mt-1 flex flex-wrap gap-1">
             {state.data?.resultado && (
-              <span className={`text-xs px-2 py-0.5 rounded font-semibold ${NEGATIVOS.has(state.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${NEGATIVOS.has(state.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                 {labelResultado(def.key, state.data.resultado)}
               </span>
             )}
-            {state.data?.comissaoNome && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">{state.data.comissaoNome}</span>}
+            {state.data?.comissaoNome && <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">{state.data.comissaoNome}</span>}
             {[state.data?.nome1, state.data?.nome2, state.data?.nome3].filter(Boolean).map((n, i) => (
-              <span key={i} className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">{n}</span>
+              <span key={i} className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{n}</span>
             ))}
           </div>
         )}
@@ -353,15 +350,15 @@ export default function EditarSeggovPage() {
 
   function renderIdentificacaoCard() {
     return (
-      <div className="rounded-xl border-2 border-gray-200 bg-gray-50 p-3 flex items-center gap-3">
-        <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100 text-blue-600">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 flex items-center gap-2">
+        <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100 text-blue-600">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Identificação</p>
-          <p className="text-sm font-semibold text-gray-700">{form.tipo} {formatNumero(form.numero)}/{form.ano}</p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold leading-tight">Identificação</p>
+          <p className="text-xs font-semibold text-gray-700 leading-tight">{form.tipo} {formatNumero(form.numero)}/{form.ano}</p>
         </div>
       </div>
     )
@@ -528,15 +525,15 @@ export default function EditarSeggovPage() {
             </div>
           )}
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4 items-start">
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2 items-start">
               {renderStepCard('protocolado')}
               {renderStepCard('pautado')}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-              <div className="flex flex-col gap-4 rounded-2xl border-2 border-green-200 p-3 h-full">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Comissões</h4>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-stretch">
+              <div className="flex flex-col gap-2 rounded-xl border border-green-200 p-2 h-full">
+                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Comissões</h4>
                 {renderStepCard('comissao1')}
                 {renderStepCard('comissao2')}
                 {renderStepCard('comissao3')}
@@ -544,19 +541,19 @@ export default function EditarSeggovPage() {
                 {renderStepCard('comissaoEspecial')}
               </div>
 
-              <div className="flex flex-col gap-4 rounded-2xl border-2 border-green-200 p-3 h-full">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Dispensas e Pedidos</h4>
+              <div className="flex flex-col gap-2 rounded-xl border border-green-200 p-2 h-full">
+                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Dispensas e Pedidos</h4>
                 {renderStepCard('dispensaParecer')}
                 {renderStepCard('dispensaIntersticio')}
                 {renderStepCard('pedidoVista')}
                 {renderStepCard('pedidoAdiamento')}
               </div>
 
-              <div className="flex flex-col gap-4 rounded-2xl border-2 border-green-200 p-3 h-full">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Emenda</h4>
+              <div className="flex flex-col gap-2 rounded-xl border border-green-200 p-2 h-full">
+                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Emenda</h4>
                 {renderStepCard('emenda')}
                 {renderIdentificacaoCard()}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2">
                   {renderStepCard('emendaVotacao1')}
                   {renderStepCard('emendaVotacao2')}
                 </div>
@@ -564,11 +561,11 @@ export default function EditarSeggovPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border-2 border-green-200 p-3">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Projeto de Lei</h4>
-              <div className="space-y-4">
+            <div className="rounded-xl border border-green-200 p-2">
+              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Projeto de Lei</h4>
+              <div className="space-y-2">
                 {renderIdentificacaoCard()}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2">
                   {renderStepCard('votacao1')}
                   {renderStepCard('votacao2')}
                 </div>
@@ -576,9 +573,9 @@ export default function EditarSeggovPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border-2 border-green-200 p-3">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Sanção e Promulgação</h4>
-              <div className="space-y-4">
+            <div className="rounded-xl border border-green-200 p-2">
+              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Sanção e Promulgação</h4>
+              <div className="space-y-2">
                 {renderStepCard('sancaoVeto')}
                 {fluxo['sancaoVeto']?.data?.resultado === 'vetado' && renderStepCard('vetoManutencao')}
                 {renderStepCard('promulgacao')}
