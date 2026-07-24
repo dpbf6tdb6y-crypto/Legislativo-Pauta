@@ -261,20 +261,18 @@ model ConfigOpcao {
 }
 
 model Requerimento {
-  id            String    @id @default(cuid())
-  referencia    String    @unique
-  data          DateTime
-  texto         String
-  status        String    @default("Aguardando")
-  relevancia    String?
-  vereadorId    String?
-  origem        String?
-  categoria     String?
-  secretaria    String?
-  dataConclusao DateTime?
-  documentos    String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id         String    @id @default(cuid())
+  numero     String
+  ano        Int       @default(2026)
+  tipo       String
+  descricao  String
+  vereadorId String?
+  autorNome  String?
+  status     String    @default("Aguardando")
+  dataEnvio  DateTime?
+  fluxo      Json?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   vereador Vereador? @relation("RequerimentoAutor", fields: [vereadorId], references: [id])
 }

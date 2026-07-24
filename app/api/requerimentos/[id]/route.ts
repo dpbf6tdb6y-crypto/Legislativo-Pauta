@@ -24,16 +24,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const item = await prisma.requerimento.update({
     where: { id: params.id },
     data: {
-      data: body.data ? new Date(body.data) : undefined,
-      texto: body.texto,
-      status: body.status,
-      relevancia: body.relevancia ?? null,
+      numero: body.numero,
+      ano: parseInt(body.ano) || new Date().getFullYear(),
+      tipo: body.tipo,
+      descricao: body.descricao,
       vereadorId: body.vereadorId || null,
-      origem: body.origem ?? null,
-      categoria: body.categoria ?? null,
-      secretaria: body.secretaria ?? null,
-      dataConclusao: body.dataConclusao ? new Date(body.dataConclusao) : null,
-      documentos: body.documentos ?? null,
+      autorNome: body.autorNome || null,
+      status: body.status,
+      dataEnvio: body.dataEnvio ? new Date(body.dataEnvio) : null,
+      fluxo: body.fluxo ?? undefined,
     },
     include: { vereador: true },
   });
@@ -42,7 +41,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     acao: "atualizar_requerimento",
     entidade: "Requerimento",
     entidadeId: item.id,
-    referencia: item.referencia,
+    referencia: `${item.tipo} ${item.numero}/${item.ano}`,
     usuarioId: (session.user as any).id,
     usuarioNome: session.user?.name ?? undefined,
   });
@@ -61,7 +60,7 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     acao: "excluir_requerimento",
     entidade: "Requerimento",
     entidadeId: item.id,
-    referencia: item.referencia,
+    referencia: `${item.tipo} ${item.numero}/${item.ano}`,
     usuarioId: (session.user as any).id,
     usuarioNome: session.user?.name ?? undefined,
   });

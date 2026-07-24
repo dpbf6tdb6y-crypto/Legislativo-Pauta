@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-const TIPOS = ['PL', 'PLC', 'PDL', 'REQ', 'IND', 'MOC']
+const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 export default function NovoSeggovPage() {

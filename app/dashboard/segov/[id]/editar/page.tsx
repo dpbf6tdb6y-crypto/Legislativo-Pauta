@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 
-const TIPOS = ['PL', 'PLC', 'PDL', 'REQ', 'IND', 'MOC']
+const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
 const STATUS_LIST = ['Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 type Autor = { id?: string; nome: string; isPE: boolean }

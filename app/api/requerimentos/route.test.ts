@@ -7,7 +7,7 @@ vi.mock("next-auth", () => ({ getServerSession: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ authOptions: {} }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    requerimento: { findMany: vi.fn(), count: vi.fn(), create: vi.fn() },
+    requerimento: { findMany: vi.fn(), create: vi.fn() },
   },
 }));
 
@@ -19,6 +19,10 @@ function mockSession(perfil: string | null) {
   }
 }
 
+function getReq() {
+  return new Request("http://localhost/api/requerimentos") as any;
+}
+
 function postReq(body: any) {
   return new Request("http://localhost/api/requerimentos", { method: "POST", body: JSON.stringify(body) }) as any;
 }
@@ -28,7 +32,7 @@ describe("/api/requerimentos", () => {
 
   it("GET retorna 401 sem sessão", async () => {
     mockSession(null);
-    const res = await GET();
+    const res = await GET(getReq());
     expect(res.status).toBe(401);
     expect(prisma.requerimento.findMany).not.toHaveBeenCalled();
   });
@@ -36,22 +40,21 @@ describe("/api/requerimentos", () => {
   it("GET retorna 200 com sessão de operador", async () => {
     mockSession("operador");
     (prisma.requerimento.findMany as any).mockResolvedValue([]);
-    const res = await GET();
+    const res = await GET(getReq());
     expect(res.status).toBe(200);
   });
 
   it("POST retorna 401 sem sessão", async () => {
     mockSession(null);
-    const res = await POST(postReq({ data: "2026-01-01", texto: "teste" }));
+    const res = await POST(postReq({ numero: "1", ano: "2026", tipo: "REQ", descricao: "teste" }));
     expect(res.status).toBe(401);
     expect(prisma.requerimento.create).not.toHaveBeenCalled();
   });
 
   it("POST cria normalmente com sessão de operador (não precisa ser admin)", async () => {
     mockSession("operador");
-    (prisma.requerimento.count as any).mockResolvedValue(0);
     (prisma.requerimento.create as any).mockResolvedValue({ id: "1" });
-    const res = await POST(postReq({ data: "2026-01-01", texto: "teste" }));
+    const res = await POST(postReq({ numero: "1", ano: "2026", tipo: "REQ", descricao: "teste" }));
     expect(res.status).toBe(201);
     expect(prisma.requerimento.create).toHaveBeenCalled();
   });

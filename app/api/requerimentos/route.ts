@@ -4,13 +4,23 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { registrarAuditoria } from "@/lib/auditoria";
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
+  const { searchParams } = new URL(req.url);
+  const tipo = searchParams.get("tipo");
+  const status = searchParams.get("status");
+  const vereadorId = searchParams.get("vereadorId");
+
   const itens = await prisma.requerimento.findMany({
+    where: {
+      ...(tipo ? { tipo } : {}),
+      ...(status ? { status } : {}),
+      ...(vereadorId ? { vereadorId } : {}),
+    },
     include: { vereador: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ ano: "desc" }, { numero: "asc" }],
   });
   return NextResponse.json(itens);
 }
@@ -20,22 +30,16 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const body = await req.json();
-  const ano = new Date().getFullYear();
-  const count = await prisma.requerimento.count();
-  const referencia = `REQ-${String(count + 1).padStart(3, "0")}/${ano}`;
   const item = await prisma.requerimento.create({
     data: {
-      referencia,
-      data: new Date(body.data),
-      texto: body.texto,
-      status: body.status || "Aguardando",
-      relevancia: body.relevancia || null,
+      numero: body.numero,
+      ano: parseInt(body.ano) || new Date().getFullYear(),
+      tipo: body.tipo,
+      descricao: body.descricao,
       vereadorId: body.vereadorId || null,
-      origem: body.origem || null,
-      categoria: body.categoria || null,
-      secretaria: body.secretaria || null,
-      dataConclusao: body.dataConclusao ? new Date(body.dataConclusao) : null,
-      documentos: body.documentos || null,
+      autorNome: body.autorNome || null,
+      status: body.status || "Aguardando",
+      dataEnvio: body.dataEnvio ? new Date(body.dataEnvio) : null,
     },
     include: { vereador: true },
   });
@@ -44,7 +48,7 @@ export async function POST(req: Request) {
     acao: "criar_requerimento",
     entidade: "Requerimento",
     entidadeId: item.id,
-    referencia: item.referencia,
+    referencia: `${item.tipo} ${item.numero}/${item.ano}`,
     usuarioId: (session.user as any).id,
     usuarioNome: session.user?.name ?? undefined,
   });

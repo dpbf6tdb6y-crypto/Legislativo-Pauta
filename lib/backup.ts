@@ -35,11 +35,10 @@ export async function gerarBackupXlsx(): Promise<Buffer> {
   const wb = XLSX.utils.book_new();
 
   addSheet(wb, "Requerimentos",
-    ["Referência", "Data", "Vereador", "Texto", "Status", "Relevância", "Origem", "Categoria", "Secretaria", "Conclusão", "Documentos"],
+    ["Tipo", "Número", "Ano", "Descrição", "Vereador", "Status", "Envio"],
     requerimentos.map(r => [
-      r.referencia, fmtDate(r.data), r.vereador?.nome ?? "", r.texto, r.status,
-      r.relevancia ?? "", r.origem ?? "", r.categoria ?? "", r.secretaria ?? "",
-      fmtDate(r.dataConclusao), r.documentos ?? "",
+      r.tipo, r.numero, r.ano, r.descricao, r.vereador?.nome ?? r.autorNome ?? "", r.status,
+      fmtDate(r.dataEnvio),
     ]));
 
   addSheet(wb, "TAGs",

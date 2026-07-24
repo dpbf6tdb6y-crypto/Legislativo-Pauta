@@ -36,7 +36,7 @@ describe("/api/requerimentos/[id]", () => {
 
   it("PATCH retorna 401 sem sessão", async () => {
     mockSession(null);
-    const res = await PATCH(patchReq({ texto: "novo" }), ctx);
+    const res = await PATCH(patchReq({ descricao: "novo" }), ctx);
     expect(res.status).toBe(401);
     expect(prisma.requerimento.update).not.toHaveBeenCalled();
   });
@@ -44,7 +44,7 @@ describe("/api/requerimentos/[id]", () => {
   it("PATCH funciona com sessão de operador (não precisa ser admin)", async () => {
     mockSession("operador");
     (prisma.requerimento.update as any).mockResolvedValue({ id: "abc" });
-    const res = await PATCH(patchReq({ texto: "novo" }), ctx);
+    const res = await PATCH(patchReq({ descricao: "novo" }), ctx);
     expect(res.status).toBe(200);
   });
 
