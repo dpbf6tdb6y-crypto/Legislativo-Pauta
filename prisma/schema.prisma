@@ -132,6 +132,8 @@ model Proposicao {
   numVotacoes         Int      @default(1)
   etapaAtual          String   @default("protocolado")
   destinoFinal        String   @default("sancao")
+  setorAtual          String?
+  protocolo           String?
   createdAt           DateTime @default(now())
 
   autores       ProposicaoAutor[]
@@ -243,6 +245,8 @@ model Segov {
   proxComissao    String?   // próxima comissão após o parecer
   dataParecere    DateTime? // data da sessão em que o parecer foi lido
   fluxo           Json?     // fluxo de tramitação (passos marcados)
+  setorAtual      String?   // setor/comissão atual (importação de planilha)
+  protocolo       String?   // número de protocolo (importação de planilha)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
