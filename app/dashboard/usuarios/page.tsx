@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import PasswordInput from "../../components/PasswordInput";
 
 type Usuario = {
   id: string;
@@ -239,10 +240,11 @@ export default function UsuariosPage() {
                   <span className="text-gray-400 font-normal normal-case ml-1">(mín. 6 car.)</span>
                 </label>
                 <div className="flex gap-2">
-                  <input name={isNovo ? "senha" : "novaSenha"} type="password"
+                  <PasswordInput name={isNovo ? "senha" : "novaSenha"}
                     required={isNovo}
                     placeholder={isNovo ? "Mínimo 6 caracteres" : "Deixe em branco para não alterar"}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40" />
+                    wrapperClassName="flex-1"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40" />
                   {!isNovo && u && (
                     <button type="button"
                       onClick={() => handleEnviarReset(u.id)}

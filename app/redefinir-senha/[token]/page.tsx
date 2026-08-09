@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import PasswordInput from "../../components/PasswordInput";
 
 export default function RedefinirSenhaPage() {
   const router = useRouter();
@@ -61,8 +62,7 @@ export default function RedefinirSenhaPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nova senha</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={senha}
                     onChange={e => setSenha(e.target.value)}
                     required
@@ -74,8 +74,7 @@ export default function RedefinirSenhaPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar senha</label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     value={confirmar}
                     onChange={e => setConfirmar(e.target.value)}
                     required

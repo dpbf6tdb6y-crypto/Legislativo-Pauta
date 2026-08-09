@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
+import PasswordInput from "../../../components/PasswordInput"
 
 const CHAVE_SESSAO = "indicacoes_desbloqueado"
 
@@ -49,7 +50,7 @@ export default function IndicacoesGate({ children }: { children: React.ReactNode
           <h1 className="font-bold text-gray-800 mb-1">Área restrita</h1>
           <p className="text-xs text-gray-500 mb-4">Informações sigilosas. Confirme sua senha para continuar.</p>
           <form onSubmit={confirmar} className="space-y-3">
-            <input type="password" autoFocus required value={senha} onChange={e => setSenha(e.target.value)}
+            <PasswordInput autoFocus required value={senha} onChange={e => setSenha(e.target.value)}
               placeholder="Sua senha de login"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-red-800/30" />
             {erro && <p className="text-xs text-red-600">{erro}</p>}

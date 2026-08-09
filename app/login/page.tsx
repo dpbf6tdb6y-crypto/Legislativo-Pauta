@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import PasswordInput from "../components/PasswordInput";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -98,8 +99,7 @@ export default function LoginPage() {
                     Esqueci a senha
                   </a>
                 </div>
-                <input
-                  type="password"
+                <PasswordInput
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none transition"
