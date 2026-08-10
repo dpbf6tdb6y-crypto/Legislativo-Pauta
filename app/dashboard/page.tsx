@@ -1,11 +1,10 @@
-import { prisma } from "@/lib/prisma";
-import DashboardCharts from "./DashboardCharts";
-
-export const dynamic = "force-dynamic";
+'use client'
+import { useEffect, useMemo, useState } from 'react'
+import DashboardCharts from './DashboardCharts'
 
 const STATUS_LIST = [
   'Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado',
-] as const;
+] as const
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
   'Aguardando':  { bg: 'bg-yellow-50',  text: 'text-yellow-700',  border: 'border-yellow-200'  },
@@ -15,135 +14,213 @@ const STATUS_STYLE: Record<string, { bg: string; text: string; border: string }>
   'Rejeitado':   { bg: 'bg-red-50',     text: 'text-red-700',     border: 'border-red-200'     },
   'Arquivado':   { bg: 'bg-gray-50',    text: 'text-gray-600',    border: 'border-gray-200'    },
   'Retirado':    { bg: 'bg-orange-50',  text: 'text-orange-700',  border: 'border-orange-200'  },
-};
+}
 
-const ANO_ATUAL = new Date().getFullYear();
+const ANO_ATUAL = new Date().getFullYear()
+
+type Item = {
+  id: string; tipo: string; numero: string; ano: number; ementa?: string | null
+  status: string; vereadorId: string | null; autorNome: string | null
+  vereador: { id: string; nome: string; apelido?: string | null } | null
+}
+type Vereador = { id: string; nome: string; apelido?: string | null; ativo: boolean; poder: string }
+type TipoOpcao = { id: string; nome: string }
 
 function isExec(item: { autorNome: string | null }) {
   return (item.autorNome || '').toLowerCase().includes('executivo')
       || (item.autorNome || '').toLowerCase().includes('prefeitura')
-      || (item.autorNome || '').toLowerCase().includes('prefeito');
+      || (item.autorNome || '').toLowerCase().includes('prefeito')
 }
 
 function isInstitucional(nome: string) {
-  const n = nome.toLowerCase();
-  return n.startsWith('mesa diretora') || n === 'autor personalizado';
+  const n = nome.toLowerCase()
+  return n.startsWith('mesa diretora') || n === 'autor personalizado'
 }
 
 // Divide o texto de autores por vírgula, mas ignora vírgulas dentro de parênteses
-// (ex: "Mesa Diretora (Anisinho, Claudinho Valle)" não pode virar dois autores)
 function splitAutores(campo: string | null): string[] {
-  if (!campo) return [];
-  const partes: string[] = [];
-  let atual = '';
-  let profundidade = 0;
+  if (!campo) return []
+  const partes: string[] = []
+  let atual = ''
+  let profundidade = 0
   for (const ch of campo) {
-    if (ch === '(') profundidade++;
-    if (ch === ')') profundidade--;
-    if (ch === ',' && profundidade === 0) { partes.push(atual.trim()); atual = ''; }
-    else atual += ch;
+    if (ch === '(') profundidade++
+    if (ch === ')') profundidade--
+    if (ch === ',' && profundidade === 0) { partes.push(atual.trim()); atual = '' }
+    else atual += ch
   }
-  if (atual.trim()) partes.push(atual.trim());
-  return partes.filter(Boolean);
+  if (atual.trim()) partes.push(atual.trim())
+  return partes.filter(Boolean)
 }
 
 function resultadoDe(status: string): 'aprovado' | 'rejeitado' | 'tramitando' {
-  if (status === 'Aprovado') return 'aprovado';
-  if (status === 'Rejeitado') return 'rejeitado';
-  return 'tramitando';
+  if (status === 'Aprovado') return 'aprovado'
+  if (status === 'Rejeitado') return 'rejeitado'
+  return 'tramitando'
 }
 
-export default async function DashboardPage() {
-  const [itens, requerimentos, vereadoresAtivos] = await Promise.all([
-    prisma.segov.findMany({ include: { vereador: true }, orderBy: [{ ano: 'desc' }, { numero: 'asc' }] }),
-    prisma.requerimento.findMany({ include: { vereador: true } }),
-    prisma.vereador.count({ where: { ativo: true, poder: 'legislativo' } }),
-  ]);
+export default function DashboardPage() {
+  const [itens, setItens] = useState<Item[]>([])
+  const [requerimentos, setRequerimentos] = useState<Item[]>([])
+  const [vereadoresTodos, setVereadoresTodos] = useState<Vereador[]>([])
+  const [tiposProposicao, setTiposProposicao] = useState<TipoOpcao[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const total = itens.length;
-  const totalReq = requerimentos.filter(r => r.tipo === 'REQ').length;
-  const totalMoc = requerimentos.filter(r => r.tipo === 'MOC').length;
-  const totalInd = requerimentos.filter(r => r.tipo === 'IND').length;
-  const totalGeral = total + requerimentos.length;
+  const [filtroAno, setFiltroAno] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState('')
+  const [filtroVereadorIds, setFiltroVereadorIds] = useState<Set<string>>(new Set())
+  const [painelVereadorAberto, setPainelVereadorAberto] = useState(false)
+  const [situacaoVereadorFiltro, setSituacaoVereadorFiltro] = useState<'ativos' | 'inativos' | 'todos'>('ativos')
 
-  // Por status — Proposições
-  const porStatus: Record<string, number> = {};
-  STATUS_LIST.forEach(s => { porStatus[s] = 0; });
-  itens.forEach(item => { porStatus[item.status] = (porStatus[item.status] || 0) + 1; });
+  useEffect(() => {
+    Promise.all([
+      fetch('/api/segov').then(r => r.json()),
+      fetch('/api/requerimentos').then(r => r.json()),
+      fetch('/api/vereadores?ativo=false').then(r => r.json()),
+      fetch('/api/config-opcoes?tipo=tipo_proposicao').then(r => r.json()),
+    ]).then(([segov, req, vers, tipos]) => {
+      setItens(segov)
+      setRequerimentos(req)
+      setVereadoresTodos(vers.filter((v: Vereador) => v.poder === 'legislativo' && !v.nome.startsWith('[Mesclado em ')))
+      setTiposProposicao(tipos)
+      setLoading(false)
+    })
+  }, [])
 
-  // Por status — Requerimentos/Moções/Indicações
-  const porStatusReq: Record<string, number> = {};
-  STATUS_LIST.forEach(s => { porStatusReq[s] = 0; });
-  requerimentos.forEach(item => { porStatusReq[item.status] = (porStatusReq[item.status] || 0) + 1; });
+  const vereadoresAtivos = useMemo(() => vereadoresTodos.filter(v => v.ativo).length, [vereadoresTodos])
 
-  // Resultado final — combinado, derivado do status real (não do fluxo manual, que não existe para dados importados)
-  let aprovadoFinal = 0, rejeitadoFinal = 0, tramitando = 0;
-  [...itens, ...requerimentos].forEach(item => {
-    const r = resultadoDe(item.status);
-    if (r === 'aprovado') aprovadoFinal++;
-    else if (r === 'rejeitado') rejeitadoFinal++;
-    else tramitando++;
-  });
-  const decididas = aprovadoFinal + rejeitadoFinal;
-  const taxaAprovacao = decididas > 0 ? Math.round((aprovadoFinal / decididas) * 100) : null;
+  const anosDisponiveis = useMemo(() => {
+    const set = new Set<number>()
+    itens.forEach(i => { if (i.ano >= 2000 && i.ano <= ANO_ATUAL + 1) set.add(i.ano) })
+    requerimentos.forEach(i => { if (i.ano >= 2000 && i.ano <= ANO_ATUAL + 1) set.add(i.ano) })
+    return [...set].sort((a, b) => b - a)
+  }, [itens, requerimentos])
 
-  const executivoItens = itens.filter(isExec);
-  const totalExecutivo = executivoItens.length;
+  const vereadoresListados = useMemo(() => vereadoresTodos
+    .filter(v => situacaoVereadorFiltro === 'todos' ? true : situacaoVereadorFiltro === 'ativos' ? v.ativo : !v.ativo)
+    .sort((a, b) => (a.apelido || a.nome).localeCompare(b.apelido || b.nome)),
+    [vereadoresTodos, situacaoVereadorFiltro])
 
-  // Atividade combinada por vereador (Proposições + Requerimentos/Moções/Indicações)
-  const porVereadorMap: Record<string, number> = {};
-  function contarAutoria(item: { vereador: { nome: string } | null; autorNome: string | null }, excluirExec: boolean) {
-    if (excluirExec && isExec(item)) return;
-    if (item.vereador?.nome) { porVereadorMap[item.vereador.nome] = (porVereadorMap[item.vereador.nome] || 0) + 1; return; }
-    const nomes = splitAutores(item.autorNome).flatMap(n => n.split(/\s+e\s+/)).map(n => n.trim()).filter(Boolean);
-    nomes.forEach(n => {
-      if (!n || isExec({ autorNome: n }) || isInstitucional(n)) return;
-      porVereadorMap[n] = (porVereadorMap[n] || 0) + 1;
-    });
+  function toggleVereador(id: string) {
+    setFiltroVereadorIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
   }
-  itens.forEach(item => contarAutoria(item, true));
-  requerimentos.forEach(item => contarAutoria(item, true));
 
-  const porVereador = Object.entries(porVereadorMap)
-    .map(([nome, total]) => ({ nome, total }))
-    .sort((a, b) => b.total - a.total);
+  const itensFiltrados = useMemo(() => itens.filter(i => {
+    if (filtroAno && String(i.ano) !== filtroAno) return false
+    if (filtroTipo && i.tipo !== filtroTipo) return false
+    if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
+    return true
+  }), [itens, filtroAno, filtroTipo, filtroVereadorIds])
 
-  const execStatus: Record<string, number> = {};
-  executivoItens.forEach(item => { execStatus[item.status] = (execStatus[item.status] || 0) + 1; });
-  const porStatusExecutivo = Object.entries(execStatus)
-    .map(([status, total]) => ({ status, total }))
-    .sort((a, b) => b.total - a.total);
+  const requerimentosFiltrados = useMemo(() => requerimentos.filter(i => {
+    if (filtroAno && String(i.ano) !== filtroAno) return false
+    if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
+    return true
+  }), [requerimentos, filtroAno, filtroVereadorIds])
 
-  // Distribuição por tipo — Proposições
-  const porTipoMap: Record<string, number> = {};
-  itens.forEach(item => { porTipoMap[item.tipo] = (porTipoMap[item.tipo] || 0) + 1; });
-  const porTipo = Object.entries(porTipoMap)
-    .map(([tipo, total]) => ({ tipo, total }))
-    .sort((a, b) => b.total - a.total);
+  const stats = useMemo(() => {
+    const total = itensFiltrados.length
+    const totalReq = requerimentosFiltrados.filter(r => r.tipo === 'REQ').length
+    const totalMoc = requerimentosFiltrados.filter(r => r.tipo === 'MOC').length
+    const totalGeral = total + requerimentosFiltrados.length
 
-  // Tendência por ano — combinado, ignorando anos com erro de digitação evidente (fora de 2000..ano atual+1)
-  const porAnoMap: Record<number, number> = {};
-  function contarAno(ano: number) {
-    if (ano < 2000 || ano > ANO_ATUAL + 1) return;
-    porAnoMap[ano] = (porAnoMap[ano] || 0) + 1;
+    const porStatus: Record<string, number> = {}
+    STATUS_LIST.forEach(s => { porStatus[s] = 0 })
+    itensFiltrados.forEach(item => { porStatus[item.status] = (porStatus[item.status] || 0) + 1 })
+
+    const porStatusReq: Record<string, number> = {}
+    STATUS_LIST.forEach(s => { porStatusReq[s] = 0 })
+    requerimentosFiltrados.forEach(item => { porStatusReq[item.status] = (porStatusReq[item.status] || 0) + 1 })
+
+    let aprovadoFinal = 0, rejeitadoFinal = 0, tramitando = 0
+    ;[...itensFiltrados, ...requerimentosFiltrados].forEach(item => {
+      const r = resultadoDe(item.status)
+      if (r === 'aprovado') aprovadoFinal++
+      else if (r === 'rejeitado') rejeitadoFinal++
+      else tramitando++
+    })
+    const decididas = aprovadoFinal + rejeitadoFinal
+    const taxaAprovacao = decididas > 0 ? Math.round((aprovadoFinal / decididas) * 100) : null
+
+    const executivoItens = itensFiltrados.filter(isExec)
+    const totalExecutivo = executivoItens.length
+
+    const porVereadorMap: Record<string, number> = {}
+    function contarAutoria(item: Item) {
+      if (isExec(item)) return
+      if (item.vereador?.nome) {
+        const label = item.vereador.apelido || item.vereador.nome
+        porVereadorMap[label] = (porVereadorMap[label] || 0) + 1
+        return
+      }
+      const nomes = splitAutores(item.autorNome).flatMap(n => n.split(/\s+e\s+/)).map(n => n.trim()).filter(Boolean)
+      nomes.forEach(n => {
+        if (!n || isExec({ autorNome: n }) || isInstitucional(n)) return
+        porVereadorMap[n] = (porVereadorMap[n] || 0) + 1
+      })
+    }
+    itensFiltrados.forEach(contarAutoria)
+    requerimentosFiltrados.forEach(contarAutoria)
+
+    const porVereador = Object.entries(porVereadorMap)
+      .map(([nome, total]) => ({ nome, total }))
+      .sort((a, b) => b.total - a.total)
+
+    const execStatus: Record<string, number> = {}
+    executivoItens.forEach(item => { execStatus[item.status] = (execStatus[item.status] || 0) + 1 })
+    const porStatusExecutivo = Object.entries(execStatus)
+      .map(([status, total]) => ({ status, total }))
+      .sort((a, b) => b.total - a.total)
+
+    const porTipoMap: Record<string, number> = {}
+    itensFiltrados.forEach(item => { porTipoMap[item.tipo] = (porTipoMap[item.tipo] || 0) + 1 })
+    const porTipo = Object.entries(porTipoMap)
+      .map(([tipo, total]) => ({ tipo, total }))
+      .sort((a, b) => b.total - a.total)
+
+    // Tendência por ano, separando Executivo de Vereadores
+    const porAnoMap: Record<number, { executivo: number; vereadores: number }> = {}
+    function contarAno(item: Item) {
+      if (item.ano < 2000 || item.ano > ANO_ATUAL + 1) return
+      if (!porAnoMap[item.ano]) porAnoMap[item.ano] = { executivo: 0, vereadores: 0 }
+      if (isExec(item)) porAnoMap[item.ano].executivo++
+      else porAnoMap[item.ano].vereadores++
+    }
+    itensFiltrados.forEach(contarAno)
+    requerimentosFiltrados.forEach(contarAno)
+    const porAno = Object.entries(porAnoMap)
+      .map(([ano, v]) => ({ ano: Number(ano), executivo: v.executivo, vereadores: v.vereadores }))
+      .sort((a, b) => a.ano - b.ano)
+
+    const proposicoes = itensFiltrados.map(item => ({
+      id: item.id,
+      tipo: item.tipo,
+      numero: item.numero,
+      ano: item.ano,
+      ementa: item.ementa || '',
+      status: item.status,
+      autorNome: item.autorNome || null,
+      vereadorNome: item.vereador ? (item.vereador.apelido || item.vereador.nome) : null,
+      isExec: isExec(item),
+    }))
+
+    return {
+      total, totalReq, totalMoc, totalGeral, porStatus, porStatusReq,
+      aprovadoFinal, rejeitadoFinal, tramitando, taxaAprovacao,
+      totalExecutivo, porVereador, porStatusExecutivo, porTipo, porAno, proposicoes,
+      totalRequerimentos: requerimentosFiltrados.length,
+    }
+  }, [itensFiltrados, requerimentosFiltrados])
+
+  const filtrosAtivos = filtroAno || filtroTipo || filtroVereadorIds.size > 0
+
+  function limparFiltros() {
+    setFiltroAno(''); setFiltroTipo(''); setFiltroVereadorIds(new Set())
   }
-  itens.forEach(item => contarAno(item.ano));
-  requerimentos.forEach(item => contarAno(item.ano));
-  const porAno = Object.entries(porAnoMap)
-    .map(([ano, total]) => ({ ano: Number(ano), total }))
-    .sort((a, b) => a.ano - b.ano);
-
-  const proposicoes = itens.map(item => ({
-    id: item.id,
-    tipo: item.tipo,
-    numero: item.numero,
-    ano: item.ano,
-    ementa: item.ementa || '',
-    status: item.status,
-    autorNome: item.autorNome || null,
-    vereadorNome: item.vereador?.nome || null,
-    isExec: isExec(item),
-  }));
 
   return (
     <div className="p-3 space-y-3">
@@ -153,22 +230,90 @@ export default async function DashboardPage() {
         <span className="text-gray-400 text-sm">— Visão geral do sistema legislativo</span>
       </div>
 
+      {/* Filtros */}
+      <div className="bg-white rounded-xl shadow-sm px-3 py-2 flex items-center gap-2 flex-wrap">
+        {filtrosAtivos && (
+          <button onClick={limparFiltros} title="Limpar filtros" className="text-gray-400 hover:text-red-600 transition flex-shrink-0">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+
+        <select value={filtroAno} onChange={e => setFiltroAno(e.target.value)}
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-gray-400">
+          <option value="">Todos os anos</option>
+          {anosDisponiveis.map(a => <option key={a} value={a}>{a}</option>)}
+        </select>
+
+        <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-gray-400">
+          <option value="">Todos os tipos de proposição</option>
+          {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome}</option>)}
+        </select>
+
+        {/* Filtro de vereador — multi-seleção com checkbox, ativos/inativos/todos */}
+        <div className="relative">
+          <button onClick={() => setPainelVereadorAberto(v => !v)}
+            className={`border rounded px-2 py-1.5 text-xs flex items-center gap-1.5 transition ${
+              filtroVereadorIds.size > 0 ? 'border-gray-800 bg-gray-800 text-white' : 'border-gray-200 text-gray-600 hover:border-gray-300'
+            }`}>
+            Vereador{filtroVereadorIds.size > 0 ? ` (${filtroVereadorIds.size})` : ''}
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {painelVereadorAberto && (
+            <div className="absolute z-20 mt-1 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-2">
+              <div className="flex gap-1 bg-gray-100 rounded-md p-0.5 mb-2">
+                {(['ativos', 'inativos', 'todos'] as const).map(s => (
+                  <button key={s} onClick={() => setSituacaoVereadorFiltro(s)}
+                    className={`flex-1 py-1 rounded text-[11px] font-semibold capitalize transition ${
+                      situacaoVereadorFiltro === s ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'
+                    }`}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+              <div className="max-h-56 overflow-y-auto space-y-0.5">
+                {vereadoresListados.map(v => (
+                  <label key={v.id} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50 cursor-pointer text-xs">
+                    <input type="checkbox" checked={filtroVereadorIds.has(v.id)} onChange={() => toggleVereador(v.id)}
+                      className="w-3.5 h-3.5 accent-gray-800" />
+                    <span className={v.ativo ? 'text-gray-700' : 'text-gray-400'}>{v.apelido || v.nome}{!v.ativo && ' (inativo)'}</span>
+                  </label>
+                ))}
+                {vereadoresListados.length === 0 && <p className="text-xs text-gray-400 text-center py-2">Nenhum vereador</p>}
+              </div>
+              {filtroVereadorIds.size > 0 && (
+                <button onClick={() => setFiltroVereadorIds(new Set())}
+                  className="w-full mt-2 text-xs text-red-600 font-medium hover:underline">
+                  Limpar seleção ({filtroVereadorIds.size})
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {loading && <span className="text-xs text-gray-400 ml-auto">Carregando...</span>}
+      </div>
+
       {/* Stat cards — visão geral */}
       <div className="grid grid-cols-6 gap-3">
         <StatCard
-          label="Total de Matérias" value={totalGeral} color="#111827"
+          label="Total de Matérias" value={stats.totalGeral} color="#111827"
           icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
         />
         <StatCard
-          label="Proposições" value={total} color="#8B0000"
+          label="Proposições" value={stats.total} color="#8B0000"
           icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
         />
         <StatCard
-          label="Requerimentos" value={totalReq} color="#0e7490"
+          label="Requerimentos" value={stats.totalReq} color="#0e7490"
           icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
         />
         <StatCard
-          label="Moções" value={totalMoc} color="#6d28d9"
+          label="Moções" value={stats.totalMoc} color="#6d28d9"
           icon="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"
         />
         <StatCard
@@ -177,7 +322,7 @@ export default async function DashboardPage() {
         />
         <StatCard
           label="Taxa de Aprovação"
-          value={taxaAprovacao !== null ? `${taxaAprovacao}%` : '—'}
+          value={stats.taxaAprovacao !== null ? `${stats.taxaAprovacao}%` : '—'}
           color="#15803d"
           icon="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
         />
@@ -189,13 +334,13 @@ export default async function DashboardPage() {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Proposições por Status</p>
           <div className="grid grid-cols-7 gap-2">
             {STATUS_LIST.map(s => {
-              const c = STATUS_STYLE[s];
+              const c = STATUS_STYLE[s]
               return (
                 <div key={s} className={`rounded-lg border p-2 text-center ${c.bg} ${c.border}`}>
-                  <p className={`text-xl font-bold ${c.text}`}>{porStatus[s] || 0}</p>
+                  <p className={`text-xl font-bold ${c.text}`}>{stats.porStatus[s] || 0}</p>
                   <p className={`text-xs mt-0.5 ${c.text} font-medium leading-tight`}>{s}</p>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
@@ -204,15 +349,15 @@ export default async function DashboardPage() {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Resultado Final (todas as matérias)</p>
           <div className="flex gap-2 h-[calc(100%-28px)] items-center">
             <div className="rounded-lg border border-green-200 bg-green-50 px-5 py-2 text-center">
-              <p className="text-2xl font-bold text-green-700">{aprovadoFinal}</p>
+              <p className="text-2xl font-bold text-green-700">{stats.aprovadoFinal}</p>
               <p className="text-xs mt-0.5 text-green-600 font-medium">Aprovadas</p>
             </div>
             <div className="rounded-lg border border-red-200 bg-red-50 px-5 py-2 text-center">
-              <p className="text-2xl font-bold text-red-700">{rejeitadoFinal}</p>
+              <p className="text-2xl font-bold text-red-700">{stats.rejeitadoFinal}</p>
               <p className="text-xs mt-0.5 text-red-600 font-medium">Reprovadas</p>
             </div>
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-5 py-2 text-center">
-              <p className="text-2xl font-bold text-gray-500">{tramitando}</p>
+              <p className="text-2xl font-bold text-gray-500">{stats.tramitando}</p>
               <p className="text-xs mt-0.5 text-gray-500 font-medium">Tramitando</p>
             </div>
           </div>
@@ -223,38 +368,38 @@ export default async function DashboardPage() {
       <div className="bg-white rounded-xl shadow-sm px-4 py-3">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
           Requerimentos, Moções e Indicações por Status
-          <span className="ml-1 normal-case font-normal text-gray-300">— {requerimentos.length} registro(s)</span>
+          <span className="ml-1 normal-case font-normal text-gray-300">— {stats.totalRequerimentos} registro(s)</span>
         </p>
         <div className="grid grid-cols-6 gap-2">
           {STATUS_LIST.filter(s => s !== 'Com Parecer').map(s => {
-            const c = STATUS_STYLE[s];
+            const c = STATUS_STYLE[s]
             return (
               <div key={s} className={`rounded-lg border p-2 text-center ${c.bg} ${c.border}`}>
-                <p className={`text-xl font-bold ${c.text}`}>{porStatusReq[s] || 0}</p>
+                <p className={`text-xl font-bold ${c.text}`}>{stats.porStatusReq[s] || 0}</p>
                 <p className={`text-xs mt-0.5 ${c.text} font-medium leading-tight`}>{s}</p>
               </div>
-            );
+            )
           })}
         </div>
       </div>
 
       {/* Gráficos */}
       <DashboardCharts
-        porVereador={porVereador}
-        porStatusExecutivo={porStatusExecutivo}
-        totalExecutivo={totalExecutivo}
-        proposicoes={proposicoes}
-        porAno={porAno}
-        porTipo={porTipo}
+        porVereador={stats.porVereador}
+        porStatusExecutivo={stats.porStatusExecutivo}
+        totalExecutivo={stats.totalExecutivo}
+        proposicoes={stats.proposicoes}
+        porAno={stats.porAno}
+        porTipo={stats.porTipo}
       />
     </div>
-  );
+  )
 }
 
 function StatCard({
   label, value, color, icon,
 }: {
-  label: string; value: string | number; color: string; icon: string;
+  label: string; value: string | number; color: string; icon: string
 }) {
   return (
     <div className="bg-white rounded-xl shadow-sm px-3 py-3 flex items-center gap-2.5 border-l-4" style={{ borderLeftColor: color }}>
@@ -268,5 +413,5 @@ function StatCard({
         <p className="text-gray-500 text-xs leading-tight truncate">{label}</p>
       </div>
     </div>
-  );
+  )
 }

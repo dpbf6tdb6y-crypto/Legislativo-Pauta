@@ -7,7 +7,7 @@ import {
 
 export type VereadorData    = { nome: string; total: number }
 export type StatusData      = { status: string; total: number }
-export type AnoData         = { ano: number; total: number }
+export type AnoData         = { ano: number; executivo: number; vereadores: number }
 export type TipoData        = { tipo: string; total: number }
 export type ProposicaoResumo = {
   id: string; tipo: string; numero: string; ano: number
@@ -98,11 +98,10 @@ export default function DashboardCharts({
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3 items-start">
 
-        {/* ── Tendência por Ano ── */}
+        {/* ── Tendência por Ano — Executivo vs Vereadores ── */}
         <div className="bg-white rounded-xl shadow-sm p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-            Matérias por Ano
-            <span className="ml-1 normal-case font-normal text-gray-300">— proposições, requerimentos, moções e indicações</span>
+            Matérias por Ano — Executivo x Vereadores
           </p>
           {porAno.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-10">Nenhum dado disponível</p>
@@ -113,17 +112,20 @@ export default function DashboardCharts({
                 <XAxis dataKey="ano" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis allowDecimals={false} hide />
                 <Tooltip
-                  formatter={(v: number) => [`${v} matéria(s)`, 'Total']}
                   labelFormatter={(l) => `Ano ${l}`}
                   contentStyle={{ fontSize: 11, borderRadius: 8 }}
                 />
-                <Line type="monotone" dataKey="total" stroke="#7c3aed" strokeWidth={2.5}
-                  dot={{ r: 3, fill: '#7c3aed' }} activeDot={{ r: 5 }}>
-                  <LabelList dataKey="total" position="top" style={{ fontSize: 10, fontWeight: 700, fill: '#374151' }} />
-                </Line>
+                <Line type="monotone" dataKey="vereadores" name="Vereadores" stroke="#3b82f6" strokeWidth={2.5}
+                  dot={{ r: 3, fill: '#3b82f6' }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="executivo" name="Executivo" stroke="#a855f7" strokeWidth={2.5}
+                  dot={{ r: 3, fill: '#a855f7' }} activeDot={{ r: 5 }} />
               </LineChart>
             </ResponsiveContainer>
           )}
+          <div className="flex items-center gap-4 justify-center mt-1">
+            <span className="flex items-center gap-1.5 text-xs text-gray-500"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />Vereadores</span>
+            <span className="flex items-center gap-1.5 text-xs text-gray-500"><span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />Executivo</span>
+          </div>
         </div>
 
         {/* ── Distribuição por Tipo ── */}
