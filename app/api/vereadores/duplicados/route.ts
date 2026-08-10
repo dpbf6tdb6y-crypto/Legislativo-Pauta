@@ -24,9 +24,9 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const vereadores = await prisma.vereador.findMany({
-    where: { poder: "legislativo", NOT: { nome: { startsWith: "[Mesclado em " } } },
+    where: { NOT: { nome: { startsWith: "[Mesclado em " } } },
     select: {
-      id: true, nome: true, apelido: true, partido: true, legislatura: true, ativo: true,
+      id: true, nome: true, apelido: true, partido: true, legislatura: true, ativo: true, poder: true,
       _count: { select: { segov: true, requerimentos: true, proposicoes: true } },
     },
     orderBy: { nome: "asc" },
@@ -36,16 +36,16 @@ export async function GET() {
   const grupos: Grupo[] = [];
   const usados = new Set<string>();
 
-  // Alta confiança: nome normalizado idêntico
+  // Alta confiança: nome normalizado idêntico (só compara dentro do mesmo poder — legislativo com legislativo, executivo com executivo)
   const porNomeExato = new Map<string, typeof vereadores>();
   vereadores.forEach(v => {
-    const chave = normalizar(v.nome);
+    const chave = `${v.poder}:${normalizar(v.nome)}`;
     if (!porNomeExato.has(chave)) porNomeExato.set(chave, []);
     porNomeExato.get(chave)!.push(v);
   });
   porNomeExato.forEach((itens, chave) => {
     if (itens.length > 1) {
-      grupos.push({ chave, confianca: "alta", itens });
+      grupos.push({ chave: chave.split(":")[1], confianca: "alta", itens });
       itens.forEach(v => usados.add(v.id));
     }
   });
@@ -55,6 +55,7 @@ export async function GET() {
   for (let i = 0; i < restantes.length; i++) {
     for (let j = i + 1; j < restantes.length; j++) {
       if (usados.has(restantes[i].id) || usados.has(restantes[j].id)) continue;
+      if (restantes[i].poder !== restantes[j].poder) continue;
       const tA = new Set(tokens(restantes[i].nome));
       const tB = new Set(tokens(restantes[j].nome));
       const intersecao = [...tA].filter(t => tB.has(t));
