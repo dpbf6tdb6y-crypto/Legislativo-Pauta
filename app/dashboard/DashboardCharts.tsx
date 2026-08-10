@@ -2,11 +2,13 @@
 import { useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell, LabelList,
+  ResponsiveContainer, Cell, LabelList, LineChart, Line,
 } from 'recharts'
 
 export type VereadorData    = { nome: string; total: number }
 export type StatusData      = { status: string; total: number }
+export type AnoData         = { ano: number; total: number }
+export type TipoData        = { tipo: string; total: number }
 export type ProposicaoResumo = {
   id: string; tipo: string; numero: string; ano: number
   ementa: string; status: string
@@ -66,10 +68,12 @@ interface Props {
   porStatusExecutivo: StatusData[]
   totalExecutivo:     number
   proposicoes:        ProposicaoResumo[]
+  porAno:             AnoData[]
+  porTipo:            TipoData[]
 }
 
 export default function DashboardCharts({
-  porVereador, porStatusExecutivo, totalExecutivo, proposicoes,
+  porVereador, porStatusExecutivo, totalExecutivo, proposicoes, porAno, porTipo,
 }: Props) {
   const [filtro, setFiltro] = useState<Filtro>(null)
 
@@ -88,8 +92,69 @@ export default function DashboardCharts({
 
   const vChartH = Math.max(240, porVereador.length * 30 + 50)
 
+  const tipoChartH = Math.max(180, porTipo.length * 26 + 40)
+
   return (
     <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3 items-start">
+
+        {/* ── Tendência por Ano ── */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+            Matérias por Ano
+            <span className="ml-1 normal-case font-normal text-gray-300">— proposições, requerimentos, moções e indicações</span>
+          </p>
+          {porAno.length === 0 ? (
+            <p className="text-gray-400 text-sm text-center py-10">Nenhum dado disponível</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={porAno} margin={{ left: 0, right: 16, top: 22, bottom: 2 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                <XAxis dataKey="ano" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                <YAxis allowDecimals={false} hide />
+                <Tooltip
+                  formatter={(v: number) => [`${v} matéria(s)`, 'Total']}
+                  labelFormatter={(l) => `Ano ${l}`}
+                  contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                />
+                <Line type="monotone" dataKey="total" stroke="#7c3aed" strokeWidth={2.5}
+                  dot={{ r: 3, fill: '#7c3aed' }} activeDot={{ r: 5 }}>
+                  <LabelList dataKey="total" position="top" style={{ fontSize: 10, fontWeight: 700, fill: '#374151' }} />
+                </Line>
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* ── Distribuição por Tipo ── */}
+        <div className="bg-white rounded-xl shadow-sm p-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+            Proposições por Tipo
+          </p>
+          {porTipo.length === 0 ? (
+            <p className="text-gray-400 text-sm text-center py-10">Nenhum dado disponível</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={tipoChartH}>
+              <BarChart data={porTipo} layout="vertical" margin={{ left: 8, right: 44, top: 2, bottom: 2 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                <XAxis type="number" allowDecimals={false} hide />
+                <YAxis type="category" dataKey="tipo" width={170} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
+                <Tooltip
+                  formatter={(v: number) => [`${v} proposição(ões)`, 'Total']}
+                  contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                />
+                <Bar dataKey="total" radius={[0, 4, 4, 0]} maxBarSize={20}>
+                  {porTipo.map((entry, i) => (
+                    <Cell key={i} fill={VEREADOR_CORES[i % VEREADOR_CORES.length]} />
+                  ))}
+                  <LabelList dataKey="total" position="right" style={{ fontSize: 11, fontWeight: 700, fill: '#374151' }} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-3 items-start">
 
         {/* ── Vereador ── */}
