@@ -21,7 +21,7 @@ const ANO_ATUAL = new Date().getFullYear()
 type Item = {
   id: string; tipo: string; numero: string; ano: number; ementa?: string | null
   status: string; vereadorId: string | null; autorNome: string | null
-  vereador: { id: string; nome: string; apelido?: string | null } | null
+  vereador: { id: string; nome: string; apelido?: string | null; ativo?: boolean } | null
 }
 type Vereador = { id: string; nome: string; apelido?: string | null; ativo: boolean; poder: string }
 type TipoOpcao = { id: string; nome: string }
@@ -149,25 +149,27 @@ export default function DashboardPage() {
     const executivoItens = itensFiltrados.filter(isExec)
     const totalExecutivo = executivoItens.length
 
-    const porVereadorMap: Record<string, number> = {}
+    const porVereadorMap: Record<string, { total: number; ativo: boolean }> = {}
     function contarAutoria(item: Item) {
       if (isExec(item)) return
       if (item.vereador?.nome) {
         const label = item.vereador.apelido || item.vereador.nome
-        porVereadorMap[label] = (porVereadorMap[label] || 0) + 1
+        if (!porVereadorMap[label]) porVereadorMap[label] = { total: 0, ativo: item.vereador.ativo !== false }
+        porVereadorMap[label].total++
         return
       }
       const nomes = splitAutores(item.autorNome).flatMap(n => n.split(/\s+e\s+/)).map(n => n.trim()).filter(Boolean)
       nomes.forEach(n => {
         if (!n || isExec({ autorNome: n }) || isInstitucional(n)) return
-        porVereadorMap[n] = (porVereadorMap[n] || 0) + 1
+        if (!porVereadorMap[n]) porVereadorMap[n] = { total: 0, ativo: true }
+        porVereadorMap[n].total++
       })
     }
     itensFiltrados.forEach(contarAutoria)
     requerimentosFiltrados.forEach(contarAutoria)
 
     const porVereador = Object.entries(porVereadorMap)
-      .map(([nome, total]) => ({ nome, total }))
+      .map(([nome, v]) => ({ nome, total: v.total, ativo: v.ativo }))
       .sort((a, b) => b.total - a.total)
 
     const execStatus: Record<string, number> = {}

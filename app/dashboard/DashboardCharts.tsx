@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, Cell, LabelList, LineChart, Line,
 } from 'recharts'
 
-export type VereadorData    = { nome: string; total: number }
+export type VereadorData    = { nome: string; total: number; ativo: boolean }
 export type StatusData      = { status: string; total: number }
 export type AnoData         = { ano: number; executivo: number; vereadores: number }
 export type TipoData        = { tipo: string; total: number }
@@ -76,6 +76,11 @@ export default function DashboardCharts({
   porVereador, porStatusExecutivo, totalExecutivo, proposicoes, porAno, porTipo,
 }: Props) {
   const [filtro, setFiltro] = useState<Filtro>(null)
+  const [situacaoGrafico, setSituacaoGrafico] = useState<'ativos' | 'inativos' | 'todos'>('ativos')
+
+  const porVereadorExibido = porVereador.filter(v =>
+    situacaoGrafico === 'todos' ? true : situacaoGrafico === 'ativos' ? v.ativo : !v.ativo
+  )
 
   function toggle(tipo: 'vereador' | 'executivo', valor: string) {
     setFiltro(prev => prev?.tipo === tipo && prev.valor === valor ? null : { tipo, valor })
@@ -90,7 +95,7 @@ export default function DashboardCharts({
       })
     : proposicoes.filter(p => p.isExec && p.status === filtro.valor)
 
-  const vChartH = Math.max(240, porVereador.length * 30 + 50)
+  const vChartH = Math.max(240, porVereadorExibido.length * 30 + 50)
 
   const tipoChartH = Math.max(180, porTipo.length * 26 + 40)
 
@@ -161,16 +166,28 @@ export default function DashboardCharts({
 
         {/* ── Vereador ── */}
         <div className="bg-white rounded-xl shadow-sm p-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-            Proposições por Vereador
-            <span className="ml-1 normal-case font-normal text-gray-300">— clique para detalhar</span>
-          </p>
-          {porVereador.length === 0 ? (
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+              Proposições por Vereador
+              <span className="ml-1 normal-case font-normal text-gray-300">— clique para detalhar</span>
+            </p>
+            <div className="flex gap-1 bg-gray-100 rounded-md p-0.5">
+              {(['ativos', 'inativos', 'todos'] as const).map(s => (
+                <button key={s} onClick={() => setSituacaoGrafico(s)}
+                  className={`px-2 py-0.5 rounded text-[11px] font-semibold capitalize transition ${
+                    situacaoGrafico === s ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  }`}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+          {porVereadorExibido.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-10">Nenhum dado disponível</p>
           ) : (
             <ResponsiveContainer width="100%" height={vChartH}>
               <BarChart
-                data={porVereador}
+                data={porVereadorExibido}
                 layout="vertical"
                 margin={{ left: 8, right: 44, top: 2, bottom: 2 }}
               >
@@ -191,7 +208,7 @@ export default function DashboardCharts({
                   cursor="pointer"
                   onClick={(data) => toggle('vereador', data.nome)}
                 >
-                  {porVereador.map((entry, i) => (
+                  {porVereadorExibido.map((entry, i) => (
                     <Cell
                       key={i}
                       fill={VEREADOR_CORES[i % VEREADOR_CORES.length]}
