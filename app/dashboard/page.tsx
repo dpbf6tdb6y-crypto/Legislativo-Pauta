@@ -69,8 +69,12 @@ export default function DashboardPage() {
   const [filtroAno, setFiltroAno] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('')
   const [filtroVereadorIds, setFiltroVereadorIds] = useState<Set<string>>(new Set())
+  const [filtroMateria, setFiltroMateria] = useState<'' | 'proposicao' | 'requerimento' | 'mocao'>('')
+  const [filtroStatus, setFiltroStatus] = useState('')
+  const [filtroOrigem, setFiltroOrigem] = useState<'' | 'executivo' | 'vereadores'>('')
   const [painelVereadorAberto, setPainelVereadorAberto] = useState(false)
   const [situacaoVereadorFiltro, setSituacaoVereadorFiltro] = useState<'ativos' | 'inativos' | 'todos'>('ativos')
+  const [nomesVereadores, setNomesVereadores] = useState<Record<string, string>>({})
 
   useEffect(() => {
     Promise.all([
@@ -81,7 +85,11 @@ export default function DashboardPage() {
     ]).then(([segov, req, vers, tipos]) => {
       setItens(segov)
       setRequerimentos(req)
-      setVereadoresTodos(vers.filter((v: Vereador) => v.poder === 'legislativo' && !v.nome.startsWith('[Mesclado em ')))
+      const legislativo = vers.filter((v: Vereador) => v.poder === 'legislativo' && !v.nome.startsWith('[Mesclado em '))
+      setVereadoresTodos(legislativo)
+      const nomes: Record<string, string> = {}
+      legislativo.forEach((v: Vereador) => { nomes[v.id] = v.apelido || v.nome })
+      setNomesVereadores(nomes)
       setTiposProposicao(tipos)
       setLoading(false)
     })
@@ -110,17 +118,27 @@ export default function DashboardPage() {
   }
 
   const itensFiltrados = useMemo(() => itens.filter(i => {
+    if (filtroMateria === 'requerimento' || filtroMateria === 'mocao') return false
     if (filtroAno && String(i.ano) !== filtroAno) return false
     if (filtroTipo && i.tipo !== filtroTipo) return false
+    if (filtroStatus && i.status !== filtroStatus) return false
+    if (filtroOrigem === 'executivo' && !isExec(i)) return false
+    if (filtroOrigem === 'vereadores' && isExec(i)) return false
     if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
     return true
-  }), [itens, filtroAno, filtroTipo, filtroVereadorIds])
+  }), [itens, filtroAno, filtroTipo, filtroStatus, filtroOrigem, filtroMateria, filtroVereadorIds])
 
   const requerimentosFiltrados = useMemo(() => requerimentos.filter(i => {
+    if (filtroMateria === 'proposicao') return false
+    if (filtroMateria === 'requerimento' && i.tipo !== 'REQ') return false
+    if (filtroMateria === 'mocao' && i.tipo !== 'MOC') return false
     if (filtroAno && String(i.ano) !== filtroAno) return false
+    if (filtroStatus && i.status !== filtroStatus) return false
+    if (filtroOrigem === 'executivo' && !isExec(i)) return false
+    if (filtroOrigem === 'vereadores' && isExec(i)) return false
     if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
     return true
-  }), [requerimentos, filtroAno, filtroVereadorIds])
+  }), [requerimentos, filtroAno, filtroStatus, filtroOrigem, filtroMateria, filtroVereadorIds])
 
   const stats = useMemo(() => {
     const total = itensFiltrados.length
@@ -149,19 +167,19 @@ export default function DashboardPage() {
     const executivoItens = itensFiltrados.filter(isExec)
     const totalExecutivo = executivoItens.length
 
-    const porVereadorMap: Record<string, { total: number; ativo: boolean }> = {}
+    const porVereadorMap: Record<string, { total: number; ativo: boolean; vereadorId: string | null }> = {}
     function contarAutoria(item: Item) {
       if (isExec(item)) return
       if (item.vereador?.nome) {
         const label = item.vereador.apelido || item.vereador.nome
-        if (!porVereadorMap[label]) porVereadorMap[label] = { total: 0, ativo: item.vereador.ativo !== false }
+        if (!porVereadorMap[label]) porVereadorMap[label] = { total: 0, ativo: item.vereador.ativo !== false, vereadorId: item.vereador.id }
         porVereadorMap[label].total++
         return
       }
       const nomes = splitAutores(item.autorNome).flatMap(n => n.split(/\s+e\s+/)).map(n => n.trim()).filter(Boolean)
       nomes.forEach(n => {
         if (!n || isExec({ autorNome: n }) || isInstitucional(n)) return
-        if (!porVereadorMap[n]) porVereadorMap[n] = { total: 0, ativo: true }
+        if (!porVereadorMap[n]) porVereadorMap[n] = { total: 0, ativo: true, vereadorId: null }
         porVereadorMap[n].total++
       })
     }
@@ -169,7 +187,7 @@ export default function DashboardPage() {
     requerimentosFiltrados.forEach(contarAutoria)
 
     const porVereador = Object.entries(porVereadorMap)
-      .map(([nome, v]) => ({ nome, total: v.total, ativo: v.ativo }))
+      .map(([nome, v]) => ({ nome, total: v.total, ativo: v.ativo, vereadorId: v.vereadorId }))
       .sort((a, b) => b.total - a.total)
 
     const execStatus: Record<string, number> = {}
@@ -218,10 +236,34 @@ export default function DashboardPage() {
     }
   }, [itensFiltrados, requerimentosFiltrados])
 
-  const filtrosAtivos = filtroAno || filtroTipo || filtroVereadorIds.size > 0
+  const filtrosAtivos = !!(filtroAno || filtroTipo || filtroVereadorIds.size > 0 || filtroMateria || filtroStatus || filtroOrigem)
 
   function limparFiltros() {
     setFiltroAno(''); setFiltroTipo(''); setFiltroVereadorIds(new Set())
+    setFiltroMateria(''); setFiltroStatus(''); setFiltroOrigem('')
+  }
+
+  function toggleMateria(m: typeof filtroMateria) {
+    setFiltroMateria(prev => prev === m ? '' : m)
+  }
+
+  function toggleOrigem(o: typeof filtroOrigem) {
+    setFiltroOrigem(prev => prev === o ? '' : o)
+  }
+
+  const MATERIA_LABEL: Record<string, string> = { proposicao: 'Proposições', requerimento: 'Requerimentos', mocao: 'Moções' }
+  const ORIGEM_LABEL: Record<string, string> = { executivo: 'Executivo', vereadores: 'Vereadores' }
+
+  type Chip = { label: string; onRemover: () => void }
+  const chips: Chip[] = []
+  if (filtroAno) chips.push({ label: `Ano: ${filtroAno}`, onRemover: () => setFiltroAno('') })
+  if (filtroTipo) chips.push({ label: `Tipo: ${filtroTipo}`, onRemover: () => setFiltroTipo('') })
+  if (filtroMateria) chips.push({ label: `Matéria: ${MATERIA_LABEL[filtroMateria]}`, onRemover: () => setFiltroMateria('') })
+  if (filtroStatus) chips.push({ label: `Status: ${filtroStatus}`, onRemover: () => setFiltroStatus('') })
+  if (filtroOrigem) chips.push({ label: `Origem: ${ORIGEM_LABEL[filtroOrigem]}`, onRemover: () => setFiltroOrigem('') })
+  if (filtroVereadorIds.size > 0) {
+    const nomes = [...filtroVereadorIds].map(id => nomesVereadores[id] || '?').join(', ')
+    chips.push({ label: `Vereador: ${nomes}`, onRemover: () => setFiltroVereadorIds(new Set()) })
   }
 
   return (
@@ -231,6 +273,25 @@ export default function DashboardPage() {
         <h1 className="text-lg font-bold text-gray-800">Dashboard</h1>
         <span className="text-gray-400 text-sm">— Visão geral do sistema legislativo</span>
       </div>
+
+      {/* Breadcrumb de filtros ativos */}
+      {chips.length > 0 && (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {chips.map((c, i) => (
+            <span key={i} className="inline-flex items-center gap-1 text-xs font-medium bg-gray-800 text-white pl-2 pr-1 py-1 rounded-full">
+              {c.label}
+              <button onClick={c.onRemover} className="hover:bg-white/20 rounded-full p-0.5 transition">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </span>
+          ))}
+          <button onClick={limparFiltros} className="text-xs text-gray-500 hover:text-red-600 font-medium underline transition">
+            Limpar tudo
+          </button>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="bg-white rounded-xl shadow-sm px-3 py-2 flex items-center gap-2 flex-wrap">
@@ -305,18 +366,22 @@ export default function DashboardPage() {
         <StatCard
           label="Total de Matérias" value={stats.totalGeral} color="#111827"
           icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ativo={filtroMateria === ''} onClick={() => setFiltroMateria('')}
         />
         <StatCard
           label="Proposições" value={stats.total} color="#8B0000"
           icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ativo={filtroMateria === 'proposicao'} onClick={() => toggleMateria('proposicao')}
         />
         <StatCard
           label="Requerimentos" value={stats.totalReq} color="#0e7490"
           icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          ativo={filtroMateria === 'requerimento'} onClick={() => toggleMateria('requerimento')}
         />
         <StatCard
           label="Moções" value={stats.totalMoc} color="#6d28d9"
           icon="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"
+          ativo={filtroMateria === 'mocao'} onClick={() => toggleMateria('mocao')}
         />
         <StatCard
           label="Vereadores Ativos" value={vereadoresAtivos} color="#1d4ed8"
@@ -333,15 +398,19 @@ export default function DashboardPage() {
       {/* Status + Resultado Final — Proposições */}
       <div className="flex gap-3">
         <div className="bg-white rounded-xl shadow-sm px-4 py-3 flex-1">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Proposições por Status</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Proposições por Status <span className="normal-case font-normal text-gray-300">— clique para filtrar</span></p>
           <div className="grid grid-cols-7 gap-2">
             {STATUS_LIST.map(s => {
               const c = STATUS_STYLE[s]
+              const ativo = filtroStatus === s
               return (
-                <div key={s} className={`rounded-lg border p-2 text-center ${c.bg} ${c.border}`}>
+                <button key={s} onClick={() => setFiltroStatus(prev => prev === s ? '' : s)}
+                  className={`rounded-lg border p-2 text-center transition ${c.bg} ${c.border} ${
+                    ativo ? 'ring-2 ring-offset-1 ring-gray-800' : filtroStatus ? 'opacity-40 hover:opacity-70' : 'hover:opacity-80'
+                  }`}>
                   <p className={`text-xl font-bold ${c.text}`}>{stats.porStatus[s] || 0}</p>
                   <p className={`text-xs mt-0.5 ${c.text} font-medium leading-tight`}>{s}</p>
-                </div>
+                </button>
               )
             })}
           </div>
@@ -393,18 +462,28 @@ export default function DashboardPage() {
         proposicoes={stats.proposicoes}
         porAno={stats.porAno}
         porTipo={stats.porTipo}
+        filtroVereadorIds={filtroVereadorIds}
+        onToggleVereador={toggleVereador}
+        filtroOrigem={filtroOrigem}
+        onToggleOrigem={toggleOrigem}
+        onSetStatus={setFiltroStatus}
       />
     </div>
   )
 }
 
 function StatCard({
-  label, value, color, icon,
+  label, value, color, icon, ativo = true, onClick,
 }: {
-  label: string; value: string | number; color: string; icon: string
+  label: string; value: string | number; color: string; icon: string; ativo?: boolean; onClick?: () => void
 }) {
+  const Tag = onClick ? 'button' : 'div'
   return (
-    <div className="bg-white rounded-xl shadow-sm px-3 py-3 flex items-center gap-2.5 border-l-4" style={{ borderLeftColor: color }}>
+    <Tag onClick={onClick}
+      className={`bg-white rounded-xl shadow-sm px-3 py-3 flex items-center gap-2.5 border-l-4 text-left w-full transition ${
+        onClick ? 'cursor-pointer hover:shadow-md' : ''
+      } ${!ativo ? 'opacity-40 hover:opacity-70' : ''}`}
+      style={{ borderLeftColor: color }}>
       <div className="rounded-lg p-2 flex-shrink-0" style={{ background: color }}>
         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
@@ -414,6 +493,6 @@ function StatCard({
         <p className="text-lg font-bold text-gray-800 leading-tight">{value}</p>
         <p className="text-gray-500 text-xs leading-tight truncate">{label}</p>
       </div>
-    </div>
+    </Tag>
   )
 }

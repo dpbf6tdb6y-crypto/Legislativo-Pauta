@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, Cell, LabelList, LineChart, Line,
 } from 'recharts'
 
-export type VereadorData    = { nome: string; total: number; ativo: boolean }
+export type VereadorData    = { nome: string; total: number; ativo: boolean; vereadorId: string | null }
 export type StatusData      = { status: string; total: number }
 export type AnoData         = { ano: number; executivo: number; vereadores: number }
 export type TipoData        = { tipo: string; total: number }
@@ -70,10 +70,16 @@ interface Props {
   proposicoes:        ProposicaoResumo[]
   porAno:             AnoData[]
   porTipo:            TipoData[]
+  filtroVereadorIds:  Set<string>
+  onToggleVereador:   (id: string) => void
+  filtroOrigem:       '' | 'executivo' | 'vereadores'
+  onToggleOrigem:     (o: 'executivo' | 'vereadores') => void
+  onSetStatus:        (s: string) => void
 }
 
 export default function DashboardCharts({
   porVereador, porStatusExecutivo, totalExecutivo, proposicoes, porAno, porTipo,
+  filtroVereadorIds, onToggleVereador, filtroOrigem, onToggleOrigem, onSetStatus,
 }: Props) {
   const [filtro, setFiltro] = useState<Filtro>(null)
   const [situacaoGrafico, setSituacaoGrafico] = useState<'ativos' | 'inativos' | 'todos'>('ativos')
@@ -84,6 +90,17 @@ export default function DashboardCharts({
 
   function toggle(tipo: 'vereador' | 'executivo', valor: string) {
     setFiltro(prev => prev?.tipo === tipo && prev.valor === valor ? null : { tipo, valor })
+  }
+
+  function clicarVereador(entry: VereadorData) {
+    toggle('vereador', entry.nome)
+    if (entry.vereadorId) onToggleVereador(entry.vereadorId)
+  }
+
+  function clicarExecutivo(status: string) {
+    toggle('executivo', status)
+    if (filtroOrigem !== 'executivo') onToggleOrigem('executivo')
+    onSetStatus(status)
   }
 
   const detalhes = filtro === null ? [] : filtro.tipo === 'vereador'
@@ -206,15 +223,18 @@ export default function DashboardCharts({
                   radius={[0, 4, 4, 0]}
                   maxBarSize={22}
                   cursor="pointer"
-                  onClick={(data) => toggle('vereador', data.nome)}
+                  onClick={(data) => clicarVereador(data)}
                 >
-                  {porVereadorExibido.map((entry, i) => (
+                  {porVereadorExibido.map((entry, i) => {
+                    const selecionado = entry.vereadorId ? filtroVereadorIds.has(entry.vereadorId) : filtro?.tipo === 'vereador' && filtro.valor === entry.nome
+                    const algumSelecionado = filtroVereadorIds.size > 0 || (filtro?.tipo === 'vereador')
+                    return (
                     <Cell
                       key={i}
                       fill={VEREADOR_CORES[i % VEREADOR_CORES.length]}
-                      opacity={filtro?.tipo === 'vereador' && filtro.valor !== entry.nome ? 0.25 : 1}
+                      opacity={algumSelecionado && !selecionado ? 0.25 : 1}
                     />
-                  ))}
+                  )})}
                   <LabelList
                     dataKey="total"
                     position="right"
@@ -255,7 +275,7 @@ export default function DashboardCharts({
                   radius={[4, 4, 0, 0]}
                   maxBarSize={52}
                   cursor="pointer"
-                  onClick={(data) => toggle('executivo', data.status)}
+                  onClick={(data) => clicarExecutivo(data.status)}
                 >
                   {porStatusExecutivo.map(entry => (
                     <Cell
@@ -276,63 +296,57 @@ export default function DashboardCharts({
         </div>
       </div>
 
-      {/* ── Painel de detalhe ── */}
+      {/* ── Painel lateral de detalhe (drawer) ── */}
       {filtro && (
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center justify-between mb-3">
-            <p className="font-semibold text-gray-800 text-sm">
-              {filtro.tipo === 'vereador'
-                ? <><span className="text-gray-400 font-normal">Vereador: </span>{filtro.valor}</>
-                : <><span className="text-gray-400 font-normal">Executivo — Status: </span>{filtro.valor}</>}
-              <span className="ml-2 text-xs font-normal text-gray-400">
-                ({detalhes.length} proposição{detalhes.length !== 1 ? 'ões' : ''})
-              </span>
-            </p>
-            <button
-              onClick={() => setFiltro(null)}
-              className="text-gray-400 hover:text-gray-700 text-xs border border-gray-200 rounded px-2 py-0.5 transition"
-            >
-              Fechar ×
-            </button>
-          </div>
+        <>
+          <div
+            className="fixed inset-0 bg-black/30 z-40 transition-opacity"
+            onClick={() => setFiltro(null)}
+          />
+          <div className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-200">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
+              <p className="font-semibold text-gray-800 text-sm">
+                {filtro.tipo === 'vereador'
+                  ? <><span className="text-gray-400 font-normal">Vereador: </span>{filtro.valor}</>
+                  : <><span className="text-gray-400 font-normal">Executivo — Status: </span>{filtro.valor}</>}
+                <span className="ml-2 text-xs font-normal text-gray-400">
+                  ({detalhes.length} {detalhes.length !== 1 ? 'proposições' : 'proposição'})
+                </span>
+              </p>
+              <button
+                onClick={() => setFiltro(null)}
+                className="text-gray-400 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition flex-shrink-0"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
 
-          {detalhes.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-4">Nenhuma proposição encontrada</p>
-          ) : (
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-gray-100 text-gray-400">
-                  <th className="text-left px-3 py-1.5 font-semibold">Tipo</th>
-                  <th className="text-left px-3 py-1.5 font-semibold">Número</th>
-                  <th className="text-left px-3 py-1.5 font-semibold">Ementa</th>
-                  <th className="text-left px-3 py-1.5 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {detalhes.map(p => (
-                  <tr key={p.id} className="hover:bg-gray-50 transition">
-                    <td className="px-3 py-1.5">
-                      <span className={`font-bold px-1.5 py-0.5 rounded ${TIPO_COR[p.tipo] || 'bg-gray-100 text-gray-700'}`}>
-                        {p.tipo}
-                      </span>
-                    </td>
-                    <td className="px-3 py-1.5 font-semibold text-gray-800 whitespace-nowrap">
-                      {p.numero}/{p.ano}
-                    </td>
-                    <td className="px-3 py-1.5 text-gray-600 max-w-lg">
-                      <span className="line-clamp-2">{p.ementa || <em className="text-gray-300">sem ementa</em>}</span>
-                    </td>
-                    <td className="px-3 py-1.5">
-                      <span className={`border px-2 py-0.5 rounded font-medium ${STATUS_CHIP[p.status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                        {p.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+            <div className="flex-1 overflow-y-auto">
+              {detalhes.length === 0 ? (
+                <p className="text-gray-400 text-sm text-center py-8">Nenhuma proposição encontrada</p>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {detalhes.map(p => (
+                    <div key={p.id} className="px-4 py-3 hover:bg-gray-50 transition">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${TIPO_COR[p.tipo] || 'bg-gray-100 text-gray-700'}`}>
+                          {p.tipo}
+                        </span>
+                        <span className="text-sm font-semibold text-gray-800">{p.numero}/{p.ano}</span>
+                        <span className={`text-xs border px-2 py-0.5 rounded font-medium ml-auto ${STATUS_CHIP[p.status] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                          {p.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 line-clamp-3">{p.ementa || <em className="text-gray-300">sem ementa</em>}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   )
