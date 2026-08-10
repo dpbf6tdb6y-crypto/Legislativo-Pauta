@@ -32,7 +32,7 @@ const cargoBadge: Record<string, { label: string; bg: string; color: string }> =
   "vice-prefeito":   { label: "Vice-Prefeito",      bg: "#047857", color: "#fff" },
 };
 
-const empty = { nome: "", apelido: "", partido: "", legislatura: "2025-2028", telefone: "", email: "", cargo: "", poder: "legislativo" };
+const empty = { nome: "", apelido: "", partido: "", legislatura: "2025-2028", telefone: "", email: "", cargo: "", poder: "legislativo", ativo: true };
 
 export default function VereadoresPage() {
   const toast = useToast();
@@ -81,11 +81,10 @@ export default function VereadoresPage() {
 
   async function salvar() {
     const payload = { ...form, cargo: form.cargo || null, apelido: form.apelido.trim() || null };
-    if (editId) {
-      await fetch(`/api/vereadores/${editId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    } else {
-      await fetch("/api/vereadores", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-    }
+    const r = editId
+      ? await fetch(`/api/vereadores/${editId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+      : await fetch("/api/vereadores", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    if (!r.ok) { const d = await r.json(); toast.error(d.error ?? "Erro ao salvar"); return; }
     setModal(false);
     setForm(empty);
     setEditId(null);
@@ -93,7 +92,7 @@ export default function VereadoresPage() {
   }
 
   function editar(v: Vereador) {
-    setForm({ nome: v.nome, apelido: v.apelido || "", partido: v.partido, legislatura: v.legislatura, telefone: v.telefone || "", email: v.email || "", cargo: v.cargo || "", poder: v.poder });
+    setForm({ nome: v.nome, apelido: v.apelido || "", partido: v.partido, legislatura: v.legislatura, telefone: v.telefone || "", email: v.email || "", cargo: v.cargo || "", poder: v.poder, ativo: v.ativo });
     setEditId(v.id);
     setModal(true);
   }
@@ -363,6 +362,18 @@ export default function VereadoresPage() {
                   ))}
                 </select>
               </div>
+              {editId && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Situação</label>
+                  <select value={form.ativo ? "ativo" : "inativo"}
+                    onChange={(e) => setForm({ ...form, ativo: e.target.value === "ativo" })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="ativo">Ativo</option>
+                    <option value="inativo">Inativo</option>
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">Inativo deixa de aparecer nas opções de autoria em novas matérias, mas o histórico existente é preservado.</p>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
                 <input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />

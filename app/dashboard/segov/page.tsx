@@ -4,7 +4,9 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { exportarSegovExcel, exportarSegovPDF, COLUNAS_RELATORIO, type ColunasKey } from '@/lib/segov-export'
 import { useTopbar } from '@/contexts/topbar'
-import { resolverAutores } from '@/lib/vereador-match'
+import { resolverAutores, situacaoAutores } from '@/lib/vereador-match'
+import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
+import FiltroVereadorSelect from '@/app/components/FiltroVereadorSelect'
 
 const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
@@ -81,6 +83,7 @@ export default function SeggovPage() {
   const [colVereador, setColVereador] = useState('')
   const [colStatus, setColStatus] = useState('')
   const [colTipo, setColTipo] = useState('')
+  const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
 
   async function carregar() {
     setLoading(true)
@@ -130,9 +133,10 @@ export default function SeggovPage() {
       if (!ref.includes(colProposicao.toLowerCase())) return false
     }
     if (colEmenta && !(item.ementa || '').toLowerCase().includes(colEmenta.toLowerCase())) return false
-    if (colVereador) {
-      const nome = (item.vereador?.nome || item.autorNome || '').toLowerCase()
-      if (!nome.includes(colVereador.toLowerCase())) return false
+    if (colVereador || filtroSituacaoAutor !== 'todos') {
+      const autores = resolverAutores(item.vereador, item.autorNome, vereadores)
+      if (colVereador && !autores.some(a => a.vereadorId === colVereador)) return false
+      if (filtroSituacaoAutor !== 'todos' && situacaoAutores(autores) !== filtroSituacaoAutor) return false
     }
     if (exceto !== 'status' && colStatus && item.status !== colStatus) return false
     if (exceto !== 'tipo' && colTipo && item.tipo !== colTipo) return false
@@ -140,24 +144,24 @@ export default function SeggovPage() {
   }
 
   const itensExibidos = useMemo(() => itens.filter(item => passaFiltrosBase(item)),
-    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo])
+    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo, filtroSituacaoAutor, vereadores])
 
   const contagemPorStatus = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(item => { if (passaFiltrosBase(item, 'status')) mapa[item.status] = (mapa[item.status] || 0) + 1 })
     return mapa
-  }, [itens, colProposicao, colEmenta, colVereador, colTipo])
+  }, [itens, colProposicao, colEmenta, colVereador, colTipo, filtroSituacaoAutor, vereadores])
 
   const contagemPorTipo = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(item => { if (passaFiltrosBase(item, 'tipo')) mapa[item.tipo] = (mapa[item.tipo] || 0) + 1 })
     return mapa
-  }, [itens, colProposicao, colEmenta, colVereador, colStatus])
+  }, [itens, colProposicao, colEmenta, colVereador, colStatus, filtroSituacaoAutor, vereadores])
 
-  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo
+  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo || filtroSituacaoAutor !== 'ativos'
 
   function limparFiltrosColuna() {
-    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(''); setColTipo('')
+    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(''); setColTipo(''); setFiltroSituacaoAutor('ativos')
   }
 
   const todosSelecionados = itensExibidos.length > 0 && itensExibidos.every(i => selecionados.has(i.id))
@@ -249,9 +253,8 @@ export default function SeggovPage() {
         <input value={colEmenta} onChange={e => setColEmenta(e.target.value)}
           placeholder="Buscar palavra na ementa..."
           className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-1 min-w-[180px]" />
-        <input value={colVereador} onChange={e => setColVereador(e.target.value)}
-          placeholder="Buscar vereador..."
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-36" />
+        <FiltroVereadorSelect vereadores={vereadores} value={colVereador} onChange={setColVereador} className="w-40" />
+        <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
         <select value={colTipo} onChange={e => setColTipo(e.target.value)}
           className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-48">
           <option value="">Todos os tipos ({Object.values(contagemPorTipo).reduce((a, b) => a + b, 0)})</option>
@@ -392,7 +395,7 @@ export default function SeggovPage() {
                         const isLast = idx === marcados.length - 1
                         return (
                         <div key={step.key} className="flex items-start flex-shrink-0">
-                          <div className="flex flex-col items-center" style={{ minWidth: '56px' }}>
+                          <div className="flex flex-col items-center" style={{ width: '56px' }}>
                             <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
                               graficoCor === 'vermelho' ? 'bg-red-500' :
                               (graficoCor === 'normal' && isLast) ? 'bg-blue-500' :
@@ -409,7 +412,7 @@ export default function SeggovPage() {
                             }`}>{step.labelCurto}</p>
                             <p className="text-xs text-gray-400 text-center mt-0.5">{fmtFluxoData(step.doneAt)}</p>
                             {step.data?.comissaoNome && (
-                              <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center">{step.data.comissaoNome}</span>
+                              <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
                             )}
                             {step.data?.resultado && (
                               <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${NEGATIVOS.has(step.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -417,18 +420,18 @@ export default function SeggovPage() {
                               </span>
                             )}
                             {step.data?.numero && (
-                              <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center">
+                              <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">
                                 {step.data.emendaTipo ? `${step.data.emendaTipo} ` : ''}{step.data.numero}{step.data.ano ? `/${step.data.ano}` : ''}
                               </span>
                             )}
                             {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.resultado && !step.data?.numero && (
-                              <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center truncate max-w-[56px]">{step.data.nome1}</span>
+                              <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
                             )}
                           </div>
                           {idx < marcados.length - 1 && (
                             <div className="flex-shrink-0 mt-2.5">
-                              <div className={`h-0.5 w-4 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
-                              <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-4 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
+                              <div className={`h-0.5 w-2 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
+                              <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-2 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
                             </div>
                           )}
                         </div>

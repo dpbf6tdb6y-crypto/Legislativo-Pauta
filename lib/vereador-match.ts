@@ -57,3 +57,14 @@ export function resolverAutores(
   })
   return resolvidos
 }
+
+/**
+ * Situação de uma matéria para fins do filtro Ativos/Inativos/Todos: considera "ativos"
+ * quando não há autores resolvidos (texto livre não vinculado) ou quando pelo menos um
+ * dos autores resolvidos ainda está ativo; "inativos" só quando TODOS os autores resolvidos
+ * já estão inativos.
+ */
+export function situacaoAutores(autores: AutorResolvido[]): 'ativos' | 'inativos' {
+  if (autores.length === 0) return 'ativos'
+  return autores.some(a => a.ativo) ? 'ativos' : 'inativos'
+}

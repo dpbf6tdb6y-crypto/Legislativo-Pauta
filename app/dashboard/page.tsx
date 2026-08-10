@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import DashboardCharts from './DashboardCharts'
+import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
+import { resolverAutores, situacaoAutores } from '@/lib/vereador-match'
 
 const STATUS_LIST = [
   'Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado',
@@ -74,6 +76,7 @@ export default function DashboardPage() {
   const [filtroOrigem, setFiltroOrigem] = useState<'' | 'executivo' | 'vereadores'>('')
   const [painelVereadorAberto, setPainelVereadorAberto] = useState(false)
   const [situacaoVereadorFiltro, setSituacaoVereadorFiltro] = useState<'ativos' | 'inativos' | 'todos'>('ativos')
+  const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
   const [nomesVereadores, setNomesVereadores] = useState<Record<string, string>>({})
 
   useEffect(() => {
@@ -117,6 +120,12 @@ export default function DashboardPage() {
     })
   }
 
+  function passaSituacaoAutor(i: Item) {
+    if (filtroSituacaoAutor === 'todos') return true
+    const autores = resolverAutores(i.vereador, i.autorNome, vereadoresTodos)
+    return situacaoAutores(autores) === filtroSituacaoAutor
+  }
+
   const itensFiltrados = useMemo(() => itens.filter(i => {
     if (filtroMateria === 'requerimento' || filtroMateria === 'mocao') return false
     if (filtroAno && String(i.ano) !== filtroAno) return false
@@ -125,8 +134,9 @@ export default function DashboardPage() {
     if (filtroOrigem === 'executivo' && !isExec(i)) return false
     if (filtroOrigem === 'vereadores' && isExec(i)) return false
     if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
+    if (!passaSituacaoAutor(i)) return false
     return true
-  }), [itens, filtroAno, filtroTipo, filtroStatus, filtroOrigem, filtroMateria, filtroVereadorIds])
+  }), [itens, filtroAno, filtroTipo, filtroStatus, filtroOrigem, filtroMateria, filtroVereadorIds, filtroSituacaoAutor, vereadoresTodos])
 
   const requerimentosFiltrados = useMemo(() => requerimentos.filter(i => {
     if (filtroMateria === 'proposicao') return false
@@ -137,8 +147,9 @@ export default function DashboardPage() {
     if (filtroOrigem === 'executivo' && !isExec(i)) return false
     if (filtroOrigem === 'vereadores' && isExec(i)) return false
     if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
+    if (!passaSituacaoAutor(i)) return false
     return true
-  }), [requerimentos, filtroAno, filtroStatus, filtroOrigem, filtroMateria, filtroVereadorIds])
+  }), [requerimentos, filtroAno, filtroStatus, filtroOrigem, filtroMateria, filtroVereadorIds, filtroSituacaoAutor, vereadoresTodos])
 
   const stats = useMemo(() => {
     const total = itensFiltrados.length
@@ -236,11 +247,11 @@ export default function DashboardPage() {
     }
   }, [itensFiltrados, requerimentosFiltrados])
 
-  const filtrosAtivos = !!(filtroAno || filtroTipo || filtroVereadorIds.size > 0 || filtroMateria || filtroStatus || filtroOrigem)
+  const filtrosAtivos = !!(filtroAno || filtroTipo || filtroVereadorIds.size > 0 || filtroMateria || filtroStatus || filtroOrigem || filtroSituacaoAutor !== 'ativos')
 
   function limparFiltros() {
     setFiltroAno(''); setFiltroTipo(''); setFiltroVereadorIds(new Set())
-    setFiltroMateria(''); setFiltroStatus(''); setFiltroOrigem('')
+    setFiltroMateria(''); setFiltroStatus(''); setFiltroOrigem(''); setFiltroSituacaoAutor('ativos')
   }
 
   function toggleMateria(m: typeof filtroMateria) {
@@ -264,6 +275,9 @@ export default function DashboardPage() {
   if (filtroVereadorIds.size > 0) {
     const nomes = [...filtroVereadorIds].map(id => nomesVereadores[id] || '?').join(', ')
     chips.push({ label: `Vereador: ${nomes}`, onRemover: () => setFiltroVereadorIds(new Set()) })
+  }
+  if (filtroSituacaoAutor !== 'ativos') {
+    chips.push({ label: `Autores: ${filtroSituacaoAutor === 'inativos' ? 'Inativos' : 'Todos'}`, onRemover: () => setFiltroSituacaoAutor('ativos') })
   }
 
   return (
@@ -357,6 +371,8 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+
+        <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
 
         {loading && <span className="text-xs text-gray-400 ml-auto">Carregando...</span>}
       </div>
