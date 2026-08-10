@@ -25,16 +25,18 @@ export function splitAutoresTexto(texto: string | null | undefined): string[] {
   return texto.split(/\s+e\s+|,\s+/).map(n => n.trim()).filter(Boolean)
 }
 
-export type AutorResolvido = { label: string; vereadorId: string | null }
+export type AutorResolvido = { label: string; vereadorId: string | null; ativo: boolean }
 
 /**
  * Resolve uma lista de fragmentos de autor (incluindo o vereador já vinculado, se houver)
  * em labels deduplicados, preferindo o apelido cadastrado do vereador.
+ * Passe a lista de vereadores incluindo inativos (ex: /api/vereadores?ativo=false) para que
+ * autores que já saíram do mandato sejam corretamente identificados e marcados como inativos.
  */
 export function resolverAutores(
-  vereadorPrincipal: { id: string; nome: string; apelido?: string | null } | null | undefined,
+  vereadorPrincipal: { id: string; nome: string; apelido?: string | null; ativo?: boolean } | null | undefined,
   autorNomeTexto: string | null | undefined,
-  vereadores: { id: string; nome: string; apelido?: string | null }[]
+  vereadores: { id: string; nome: string; apelido?: string | null; ativo?: boolean }[]
 ): AutorResolvido[] {
   const fragmentos: string[] = []
   if (vereadorPrincipal?.nome) fragmentos.push(vereadorPrincipal.nome)
@@ -50,6 +52,7 @@ export function resolverAutores(
     resolvidos.push({
       label: v ? (v.apelido || v.nome.split(/\s+/)[0]) : f.split(/\s+/)[0],
       vereadorId: v ? v.id : null,
+      ativo: v ? v.ativo !== false : true,
     })
   })
   return resolvidos

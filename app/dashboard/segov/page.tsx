@@ -91,7 +91,7 @@ export default function SeggovPage() {
   }
 
   useEffect(() => {
-    fetch('/api/vereadores?poder=legislativo').then(r => r.json()).then(setVereadores)
+    fetch('/api/vereadores?poder=legislativo&ativo=false').then(r => r.json()).then(setVereadores)
     fetch('/api/config-opcoes?tipo=tipo_proposicao').then(r => r.json()).then(setTiposProposicao)
     carregar()
   }, [])
@@ -371,7 +371,11 @@ export default function SeggovPage() {
                             {autores.length} autor{autores.length > 1 ? 'es' : ''}:
                           </span>
                           {autores.map((a, i) => (
-                            <span key={i} className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{a.label}</span>
+                            <span key={i} className={`text-xs font-medium px-2 py-0.5 rounded ${
+                              a.ativo ? 'text-indigo-700 bg-indigo-50' : 'text-gray-500 bg-gray-100'
+                            }`}>
+                              {a.label}{!a.ativo && ' (inativo)'}
+                            </span>
                           ))}
                         </div>
                       )

@@ -7,7 +7,7 @@ import { useToast } from '@/contexts/toast'
 const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
 const STATUS_LIST = ['Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
 
-type Autor = { id?: string; nome: string; isPE: boolean }
+type Autor = { id?: string; nome: string; isPE: boolean; ativo?: boolean }
 
 type StepData = {
   comissaoId?: string
@@ -95,7 +95,7 @@ export default function EditarSeggovPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/vereadores?poder=legislativo').then(r => r.json()),
+      fetch('/api/vereadores?poder=legislativo&ativo=false').then(r => r.json()),
       fetch('/api/segov').then(r => r.json()),
       fetch('/api/comissoes').then(r => r.json()),
     ]).then(([vers, todos, coms]) => {
@@ -122,7 +122,7 @@ export default function EditarSeggovPage() {
         const nomeRaw: string = item.autorNome || ''
         if (item.vereadorId) {
           const v = vers.find((v: any) => v.id === item.vereadorId)
-          if (v) lista.push({ id: v.id, nome: v.nome, isPE: false })
+          if (v) lista.push({ id: v.id, nome: v.nome, isPE: false, ativo: v.ativo })
         }
         if (nomeRaw) {
           nomeRaw.split(/\s+e\s+|,\s+/).map((n: string) => n.trim()).filter(Boolean).forEach((nome: string) => {
@@ -134,7 +134,7 @@ export default function EditarSeggovPage() {
                 nome.toLowerCase().split(/\s+/).filter((p: string) => p.length > 2).some((p: string) => v.nome.toLowerCase().includes(p))
               )
               if (matched && !lista.some(a => a.id === matched.id))
-                lista.push({ id: matched.id, nome: matched.nome, isPE: false })
+                lista.push({ id: matched.id, nome: matched.nome, isPE: false, ativo: matched.ativo })
               else if (!matched && !lista.some(a => a.nome === nome))
                 lista.push({ nome, isPE: false })
             }
@@ -300,7 +300,7 @@ export default function EditarSeggovPage() {
             {(['nome1', 'nome2', 'nome3'] as const).map((campo, i) => (
               <select key={campo} value={p[campo] || ''} onChange={e => setPendingData(def.key, campo, e.target.value)} className={inpSm}>
                 <option value="">— Membro {i + 1} —</option>
-                {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
+                {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}{!v.ativo && ' (inativo)'}</option>)}
               </select>
             ))}
           </div>
@@ -332,7 +332,7 @@ export default function EditarSeggovPage() {
         {!done && def.tipo === 'nome1' && (
           <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
             <option value="">— Selecionar vereador —</option>
-            {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
+            {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}{!v.ativo && ' (inativo)'}</option>)}
           </select>
         )}
 
@@ -411,7 +411,7 @@ export default function EditarSeggovPage() {
               <option value="">— Selecionar —</option>
               <option value="executivo">⚡ Executivo</option>
               <optgroup label="Vereadores">
-                {vereadores.map((v: any) => <option key={v.id} value={v.id}>{v.nome}</option>)}
+                {vereadores.map((v: any) => <option key={v.id} value={v.id}>{v.nome}{!v.ativo && ' (inativo)'}</option>)}
               </optgroup>
             </select>
           </div>
@@ -445,6 +445,7 @@ export default function EditarSeggovPage() {
               }`}>
                 {a.isPE && <span>⚡</span>}
                 {a.nome}
+                {a.ativo === false && <span className="text-gray-400 font-normal">(inativo)</span>}
                 <button type="button" onClick={() => removerAutor(i)} className="text-gray-400 hover:text-red-500 transition">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

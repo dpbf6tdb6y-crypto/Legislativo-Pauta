@@ -49,7 +49,7 @@ export default function EditarRequerimentoPage() {
   useEffect(() => {
     Promise.all([
       fetch(`/api/requerimentos/${id}`).then(r => r.json()),
-      fetch('/api/vereadores?poder=legislativo').then(r => r.json()),
+      fetch('/api/vereadores?poder=legislativo&ativo=false').then(r => r.json()),
       fetch('/api/config-opcoes?tipo=tipo_requerimento').then(r => r.json()),
     ]).then(([item, vers, opcoes]) => {
       setForm({
@@ -239,7 +239,7 @@ export default function EditarRequerimentoPage() {
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Vereador</label>
             <select value={form.vereadorId} onChange={e => set('vereadorId', e.target.value)} className={inp}>
               <option value="">— Selecione —</option>
-              {vereadores.map((v: any) => <option key={v.id} value={v.id}>{v.nome}</option>)}
+              {vereadores.map((v: any) => <option key={v.id} value={v.id}>{v.nome}{!v.ativo && ' (inativo)'}</option>)}
             </select>
           </div>
           <div>

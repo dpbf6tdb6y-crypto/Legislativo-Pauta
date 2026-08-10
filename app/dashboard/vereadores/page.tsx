@@ -105,13 +105,17 @@ export default function VereadoresPage() {
   }
 
   async function desativar(id: string) {
-    if (!confirm("Desativar este cadastro?")) return;
-    await fetch(`/api/vereadores/${id}`, { method: "DELETE" });
+    if (!confirm("Desativar este cadastro? Ele deixa de aparecer nas opções de autoria em novas matérias, mas o histórico existente é preservado.")) return;
+    const r = await fetch(`/api/vereadores/${id}`, { method: "DELETE" });
+    if (!r.ok) { const d = await r.json(); toast.error(d.error ?? "Erro ao desativar"); return; }
+    toast.success("Vereador desativado.");
     carregar();
   }
 
   async function reativar(v: Vereador) {
-    await fetch(`/api/vereadores/${v.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ativo: true }) });
+    const r = await fetch(`/api/vereadores/${v.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ativo: true }) });
+    if (!r.ok) { const d = await r.json(); toast.error(d.error ?? "Erro ao reativar"); return; }
+    toast.success("Vereador reativado.");
     carregar();
   }
 
@@ -166,11 +170,13 @@ export default function VereadoresPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
             </button>
             {v.ativo ? (
-              <button onClick={() => desativar(v.id)} className="text-gray-400 hover:text-red-500" title="Desativar">
+              <button onClick={() => desativar(v.id)} className="text-gray-400 hover:text-red-500"
+                title="Desativar — some das opções de autoria em novas matérias, mas o histórico existente é preservado">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             ) : (
-              <button onClick={() => reativar(v)} className="text-gray-400 hover:text-green-600" title="Reativar">
+              <button onClick={() => reativar(v)} className="text-gray-400 hover:text-green-600"
+                title="Reativar — volta a aparecer nas opções de autoria em novas matérias">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
               </button>
             )}
