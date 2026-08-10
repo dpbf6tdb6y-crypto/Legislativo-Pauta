@@ -63,6 +63,7 @@ export default function SeggovPage() {
   const router = useRouter()
   const [itens, setItens] = useState<any[]>([])
   const [vereadores, setVereadores] = useState<any[]>([])
+  const [tiposProposicao, setTiposProposicao] = useState<{ id: string; nome: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
   const [excluindo, setExcluindo] = useState(false)
@@ -78,6 +79,7 @@ export default function SeggovPage() {
   const [colEmenta, setColEmenta] = useState('')
   const [colVereador, setColVereador] = useState('')
   const [colStatus, setColStatus] = useState('')
+  const [colTipo, setColTipo] = useState('')
 
   async function carregar() {
     setLoading(true)
@@ -89,6 +91,7 @@ export default function SeggovPage() {
 
   useEffect(() => {
     fetch('/api/vereadores?poder=legislativo').then(r => r.json()).then(setVereadores)
+    fetch('/api/config-opcoes?tipo=tipo_proposicao').then(r => r.json()).then(setTiposProposicao)
     carregar()
   }, [])
 
@@ -131,13 +134,14 @@ export default function SeggovPage() {
       if (!nome.includes(colVereador.toLowerCase())) return false
     }
     if (colStatus && item.status !== colStatus) return false
+    if (colTipo && item.tipo !== colTipo) return false
     return true
-  }), [itens, colProposicao, colEmenta, colVereador, colStatus])
+  }), [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo])
 
-  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus
+  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo
 
   function limparFiltrosColuna() {
-    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus('')
+    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(''); setColTipo('')
   }
 
   const todosSelecionados = itensExibidos.length > 0 && itensExibidos.every(i => selecionados.has(i.id))
@@ -236,6 +240,11 @@ export default function SeggovPage() {
           className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-32">
           <option value="">Todos os status</option>
           {STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select value={colTipo} onChange={e => setColTipo(e.target.value)}
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-40">
+          <option value="">Todos os tipos</option>
+          {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome}</option>)}
         </select>
         <div className="ml-auto flex items-center gap-2">
           <input type="checkbox"

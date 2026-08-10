@@ -5,7 +5,8 @@ export default function MocoesPage() {
     <ListaRequerimentos
       titulo="Moções"
       subtitulo="Moções de aplausos, pesar e repúdio"
-      tiposExibidos={['MOC']}
+      modo="apenas"
+      tiposFiltro={['MOC']}
       novoHref="/dashboard/requerimentos/novo?tipo=MOC"
       editarHrefBase="/dashboard/requerimentos"
       corPrimaria="#6d28d9"

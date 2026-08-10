@@ -3,24 +3,32 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-const TIPOS = ['REQ', 'MOC', 'IND']
-const TIPO_LABEL: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
+const TIPOS_PADRAO = ['REQ', 'MOC', 'IND']
+const TIPO_LABEL_PADRAO: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 export default function NovoRequerimentoPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const tipoInicial = TIPOS.includes(searchParams.get('tipo') || '') ? (searchParams.get('tipo') as string) : 'REQ'
-  const voltarHref = tipoInicial === 'MOC' ? '/dashboard/mocoes' : '/dashboard/requerimentos'
+  const tipoParam = searchParams.get('tipo') || 'REQ'
+  const voltarHref = tipoParam === 'MOC' ? '/dashboard/mocoes' : '/dashboard/requerimentos'
   const [vereadores, setVereadores] = useState<any[]>([])
+  const [tipos, setTipos] = useState<string[]>(TIPOS_PADRAO)
+  const [tipoLabel, setTipoLabel] = useState<Record<string, string>>(TIPO_LABEL_PADRAO)
   const [salvando, setSalvando] = useState(false)
   const [form, setForm] = useState({
-    numero: '', ano: String(new Date().getFullYear()), tipo: tipoInicial,
+    numero: '', ano: String(new Date().getFullYear()), tipo: tipoParam,
     descricao: '', vereadorId: '', status: 'Aguardando', dataEnvio: '',
   })
 
   useEffect(() => {
     fetch('/api/vereadores?poder=legislativo').then(r => r.json()).then(setVereadores)
+    fetch('/api/config-opcoes?tipo=tipo_requerimento').then(r => r.json()).then((opcoes: { nome: string; codigo: string | null }[]) => {
+      const labels: Record<string, string> = {}
+      const codigos: string[] = []
+      opcoes.forEach(o => { if (o.codigo) { labels[o.codigo] = o.nome; codigos.push(o.codigo) } })
+      if (codigos.length) { setTipos(codigos); setTipoLabel(labels) }
+    })
   }, [])
 
   function set(field: string, value: string) {
@@ -77,7 +85,7 @@ export default function NovoRequerimentoPage() {
             </label>
             <select required value={form.tipo} onChange={e => set('tipo', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-800/30">
-              {TIPOS.map(t => <option key={t} value={t}>{TIPO_LABEL[t]}</option>)}
+              {tipos.map(t => <option key={t} value={t}>{tipoLabel[t] || t}</option>)}
             </select>
           </div>
           <div>

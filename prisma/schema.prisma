@@ -255,8 +255,9 @@ model Segov {
 
 model ConfigOpcao {
   id        String   @id @default(cuid())
-  tipo      String   // 'origem' | 'categoria' | 'secretaria'
+  tipo      String   // 'origem' | 'categoria' | 'secretaria' | 'tipo_requerimento' | 'tipo_proposicao'
   nome      String
+  codigo    String?  // usado por 'tipo_requerimento' para vincular ao código interno (REQ/MOC/IND)
   ativo     Boolean  @default(true)
   ordem     Int      @default(0)
   createdAt DateTime @default(now())

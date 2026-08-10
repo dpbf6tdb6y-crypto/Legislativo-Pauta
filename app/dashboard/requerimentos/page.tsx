@@ -5,7 +5,8 @@ export default function RequerimentosPage() {
     <ListaRequerimentos
       titulo="Requerimentos"
       subtitulo="Requerimentos e Indicações"
-      tiposExibidos={['REQ', 'IND']}
+      modo="todos-exceto"
+      tiposFiltro={['MOC']}
       novoHref="/dashboard/requerimentos/novo"
       editarHrefBase="/dashboard/requerimentos"
     />

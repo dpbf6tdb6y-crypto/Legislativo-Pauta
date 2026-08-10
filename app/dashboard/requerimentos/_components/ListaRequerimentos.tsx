@@ -10,7 +10,7 @@ type Item = {
   vereador: { id: string; nome: string } | null
 }
 
-const TIPO_LABEL: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
+const TIPO_LABEL_PADRAO: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
 const STATUS_CHIP: Record<string, string> = {
   'Aguardando':  'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -39,34 +39,49 @@ function fmtData(iso?: string | null) {
 type Props = {
   titulo: string
   subtitulo: string
-  tiposExibidos: string[]
+  /** Modo 'apenas': mostra só os tipos em tiposFiltro. Modo 'todos-exceto': mostra todos os tipos configurados, exceto os em tiposFiltro. */
+  modo: 'apenas' | 'todos-exceto'
+  tiposFiltro: string[]
   novoHref: string
   editarHrefBase: string
   corPrimaria?: string
 }
 
-export default function ListaRequerimentos({ titulo, subtitulo, tiposExibidos, novoHref, editarHrefBase, corPrimaria = '#8B0000' }: Props) {
+export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltro, novoHref, editarHrefBase, corPrimaria = '#8B0000' }: Props) {
   const router = useRouter()
   const [itens, setItens] = useState<Item[]>([])
   const [busca, setBusca] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('')
   const [loading, setLoading] = useState(true)
+  const [tipoLabel, setTipoLabel] = useState<Record<string, string>>(TIPO_LABEL_PADRAO)
+  const [tiposExibidos, setTiposExibidos] = useState<string[]>(modo === 'apenas' ? tiposFiltro : [])
 
   const mostrarFiltroTipo = tiposExibidos.length > 1
 
-  async function carregar() {
+  async function carregar(codigosExibidos: string[]) {
     const res = await fetch('/api/requerimentos')
     const todos: Item[] = await res.json()
-    setItens(todos.filter(i => tiposExibidos.includes(i.tipo)))
+    setItens(todos.filter(i => codigosExibidos.includes(i.tipo)))
     setLoading(false)
   }
-  useEffect(() => { carregar() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    fetch('/api/config-opcoes?tipo=tipo_requerimento').then(r => r.json()).then((opcoes: { nome: string; codigo: string | null }[]) => {
+      const labels: Record<string, string> = {}
+      const codigos: string[] = []
+      opcoes.forEach(o => { if (o.codigo) { labels[o.codigo] = o.nome; codigos.push(o.codigo) } })
+      setTipoLabel(prev => ({ ...prev, ...labels }))
+      const exibidos = modo === 'apenas' ? tiposFiltro : codigos.filter(c => !tiposFiltro.includes(c))
+      setTiposExibidos(exibidos)
+      carregar(exibidos)
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function excluir(id: string) {
     if (!confirm('Excluir este item?')) return
     await fetch(`/api/requerimentos/${id}`, { method: 'DELETE' })
-    carregar()
+    carregar(tiposExibidos)
   }
 
   const filtrados = useMemo(() => itens.filter(i => {
@@ -104,7 +119,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, tiposExibidos, n
           <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}
             className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30">
             <option value="">Todos os tipos</option>
-            {tiposExibidos.map(t => <option key={t} value={t}>{TIPO_LABEL[t]}</option>)}
+            {tiposExibidos.map(t => <option key={t} value={t}>{tipoLabel[t] || t}</option>)}
           </select>
         )}
         <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}

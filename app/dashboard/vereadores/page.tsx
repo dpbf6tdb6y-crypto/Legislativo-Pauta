@@ -35,12 +35,17 @@ export default function VereadoresPage() {
   const [form, setForm] = useState(empty);
   const [editId, setEditId] = useState<string | null>(null);
   const [modal, setModal] = useState(false);
+  const [filtroSituacao, setFiltroSituacao] = useState<"ativos" | "inativos" | "todos">("ativos");
 
   async function carregar() {
-    const res = await fetch("/api/vereadores");
+    const res = await fetch("/api/vereadores?ativo=false");
     setLista(await res.json());
   }
   useEffect(() => { carregar(); }, []);
+
+  const listaFiltrada = lista.filter(v =>
+    filtroSituacao === "todos" ? true : filtroSituacao === "ativos" ? v.ativo : !v.ativo
+  );
 
   async function salvar() {
     const payload = { ...form, cargo: form.cargo || null };
@@ -73,20 +78,30 @@ export default function VereadoresPage() {
     carregar();
   }
 
-  const mesa = lista.filter(v => v.ativo && v.poder === "legislativo" && v.cargo);
-  const vereadores = lista.filter(v => v.ativo && v.poder === "legislativo" && !v.cargo && v.legislatura !== "Mandato anterior");
-  const mandatosAnteriores = lista.filter(v => v.ativo && v.poder === "legislativo" && !v.cargo && v.legislatura === "Mandato anterior");
-  const executivo = lista.filter(v => v.ativo && v.poder === "executivo");
+  async function reativar(v: Vereador) {
+    await fetch(`/api/vereadores/${v.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ativo: true }) });
+    carregar();
+  }
+
+  const mesa = listaFiltrada.filter(v => v.poder === "legislativo" && v.cargo);
+  const vereadores = listaFiltrada.filter(v => v.poder === "legislativo" && !v.cargo && v.legislatura !== "Mandato anterior");
+  const mandatosAnteriores = listaFiltrada.filter(v => v.poder === "legislativo" && !v.cargo && v.legislatura === "Mandato anterior");
+  const executivo = listaFiltrada.filter(v => v.poder === "executivo");
 
   function Card({ v }: { v: Vereador }) {
     const badge = v.cargo ? cargoBadge[v.cargo] : null;
     return (
-      <div className="bg-white rounded-xl shadow-sm p-5" style={badge ? { borderTop: `4px solid ${badge.bg}` } : {}}>
+      <div className={`bg-white rounded-xl shadow-sm p-5 ${!v.ativo ? "opacity-60" : ""}`} style={badge ? { borderTop: `4px solid ${badge.bg}` } : {}}>
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
-            {badge && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded mb-1 inline-block" style={{ background: badge.bg, color: badge.color }}>{badge.label}</span>
-            )}
+            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+              {badge && (
+                <span className="text-xs font-bold px-2 py-0.5 rounded inline-block" style={{ background: badge.bg, color: badge.color }}>{badge.label}</span>
+              )}
+              {!v.ativo && (
+                <span className="text-xs font-bold px-2 py-0.5 rounded inline-block bg-gray-200 text-gray-500">Inativo</span>
+              )}
+            </div>
             <p className="font-semibold text-gray-800">{v.nome}</p>
             <p className="text-sm font-medium text-blue-600">{v.partido}</p>
             {v.poder === "legislativo" && <p className="text-xs text-gray-500 mt-0.5">Legislatura: {v.legislatura}</p>}
@@ -97,9 +112,15 @@ export default function VereadoresPage() {
             <button onClick={() => editar(v)} className="text-gray-400 hover:text-blue-600">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
             </button>
-            <button onClick={() => desativar(v.id)} className="text-gray-400 hover:text-red-500">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+            {v.ativo ? (
+              <button onClick={() => desativar(v.id)} className="text-gray-400 hover:text-red-500" title="Desativar">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            ) : (
+              <button onClick={() => reativar(v)} className="text-gray-400 hover:text-green-600" title="Reativar">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -111,9 +132,15 @@ export default function VereadoresPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Vereadores / Executivo</h1>
-          <p className="text-gray-500 text-sm">{lista.filter(v => v.ativo).length} cadastros ativos</p>
+          <p className="text-gray-500 text-sm">{listaFiltrada.length} cadastro(s) — {lista.filter(v => v.ativo).length} ativo(s), {lista.filter(v => !v.ativo).length} inativo(s)</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <select value={filtroSituacao} onChange={e => setFiltroSituacao(e.target.value as typeof filtroSituacao)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700">
+            <option value="ativos">Ativos</option>
+            <option value="inativos">Inativos</option>
+            <option value="todos">Todos</option>
+          </select>
           <button onClick={() => abrirNovo("legislativo")} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
             + Vereador
           </button>

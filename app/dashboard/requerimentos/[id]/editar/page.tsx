@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 
-const TIPOS = ['REQ', 'MOC', 'IND']
-const TIPO_LABEL: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
+const TIPOS_PADRAO = ['REQ', 'MOC', 'IND']
+const TIPO_LABEL_PADRAO: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 type StepData = { data?: string; resultado?: string }
@@ -35,6 +35,8 @@ export default function EditarRequerimentoPage() {
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [vereadores, setVereadores] = useState<any[]>([])
+  const [tipos, setTipos] = useState<string[]>(TIPOS_PADRAO)
+  const [tipoLabel, setTipoLabel] = useState<Record<string, string>>(TIPO_LABEL_PADRAO)
   const [form, setForm] = useState({
     numero: '', ano: String(new Date().getFullYear()), tipo: 'REQ',
     descricao: '', vereadorId: '', status: 'Aguardando', dataEnvio: '',
@@ -46,7 +48,8 @@ export default function EditarRequerimentoPage() {
     Promise.all([
       fetch(`/api/requerimentos/${id}`).then(r => r.json()),
       fetch('/api/vereadores?poder=legislativo').then(r => r.json()),
-    ]).then(([item, vers]) => {
+      fetch('/api/config-opcoes?tipo=tipo_requerimento').then(r => r.json()),
+    ]).then(([item, vers, opcoes]) => {
       setForm({
         numero: item.numero || '',
         ano: String(item.ano || new Date().getFullYear()),
@@ -58,6 +61,10 @@ export default function EditarRequerimentoPage() {
       })
       if (item.fluxo && typeof item.fluxo === 'object') setFluxo(item.fluxo as FluxoState)
       setVereadores(vers)
+      const labels: Record<string, string> = {}
+      const codigos: string[] = []
+      ;(opcoes as { nome: string; codigo: string | null }[]).forEach(o => { if (o.codigo) { labels[o.codigo] = o.nome; codigos.push(o.codigo) } })
+      if (codigos.length) { setTipos(codigos); setTipoLabel(labels) }
       setCarregando(false)
     })
   }, [id])
@@ -189,7 +196,7 @@ export default function EditarRequerimentoPage() {
         </Link>
         <div>
           <h1 className="text-xl font-bold text-gray-800">Editar</h1>
-          <p className="text-sm text-gray-500">{TIPO_LABEL[form.tipo]} {formatNumero(form.numero)}/{form.ano}</p>
+          <p className="text-sm text-gray-500">{tipoLabel[form.tipo] || form.tipo} {formatNumero(form.numero)}/{form.ano}</p>
         </div>
       </div>
 
@@ -209,7 +216,7 @@ export default function EditarRequerimentoPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Tipo <span className="text-red-500">*</span></label>
             <select required value={form.tipo} onChange={e => set('tipo', e.target.value)} className={inp}>
-              {TIPOS.map(t => <option key={t} value={t}>{TIPO_LABEL[t]}</option>)}
+              {tipos.map(t => <option key={t} value={t}>{tipoLabel[t] || t}</option>)}
             </select>
           </div>
           <div>
