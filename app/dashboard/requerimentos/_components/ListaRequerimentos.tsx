@@ -2,9 +2,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { resolverAutores, situacaoAutores } from '@/lib/vereador-match'
+import { resolverAutores, situacaoAutores, ehPoderExecutivo } from '@/lib/vereador-match'
 import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
 import FiltroVereadorSelect from '@/app/components/FiltroVereadorSelect'
+import FiltroPoder, { Poder } from '@/app/components/FiltroPoder'
 
 type Item = {
   id: string; numero: string; ano: number; tipo: string; descricao: string
@@ -67,6 +68,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   const [filtroStatus, setFiltroStatus] = useState('')
   const [filtroVereadorId, setFiltroVereadorId] = useState('')
   const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
+  const [filtroPoder, setFiltroPoder] = useState<Poder>('')
   const [loading, setLoading] = useState(true)
   const [tipoLabel, setTipoLabel] = useState<Record<string, string>>(TIPO_LABEL_PADRAO)
   const [tiposExibidos, setTiposExibidos] = useState<string[]>(modo === 'apenas' ? tiposFiltro : [])
@@ -107,6 +109,11 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
       const alvo = `${i.tipo} ${i.numero} ${i.descricao} ${i.autorNome || ''}`.toLowerCase()
       if (!alvo.includes(busca.toLowerCase())) return false
     }
+    if (filtroPoder) {
+      const exec = ehPoderExecutivo(i)
+      if (filtroPoder === 'executivo' && !exec) return false
+      if (filtroPoder === 'legislativo' && exec) return false
+    }
     if (filtroVereadorId || filtroSituacaoAutor !== 'todos') {
       const autores = resolverAutores(i.vereador, i.autorNome, vereadores)
       if (filtroVereadorId && !autores.some(a => a.vereadorId === filtroVereadorId)) return false
@@ -119,10 +126,10 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
     const mapa: Record<string, number> = {}
     itens.forEach(i => { if (passaFiltrosBase(i, 'status')) mapa[i.status] = (mapa[i.status] || 0) + 1 })
     return mapa
-  }, [itens, busca, filtroTipo, filtroVereadorId, filtroSituacaoAutor, vereadores]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [itens, busca, filtroTipo, filtroVereadorId, filtroSituacaoAutor, filtroPoder, vereadores]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtrados = useMemo(() => itens.filter(i => passaFiltrosBase(i)),
-    [itens, busca, filtroTipo, filtroStatus, filtroVereadorId, filtroSituacaoAutor, vereadores])
+    [itens, busca, filtroTipo, filtroStatus, filtroVereadorId, filtroSituacaoAutor, filtroPoder, vereadores])
 
   return (
     <div className="space-y-4 pb-6">
@@ -145,6 +152,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
         <input value={busca} onChange={e => setBusca(e.target.value)}
           placeholder="Buscar por número, descrição..."
           className="flex-1 min-w-[220px] border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30" />
+        <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} />
         <FiltroVereadorSelect vereadores={vereadores} value={filtroVereadorId} onChange={setFiltroVereadorId} className="w-40" />
         <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
         {mostrarFiltroTipo && (

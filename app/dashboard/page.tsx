@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import DashboardCharts from './DashboardCharts'
 import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
+import FiltroPoder from '@/app/components/FiltroPoder'
 import { resolverAutores, situacaoAutores } from '@/lib/vereador-match'
 
 const STATUS_LIST = [
@@ -73,9 +74,8 @@ export default function DashboardPage() {
   const [filtroVereadorIds, setFiltroVereadorIds] = useState<Set<string>>(new Set())
   const [filtroMateria, setFiltroMateria] = useState<'' | 'proposicao' | 'requerimento' | 'mocao'>('')
   const [filtroStatus, setFiltroStatus] = useState('')
-  const [filtroOrigem, setFiltroOrigem] = useState<'' | 'executivo' | 'vereadores'>('')
+  const [filtroOrigem, setFiltroOrigem] = useState<'' | 'executivo' | 'legislativo'>('')
   const [painelVereadorAberto, setPainelVereadorAberto] = useState(false)
-  const [situacaoVereadorFiltro, setSituacaoVereadorFiltro] = useState<'ativos' | 'inativos' | 'todos'>('ativos')
   const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
   const [nomesVereadores, setNomesVereadores] = useState<Record<string, string>>({})
 
@@ -108,9 +108,9 @@ export default function DashboardPage() {
   }, [itens, requerimentos])
 
   const vereadoresListados = useMemo(() => vereadoresTodos
-    .filter(v => situacaoVereadorFiltro === 'todos' ? true : situacaoVereadorFiltro === 'ativos' ? v.ativo : !v.ativo)
+    .filter(v => filtroSituacaoAutor === 'todos' ? true : filtroSituacaoAutor === 'ativos' ? v.ativo : !v.ativo)
     .sort((a, b) => (a.apelido || a.nome).localeCompare(b.apelido || b.nome)),
-    [vereadoresTodos, situacaoVereadorFiltro])
+    [vereadoresTodos, filtroSituacaoAutor])
 
   function toggleVereador(id: string) {
     setFiltroVereadorIds(prev => {
@@ -132,7 +132,7 @@ export default function DashboardPage() {
     if (filtroTipo && i.tipo !== filtroTipo) return false
     if (filtroStatus && i.status !== filtroStatus) return false
     if (filtroOrigem === 'executivo' && !isExec(i)) return false
-    if (filtroOrigem === 'vereadores' && isExec(i)) return false
+    if (filtroOrigem === 'legislativo' && isExec(i)) return false
     if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
     if (!passaSituacaoAutor(i)) return false
     return true
@@ -145,7 +145,7 @@ export default function DashboardPage() {
     if (filtroAno && String(i.ano) !== filtroAno) return false
     if (filtroStatus && i.status !== filtroStatus) return false
     if (filtroOrigem === 'executivo' && !isExec(i)) return false
-    if (filtroOrigem === 'vereadores' && isExec(i)) return false
+    if (filtroOrigem === 'legislativo' && isExec(i)) return false
     if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
     if (!passaSituacaoAutor(i)) return false
     return true
@@ -263,7 +263,7 @@ export default function DashboardPage() {
   }
 
   const MATERIA_LABEL: Record<string, string> = { proposicao: 'Proposições', requerimento: 'Requerimentos', mocao: 'Moções' }
-  const ORIGEM_LABEL: Record<string, string> = { executivo: 'Executivo', vereadores: 'Vereadores' }
+  const ORIGEM_LABEL: Record<string, string> = { executivo: 'Executivo', legislativo: 'Legislativo' }
 
   type Chip = { label: string; onRemover: () => void }
   const chips: Chip[] = []
@@ -329,7 +329,9 @@ export default function DashboardPage() {
           {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome}</option>)}
         </select>
 
-        {/* Filtro de vereador — multi-seleção com checkbox, ativos/inativos/todos */}
+        <FiltroPoder value={filtroOrigem} onChange={setFiltroOrigem} />
+
+        {/* Filtro de vereador — multi-seleção com checkbox (respeita o filtro Ativos/Inativos/Todos do topo) */}
         <div className="relative">
           <button onClick={() => setPainelVereadorAberto(v => !v)}
             className={`border rounded px-2 py-1.5 text-xs flex items-center gap-1.5 transition ${
@@ -342,16 +344,6 @@ export default function DashboardPage() {
           </button>
           {painelVereadorAberto && (
             <div className="absolute z-20 mt-1 w-72 bg-white rounded-lg shadow-lg border border-gray-200 p-2">
-              <div className="flex gap-1 bg-gray-100 rounded-md p-0.5 mb-2">
-                {(['ativos', 'inativos', 'todos'] as const).map(s => (
-                  <button key={s} onClick={() => setSituacaoVereadorFiltro(s)}
-                    className={`flex-1 py-1 rounded text-[11px] font-semibold capitalize transition ${
-                      situacaoVereadorFiltro === s ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'
-                    }`}>
-                    {s}
-                  </button>
-                ))}
-              </div>
               <div className="max-h-56 overflow-y-auto space-y-0.5">
                 {vereadoresListados.map(v => (
                   <label key={v.id} className="flex items-center gap-2 px-1.5 py-1 rounded hover:bg-gray-50 cursor-pointer text-xs">

@@ -4,9 +4,10 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { exportarSegovExcel, exportarSegovPDF, COLUNAS_RELATORIO, type ColunasKey } from '@/lib/segov-export'
 import { useTopbar } from '@/contexts/topbar'
-import { resolverAutores, situacaoAutores } from '@/lib/vereador-match'
+import { resolverAutores, situacaoAutores, ehPoderExecutivo } from '@/lib/vereador-match'
 import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
 import FiltroVereadorSelect from '@/app/components/FiltroVereadorSelect'
+import FiltroPoder, { Poder } from '@/app/components/FiltroPoder'
 
 const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
@@ -84,6 +85,7 @@ export default function SeggovPage() {
   const [colStatus, setColStatus] = useState('')
   const [colTipo, setColTipo] = useState('')
   const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
+  const [filtroPoder, setFiltroPoder] = useState<Poder>('')
 
   async function carregar() {
     setLoading(true)
@@ -133,6 +135,11 @@ export default function SeggovPage() {
       if (!ref.includes(colProposicao.toLowerCase())) return false
     }
     if (colEmenta && !(item.ementa || '').toLowerCase().includes(colEmenta.toLowerCase())) return false
+    if (filtroPoder) {
+      const exec = ehPoderExecutivo(item)
+      if (filtroPoder === 'executivo' && !exec) return false
+      if (filtroPoder === 'legislativo' && exec) return false
+    }
     if (colVereador || filtroSituacaoAutor !== 'todos') {
       const autores = resolverAutores(item.vereador, item.autorNome, vereadores)
       if (colVereador && !autores.some(a => a.vereadorId === colVereador)) return false
@@ -144,24 +151,24 @@ export default function SeggovPage() {
   }
 
   const itensExibidos = useMemo(() => itens.filter(item => passaFiltrosBase(item)),
-    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo, filtroSituacaoAutor, vereadores])
+    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo, filtroSituacaoAutor, filtroPoder, vereadores])
 
   const contagemPorStatus = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(item => { if (passaFiltrosBase(item, 'status')) mapa[item.status] = (mapa[item.status] || 0) + 1 })
     return mapa
-  }, [itens, colProposicao, colEmenta, colVereador, colTipo, filtroSituacaoAutor, vereadores])
+  }, [itens, colProposicao, colEmenta, colVereador, colTipo, filtroSituacaoAutor, filtroPoder, vereadores])
 
   const contagemPorTipo = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(item => { if (passaFiltrosBase(item, 'tipo')) mapa[item.tipo] = (mapa[item.tipo] || 0) + 1 })
     return mapa
-  }, [itens, colProposicao, colEmenta, colVereador, colStatus, filtroSituacaoAutor, vereadores])
+  }, [itens, colProposicao, colEmenta, colVereador, colStatus, filtroSituacaoAutor, filtroPoder, vereadores])
 
-  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo || filtroSituacaoAutor !== 'ativos'
+  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo || filtroSituacaoAutor !== 'ativos' || filtroPoder
 
   function limparFiltrosColuna() {
-    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(''); setColTipo(''); setFiltroSituacaoAutor('ativos')
+    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(''); setColTipo(''); setFiltroSituacaoAutor('ativos'); setFiltroPoder('')
   }
 
   const todosSelecionados = itensExibidos.length > 0 && itensExibidos.every(i => selecionados.has(i.id))
@@ -253,6 +260,7 @@ export default function SeggovPage() {
         <input value={colEmenta} onChange={e => setColEmenta(e.target.value)}
           placeholder="Buscar palavra na ementa..."
           className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-1 min-w-[180px]" />
+        <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} />
         <FiltroVereadorSelect vereadores={vereadores} value={colVereador} onChange={setColVereador} className="w-40" />
         <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
         <select value={colTipo} onChange={e => setColTipo(e.target.value)}

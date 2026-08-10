@@ -68,3 +68,13 @@ export function situacaoAutores(autores: AutorResolvido[]): 'ativos' | 'inativos
   if (autores.length === 0) return 'ativos'
   return autores.some(a => a.ativo) ? 'ativos' : 'inativos'
 }
+
+/**
+ * Identifica se uma matéria é de autoria do Poder Executivo (Prefeitura), usada de forma
+ * idêntica em Dashboard, Proposições, Requerimentos e Moções para o filtro Executivo/Legislativo.
+ */
+export function ehPoderExecutivo(item: { autorNome?: string | null; vereador?: { poder?: string } | null }): boolean {
+  if (item.vereador?.poder === 'executivo') return true
+  const nome = (item.autorNome || '').toLowerCase()
+  return nome.includes('executivo') || nome.includes('prefeitura') || nome.includes('prefeito')
+}
