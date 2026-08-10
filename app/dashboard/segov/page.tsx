@@ -46,6 +46,25 @@ function fmtFluxoData(iso?: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 }
 
+function normalizarNome(nome: string) {
+  return nome.replace(/\(.*?\)/g, '').replace(/[–—-]/g, ' ').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
+}
+
+// Casa um fragmento de texto (ex: "Thiago Felipe de Almeida" ou "Cláudio José de Deus – Claudinho Valle")
+// com um vereador cadastrado (ex: "Thiago Almeida") — exige mesmo primeiro nome e que o sobrenome
+// do cadastro apareça em algum lugar do fragmento (tolera apelido colado depois de travessão)
+function buscarVereadorPorNome(fragmento: string, lista: any[]) {
+  const tokens = normalizarNome(fragmento).split(/\s+/).filter(Boolean)
+  if (!tokens.length) return null
+  const primeiro = tokens[0]
+  return lista.find(v => {
+    const vTokens = normalizarNome(v.nome).split(/\s+/).filter(Boolean)
+    if (vTokens[0] !== primeiro) return false
+    const sobrenome = vTokens[vTokens.length - 1]
+    return sobrenome === primeiro || tokens.includes(sobrenome)
+  }) || null
+}
+
 const STATUS_LIST = ['Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 const STATUS_COR: Record<string, string> = {
@@ -362,18 +381,29 @@ export default function SeggovPage() {
                     <p className="text-sm text-gray-600 mt-1.5 leading-snug">{item.ementa}</p>
                     {/* Autores */}
                     {(() => {
-                      const nomes: string[] = []
-                      if (item.vereador?.nome) nomes.push(item.vereador.nome)
+                      const fragmentos: string[] = []
+                      if (item.vereador?.nome) fragmentos.push(item.vereador.nome)
                       if (item.autorNome) {
                         ;(item.autorNome as string).split(/\s+e\s+|,\s+/).forEach((n: string) => {
                           const t = n.trim()
-                          if (t && !nomes.includes(t)) nomes.push(t)
+                          if (t) fragmentos.push(t)
                         })
                       }
-                      if (!nomes.length) return null
+                      // Casa cada fragmento com o cadastro de vereador e mostra o apelido
+                      // (evita duplicar quem aparece com nome completo e nome curto na mesma proposição)
+                      const vistos = new Set<string>()
+                      const labels: string[] = []
+                      fragmentos.forEach(f => {
+                        const v = buscarVereadorPorNome(f, vereadores)
+                        const chave = v ? v.id : normalizarNome(f)
+                        if (vistos.has(chave)) return
+                        vistos.add(chave)
+                        labels.push(v ? (v.apelido || v.nome.split(/\s+/)[0]) : f.split(/\s+/)[0])
+                      })
+                      if (!labels.length) return null
                       return (
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          {nomes.map((nome, i) => (
+                          {labels.map((nome, i) => (
                             <span key={i} className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{nome}</span>
                           ))}
                         </div>
