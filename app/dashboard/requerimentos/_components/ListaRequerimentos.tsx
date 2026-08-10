@@ -2,13 +2,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { resolverAutores } from '@/lib/vereador-match'
 
 type Item = {
   id: string; numero: string; ano: number; tipo: string; descricao: string
   status: string; dataEnvio: string | null; autorNome: string | null
   fluxo: Record<string, { done: boolean; doneAt?: string; data?: any }> | null
-  vereador: { id: string; nome: string } | null
+  vereador: { id: string; nome: string; apelido?: string | null } | null
 }
+type Vereador = { id: string; nome: string; apelido?: string | null }
 
 const TIPO_LABEL_PADRAO: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
@@ -19,6 +21,14 @@ const STATUS_CHIP: Record<string, string> = {
   'Rejeitado':   'bg-red-50 text-red-700 border-red-200',
   'Arquivado':   'bg-gray-50 text-gray-500 border-gray-200',
   'Retirado':    'bg-orange-50 text-orange-700 border-orange-200',
+}
+const STATUS_COR: Record<string, string> = {
+  'Aguardando':  'bg-yellow-100 text-yellow-800',
+  'Em análise':  'bg-blue-100 text-blue-800',
+  'Aprovado':    'bg-green-100 text-green-800',
+  'Rejeitado':   'bg-red-100 text-red-800',
+  'Arquivado':   'bg-gray-100 text-gray-700',
+  'Retirado':    'bg-orange-100 text-orange-800',
 }
 
 const FLUXO_DEF = [
@@ -56,6 +66,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   const [loading, setLoading] = useState(true)
   const [tipoLabel, setTipoLabel] = useState<Record<string, string>>(TIPO_LABEL_PADRAO)
   const [tiposExibidos, setTiposExibidos] = useState<string[]>(modo === 'apenas' ? tiposFiltro : [])
+  const [vereadores, setVereadores] = useState<Vereador[]>([])
 
   const mostrarFiltroTipo = tiposExibidos.length > 1
 
@@ -67,6 +78,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   }
 
   useEffect(() => {
+    fetch('/api/vereadores?poder=legislativo').then(r => r.json()).then(setVereadores)
     fetch('/api/config-opcoes?tipo=tipo_requerimento').then(r => r.json()).then((opcoes: { nome: string; codigo: string | null }[]) => {
       const labels: Record<string, string> = {}
       const codigos: string[] = []
@@ -83,6 +95,22 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
     await fetch(`/api/requerimentos/${id}`, { method: 'DELETE' })
     carregar(tiposExibidos)
   }
+
+  function passaFiltrosBase(i: Item, exceto?: 'status' | 'tipo') {
+    if (exceto !== 'tipo' && filtroTipo && i.tipo !== filtroTipo) return false
+    if (exceto !== 'status' && filtroStatus && i.status !== filtroStatus) return false
+    if (busca) {
+      const alvo = `${i.tipo} ${i.numero} ${i.descricao} ${i.autorNome || ''}`.toLowerCase()
+      if (!alvo.includes(busca.toLowerCase())) return false
+    }
+    return true
+  }
+
+  const contagemPorStatus = useMemo(() => {
+    const mapa: Record<string, number> = {}
+    itens.forEach(i => { if (passaFiltrosBase(i, 'status')) mapa[i.status] = (mapa[i.status] || 0) + 1 })
+    return mapa
+  }, [itens, busca, filtroTipo]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtrados = useMemo(() => itens.filter(i => {
     if (filtroTipo && i.tipo !== filtroTipo) return false
@@ -122,12 +150,28 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
             {tiposExibidos.map(t => <option key={t} value={t}>{tipoLabel[t] || t}</option>)}
           </select>
         )}
-        <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30">
-          <option value="">Todos os status</option>
-          {STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
         <span className="text-xs text-gray-400 ml-auto">{filtrados.length} de {itens.length} item(s)</span>
+      </div>
+
+      <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-1.5 items-center flex-wrap">
+        <button onClick={() => setFiltroStatus('')}
+          className={`text-xs font-medium px-2.5 py-1 rounded-full border transition ${
+            filtroStatus === '' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+          }`}>
+          Todos ({Object.values(contagemPorStatus).reduce((a, b) => a + b, 0)})
+        </button>
+        {STATUS_LIST.map(s => {
+          const ativo = filtroStatus === s
+          const cor = STATUS_COR[s]
+          return (
+            <button key={s} onClick={() => setFiltroStatus(ativo ? '' : s)}
+              className={`text-xs font-medium px-2.5 py-1 rounded-full border transition ${
+                ativo ? `${cor} border-transparent ring-2 ring-offset-1 ring-gray-300` : `${cor} border-transparent opacity-60 hover:opacity-100`
+              }`}>
+              {s} ({contagemPorStatus[s] || 0})
+            </button>
+          )
+        })}
       </div>
 
       {loading ? (
@@ -162,11 +206,20 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
                       </span>
                     </div>
                     <p className="text-sm text-gray-700 mt-1 line-clamp-2">{item.descricao}</p>
-                    {(item.vereador || item.autorNome) && (
-                      <span className="inline-block mt-1.5 text-xs font-medium border px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border-indigo-200">
-                        {item.vereador?.nome || item.autorNome}
-                      </span>
-                    )}
+                    {(() => {
+                      const autores = resolverAutores(item.vereador, item.autorNome, vereadores)
+                      if (!autores.length) return null
+                      return (
+                        <div className="mt-1.5 flex flex-wrap gap-1.5 items-center">
+                          <span className="text-xs font-semibold text-gray-400">
+                            {autores.length} autor{autores.length > 1 ? 'es' : ''}:
+                          </span>
+                          {autores.map((a, i) => (
+                            <span key={i} className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{a.label}</span>
+                          ))}
+                        </div>
+                      )
+                    })()}
                   </div>
                   <div className="flex gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
                     <button onClick={() => router.push(`${editarHrefBase}/${item.id}/editar`)}

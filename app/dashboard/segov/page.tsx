@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { exportarSegovExcel, exportarSegovPDF, COLUNAS_RELATORIO, type ColunasKey } from '@/lib/segov-export'
 import { useTopbar } from '@/contexts/topbar'
+import { resolverAutores } from '@/lib/vereador-match'
 
 const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
@@ -44,25 +45,6 @@ function labelResultadoCurto(key: string, valor?: string) {
 function fmtFluxoData(iso?: string) {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-}
-
-function normalizarNome(nome: string) {
-  return nome.replace(/\(.*?\)/g, '').replace(/[–—-]/g, ' ').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
-}
-
-// Casa um fragmento de texto (ex: "Thiago Felipe de Almeida" ou "Cláudio José de Deus – Claudinho Valle")
-// com um vereador cadastrado (ex: "Thiago Almeida") — exige mesmo primeiro nome e que o sobrenome
-// do cadastro apareça em algum lugar do fragmento (tolera apelido colado depois de travessão)
-function buscarVereadorPorNome(fragmento: string, lista: any[]) {
-  const tokens = normalizarNome(fragmento).split(/\s+/).filter(Boolean)
-  if (!tokens.length) return null
-  const primeiro = tokens[0]
-  return lista.find(v => {
-    const vTokens = normalizarNome(v.nome).split(/\s+/).filter(Boolean)
-    if (vTokens[0] !== primeiro) return false
-    const sobrenome = vTokens[vTokens.length - 1]
-    return sobrenome === primeiro || tokens.includes(sobrenome)
-  }) || null
 }
 
 const STATUS_LIST = ['Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
@@ -381,30 +363,15 @@ export default function SeggovPage() {
                     <p className="text-sm text-gray-600 mt-1.5 leading-snug">{item.ementa}</p>
                     {/* Autores */}
                     {(() => {
-                      const fragmentos: string[] = []
-                      if (item.vereador?.nome) fragmentos.push(item.vereador.nome)
-                      if (item.autorNome) {
-                        ;(item.autorNome as string).split(/\s+e\s+|,\s+/).forEach((n: string) => {
-                          const t = n.trim()
-                          if (t) fragmentos.push(t)
-                        })
-                      }
-                      // Casa cada fragmento com o cadastro de vereador e mostra o apelido
-                      // (evita duplicar quem aparece com nome completo e nome curto na mesma proposição)
-                      const vistos = new Set<string>()
-                      const labels: string[] = []
-                      fragmentos.forEach(f => {
-                        const v = buscarVereadorPorNome(f, vereadores)
-                        const chave = v ? v.id : normalizarNome(f)
-                        if (vistos.has(chave)) return
-                        vistos.add(chave)
-                        labels.push(v ? (v.apelido || v.nome.split(/\s+/)[0]) : f.split(/\s+/)[0])
-                      })
-                      if (!labels.length) return null
+                      const autores = resolverAutores(item.vereador, item.autorNome, vereadores)
+                      if (!autores.length) return null
                       return (
-                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                          {labels.map((nome, i) => (
-                            <span key={i} className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{nome}</span>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5 items-center">
+                          <span className="text-xs font-semibold text-gray-400">
+                            {autores.length} autor{autores.length > 1 ? 'es' : ''}:
+                          </span>
+                          {autores.map((a, i) => (
+                            <span key={i} className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">{a.label}</span>
                           ))}
                         </div>
                       )

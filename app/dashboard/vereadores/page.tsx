@@ -44,6 +44,8 @@ export default function VereadoresPage() {
   const [duplicados, setDuplicados] = useState<GrupoDuplicado[]>([]);
   const [mesclando, setMesclando] = useState<string | null>(null);
   const [escolhaPrincipal, setEscolhaPrincipal] = useState<Record<string, string>>({});
+  const [configMesaAberta, setConfigMesaAberta] = useState(false);
+  const [salvandoCargo, setSalvandoCargo] = useState<string | null>(null);
 
   async function carregar() {
     const res = await fetch("/api/vereadores?ativo=false");
@@ -113,6 +115,26 @@ export default function VereadoresPage() {
     carregar();
   }
 
+  async function atribuirCargoMesa(cargo: string, novoVereadorId: string) {
+    setSalvandoCargo(cargo);
+    const ocupanteAtual = lista.find(v => v.poder === "legislativo" && v.cargo === cargo);
+    try {
+      if (ocupanteAtual && ocupanteAtual.id !== novoVereadorId) {
+        await fetch(`/api/vereadores/${ocupanteAtual.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cargo: null }) });
+      }
+      if (novoVereadorId) {
+        await fetch(`/api/vereadores/${novoVereadorId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cargo }) });
+      }
+      toast.success("Composição da Mesa Diretora atualizada.");
+      await carregar();
+    } finally {
+      setSalvandoCargo(null);
+    }
+  }
+
+  const vereadoresAtivosLegislatura = lista.filter(v => v.ativo && v.poder === "legislativo").length;
+  const candidatosMesa = lista.filter(v => v.ativo && v.poder === "legislativo");
+
   const mesa = listaFiltrada.filter(v => v.poder === "legislativo" && v.cargo);
   const vereadores = listaFiltrada.filter(v => v.poder === "legislativo" && !v.cargo && v.legislatura !== "Mandato anterior");
   const mandatosAnteriores = listaFiltrada.filter(v => v.poder === "legislativo" && !v.cargo && v.legislatura === "Mandato anterior");
@@ -164,6 +186,7 @@ export default function VereadoresPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Vereadores / Executivo</h1>
           <p className="text-gray-500 text-sm">{listaFiltrada.length} cadastro(s) — {lista.filter(v => v.ativo).length} ativo(s), {lista.filter(v => !v.ativo).length} inativo(s)</p>
+          <p className="text-gray-400 text-xs mt-0.5">{vereadoresAtivosLegislatura} vereador(es) ativo(s) na legislatura atual</p>
         </div>
         <div className="flex gap-2 items-center">
           <select value={filtroSituacao} onChange={e => setFiltroSituacao(e.target.value as typeof filtroSituacao)}
@@ -235,17 +258,49 @@ export default function VereadoresPage() {
       )}
 
       {/* Mesa Diretora */}
-      {mesa.length > 0 && (
-        <div>
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Mesa Diretora</h2>
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Mesa Diretora</h2>
+          <button onClick={() => setConfigMesaAberta(v => !v)}
+            className="text-xs font-medium text-blue-600 hover:text-blue-800 transition flex items-center gap-1">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {configMesaAberta ? "Fechar configuração" : "Configurar composição"}
+          </button>
+        </div>
+
+        {configMesaAberta && (
+          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {cargosMesa.filter(c => c.value).map(c => {
+              const ocupante = lista.find(v => v.poder === "legislativo" && v.cargo === c.value);
+              return (
+                <div key={c.value}>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{c.label}</label>
+                  <select value={ocupante?.id || ""} disabled={salvandoCargo === c.value}
+                    onChange={e => atribuirCargoMesa(c.value, e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white disabled:opacity-50">
+                    <option value="">— Vago —</option>
+                    {candidatosMesa.map(v => (
+                      <option key={v.id} value={v.id}>{v.apelido || v.nome}{v.cargo && v.cargo !== c.value ? ` (${cargoBadge[v.cargo]?.label})` : ""}</option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {mesa.length > 0 && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {mesa.sort((a, b) => {
               const order = ["presidente", "vice-presidente", "1-secretario", "2-secretario"];
               return order.indexOf(a.cargo || "") - order.indexOf(b.cargo || "");
             }).map(v => <Card key={v.id} v={v} />)}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Vereadores */}
       <div>
