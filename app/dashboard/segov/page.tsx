@@ -123,7 +123,7 @@ export default function SeggovPage() {
     carregar()
   }
 
-  const itensExibidos = useMemo(() => itens.filter(item => {
+  function passaFiltrosBase(item: any, exceto?: 'status' | 'tipo') {
     if (colProposicao) {
       const ref = `${item.tipo} ${item.numero}/${item.ano}`.toLowerCase()
       if (!ref.includes(colProposicao.toLowerCase())) return false
@@ -133,10 +133,25 @@ export default function SeggovPage() {
       const nome = (item.vereador?.nome || item.autorNome || '').toLowerCase()
       if (!nome.includes(colVereador.toLowerCase())) return false
     }
-    if (colStatus && item.status !== colStatus) return false
-    if (colTipo && item.tipo !== colTipo) return false
+    if (exceto !== 'status' && colStatus && item.status !== colStatus) return false
+    if (exceto !== 'tipo' && colTipo && item.tipo !== colTipo) return false
     return true
-  }), [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo])
+  }
+
+  const itensExibidos = useMemo(() => itens.filter(item => passaFiltrosBase(item)),
+    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo])
+
+  const contagemPorStatus = useMemo(() => {
+    const mapa: Record<string, number> = {}
+    itens.forEach(item => { if (passaFiltrosBase(item, 'status')) mapa[item.status] = (mapa[item.status] || 0) + 1 })
+    return mapa
+  }, [itens, colProposicao, colEmenta, colVereador, colTipo])
+
+  const contagemPorTipo = useMemo(() => {
+    const mapa: Record<string, number> = {}
+    itens.forEach(item => { if (passaFiltrosBase(item, 'tipo')) mapa[item.tipo] = (mapa[item.tipo] || 0) + 1 })
+    return mapa
+  }, [itens, colProposicao, colEmenta, colVereador, colStatus])
 
   const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo
 
@@ -236,15 +251,10 @@ export default function SeggovPage() {
         <input value={colVereador} onChange={e => setColVereador(e.target.value)}
           placeholder="Buscar vereador..."
           className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-36" />
-        <select value={colStatus} onChange={e => setColStatus(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-32">
-          <option value="">Todos os status</option>
-          {STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
         <select value={colTipo} onChange={e => setColTipo(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-40">
-          <option value="">Todos os tipos</option>
-          {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome}</option>)}
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-48">
+          <option value="">Todos os tipos ({Object.values(contagemPorTipo).reduce((a, b) => a + b, 0)})</option>
+          {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome} ({contagemPorTipo[t.nome] || 0})</option>)}
         </select>
         <div className="ml-auto flex items-center gap-2">
           <input type="checkbox"
@@ -262,6 +272,28 @@ export default function SeggovPage() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Facetas de status */}
+      <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-1.5 items-center flex-wrap">
+        <button onClick={() => setColStatus('')}
+          className={`text-xs font-medium px-2.5 py-1 rounded-full border transition ${
+            colStatus === '' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+          }`}>
+          Todos ({Object.values(contagemPorStatus).reduce((a, b) => a + b, 0)})
+        </button>
+        {STATUS_LIST.map(s => {
+          const ativo = colStatus === s
+          const cor = STATUS_COR[s]
+          return (
+            <button key={s} onClick={() => setColStatus(ativo ? '' : s)}
+              className={`text-xs font-medium px-2.5 py-1 rounded-full border transition ${
+                ativo ? `${cor} border-transparent ring-2 ring-offset-1 ring-gray-300` : `${cor} border-transparent opacity-60 hover:opacity-100`
+              }`}>
+              {s} ({contagemPorStatus[s] || 0})
+            </button>
+          )
+        })}
       </div>
 
       {/* Lista de cards */}

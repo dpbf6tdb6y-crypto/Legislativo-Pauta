@@ -2,12 +2,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useToast } from '@/contexts/toast'
 
 const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 export default function NovoSeggovPage() {
   const router = useRouter()
+  const toast = useToast()
   const [vereadores, setVereadores] = useState<any[]>([])
   const [salvando, setSalvando] = useState(false)
   const [form, setForm] = useState({
@@ -32,7 +34,7 @@ export default function NovoSeggovPage() {
       body: JSON.stringify(form),
     })
     if (res.ok) router.push('/dashboard/segov')
-    else { alert('Erro ao salvar'); setSalvando(false) }
+    else { toast.error('Erro ao salvar'); setSalvando(false) }
   }
 
   return (

@@ -86,5 +86,15 @@ export async function POST(req: Request) {
     usuarioNome: session.user?.name ?? undefined,
   });
 
+  await prisma.logImportacao.create({
+    data: {
+      origem: "segov_pauta",
+      criados, atualizados, erros,
+      ignorados: 0,
+      usuarioId: (session.user as any).id,
+      usuarioNome: session.user?.name ?? undefined,
+    },
+  });
+
   return NextResponse.json({ criados, atualizados, erros });
 }

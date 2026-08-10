@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { useToast } from '@/contexts/toast'
 
 const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
 const STATUS_LIST = ['Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
@@ -76,6 +77,7 @@ function fmtData(iso?: string | null) {
 
 export default function EditarSeggovPage() {
   const router = useRouter()
+  const toast = useToast()
   const { id } = useParams<{ id: string }>()
   const [vereadores, setVereadores] = useState<any[]>([])
   const [comissoes, setComissoes] = useState<any[]>([])
@@ -175,7 +177,7 @@ export default function EditarSeggovPage() {
     let doneAt = new Date().toISOString()
 
     if (def.tipo === 'comissao') {
-      if (!p.comissaoId) { alert('Selecione uma comissão antes de marcar.'); return }
+      if (!p.comissaoId) { toast.error('Selecione uma comissão antes de marcar.'); return }
       const com = comissoes.find((c: any) => c.id === p.comissaoId)
       data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome }
     } else if (def.tipo === 'comissao3nomes') {
@@ -185,7 +187,7 @@ export default function EditarSeggovPage() {
     } else if (def.tipo === 'resultado' || def.tipo === 'sancao') {
       data = { resultado: p.resultado || getOpcoes(def.key).valores[0] }
     } else if (def.tipo === 'data') {
-      if (!p.data) { alert('Selecione a data antes de marcar.'); return }
+      if (!p.data) { toast.error('Selecione a data antes de marcar.'); return }
       doneAt = p.data + 'T12:00:00.000Z'
     }
 
@@ -232,7 +234,7 @@ export default function EditarSeggovPage() {
       body: JSON.stringify({ ...form, autorNome, vereadorId, fluxo }),
     })
     if (res.ok) { router.refresh(); router.push('/dashboard/segov') }
-    else { alert('Erro ao salvar'); setSalvando(false) }
+    else { toast.error('Erro ao salvar'); setSalvando(false) }
   }
 
   if (carregando) {

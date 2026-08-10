@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { useToast } from '@/contexts/toast'
 
 const TIPOS_PADRAO = ['REQ', 'MOC', 'IND']
 const TIPO_LABEL_PADRAO: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
@@ -32,6 +33,7 @@ function fmtData(iso?: string | null) {
 export default function EditarRequerimentoPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const toast = useToast()
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [vereadores, setVereadores] = useState<any[]>([])
@@ -82,7 +84,7 @@ export default function EditarRequerimentoPage() {
     let data: StepData = {}
     let doneAt = new Date().toISOString()
     if (def.tipo === 'data') {
-      if (!p.data) { alert('Selecione a data antes de marcar.'); return }
+      if (!p.data) { toast.error('Selecione a data antes de marcar.'); return }
       doneAt = p.data + 'T12:00:00.000Z'
     } else if (def.tipo === 'resultado') {
       data = { resultado: p.resultado || 'aprovado' }
@@ -103,7 +105,7 @@ export default function EditarRequerimentoPage() {
       body: JSON.stringify({ ...form, fluxo }),
     })
     if (res.ok) router.push(voltarHref)
-    else { alert('Erro ao salvar'); setSalvando(false) }
+    else { toast.error('Erro ao salvar'); setSalvando(false) }
   }
 
   const inp = "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-800/30"

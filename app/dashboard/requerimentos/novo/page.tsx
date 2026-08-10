@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useToast } from '@/contexts/toast'
 
 const TIPOS_PADRAO = ['REQ', 'MOC', 'IND']
 const TIPO_LABEL_PADRAO: Record<string, string> = { REQ: 'Requerimento', MOC: 'Moção', IND: 'Indicação' }
@@ -9,6 +10,7 @@ const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Rejeitado', 'Arqu
 
 export default function NovoRequerimentoPage() {
   const router = useRouter()
+  const toast = useToast()
   const searchParams = useSearchParams()
   const tipoParam = searchParams.get('tipo') || 'REQ'
   const voltarHref = tipoParam === 'MOC' ? '/dashboard/mocoes' : '/dashboard/requerimentos'
@@ -44,7 +46,7 @@ export default function NovoRequerimentoPage() {
       body: JSON.stringify(form),
     })
     if (res.ok) router.push(voltarHref)
-    else { alert('Erro ao salvar'); setSalvando(false) }
+    else { toast.error('Erro ao salvar'); setSalvando(false) }
   }
 
   return (

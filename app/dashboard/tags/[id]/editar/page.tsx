@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { useToast } from '@/contexts/toast'
 
 const STATUS_LIST = ['Aguardando', 'Em andamento', 'Respondido', 'Arquivado']
 type Opcao = { id: string; nome: string }
@@ -9,6 +10,7 @@ type Opcao = { id: string; nome: string }
 export default function EditarTagPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
+  const toast = useToast()
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
   const [referencia, setReferencia] = useState('')
@@ -58,7 +60,7 @@ export default function EditarTagPage() {
       body: JSON.stringify(form),
     })
     if (res.ok) router.push('/dashboard/tags')
-    else { alert('Erro ao salvar'); setSalvando(false) }
+    else { toast.error('Erro ao salvar'); setSalvando(false) }
   }
 
   if (carregando) return (

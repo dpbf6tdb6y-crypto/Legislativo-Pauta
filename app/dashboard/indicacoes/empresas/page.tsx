@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import IndicacoesGate from "../_components/IndicacoesGate"
+import { useToast } from "@/contexts/toast"
 
 type Empresa = { id: string; nome: string; ativo: boolean }
 
@@ -14,6 +15,7 @@ export default function EmpresasPage() {
 }
 
 function EmpresasConteudo() {
+  const toast = useToast()
   const [empresas, setEmpresas] = useState<Empresa[]>([])
   const [carregando, setCarregando] = useState(true)
   const [novoNome, setNovoNome] = useState("")
@@ -50,7 +52,7 @@ function EmpresasConteudo() {
     if (!confirm("Excluir esta empresa?")) return
     const r = await fetch(`/api/empresas/${id}`, { method: "DELETE" })
     const d = await r.json()
-    if (!r.ok) { alert(d.error || "Erro ao excluir"); return }
+    if (!r.ok) { toast.error(d.error || "Erro ao excluir"); return }
     carregar()
   }
 

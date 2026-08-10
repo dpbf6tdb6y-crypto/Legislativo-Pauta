@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import PasswordInput from "../../components/PasswordInput";
+import { useToast } from "@/contexts/toast";
 
 type Usuario = {
   id: string;
@@ -15,6 +16,7 @@ type Usuario = {
 
 export default function UsuariosPage() {
   const { data: session } = useSession();
+  const toast = useToast();
   const meuId = (session?.user as any)?.id;
 
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -94,7 +96,7 @@ export default function UsuariosPage() {
     if (!confirm("Excluir este usuário?")) return;
     const r = await fetch(`/api/usuarios/${id}`, { method: "DELETE" });
     const d = await r.json();
-    if (!r.ok) { alert(d.error ?? "Erro ao excluir"); return; }
+    if (!r.ok) { toast.error(d.error ?? "Erro ao excluir"); return; }
     carregar();
   }
 

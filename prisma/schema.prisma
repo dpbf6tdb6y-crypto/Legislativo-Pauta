@@ -21,6 +21,7 @@ model User {
 model Vereador {
   id          String   @id @default(cuid())
   nome        String
+  apelido     String?
   partido     String
   legislatura String
   telefone    String?
@@ -38,6 +39,9 @@ model Vereador {
   requerimentos  Requerimento[]       @relation("RequerimentoAutor")
   tags           Tag[]                @relation("TagAutor")
   indicacoes     IndicacaoCargo[]
+
+  @@index([nome])
+  @@index([ativo])
 }
 
 model Empresa {
@@ -140,6 +144,10 @@ model Proposicao {
   comissoes     ProposicaoComissao[]
   emendas       Emenda[]
   pautaItens    PautaItem[]
+
+  @@index([status])
+  @@index([ano])
+  @@index([tipo])
 }
 
 model ProposicaoAutor {
@@ -251,6 +259,11 @@ model Segov {
   updatedAt       DateTime  @updatedAt
 
   vereador Vereador? @relation(fields: [vereadorId], references: [id])
+
+  @@index([status])
+  @@index([ano])
+  @@index([tipo])
+  @@index([vereadorId])
 }
 
 model ConfigOpcao {
@@ -280,6 +293,27 @@ model Requerimento {
   updatedAt  DateTime  @updatedAt
 
   vereador Vereador? @relation("RequerimentoAutor", fields: [vereadorId], references: [id])
+
+  @@index([status])
+  @@index([ano])
+  @@index([tipo])
+  @@index([vereadorId])
+}
+
+model LogImportacao {
+  id           String   @id @default(cuid())
+  origem       String   // 'segov_planilha' | 'segov_arquivo' | 'segov_texto'
+  arquivoNome  String?
+  criados      Int      @default(0)
+  atualizados  Int      @default(0)
+  ignorados    Int      @default(0)
+  erros        Int      @default(0)
+  detalhes     Json?    // lista de itens com problema, avisos, etc.
+  usuarioId    String?
+  usuarioNome  String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model Tag {
@@ -311,6 +345,9 @@ model AuditLog {
   usuarioId   String?
   usuarioNome String?
   criadoEm    DateTime @default(now())
+
+  @@index([criadoEm])
+  @@index([entidade])
 }
 
 model Config {

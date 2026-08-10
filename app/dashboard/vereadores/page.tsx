@@ -1,10 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useToast } from "@/contexts/toast";
 
 type Vereador = {
-  id: string; nome: string; partido: string; legislatura: string;
+  id: string; nome: string; apelido?: string | null; partido: string; legislatura: string;
   telefone?: string; email?: string; cargo?: string; poder: string; ativo: boolean;
 };
+
+type CandidatoDuplicado = Vereador & { _count: { segov: number; requerimentos: number; proposicoes: number } };
+type GrupoDuplicado = { chave: string; confianca: "alta" | "media"; itens: CandidatoDuplicado[] };
 
 const cargosMesa = [
   { value: "", label: "Vereador (sem cargo)" },
@@ -28,27 +32,53 @@ const cargoBadge: Record<string, { label: string; bg: string; color: string }> =
   "vice-prefeito":   { label: "Vice-Prefeito",      bg: "#047857", color: "#fff" },
 };
 
-const empty = { nome: "", partido: "", legislatura: "2025-2028", telefone: "", email: "", cargo: "", poder: "legislativo" };
+const empty = { nome: "", apelido: "", partido: "", legislatura: "2025-2028", telefone: "", email: "", cargo: "", poder: "legislativo" };
 
 export default function VereadoresPage() {
+  const toast = useToast();
   const [lista, setLista] = useState<Vereador[]>([]);
   const [form, setForm] = useState(empty);
   const [editId, setEditId] = useState<string | null>(null);
   const [modal, setModal] = useState(false);
   const [filtroSituacao, setFiltroSituacao] = useState<"ativos" | "inativos" | "todos">("ativos");
+  const [duplicados, setDuplicados] = useState<GrupoDuplicado[]>([]);
+  const [mesclando, setMesclando] = useState<string | null>(null);
+  const [escolhaPrincipal, setEscolhaPrincipal] = useState<Record<string, string>>({});
 
   async function carregar() {
     const res = await fetch("/api/vereadores?ativo=false");
     setLista(await res.json());
   }
-  useEffect(() => { carregar(); }, []);
+  async function carregarDuplicados() {
+    const res = await fetch("/api/vereadores/duplicados");
+    if (res.ok) setDuplicados(await res.json());
+  }
+  useEffect(() => { carregar(); carregarDuplicados(); }, []);
+
+  async function mesclar(grupo: GrupoDuplicado) {
+    const principalId = escolhaPrincipal[grupo.chave] || grupo.itens.slice().sort((a, b) =>
+      (b._count.segov + b._count.requerimentos + b._count.proposicoes) - (a._count.segov + a._count.requerimentos + a._count.proposicoes)
+    )[0].id;
+    const duplicadoId = grupo.itens.find(v => v.id !== principalId)?.id;
+    if (!duplicadoId) return;
+    if (!confirm("Mesclar esses cadastros? Todas as proposições/requerimentos do duplicado passam para o principal, e o duplicado é desativado.")) return;
+    setMesclando(grupo.chave);
+    const res = await fetch("/api/vereadores/mesclar", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ principalId, duplicadoId }),
+    });
+    setMesclando(null);
+    if (!res.ok) { const d = await res.json(); toast.error(d.error ?? "Erro ao mesclar"); return; }
+    toast.success("Cadastros mesclados com sucesso.");
+    carregar(); carregarDuplicados();
+  }
 
   const listaFiltrada = lista.filter(v =>
     filtroSituacao === "todos" ? true : filtroSituacao === "ativos" ? v.ativo : !v.ativo
   );
 
   async function salvar() {
-    const payload = { ...form, cargo: form.cargo || null };
+    const payload = { ...form, cargo: form.cargo || null, apelido: form.apelido.trim() || null };
     if (editId) {
       await fetch(`/api/vereadores/${editId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     } else {
@@ -61,7 +91,7 @@ export default function VereadoresPage() {
   }
 
   function editar(v: Vereador) {
-    setForm({ nome: v.nome, partido: v.partido, legislatura: v.legislatura, telefone: v.telefone || "", email: v.email || "", cargo: v.cargo || "", poder: v.poder });
+    setForm({ nome: v.nome, apelido: v.apelido || "", partido: v.partido, legislatura: v.legislatura, telefone: v.telefone || "", email: v.email || "", cargo: v.cargo || "", poder: v.poder });
     setEditId(v.id);
     setModal(true);
   }
@@ -103,6 +133,7 @@ export default function VereadoresPage() {
               )}
             </div>
             <p className="font-semibold text-gray-800">{v.nome}</p>
+            {v.apelido && <p className="text-xs text-gray-400 -mt-0.5">"{v.apelido}"</p>}
             <p className="text-sm font-medium text-blue-600">{v.partido}</p>
             {v.poder === "legislativo" && <p className="text-xs text-gray-500 mt-0.5">Legislatura: {v.legislatura}</p>}
             {v.telefone && <p className="text-xs text-gray-500">Tel: {v.telefone}</p>}
@@ -149,6 +180,49 @@ export default function VereadoresPage() {
           </button>
         </div>
       </div>
+
+      {/* Possíveis Duplicados */}
+      {duplicados.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+          <h2 className="text-sm font-semibold text-amber-800 uppercase tracking-wide flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            Possíveis Duplicados ({duplicados.length})
+          </h2>
+          {duplicados.map(grupo => (
+            <div key={grupo.chave} className="bg-white rounded-lg border border-amber-100 p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${grupo.confianca === "alta" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>
+                  {grupo.confianca === "alta" ? "Nome idêntico" : "Nomes parecidos"}
+                </span>
+                <button onClick={() => mesclar(grupo)} disabled={mesclando === grupo.chave}
+                  className="text-xs font-semibold bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700 transition disabled:opacity-50">
+                  {mesclando === grupo.chave ? "Mesclando..." : "Mesclar em 1 cadastro"}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {grupo.itens.map(v => {
+                  const total = v._count.segov + v._count.requerimentos + v._count.proposicoes;
+                  return (
+                    <label key={v.id} className="flex items-center gap-2 text-sm border border-gray-200 rounded px-2 py-1.5 cursor-pointer hover:bg-gray-50">
+                      <input type="radio" name={`principal-${grupo.chave}`}
+                        checked={(escolhaPrincipal[grupo.chave] || grupo.itens.slice().sort((a, b) =>
+                          (b._count.segov + b._count.requerimentos + b._count.proposicoes) - (a._count.segov + a._count.requerimentos + a._count.proposicoes)
+                        )[0].id) === v.id}
+                        onChange={() => setEscolhaPrincipal(prev => ({ ...prev, [grupo.chave]: v.id }))}
+                        className="accent-amber-600" />
+                      <span className="flex-1">
+                        <span className="font-medium text-gray-800">{v.nome}</span>
+                        <span className="text-gray-400"> — {total} matéria(s){!v.ativo && " · inativo"}</span>
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-gray-400 mt-2">A opção marcada vira o cadastro principal; o outro é desativado e suas matérias são transferidas.</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Poder Executivo */}
       {executivo.length > 0 && (
@@ -201,6 +275,12 @@ export default function VereadoresPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
                 <input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Apelido / nome de exibição</label>
+                <input value={form.apelido} onChange={(e) => setForm({ ...form, apelido: e.target.value })}
+                  placeholder="Usado em listas e gráficos, se preenchido"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Partido</label>

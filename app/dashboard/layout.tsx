@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TopbarProvider, useTopbar } from "@/contexts/topbar";
+import { ToastProvider } from "@/contexts/toast";
 import AprovacaoRelatorioListener from "./_components/AprovacaoRelatorioListener";
 
 const navItems = [
@@ -276,8 +277,10 @@ function TopbarRight() {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <TopbarProvider>
-      <DashboardInner>{children}</DashboardInner>
-    </TopbarProvider>
+    <ToastProvider>
+      <TopbarProvider>
+        <DashboardInner>{children}</DashboardInner>
+      </TopbarProvider>
+    </ToastProvider>
   )
 }

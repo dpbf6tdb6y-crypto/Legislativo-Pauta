@@ -73,5 +73,17 @@ export async function POST(req: Request) {
     }
   }
 
+  await prisma.logImportacao.create({
+    data: {
+      origem: "segov_arquivo",
+      arquivoNome: nome,
+      atualizados,
+      ignorados: naoEncontrados.length,
+      detalhes: naoEncontrados.length ? { naoEncontrados } : undefined,
+      usuarioId: (session.user as any).id,
+      usuarioNome: session.user?.name ?? undefined,
+    },
+  });
+
   return NextResponse.json({ atualizados, naoEncontrados, totalEncontrados: encontrados.length });
 }

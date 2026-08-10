@@ -2,12 +2,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useToast } from '@/contexts/toast'
 
 const STATUS_LIST = ['Aguardando', 'Em andamento', 'Respondido', 'Arquivado']
 type Opcao = { id: string; nome: string }
 
 export default function NovaTagPage() {
   const router = useRouter()
+  const toast = useToast()
   const [salvando, setSalvando] = useState(false)
   const [vereadores, setVereadores] = useState<Opcao[]>([])
   const [origens, setOrigens] = useState<Opcao[]>([])
@@ -39,7 +41,7 @@ export default function NovaTagPage() {
       body: JSON.stringify(form),
     })
     if (res.ok) router.push('/dashboard/tags')
-    else { alert('Erro ao salvar'); setSalvando(false) }
+    else { toast.error('Erro ao salvar'); setSalvando(false) }
   }
 
   return (

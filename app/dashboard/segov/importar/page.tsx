@@ -1,6 +1,16 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+
+type LogImportacao = {
+  id: string; origem: string; arquivoNome: string | null
+  criados: number; atualizados: number; ignorados: number; erros: number
+  usuarioNome: string | null; createdAt: string
+}
+
+const ORIGEM_LABEL: Record<string, string> = {
+  segov_pauta: 'Importar Pauta', segov_arquivo: 'Atualizar por arquivo', segov_texto: 'Colar texto',
+}
 
 type Modo = 'texto' | 'pdf' | 'word' | 'excel'
 type Etapa = 'upload' | 'revisao' | 'sucesso'
@@ -42,6 +52,12 @@ export default function ImportarSeggovPage() {
   const [erro, setErro] = useState('')
   const [proposicoes, setProposicoes] = useState<ItemProposicao[]>([])
   const [pareceres, setPareceres] = useState<ItemParecer[]>([])
+  const [historico, setHistorico] = useState<LogImportacao[]>([])
+  const [mostrarHistorico, setMostrarHistorico] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/log-importacao').then(r => r.json()).then(d => Array.isArray(d) && setHistorico(d))
+  }, [])
   const [dataEnvio, setDataEnvio] = useState<string | undefined>()
   const [resultado, setResultado] = useState<{ criados: number; atualizados: number; erros: number } | null>(null)
 
@@ -99,6 +115,7 @@ export default function ImportarSeggovPage() {
     })
     const data = await res.json()
     setResultado(data); setEtapa('sucesso'); setSalvando(false)
+    fetch('/api/log-importacao').then(r => r.json()).then(d => Array.isArray(d) && setHistorico(d))
   }
 
   const podaExtrair = modo === 'texto' ? texto.trim().length > 0 : arquivo !== null
@@ -115,11 +132,52 @@ export default function ImportarSeggovPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
-        <div>
+        <div className="flex-1">
           <h1 className="text-xl font-bold text-gray-800">Importar Pauta</h1>
           <p className="text-sm text-gray-500">Extrai proposições e pareceres da pauta automaticamente</p>
         </div>
+        {historico.length > 0 && (
+          <button onClick={() => setMostrarHistorico(v => !v)}
+            className="text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 transition">
+            {mostrarHistorico ? 'Ocultar histórico' : `Histórico de importações (${historico.length})`}
+          </button>
+        )}
       </div>
+
+      {mostrarHistorico && (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50 text-gray-500">
+                <th className="text-left px-3 py-2 font-semibold">Data</th>
+                <th className="text-left px-3 py-2 font-semibold">Origem</th>
+                <th className="text-left px-3 py-2 font-semibold">Arquivo</th>
+                <th className="text-left px-3 py-2 font-semibold">Criados</th>
+                <th className="text-left px-3 py-2 font-semibold">Atualizados</th>
+                <th className="text-left px-3 py-2 font-semibold">Ignorados</th>
+                <th className="text-left px-3 py-2 font-semibold">Erros</th>
+                <th className="text-left px-3 py-2 font-semibold">Usuário</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {historico.map(h => (
+                <tr key={h.id}>
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-500">
+                    {new Date(h.createdAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  </td>
+                  <td className="px-3 py-2 text-gray-700">{ORIGEM_LABEL[h.origem] || h.origem}</td>
+                  <td className="px-3 py-2 text-gray-500">{h.arquivoNome || '—'}</td>
+                  <td className="px-3 py-2 text-green-700 font-semibold">{h.criados || 0}</td>
+                  <td className="px-3 py-2 text-blue-700 font-semibold">{h.atualizados || 0}</td>
+                  <td className="px-3 py-2 text-gray-500">{h.ignorados || 0}</td>
+                  <td className="px-3 py-2 text-red-600 font-semibold">{h.erros || 0}</td>
+                  <td className="px-3 py-2 text-gray-500">{h.usuarioNome || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* ETAPA 1 — Upload */}
       {etapa === 'upload' && (
