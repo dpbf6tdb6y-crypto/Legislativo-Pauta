@@ -6,6 +6,7 @@ import { resolverAutores, situacaoAutores, ehPoderExecutivo } from '@/lib/veread
 import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
 import FiltroVereadorSelect from '@/app/components/FiltroVereadorSelect'
 import FiltroPoder, { Poder } from '@/app/components/FiltroPoder'
+import { usePermissao } from '@/lib/usePermissao'
 
 type Item = {
   id: string; numero: string; ano: number; tipo: string; descricao: string
@@ -62,6 +63,9 @@ type Props = {
 
 export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltro, novoHref, editarHrefBase, corPrimaria = '#8B0000' }: Props) {
   const router = useRouter()
+  const podeCriar = usePermissao('podeCriar')
+  const podeEditar = usePermissao('podeEditar')
+  const podeExcluir = usePermissao('podeExcluir')
   const [itens, setItens] = useState<Item[]>([])
   const [busca, setBusca] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('')
@@ -138,14 +142,16 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
           <h1 className="text-xl font-bold text-gray-800">{titulo}</h1>
           <p className="text-sm text-gray-500">{subtitulo} — {itens.length} registro(s)</p>
         </div>
-        <Link href={novoHref}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition"
-          style={{ background: corPrimaria }}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Novo
-        </Link>
+        {podeCriar && (
+          <Link href={novoHref}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition"
+            style={{ background: corPrimaria }}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Novo
+          </Link>
+        )}
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-2 items-center flex-wrap">
@@ -238,18 +244,22 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
                     })()}
                   </div>
                   <div className="flex gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => router.push(`${editarHrefBase}/${item.id}/editar`)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                    <button onClick={() => excluir(item.id)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+                    {podeEditar && (
+                      <button onClick={() => router.push(`${editarHrefBase}/${item.id}/editar`)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    )}
+                    {podeExcluir && (
+                      <button onClick={() => excluir(item.id)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </div>
 

@@ -12,7 +12,11 @@ export async function GET() {
 
   const usuarios = await prisma.user.findMany({
     orderBy: { nome: "asc" },
-    select: { id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true, createdAt: true },
+    select: {
+      id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true, createdAt: true,
+      podeCriar: true, podeEditar: true, podeExcluir: true, podeImportar: true, podeExportar: true,
+      podeGerenciarVereadores: true, podeVerAuditoria: true,
+    },
   });
   return NextResponse.json(usuarios);
 }
@@ -26,7 +30,7 @@ export async function POST(req: Request) {
   const body = await req.json();
   const nome = String(body.nome || "");
   const email = String(body.email || "").trim().toLowerCase();
-  const perfil = body.perfil === "admin" ? "admin" : "operador";
+  const perfil = body.perfil === "admin" ? "admin" : body.perfil === "leitor" ? "leitor" : "operador";
   const senha = String(body.senha || "");
 
   if (perfil === "admin" && meuPerfil !== "master") {
@@ -38,7 +42,12 @@ export async function POST(req: Request) {
   try {
     const podeVerIndicacoes = !!body.podeVerIndicacoes;
     const usuario = await prisma.user.create({
-      data: { nome, email, perfil, senha: await bcrypt.hash(senha, 10), podeVerIndicacoes },
+      data: {
+        nome, email, perfil, senha: await bcrypt.hash(senha, 10), podeVerIndicacoes,
+        podeCriar: !!body.podeCriar, podeEditar: !!body.podeEditar, podeExcluir: !!body.podeExcluir,
+        podeImportar: !!body.podeImportar, podeExportar: !!body.podeExportar,
+        podeGerenciarVereadores: !!body.podeGerenciarVereadores, podeVerAuditoria: !!body.podeVerAuditoria,
+      },
       select: { id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true },
     });
 

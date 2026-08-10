@@ -19,24 +19,46 @@ export const authOptions: AuthOptions = {
         if (!user || !user.ativo) return null;
         const ok = await bcrypt.compare(credentials.senha, user.senha);
         if (!ok) return null;
-        return { id: user.id, name: user.nome, email: user.email, perfil: user.perfil, podeVerIndicacoes: user.podeVerIndicacoes } as any;
+        return {
+          id: user.id, name: user.nome, email: user.email, perfil: user.perfil,
+          podeVerIndicacoes: user.podeVerIndicacoes,
+          podeCriar: user.podeCriar, podeEditar: user.podeEditar, podeExcluir: user.podeExcluir,
+          podeImportar: user.podeImportar, podeExportar: user.podeExportar,
+          podeGerenciarVereadores: user.podeGerenciarVereadores, podeVerAuditoria: user.podeVerAuditoria,
+        } as any;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = (user as any).id;
-        token.perfil = (user as any).perfil;
-        token.podeVerIndicacoes = (user as any).podeVerIndicacoes;
+        const u = user as any;
+        token.id = u.id;
+        token.perfil = u.perfil;
+        token.podeVerIndicacoes = u.podeVerIndicacoes;
+        token.podeCriar = u.podeCriar;
+        token.podeEditar = u.podeEditar;
+        token.podeExcluir = u.podeExcluir;
+        token.podeImportar = u.podeImportar;
+        token.podeExportar = u.podeExportar;
+        token.podeGerenciarVereadores = u.podeGerenciarVereadores;
+        token.podeVerAuditoria = u.podeVerAuditoria;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id as string;
-        (session.user as any).perfil = token.perfil;
-        (session.user as any).podeVerIndicacoes = token.podeVerIndicacoes;
+        const su = session.user as any;
+        su.id = token.id as string;
+        su.perfil = token.perfil;
+        su.podeVerIndicacoes = token.podeVerIndicacoes;
+        su.podeCriar = token.podeCriar;
+        su.podeEditar = token.podeEditar;
+        su.podeExcluir = token.podeExcluir;
+        su.podeImportar = token.podeImportar;
+        su.podeExportar = token.podeExportar;
+        su.podeGerenciarVereadores = token.podeGerenciarVereadores;
+        su.podeVerAuditoria = token.podeVerAuditoria;
       }
       return session;
     },

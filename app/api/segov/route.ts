@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { registrarAuditoria } from "@/lib/auditoria";
+import { temPermissao } from "@/lib/permissoes";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -28,6 +29,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  if (!temPermissao(session.user as any, "podeCriar")) return NextResponse.json({ error: "Sem permissão para cadastrar" }, { status: 403 });
 
   const body = await req.json();
   const item = await prisma.segov.create({

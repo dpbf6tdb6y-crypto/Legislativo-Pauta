@@ -4,6 +4,7 @@ import mammoth from "mammoth";
 import * as XLSX from "xlsx";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { temPermissao } from "@/lib/permissoes";
 
 function extrairTextoPdf(buffer: Buffer): string {
   const raw = buffer.toString("latin1");
@@ -13,6 +14,7 @@ function extrairTextoPdf(buffer: Buffer): string {
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  if (!temPermissao(session.user as any, "podeImportar")) return NextResponse.json({ error: "Sem permissão para importar" }, { status: 403 });
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;

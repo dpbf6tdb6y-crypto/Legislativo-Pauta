@@ -3,10 +3,12 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { registrarAuditoria } from "@/lib/auditoria";
+import { temPermissao } from "@/lib/permissoes";
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  if (!temPermissao(session.user as any, "podeGerenciarVereadores")) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const body = await req.json();
   const antes = await prisma.vereador.findUnique({ where: { id: params.id } });
@@ -46,7 +48,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  if (!["admin", "master"].includes((session.user as any).perfil)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  if (!temPermissao(session.user as any, "podeGerenciarVereadores")) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const antes = await prisma.vereador.findUnique({ where: { id: params.id } });
   const data = await prisma.vereador.update({ where: { id: params.id }, data: { ativo: false } });

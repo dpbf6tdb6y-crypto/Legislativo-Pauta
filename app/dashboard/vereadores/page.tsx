@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useToast } from "@/contexts/toast";
+import { usePermissao } from "@/lib/usePermissao";
 
 type Vereador = {
   id: string; nome: string; apelido?: string | null; partido: string; legislatura: string;
@@ -36,6 +37,7 @@ const empty = { nome: "", apelido: "", partido: "", legislatura: "2025-2028", te
 
 export default function VereadoresPage() {
   const toast = useToast();
+  const podeGerenciar = usePermissao("podeGerenciarVereadores");
   const [lista, setLista] = useState<Vereador[]>([]);
   const [form, setForm] = useState(empty);
   const [editId, setEditId] = useState<string | null>(null);
@@ -164,22 +166,24 @@ export default function VereadoresPage() {
             {v.telefone && <p className="text-xs text-gray-500">Tel: {v.telefone}</p>}
             {v.email && <p className="text-xs text-gray-500">{v.email}</p>}
           </div>
-          <div className="flex gap-1 ml-2">
-            <button onClick={() => editar(v)} className="text-gray-400 hover:text-blue-600">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-            </button>
-            {v.ativo ? (
-              <button onClick={() => desativar(v.id)} className="text-gray-400 hover:text-red-500"
-                title="Desativar — some das opções de autoria em novas matérias, mas o histórico existente é preservado">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          {podeGerenciar && (
+            <div className="flex gap-1 ml-2">
+              <button onClick={() => editar(v)} className="text-gray-400 hover:text-blue-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               </button>
-            ) : (
-              <button onClick={() => reativar(v)} className="text-gray-400 hover:text-green-600"
-                title="Reativar — volta a aparecer nas opções de autoria em novas matérias">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-              </button>
-            )}
-          </div>
+              {v.ativo ? (
+                <button onClick={() => desativar(v.id)} className="text-gray-400 hover:text-red-500"
+                  title="Desativar — some das opções de autoria em novas matérias, mas o histórico existente é preservado">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              ) : (
+                <button onClick={() => reativar(v)} className="text-gray-400 hover:text-green-600"
+                  title="Reativar — volta a aparecer nas opções de autoria em novas matérias">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -200,12 +204,16 @@ export default function VereadoresPage() {
             <option value="inativos">Inativos</option>
             <option value="todos">Todos</option>
           </select>
-          <button onClick={() => abrirNovo("legislativo")} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-            + Vereador
-          </button>
-          <button onClick={() => abrirNovo("executivo")} className="text-white px-4 py-2 rounded-lg text-sm font-medium transition" style={{ background: "#065f46" }}>
-            + Executivo
-          </button>
+          {podeGerenciar && (
+            <>
+              <button onClick={() => abrirNovo("legislativo")} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                + Vereador
+              </button>
+              <button onClick={() => abrirNovo("executivo")} className="text-white px-4 py-2 rounded-lg text-sm font-medium transition" style={{ background: "#065f46" }}>
+                + Executivo
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -222,10 +230,12 @@ export default function VereadoresPage() {
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded ${grupo.confianca === "alta" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}>
                   {grupo.confianca === "alta" ? "Nome idêntico" : "Nomes parecidos"}
                 </span>
-                <button onClick={() => mesclar(grupo)} disabled={mesclando === grupo.chave}
-                  className="text-xs font-semibold bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700 transition disabled:opacity-50">
-                  {mesclando === grupo.chave ? "Mesclando..." : "Mesclar em 1 cadastro"}
-                </button>
+                {podeGerenciar && (
+                  <button onClick={() => mesclar(grupo)} disabled={mesclando === grupo.chave}
+                    className="text-xs font-semibold bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700 transition disabled:opacity-50">
+                    {mesclando === grupo.chave ? "Mesclando..." : "Mesclar em 1 cadastro"}
+                  </button>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {grupo.itens.map(v => {
@@ -266,17 +276,19 @@ export default function VereadoresPage() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Mesa Diretora</h2>
-          <button onClick={() => setConfigMesaAberta(v => !v)}
-            className="text-xs font-medium text-blue-600 hover:text-blue-800 transition flex items-center gap-1">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {configMesaAberta ? "Fechar configuração" : "Configurar composição"}
-          </button>
+          {podeGerenciar && (
+            <button onClick={() => setConfigMesaAberta(v => !v)}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition flex items-center gap-1">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {configMesaAberta ? "Fechar configuração" : "Configurar composição"}
+            </button>
+          )}
         </div>
 
-        {configMesaAberta && (
+        {configMesaAberta && podeGerenciar && (
           <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {cargosMesa.filter(c => c.value).map(c => {
               const ocupante = lista.find(v => v.poder === "legislativo" && v.cargo === c.value);

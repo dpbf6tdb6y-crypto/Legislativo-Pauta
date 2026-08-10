@@ -20,7 +20,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 
   const body = await req.json();
-  const perfilSolicitado = body.perfil === "master" ? "master" : body.perfil === "admin" ? "admin" : "operador";
+  const perfilSolicitado = body.perfil === "master" ? "master" : body.perfil === "admin" ? "admin" : body.perfil === "leitor" ? "leitor" : "operador";
 
   if ((perfilSolicitado === "admin" || perfilSolicitado === "master") && meuPerfil !== "master") {
     return NextResponse.json({ error: "Apenas o Master pode definir perfil Administrador." }, { status: 403 });
@@ -31,6 +31,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     perfil: perfilSolicitado,
     ativo: !!body.ativo,
     podeVerIndicacoes: !!body.podeVerIndicacoes,
+    podeCriar: !!body.podeCriar,
+    podeEditar: !!body.podeEditar,
+    podeExcluir: !!body.podeExcluir,
+    podeImportar: !!body.podeImportar,
+    podeExportar: !!body.podeExportar,
+    podeGerenciarVereadores: !!body.podeGerenciarVereadores,
+    podeVerAuditoria: !!body.podeVerAuditoria,
   };
 
   if (body.novaSenha) {

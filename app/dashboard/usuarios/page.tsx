@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import PasswordInput from "../../components/PasswordInput";
 import { useToast } from "@/contexts/toast";
+import { PERMISSOES } from "@/lib/permissoes";
 
 type Usuario = {
   id: string;
@@ -11,6 +12,13 @@ type Usuario = {
   perfil: string;
   ativo: boolean;
   podeVerIndicacoes: boolean;
+  podeCriar: boolean;
+  podeEditar: boolean;
+  podeExcluir: boolean;
+  podeImportar: boolean;
+  podeExportar: boolean;
+  podeGerenciarVereadores: boolean;
+  podeVerAuditoria: boolean;
   createdAt: string;
 };
 
@@ -54,6 +62,7 @@ export default function UsuariosPage() {
     setErro("");
     setSalvando(true);
     const fd = new FormData(e.currentTarget);
+    const permissoes = Object.fromEntries(PERMISSOES.map(p => [p.chave, fd.get(p.chave) === "on"]));
 
     try {
       if (isNovo) {
@@ -66,6 +75,7 @@ export default function UsuariosPage() {
             perfil: fd.get("perfil"),
             senha: fd.get("senha"),
             podeVerIndicacoes: fd.get("podeVerIndicacoes") === "on",
+            ...permissoes,
           }),
         });
         const d = await r.json();
@@ -80,6 +90,7 @@ export default function UsuariosPage() {
             ativo: fd.get("ativo") === "true",
             novaSenha: fd.get("novaSenha") || undefined,
             podeVerIndicacoes: fd.get("podeVerIndicacoes") === "on",
+            ...permissoes,
           }),
         });
         const d = await r.json();
@@ -154,9 +165,11 @@ export default function UsuariosPage() {
                       ? "bg-orange-50 text-orange-700 border-orange-200"
                       : item.perfil === "admin"
                       ? "bg-purple-50 text-purple-700 border-purple-200"
+                      : item.perfil === "leitor"
+                      ? "bg-blue-50 text-blue-700 border-blue-200"
                       : "bg-gray-100 text-gray-600 border-gray-200"
                   }`}>
-                    {item.perfil === "master" ? "👑 Master" : item.perfil === "admin" ? "Administrador" : "Operador"}
+                    {item.perfil === "master" ? "👑 Master" : item.perfil === "admin" ? "Administrador" : item.perfil === "leitor" ? "👁️ Leitor" : "Operador"}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -215,6 +228,7 @@ export default function UsuariosPage() {
                     {u?.perfil === "master" && <option value="master">👑 Master</option>}
                     <option value="admin">Administrador</option>
                     <option value="operador">Operador</option>
+                    <option value="leitor">Leitor (somente leitura)</option>
                   </select>
                 </div>
               </div>
@@ -229,6 +243,21 @@ export default function UsuariosPage() {
                   </select>
                 </div>
               )}
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Permissões</label>
+                <p className="text-xs text-gray-400 mb-2">Master e Administrador têm acesso total automaticamente. Para o perfil Leitor, desmarque todas.</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PERMISSOES.map(p => (
+                    <label key={p.chave} title={p.descricao}
+                      className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-50">
+                      <input type="checkbox" name={p.chave} defaultChecked={(u as any)?.[p.chave] ?? true}
+                        className="w-4 h-4 accent-purple-600" />
+                      <span className="text-sm text-gray-700">{p.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               <label className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 cursor-pointer">
                 <input type="checkbox" name="podeVerIndicacoes" defaultChecked={u?.podeVerIndicacoes ?? false}

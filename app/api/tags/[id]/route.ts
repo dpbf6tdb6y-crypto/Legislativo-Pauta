@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { registrarAuditoria } from "@/lib/auditoria";
+import { temPermissao } from "@/lib/permissoes";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -19,6 +20,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  if (!temPermissao(session.user as any, "podeEditar")) return NextResponse.json({ error: "Sem permissão para editar" }, { status: 403 });
 
   const body = await req.json();
   const item = await prisma.tag.update({
@@ -53,7 +55,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  if (!["admin", "master"].includes((session.user as any).perfil)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  if (!temPermissao(session.user as any, "podeExcluir")) return NextResponse.json({ error: "Sem permissão para excluir" }, { status: 403 });
 
   const item = await prisma.tag.delete({ where: { id: params.id } });
 

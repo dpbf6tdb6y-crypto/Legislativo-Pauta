@@ -8,6 +8,7 @@ import { resolverAutores, situacaoAutores, ehPoderExecutivo } from '@/lib/veread
 import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
 import FiltroVereadorSelect from '@/app/components/FiltroVereadorSelect'
 import FiltroPoder, { Poder } from '@/app/components/FiltroPoder'
+import { usePermissao } from '@/lib/usePermissao'
 
 const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
@@ -65,6 +66,10 @@ const STATUS_COR: Record<string, string> = {
 export default function SeggovPage() {
   const { setLeftContent, setRightContent } = useTopbar()
   const router = useRouter()
+  const podeCriar = usePermissao('podeCriar')
+  const podeImportar = usePermissao('podeImportar')
+  const podeExportar = usePermissao('podeExportar')
+  const podeExcluir = usePermissao('podeExcluir')
   const [itens, setItens] = useState<any[]>([])
   const [vereadores, setVereadores] = useState<any[]>([])
   const [tiposProposicao, setTiposProposicao] = useState<{ id: string; nome: string }[]>([])
@@ -187,28 +192,34 @@ export default function SeggovPage() {
           <span className="text-sm text-gray-700">Secretaria de Governo</span>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/dashboard/segov/novo"
-            className={`${btn} text-white`}
-            style={{ background: '#8B0000' }}>
-            + Nova Proposição
-          </Link>
-          <Link href="/dashboard/segov/importar"
-            className={`${btn} text-white bg-green-600 hover:bg-green-700`}>
-            Importar Pauta
-          </Link>
-          <button onClick={() => setModalRelatorio(true)}
-            className={`${btn} text-white bg-blue-600 hover:bg-blue-700`}>
-            {selecionados.size > 0 ? `Relatório (${selecionados.size} selecionado${selecionados.size > 1 ? 's' : ''})` : 'Relatórios'}
-          </button>
+          {podeCriar && (
+            <Link href="/dashboard/segov/novo"
+              className={`${btn} text-white`}
+              style={{ background: '#8B0000' }}>
+              + Nova Proposição
+            </Link>
+          )}
+          {podeImportar && (
+            <Link href="/dashboard/segov/importar"
+              className={`${btn} text-white bg-green-600 hover:bg-green-700`}>
+              Importar Pauta
+            </Link>
+          )}
+          {podeExportar && (
+            <button onClick={() => setModalRelatorio(true)}
+              className={`${btn} text-white bg-blue-600 hover:bg-blue-700`}>
+              {selecionados.size > 0 ? `Relatório (${selecionados.size} selecionado${selecionados.size > 1 ? 's' : ''})` : 'Relatórios'}
+            </button>
+          )}
         </div>
       </div>
     )
     return () => setLeftContent(null)
-  }, [itensExibidos, selecionados])
+  }, [itensExibidos, selecionados, podeCriar, podeImportar, podeExportar])
 
   // Botão Excluir no lado direito do topbar (antes do Atualizar)
   useEffect(() => {
-    if (selecionados.size === 0) {
+    if (selecionados.size === 0 || !podeExcluir) {
       setRightContent(null)
       return
     }
@@ -223,7 +234,7 @@ export default function SeggovPage() {
       </button>
     )
     return () => setRightContent(null)
-  }, [selecionados, excluindo])
+  }, [selecionados, excluindo, podeExcluir])
 
   function toggleColuna(key: ColunasKey) {
     setColunasSel(prev => {

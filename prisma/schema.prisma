@@ -8,14 +8,21 @@ datasource db {
 }
 
 model User {
-  id                String   @id @default(cuid())
-  nome              String
-  email             String   @unique
-  senha             String
-  perfil            String   @default("operador")
-  ativo             Boolean  @default(true)
-  podeVerIndicacoes Boolean  @default(false)
-  createdAt         DateTime @default(now())
+  id                       String   @id @default(cuid())
+  nome                     String
+  email                    String   @unique
+  senha                    String
+  perfil                   String   @default("operador")
+  ativo                    Boolean  @default(true)
+  podeVerIndicacoes        Boolean  @default(false)
+  podeCriar                Boolean  @default(true)
+  podeEditar               Boolean  @default(true)
+  podeExcluir              Boolean  @default(true)
+  podeImportar             Boolean  @default(true)
+  podeExportar             Boolean  @default(true)
+  podeGerenciarVereadores  Boolean  @default(true)
+  podeVerAuditoria         Boolean  @default(true)
+  createdAt                DateTime @default(now())
 }
 
 model Vereador {
