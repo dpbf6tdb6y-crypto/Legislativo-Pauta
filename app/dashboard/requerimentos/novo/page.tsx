@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 const TIPOS = ['REQ', 'MOC', 'IND']
@@ -9,10 +9,13 @@ const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Rejeitado', 'Arqu
 
 export default function NovoRequerimentoPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const tipoInicial = TIPOS.includes(searchParams.get('tipo') || '') ? (searchParams.get('tipo') as string) : 'REQ'
+  const voltarHref = tipoInicial === 'MOC' ? '/dashboard/mocoes' : '/dashboard/requerimentos'
   const [vereadores, setVereadores] = useState<any[]>([])
   const [salvando, setSalvando] = useState(false)
   const [form, setForm] = useState({
-    numero: '', ano: String(new Date().getFullYear()), tipo: 'REQ',
+    numero: '', ano: String(new Date().getFullYear()), tipo: tipoInicial,
     descricao: '', vereadorId: '', status: 'Aguardando', dataEnvio: '',
   })
 
@@ -32,14 +35,14 @@ export default function NovoRequerimentoPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     })
-    if (res.ok) router.push('/dashboard/requerimentos')
+    if (res.ok) router.push(voltarHref)
     else { alert('Erro ao salvar'); setSalvando(false) }
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/requerimentos" className="text-gray-400 hover:text-gray-600 transition">
+        <Link href={voltarHref} className="text-gray-400 hover:text-gray-600 transition">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -112,7 +115,7 @@ export default function NovoRequerimentoPage() {
         </div>
 
         <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
-          <Link href="/dashboard/requerimentos"
+          <Link href={voltarHref}
             className="px-5 py-2.5 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
             Cancelar
           </Link>

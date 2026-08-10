@@ -74,7 +74,8 @@ export default function VereadoresPage() {
   }
 
   const mesa = lista.filter(v => v.ativo && v.poder === "legislativo" && v.cargo);
-  const vereadores = lista.filter(v => v.ativo && v.poder === "legislativo" && !v.cargo);
+  const vereadores = lista.filter(v => v.ativo && v.poder === "legislativo" && !v.cargo && v.legislatura !== "Mandato anterior");
+  const mandatosAnteriores = lista.filter(v => v.ativo && v.poder === "legislativo" && !v.cargo && v.legislatura === "Mandato anterior");
   const executivo = lista.filter(v => v.ativo && v.poder === "executivo");
 
   function Card({ v }: { v: Vereador }) {
@@ -152,6 +153,16 @@ export default function VereadoresPage() {
           {vereadores.map(v => <Card key={v.id} v={v} />)}
         </div>
       </div>
+
+      {/* Vereadores de Mandatos Anteriores */}
+      {mandatosAnteriores.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Vereadores de Mandatos Anteriores</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {mandatosAnteriores.map(v => <Card key={v.id} v={v} />)}
+          </div>
+        </div>
+      )}
 
       {modal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

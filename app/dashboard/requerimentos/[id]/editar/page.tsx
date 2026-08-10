@@ -62,6 +62,8 @@ export default function EditarRequerimentoPage() {
     })
   }, [id])
 
+  const voltarHref = form.tipo === 'MOC' ? '/dashboard/mocoes' : '/dashboard/requerimentos'
+
   function set(field: string, value: string) { setForm(f => ({ ...f, [field]: value })) }
   function setPendingData(key: string, field: keyof StepData, value: string) {
     setPendingState(prev => ({ ...prev, [key]: { ...(prev[key] || {}), [field]: value } }))
@@ -93,7 +95,7 @@ export default function EditarRequerimentoPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, fluxo }),
     })
-    if (res.ok) router.push('/dashboard/requerimentos')
+    if (res.ok) router.push(voltarHref)
     else { alert('Erro ao salvar'); setSalvando(false) }
   }
 
@@ -180,7 +182,7 @@ export default function EditarRequerimentoPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-5 pb-8">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/requerimentos" className="text-gray-400 hover:text-gray-600 transition">
+        <Link href={voltarHref} className="text-gray-400 hover:text-gray-600 transition">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
