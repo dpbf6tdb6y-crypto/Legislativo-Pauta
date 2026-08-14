@@ -78,6 +78,14 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   const [tiposExibidos, setTiposExibidos] = useState<string[]>(modo === 'apenas' ? tiposFiltro : [])
   const [vereadores, setVereadores] = useState<Vereador[]>([])
 
+  const vereadoresParaFiltro = useMemo(() => vereadores.filter(v =>
+    filtroSituacaoAutor === 'todos' ? true : filtroSituacaoAutor === 'ativos' ? v.ativo !== false : v.ativo === false
+  ), [vereadores, filtroSituacaoAutor])
+
+  useEffect(() => {
+    if (filtroVereadorId && !vereadoresParaFiltro.some(v => v.id === filtroVereadorId)) setFiltroVereadorId('')
+  }, [vereadoresParaFiltro]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const mostrarFiltroTipo = tiposExibidos.length > 1
 
   async function carregar(codigosExibidos: string[]) {
@@ -159,7 +167,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
           placeholder="Buscar por número, descrição..."
           className="flex-1 min-w-[220px] border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30" />
         <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} />
-        <FiltroVereadorSelect vereadores={vereadores} value={filtroVereadorId} onChange={setFiltroVereadorId} className="w-40" />
+        <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={filtroVereadorId} onChange={setFiltroVereadorId} className="w-40" />
         <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
         {mostrarFiltroTipo && (
           <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}

@@ -92,6 +92,14 @@ export default function SeggovPage() {
   const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
   const [filtroPoder, setFiltroPoder] = useState<Poder>('')
 
+  const vereadoresParaFiltro = useMemo(() => vereadores.filter(v =>
+    filtroSituacaoAutor === 'todos' ? true : filtroSituacaoAutor === 'ativos' ? v.ativo !== false : v.ativo === false
+  ), [vereadores, filtroSituacaoAutor])
+
+  useEffect(() => {
+    if (colVereador && !vereadoresParaFiltro.some(v => v.id === colVereador)) setColVereador('')
+  }, [vereadoresParaFiltro]) // eslint-disable-line react-hooks/exhaustive-deps
+
   async function carregar() {
     setLoading(true)
     setSelecionados(new Set())
@@ -272,7 +280,7 @@ export default function SeggovPage() {
           placeholder="Buscar palavra na ementa..."
           className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-1 min-w-[180px]" />
         <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} />
-        <FiltroVereadorSelect vereadores={vereadores} value={colVereador} onChange={setColVereador} className="w-40" />
+        <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={colVereador} onChange={setColVereador} className="w-40" />
         <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
         <select value={colTipo} onChange={e => setColTipo(e.target.value)}
           className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-48">
