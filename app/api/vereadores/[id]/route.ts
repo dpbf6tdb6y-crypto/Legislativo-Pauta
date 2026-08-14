@@ -45,10 +45,41 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   return NextResponse.json(data);
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   if (!temPermissao(session.user as any, "podeGerenciarVereadores")) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+
+  const hard = new URL(req.url).searchParams.get("hard") === "true";
+
+  if (hard) {
+    if (!temPermissao(session.user as any, "podeExcluir")) {
+      return NextResponse.json({ error: "Sem permissão para excluir" }, { status: 403 });
+    }
+
+    const antes = await prisma.vereador.findUnique({ where: { id: params.id } });
+    if (!antes) return NextResponse.json({ error: "Vereador não encontrado" }, { status: 404 });
+
+    try {
+      await prisma.vereador.delete({ where: { id: params.id } });
+    } catch {
+      return NextResponse.json(
+        { error: "Não é possível excluir: há proposições, votos ou outros registros vinculados a este cadastro. Use \"Desativar\" para preservar o histórico." },
+        { status: 409 }
+      );
+    }
+
+    await registrarAuditoria({
+      acao: "excluir_vereador",
+      entidade: "Vereador",
+      entidadeId: antes.id,
+      referencia: antes.nome,
+      usuarioId: (session.user as any).id,
+      usuarioNome: session.user?.name ?? undefined,
+    });
+
+    return NextResponse.json({ ok: true });
+  }
 
   const antes = await prisma.vereador.findUnique({ where: { id: params.id } });
   const data = await prisma.vereador.update({ where: { id: params.id }, data: { ativo: false } });
