@@ -169,26 +169,26 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-2 items-center flex-wrap">
+      <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto">
         <input value={busca} onChange={e => setBusca(e.target.value)}
           placeholder="Buscar por número, descrição..."
-          className="flex-1 min-w-[220px] border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30" />
-        <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} />
-        <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={filtroVereadorId} onChange={setFiltroVereadorId} className="w-40" />
-        <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
+          className="flex-1 min-w-[140px] border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30" />
+        <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} className="flex-shrink-0" />
+        <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={filtroVereadorId} onChange={setFiltroVereadorId} className="w-32 flex-shrink-0" />
+        <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} className="flex-shrink-0" />
         <select value={filtroAno} onChange={e => setFiltroAno(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-24">
-          <option value="">Todos os anos</option>
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-16 flex-shrink-0">
+          <option value="">Ano</option>
           {anosDisponiveis.map(a => <option key={a} value={a}>{a}</option>)}
         </select>
         {mostrarFiltroTipo && (
           <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}
-            className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30">
+            className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-shrink-0">
             <option value="">Todos os tipos</option>
             {tiposExibidos.map(t => <option key={t} value={t}>{tipoLabel[t] || t}</option>)}
           </select>
         )}
-        <span className="text-xs text-gray-400 ml-auto">{filtrados.length} de {itens.length} item(s)</span>
+        <span className="text-xs text-gray-400 ml-auto flex-shrink-0 whitespace-nowrap">{filtrados.length} de {itens.length} item(s)</span>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-1.5 items-center flex-wrap">

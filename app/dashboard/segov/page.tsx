@@ -271,7 +271,7 @@ export default function SeggovPage() {
     <div className="space-y-2">
 
       {/* Barra de filtros */}
-      <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-2 items-center flex-wrap sticky top-0 z-10">
+      <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto sticky top-0 z-10">
         {filtrosColunaAtivos && (
           <button onClick={limparFiltrosColuna} title="Limpar filtros"
             className="text-gray-400 hover:text-red-600 transition flex-shrink-0">
@@ -282,24 +282,24 @@ export default function SeggovPage() {
         )}
         <input value={colProposicao} onChange={e => setColProposicao(e.target.value)}
           placeholder="Buscar nº..."
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-28" />
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-20 flex-shrink-0" />
         <input value={colEmenta} onChange={e => setColEmenta(e.target.value)}
           placeholder="Buscar palavra na ementa..."
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-1 min-w-[180px]" />
-        <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} />
-        <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={colVereador} onChange={setColVereador} className="w-40" />
-        <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-1 min-w-[120px]" />
+        <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} className="flex-shrink-0" />
+        <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={colVereador} onChange={setColVereador} className="w-32 flex-shrink-0" />
+        <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} className="flex-shrink-0" />
         <select value={colAno} onChange={e => setColAno(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-24">
-          <option value="">Todos os anos</option>
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-16 flex-shrink-0">
+          <option value="">Ano</option>
           {anosDisponiveis.map(a => <option key={a} value={a}>{a}</option>)}
         </select>
         <select value={colTipo} onChange={e => setColTipo(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-48">
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-36 flex-shrink-0">
           <option value="">Todos os tipos ({Object.values(contagemPorTipo).reduce((a, b) => a + b, 0)})</option>
           {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome} ({contagemPorTipo[t.nome] || 0})</option>)}
         </select>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
           <input type="checkbox"
             checked={todosSelecionados}
             ref={el => { if (el) el.indeterminate = algunsSelecionados }}
