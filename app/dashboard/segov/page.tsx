@@ -89,6 +89,7 @@ export default function SeggovPage() {
   const [colVereador, setColVereador] = useState('')
   const [colStatus, setColStatus] = useState('')
   const [colTipo, setColTipo] = useState('')
+  const [colAno, setColAno] = useState('')
   const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
   const [filtroPoder, setFiltroPoder] = useState<Poder>('')
 
@@ -160,28 +161,34 @@ export default function SeggovPage() {
     }
     if (exceto !== 'status' && colStatus && item.status !== colStatus) return false
     if (exceto !== 'tipo' && colTipo && item.tipo !== colTipo) return false
+    if (colAno && String(item.ano) !== colAno) return false
     return true
   }
 
+  const anosDisponiveis = useMemo(
+    () => Array.from(new Set(itens.map(i => i.ano))).sort((a, b) => b - a),
+    [itens]
+  )
+
   const itensExibidos = useMemo(() => itens.filter(item => passaFiltrosBase(item)),
-    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo, filtroSituacaoAutor, filtroPoder, vereadores])
+    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo, colAno, filtroSituacaoAutor, filtroPoder, vereadores])
 
   const contagemPorStatus = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(item => { if (passaFiltrosBase(item, 'status')) mapa[item.status] = (mapa[item.status] || 0) + 1 })
     return mapa
-  }, [itens, colProposicao, colEmenta, colVereador, colTipo, filtroSituacaoAutor, filtroPoder, vereadores])
+  }, [itens, colProposicao, colEmenta, colVereador, colTipo, colAno, filtroSituacaoAutor, filtroPoder, vereadores])
 
   const contagemPorTipo = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(item => { if (passaFiltrosBase(item, 'tipo')) mapa[item.tipo] = (mapa[item.tipo] || 0) + 1 })
     return mapa
-  }, [itens, colProposicao, colEmenta, colVereador, colStatus, filtroSituacaoAutor, filtroPoder, vereadores])
+  }, [itens, colProposicao, colEmenta, colVereador, colStatus, colAno, filtroSituacaoAutor, filtroPoder, vereadores])
 
-  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo || filtroSituacaoAutor !== 'ativos' || filtroPoder
+  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo || colAno || filtroSituacaoAutor !== 'ativos' || filtroPoder
 
   function limparFiltrosColuna() {
-    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(''); setColTipo(''); setFiltroSituacaoAutor('ativos'); setFiltroPoder('')
+    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(''); setColTipo(''); setColAno(''); setFiltroSituacaoAutor('ativos'); setFiltroPoder('')
   }
 
   const todosSelecionados = itensExibidos.length > 0 && itensExibidos.every(i => selecionados.has(i.id))
@@ -282,6 +289,11 @@ export default function SeggovPage() {
         <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} />
         <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={colVereador} onChange={setColVereador} className="w-40" />
         <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
+        <select value={colAno} onChange={e => setColAno(e.target.value)}
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-24">
+          <option value="">Todos os anos</option>
+          {anosDisponiveis.map(a => <option key={a} value={a}>{a}</option>)}
+        </select>
         <select value={colTipo} onChange={e => setColTipo(e.target.value)}
           className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-48">
           <option value="">Todos os tipos ({Object.values(contagemPorTipo).reduce((a, b) => a + b, 0)})</option>

@@ -71,6 +71,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   const [filtroTipo, setFiltroTipo] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('')
   const [filtroVereadorId, setFiltroVereadorId] = useState('')
+  const [filtroAno, setFiltroAno] = useState('')
   const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
   const [filtroPoder, setFiltroPoder] = useState<Poder>('')
   const [loading, setLoading] = useState(true)
@@ -131,17 +132,23 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
       if (filtroVereadorId && !autores.some(a => a.vereadorId === filtroVereadorId)) return false
       if (filtroSituacaoAutor !== 'todos' && situacaoAutores(autores) !== filtroSituacaoAutor) return false
     }
+    if (filtroAno && String(i.ano) !== filtroAno) return false
     return true
   }
+
+  const anosDisponiveis = useMemo(
+    () => Array.from(new Set(itens.map(i => i.ano))).sort((a, b) => b - a),
+    [itens]
+  )
 
   const contagemPorStatus = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(i => { if (passaFiltrosBase(i, 'status')) mapa[i.status] = (mapa[i.status] || 0) + 1 })
     return mapa
-  }, [itens, busca, filtroTipo, filtroVereadorId, filtroSituacaoAutor, filtroPoder, vereadores]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [itens, busca, filtroTipo, filtroVereadorId, filtroAno, filtroSituacaoAutor, filtroPoder, vereadores]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtrados = useMemo(() => itens.filter(i => passaFiltrosBase(i)),
-    [itens, busca, filtroTipo, filtroStatus, filtroVereadorId, filtroSituacaoAutor, filtroPoder, vereadores])
+    [itens, busca, filtroTipo, filtroStatus, filtroVereadorId, filtroAno, filtroSituacaoAutor, filtroPoder, vereadores])
 
   return (
     <div className="space-y-4 pb-6">
@@ -169,6 +176,11 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
         <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} />
         <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={filtroVereadorId} onChange={setFiltroVereadorId} className="w-40" />
         <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} />
+        <select value={filtroAno} onChange={e => setFiltroAno(e.target.value)}
+          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-24">
+          <option value="">Todos os anos</option>
+          {anosDisponiveis.map(a => <option key={a} value={a}>{a}</option>)}
+        </select>
         {mostrarFiltroTipo && (
           <select value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}
             className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30">
