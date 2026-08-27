@@ -7,6 +7,9 @@ import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSitua
 import FiltroVereadorSelect from '@/app/components/FiltroVereadorSelect'
 import FiltroPoder, { Poder } from '@/app/components/FiltroPoder'
 import { usePermissao } from '@/lib/usePermissao'
+import {
+  exportarRequerimentosExcel, exportarRequerimentosPDF, COLUNAS_RELATORIO_REQ, type ColunasKeyReq,
+} from '@/lib/requerimentos-export'
 
 type Item = {
   id: string; numero: string; ano: number; tipo: string; descricao: string
@@ -66,7 +69,15 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   const podeCriar = usePermissao('podeCriar')
   const podeEditar = usePermissao('podeEditar')
   const podeExcluir = usePermissao('podeExcluir')
+  const podeExportar = usePermissao('podeExportar')
   const [itens, setItens] = useState<Item[]>([])
+  const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
+  const [excluindo, setExcluindo] = useState(false)
+  const [modalRelatorio, setModalRelatorio] = useState(false)
+  const [formatoRelatorio, setFormatoRelatorio] = useState<'excel' | 'pdf'>('excel')
+  const [colunasSel, setColunasSel] = useState<Set<ColunasKeyReq>>(
+    new Set(COLUNAS_RELATORIO_REQ.map(c => c.key))
+  )
   const [busca, setBusca] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('')
   const [filtroStatus, setFiltroStatus] = useState('')
@@ -115,6 +126,57 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
     carregar(tiposExibidos)
   }
 
+  function toggleItem(id: string) {
+    setSelecionados(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleTodos() {
+    if (todosSelecionados) {
+      setSelecionados(prev => {
+        const next = new Set(prev)
+        filtrados.forEach(i => next.delete(i.id))
+        return next
+      })
+    } else {
+      setSelecionados(prev => new Set([...Array.from(prev), ...filtrados.map(i => i.id)]))
+    }
+  }
+
+  async function excluirSelecionados() {
+    if (!confirm(`Excluir ${selecionados.size} item(s) selecionado(s)?`)) return
+    setExcluindo(true)
+    await Promise.all(Array.from(selecionados).map(id => fetch(`/api/requerimentos/${id}`, { method: 'DELETE' })))
+    setExcluindo(false)
+    setSelecionados(new Set())
+    carregar(tiposExibidos)
+  }
+
+  function toggleColuna(key: ColunasKeyReq) {
+    setColunasSel(prev => {
+      const next = new Set(prev)
+      next.has(key) ? next.delete(key) : next.add(key)
+      return next
+    })
+  }
+
+  function exportar() {
+    const itensParaExportar = selecionados.size > 0
+      ? filtrados.filter(i => selecionados.has(i.id))
+      : filtrados
+    if (formatoRelatorio === 'excel') {
+      const cols = COLUNAS_RELATORIO_REQ.map(c => c.key).filter(k => colunasSel.has(k))
+      if (cols.length === 0) return
+      exportarRequerimentosExcel(itensParaExportar, cols, `${titulo.toLowerCase()}.xlsx`)
+    } else {
+      exportarRequerimentosPDF(itensParaExportar, titulo, corPrimaria, `${titulo.toLowerCase()}.pdf`)
+    }
+    setModalRelatorio(false)
+  }
+
   function passaFiltrosBase(i: Item, exceto?: 'status' | 'tipo') {
     if (exceto !== 'tipo' && filtroTipo && i.tipo !== filtroTipo) return false
     if (exceto !== 'status' && filtroStatus && i.status !== filtroStatus) return false
@@ -150,6 +212,9 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   const filtrados = useMemo(() => itens.filter(i => passaFiltrosBase(i)),
     [itens, busca, filtroTipo, filtroStatus, filtroVereadorId, filtroAno, filtroSituacaoAutor, filtroPoder, vereadores])
 
+  const todosSelecionados = filtrados.length > 0 && filtrados.every(i => selecionados.has(i.id))
+  const algunsSelecionados = filtrados.some(i => selecionados.has(i.id)) && !todosSelecionados
+
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center justify-between">
@@ -157,16 +222,34 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
           <h1 className="text-xl font-bold text-gray-800">{titulo}</h1>
           <p className="text-sm text-gray-500">{subtitulo} — {itens.length} registro(s)</p>
         </div>
-        {podeCriar && (
-          <Link href={novoHref}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition"
-            style={{ background: corPrimaria }}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Novo
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          {selecionados.size > 0 && podeExcluir && (
+            <button onClick={excluirSelecionados} disabled={excluindo}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-red-400 hover:bg-red-500 transition disabled:opacity-60">
+              {excluindo
+                ? <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              }
+              Excluir {selecionados.size} selecionado{selecionados.size > 1 ? 's' : ''}
+            </button>
+          )}
+          {podeExportar && (
+            <button onClick={() => setModalRelatorio(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition">
+              {selecionados.size > 0 ? `Relatório (${selecionados.size} selecionado${selecionados.size > 1 ? 's' : ''})` : 'Gerar Relatório'}
+            </button>
+          )}
+          {podeCriar && (
+            <Link href={novoHref}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition"
+              style={{ background: corPrimaria }}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Novo
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto">
@@ -188,7 +271,20 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
             {tiposExibidos.map(t => <option key={t} value={t}>{tipoLabel[t] || t}</option>)}
           </select>
         )}
-        <span className="text-xs text-gray-400 ml-auto flex-shrink-0 whitespace-nowrap">{filtrados.length} de {itens.length} item(s)</span>
+        <div className="ml-auto flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
+          <input type="checkbox"
+            checked={todosSelecionados}
+            ref={el => { if (el) el.indeterminate = algunsSelecionados }}
+            onChange={toggleTodos}
+            className="w-4 h-4 cursor-pointer" style={{ accentColor: corPrimaria }} />
+          <span className="text-xs text-gray-400">{filtrados.length} de {itens.length} item(s)</span>
+          {selecionados.size > 0 && (
+            <button onClick={() => setSelecionados(new Set())}
+              className="text-xs font-medium hover:underline" style={{ color: corPrimaria }}>
+              · {selecionados.size} selecionado(s) ✕
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-1.5 items-center flex-wrap">
@@ -227,12 +323,15 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
             const marcados = FLUXO_DEF.filter(d => fluxo[d.key]?.done)
             const resultado = fluxo['resultado']?.data?.resultado
             const corResultado = resultado === 'reprovado' ? 'vermelho' : resultado === 'aprovado' ? 'verde' : 'normal'
+            const sel = selecionados.has(item.id)
 
             return (
               <div key={item.id}
-                className="bg-white rounded-xl border-2 border-gray-200 hover:border-gray-300 transition">
+                className={`bg-white rounded-xl border-2 transition ${sel ? 'border-blue-300' : 'border-gray-200 hover:border-gray-300'}`}>
                 <div className="flex items-start gap-4 px-5 py-4 cursor-pointer"
                   onClick={() => router.push(`${editarHrefBase}/${item.id}/editar`)}>
+                  <input type="checkbox" checked={sel} onClick={e => e.stopPropagation()} onChange={() => toggleItem(item.id)}
+                    className="w-4 h-4 mt-1 cursor-pointer flex-shrink-0" style={{ accentColor: corPrimaria }} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       {mostrarFiltroTipo && (
@@ -300,6 +399,88 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Modal de seleção de colunas para relatório */}
+      {modalRelatorio && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-[480px] max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-800">Configurar Relatório</h2>
+              <button onClick={() => setModalRelatorio(false)} className="text-gray-400 hover:text-gray-600 transition">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="px-6 py-4 flex-1 overflow-y-auto space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Formato</p>
+                <div className="flex gap-3">
+                  {(['excel', 'pdf'] as const).map(f => (
+                    <button key={f} onClick={() => setFormatoRelatorio(f)}
+                      className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${
+                        formatoRelatorio === f
+                          ? 'text-white'
+                          : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                      }`}
+                      style={formatoRelatorio === f ? { borderColor: corPrimaria, background: `${corPrimaria}15`, color: corPrimaria } : {}}>
+                      {f === 'excel' ? '📊 Excel (.xlsx)' : '📄 PDF (layout do sistema)'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {formatoRelatorio === 'excel' && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Colunas</p>
+                    <div className="flex gap-3">
+                      <button onClick={() => setColunasSel(new Set(COLUNAS_RELATORIO_REQ.map(c => c.key)))}
+                        className="text-xs text-blue-600 hover:underline">Todas</button>
+                      <button onClick={() => setColunasSel(new Set())}
+                        className="text-xs text-gray-400 hover:underline">Limpar</button>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    {COLUNAS_RELATORIO_REQ.map(col => (
+                      <label key={col.key}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition">
+                        <input type="checkbox" checked={colunasSel.has(col.key)}
+                          onChange={() => toggleColuna(col.key)}
+                          className="w-4 h-4" style={{ accentColor: corPrimaria }} />
+                        <span className="text-sm text-gray-700">{col.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {formatoRelatorio === 'pdf' && (
+                <p className="text-xs text-gray-500">
+                  O PDF reproduz o mesmo cartão exibido na tela (número, status, descrição, autores e fluxo de tramitação).
+                </p>
+              )}
+
+              <p className="text-xs text-gray-400">
+                {(selecionados.size > 0 ? selecionados.size : filtrados.length)} item(ns) serão exportados
+              </p>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+              <button onClick={() => setModalRelatorio(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+              <button onClick={exportar} disabled={formatoRelatorio === 'excel' && colunasSel.size === 0}
+                className="px-6 py-2 rounded-lg text-sm font-semibold text-white transition disabled:opacity-50"
+                style={{ background: corPrimaria }}>
+                Exportar {formatoRelatorio === 'excel' ? 'Excel' : 'PDF'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
