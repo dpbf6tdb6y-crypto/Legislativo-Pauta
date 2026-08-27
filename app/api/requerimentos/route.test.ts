@@ -11,11 +11,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-function mockSession(perfil: string | null) {
+function mockSession(perfil: string | null, permissoes: Record<string, boolean> = {}) {
   if (perfil === null) {
     (getServerSession as any).mockResolvedValue(null);
   } else {
-    (getServerSession as any).mockResolvedValue({ user: { id: "1", name: "Fulano", perfil } });
+    (getServerSession as any).mockResolvedValue({ user: { id: "1", name: "Fulano", perfil, ...permissoes } });
   }
 }
 
@@ -51,8 +51,15 @@ describe("/api/requerimentos", () => {
     expect(prisma.requerimento.create).not.toHaveBeenCalled();
   });
 
-  it("POST cria normalmente com sessão de operador (não precisa ser admin)", async () => {
+  it("POST retorna 403 para operador sem a permissão podeCriar", async () => {
     mockSession("operador");
+    const res = await POST(postReq({ numero: "1", ano: "2026", tipo: "REQ", descricao: "teste" }));
+    expect(res.status).toBe(403);
+    expect(prisma.requerimento.create).not.toHaveBeenCalled();
+  });
+
+  it("POST cria normalmente para operador com a permissão podeCriar (não precisa ser admin)", async () => {
+    mockSession("operador", { podeCriar: true });
     (prisma.requerimento.create as any).mockResolvedValue({ id: "1" });
     const res = await POST(postReq({ numero: "1", ano: "2026", tipo: "REQ", descricao: "teste" }));
     expect(res.status).toBe(201);

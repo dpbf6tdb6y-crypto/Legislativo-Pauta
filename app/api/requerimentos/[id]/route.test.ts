@@ -11,11 +11,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-function mockSession(perfil: string | null) {
+function mockSession(perfil: string | null, permissoes: Record<string, boolean> = {}) {
   if (perfil === null) {
     (getServerSession as any).mockResolvedValue(null);
   } else {
-    (getServerSession as any).mockResolvedValue({ user: { id: "1", name: "Fulano", perfil } });
+    (getServerSession as any).mockResolvedValue({ user: { id: "1", name: "Fulano", perfil, ...permissoes } });
   }
 }
 
@@ -41,8 +41,15 @@ describe("/api/requerimentos/[id]", () => {
     expect(prisma.requerimento.update).not.toHaveBeenCalled();
   });
 
-  it("PATCH funciona com sessão de operador (não precisa ser admin)", async () => {
+  it("PATCH retorna 403 para operador sem a permissão podeEditar", async () => {
     mockSession("operador");
+    const res = await PATCH(patchReq({ descricao: "novo" }), ctx);
+    expect(res.status).toBe(403);
+    expect(prisma.requerimento.update).not.toHaveBeenCalled();
+  });
+
+  it("PATCH funciona para operador com a permissão podeEditar (não precisa ser admin)", async () => {
+    mockSession("operador", { podeEditar: true });
     (prisma.requerimento.update as any).mockResolvedValue({ id: "abc" });
     const res = await PATCH(patchReq({ descricao: "novo" }), ctx);
     expect(res.status).toBe(200);

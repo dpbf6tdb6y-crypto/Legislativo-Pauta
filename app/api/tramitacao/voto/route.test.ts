@@ -9,11 +9,11 @@ vi.mock("@/lib/prisma", () => ({
   prisma: { votoParecerVereador: { upsert: vi.fn() } },
 }));
 
-function mockSession(perfil: string | null) {
+function mockSession(perfil: string | null, permissoes: Record<string, boolean> = {}) {
   if (perfil === null) {
     (getServerSession as any).mockResolvedValue(null);
   } else {
-    (getServerSession as any).mockResolvedValue({ user: { id: "1", name: "Fulano", perfil } });
+    (getServerSession as any).mockResolvedValue({ user: { id: "1", name: "Fulano", perfil, ...permissoes } });
   }
 }
 
@@ -31,8 +31,15 @@ describe("/api/tramitacao/voto", () => {
     expect(prisma.votoParecerVereador.upsert).not.toHaveBeenCalled();
   });
 
-  it("funciona com sessão de operador (não precisa ser admin)", async () => {
+  it("retorna 403 para operador sem a permissão podeEditar", async () => {
     mockSession("operador");
+    const res = await POST(postReq({ proposicaoComissaoId: "1", vereadorId: "2", aprovado: true }));
+    expect(res.status).toBe(403);
+    expect(prisma.votoParecerVereador.upsert).not.toHaveBeenCalled();
+  });
+
+  it("funciona para operador com a permissão podeEditar (não precisa ser admin)", async () => {
+    mockSession("operador", { podeEditar: true });
     (prisma.votoParecerVereador.upsert as any).mockResolvedValue({});
     const res = await POST(postReq({ proposicaoComissaoId: "1", vereadorId: "2", aprovado: true }));
     expect(res.status).toBe(200);
