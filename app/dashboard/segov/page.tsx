@@ -78,7 +78,7 @@ export default function SeggovPage() {
   const [excluindo, setExcluindo] = useState(false)
   const [menuRelatorios, setMenuRelatorios] = useState(false)
   const [modalRelatorio, setModalRelatorio] = useState(false)
-  const [formatoRelatorio, setFormatoRelatorio] = useState<'excel' | 'pdf'>('excel')
+  const [formatoRelatorio, setFormatoRelatorio] = useState<'excel' | 'pdf'>('pdf')
   const [colunasSel, setColunasSel] = useState<Set<ColunasKey>>(
     new Set(COLUNAS_RELATORIO.map(c => c.key))
   )
@@ -260,10 +260,14 @@ export default function SeggovPage() {
   }
 
   function exportar() {
-    const cols = COLUNAS_RELATORIO.map(c => c.key).filter(k => colunasSel.has(k))
-    if (cols.length === 0) return
-    if (formatoRelatorio === 'excel') exportarSegovExcel(itensParaExportar, cols, 'segov.xlsx')
-    else exportarSegovPDF(itensParaExportar, cols, 'segov.pdf')
+    if (formatoRelatorio === 'excel') {
+      const cols = COLUNAS_RELATORIO.map(c => c.key).filter(k => colunasSel.has(k))
+      if (cols.length === 0) return
+      exportarSegovExcel(itensParaExportar, cols, 'segov.xlsx')
+    } else {
+      // O PDF reproduz o cartão da tela inteiro — não depende da seleção de colunas.
+      exportarSegovPDF(itensParaExportar, undefined, 'segov.pdf')
+    }
     setModalRelatorio(false)
   }
 
@@ -516,32 +520,41 @@ export default function SeggovPage() {
                 </div>
               </div>
 
-              {/* Colunas */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Colunas</p>
-                  <div className="flex gap-3">
-                    <button onClick={() => setColunasSel(new Set(COLUNAS_RELATORIO.map(c => c.key)))}
-                      className="text-xs text-blue-600 hover:underline">Todas</button>
-                    <button onClick={() => setColunasSel(new Set())}
-                      className="text-xs text-gray-400 hover:underline">Limpar</button>
+              {/* Colunas — só valem no Excel; o PDF reproduz o cartão inteiro */}
+              {formatoRelatorio === 'excel' && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Colunas</p>
+                    <div className="flex gap-3">
+                      <button onClick={() => setColunasSel(new Set(COLUNAS_RELATORIO.map(c => c.key)))}
+                        className="text-xs text-blue-600 hover:underline">Todas</button>
+                      <button onClick={() => setColunasSel(new Set())}
+                        className="text-xs text-gray-400 hover:underline">Limpar</button>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    {COLUNAS_RELATORIO.map(col => (
+                      <label key={col.key}
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition">
+                        <input type="checkbox" checked={colunasSel.has(col.key)}
+                          onChange={() => toggleColuna(col.key)}
+                          className="w-4 h-4 accent-red-800" />
+                        <span className="text-sm text-gray-700">{col.label}</span>
+                      </label>
+                    ))}
                   </div>
                 </div>
-                <div className="space-y-1">
-                  {COLUNAS_RELATORIO.map(col => (
-                    <label key={col.key}
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer transition">
-                      <input type="checkbox" checked={colunasSel.has(col.key)}
-                        onChange={() => toggleColuna(col.key)}
-                        className="w-4 h-4 accent-red-800" />
-                      <span className="text-sm text-gray-700">{col.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              )}
+
+              {formatoRelatorio === 'pdf' && (
+                <p className="text-xs text-gray-500">
+                  O PDF reproduz o mesmo cartão exibido na tela (número, status, ementa,
+                  autores e fluxo de tramitação), em retrato, com o Poder Executivo primeiro.
+                </p>
+              )}
 
               <p className="text-xs text-gray-400">
-                {itensExibidos.length} item(ns) serão exportados
+                {itensParaExportar.length} item(ns) serão exportados
               </p>
             </div>
 
@@ -550,7 +563,7 @@ export default function SeggovPage() {
                 className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
                 Cancelar
               </button>
-              <button onClick={exportar} disabled={colunasSel.size === 0}
+              <button onClick={exportar} disabled={formatoRelatorio === 'excel' && colunasSel.size === 0}
                 className="px-6 py-2 rounded-lg text-sm font-semibold text-white transition disabled:opacity-50"
                 style={{ background: '#8B0000' }}>
                 Exportar {formatoRelatorio === 'excel' ? 'Excel' : 'PDF'}

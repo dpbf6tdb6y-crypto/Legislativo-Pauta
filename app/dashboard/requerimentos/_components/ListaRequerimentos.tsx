@@ -74,7 +74,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
   const [excluindo, setExcluindo] = useState(false)
   const [modalRelatorio, setModalRelatorio] = useState(false)
-  const [formatoRelatorio, setFormatoRelatorio] = useState<'excel' | 'pdf'>('excel')
+  const [formatoRelatorio, setFormatoRelatorio] = useState<'excel' | 'pdf'>('pdf')
   const [colunasSel, setColunasSel] = useState<Set<ColunasKeyReq>>(
     new Set(COLUNAS_RELATORIO_REQ.map(c => c.key))
   )

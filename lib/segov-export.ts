@@ -146,7 +146,8 @@ export function exportarSegovPDF(
   // precisam, e a altura da fileira já reserva espaço pra isso).
   const stepW = 48;
   const chipLH = 14;
-  const topoConteudo = 30;
+  const alturaCabecalho = 40;
+  const topoConteudo = alturaCabecalho + 10;
 
   const grupoDe = (i: SegovItem) => (ehPoderExecutivo(i) ? 0 : 1);
   const aprovadoDe = (i: SegovItem) => (i.status === "Aprovado" ? 1 : 0);
@@ -158,17 +159,25 @@ export function exportarSegovPDF(
 
   function cabecalhoPagina() {
     doc.setFillColor(139, 0, 0);
-    doc.rect(0, 0, W, 22, "F");
+    doc.rect(0, 0, W, alturaCabecalho, "F");
+
+    // "Líder de Governo" é o título em destaque do relatório.
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
+    doc.setFontSize(15);
     doc.setTextColor(255, 255, 255);
-    doc.text("Proposições  |  Câmara Municipal de Nova Lima", margin, 14.5);
+    doc.text("LÍDER DE GOVERNO", margin, 21);
+
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
+    doc.setFontSize(8);
+    doc.setTextColor(255, 225, 225);
+    doc.text("Câmara Municipal de Nova Lima", margin, 32);
+
+    doc.setFontSize(7.5);
     doc.text(
-      `${new Date().toLocaleDateString("pt-BR")}  ·  ${ordenados.length} proposicao(oes)  ·  Pag. ${pageNum}`,
-      W - margin, 14.5, { align: "right" }
+      `${new Date().toLocaleDateString("pt-BR")}  ·  ${ordenados.length} item(ns)`,
+      W - margin, 21, { align: "right" }
     );
+    doc.text(`Página ${pageNum}`, W - margin, 32, { align: "right" });
   }
 
   function novaPagina() {
@@ -270,15 +279,21 @@ export function exportarSegovPDF(
     // Faixa de seção ao trocar de grupo (Executivo -> Vereadores)
     const g = grupoDe(item);
     if (g !== grupoAtual) {
+      const primeiraSecao = grupoAtual === -1;
       grupoAtual = g;
-      if (y + 22 + 60 > H - 20) y = novaPagina();
+      // As proposições de vereador sempre começam no topo de uma página nova.
+      // (Se não houver nenhuma do Executivo, a seção de vereadores é a
+      // primeira e não força página em branco antes dela.)
+      if (!primeiraSecao) y = novaPagina();
+      else if (y + 22 + 60 > H - 20) y = novaPagina();
+
       doc.setFillColor(238, 238, 238);
-      doc.rect(margin, y, cw, 16, "F");
+      doc.rect(margin, y, cw, 18, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(80, 80, 80);
-      doc.text(g === 0 ? "PODER EXECUTIVO" : "VEREADORES", margin + 6, y + 11);
-      y += 22;
+      doc.setFontSize(9.5);
+      doc.setTextColor(70, 70, 70);
+      doc.text(g === 0 ? "Poder Executivo - Proposições" : "Vereador - Proposições", margin + 7, y + 12.5);
+      y += 24;
     }
 
     if (y + cardH > H - 20) y = novaPagina();
