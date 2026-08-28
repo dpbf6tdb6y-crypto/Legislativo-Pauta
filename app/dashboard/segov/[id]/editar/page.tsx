@@ -188,8 +188,12 @@ export default function EditarSeggovPage() {
       data = { resultado: p.resultado || getOpcoes(def.key).valores[0] }
     } else if (def.tipo === 'data') {
       if (!p.data) { toast.error('Selecione a data antes de marcar.'); return }
-      doneAt = p.data + 'T12:00:00.000Z'
     }
+
+    // Qualquer etapa aceita data informada — necessário para cadastrar
+    // proposições antigas, cujas etapas ocorreram no passado. Sem data
+    // informada, vale a de hoje.
+    if (p.data) doneAt = p.data + 'T12:00:00.000Z'
 
     setFluxo(prev => {
       const next = { ...prev, [key]: { done: true, doneAt, data } }
@@ -203,6 +207,14 @@ export default function EditarSeggovPage() {
 
   function desmarcar(key: string) {
     setFluxo(prev => { const n = { ...prev }; delete n[key]; return n })
+  }
+
+  /** Troca a data de uma etapa já marcada (proposições antigas, correções). */
+  function alterarData(key: string, valor: string) {
+    if (!valor) return
+    setFluxo(prev => prev[key]
+      ? { ...prev, [key]: { ...prev[key], doneAt: valor + 'T12:00:00.000Z' } }
+      : prev)
   }
 
   const marcados = useMemo(() =>
@@ -286,13 +298,26 @@ export default function EditarSeggovPage() {
             <span className={`text-xs font-medium leading-tight ${done ? 'text-green-700' : 'text-gray-700'}`}>{def.label}</span>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
-            {done && <span className="text-[10px] text-gray-400 whitespace-nowrap">{fmtData(state.doneAt)}</span>}
+            {/* Data editável mesmo depois de marcada — permite lançar
+                proposições antigas e corrigir datas erradas. */}
+            {done && (
+              <input type="date"
+                value={(state.doneAt || '').split('T')[0]}
+                onChange={e => alterarData(def.key, e.target.value)}
+                title="Clique para alterar a data desta etapa"
+                className="text-[10px] text-gray-500 bg-transparent border border-transparent hover:border-gray-300 focus:border-green-400 rounded px-0.5 py-0.5 cursor-pointer focus:outline-none" />
+            )}
             {btnMarcar}
           </div>
         </div>
 
-        {!done && def.tipo === 'data' && (
-          <input type="date" value={p.data || ''} onChange={e => setPendingData(def.key, 'data', e.target.value)} className={`mt-1.5 w-full ${inpSm}`} />
+        {/* Toda etapa aceita data — em branco, assume hoje (exceto as do tipo
+            'data', em que informar é obrigatório). */}
+        {!done && (
+          <input type="date" value={p.data || ''}
+            onChange={e => setPendingData(def.key, 'data', e.target.value)}
+            title={def.tipo === 'data' ? 'Informe a data' : 'Data da etapa (em branco = hoje)'}
+            className={`mt-1.5 w-full ${inpSm}`} />
         )}
 
         {!done && def.tipo === 'comissao3nomes' && (
@@ -332,7 +357,7 @@ export default function EditarSeggovPage() {
         {!done && def.tipo === 'nome1' && (
           <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
             <option value="">— Selecionar vereador —</option>
-            {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}{!v.ativo && ' (inativo)'}</option>)}
+            {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
           </select>
         )}
 
@@ -484,7 +509,7 @@ export default function EditarSeggovPage() {
                   const isLast = idx === marcados.length - 1
                   return (
                   <div key={step.key} className="flex items-start flex-shrink-0">
-                    <div className="flex flex-col items-center" style={{ minWidth: '56px' }}>
+                    <div className="flex flex-col items-center" style={{ width: '56px' }}>
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
                         graficoCor === 'vermelho' ? 'bg-red-500' :
                         (graficoCor === 'normal' && isLast) ? 'bg-blue-500' :
@@ -501,7 +526,7 @@ export default function EditarSeggovPage() {
                       }`}>{step.labelCurto}</p>
                       <p className="text-xs text-gray-400 text-center mt-0.5">{fmtData(step.doneAt)}</p>
                       {step.data?.comissaoNome && (
-                        <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center">{step.data.comissaoNome}</span>
+                        <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
                       )}
                       {step.data?.resultado && (
                         <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${NEGATIVOS.has(step.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -509,13 +534,13 @@ export default function EditarSeggovPage() {
                         </span>
                       )}
                       {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.resultado && (
-                        <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center truncate max-w-[56px]">{step.data.nome1}</span>
+                        <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
                       )}
                     </div>
                     {idx < marcados.length - 1 && (
                       <div className="flex-shrink-0 mt-2.5">
-                        <div className={`h-0.5 w-4 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
-                        <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-4 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
+                        <div className={`h-0.5 w-2 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
+                        <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-2 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
                       </div>
                     )}
                   </div>
