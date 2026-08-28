@@ -1,6 +1,8 @@
 services:
   db:
-    image: postgres:16-alpine
+    # Mesma major version do banco de origem no Railway (PG 18) — pg_dump/psql
+    # exigem cliente >= servidor, e restaurar dump de 18 em 16 quebra.
+    image: postgres:18-alpine
     restart: unless-stopped
     env_file:
       - .env.db
