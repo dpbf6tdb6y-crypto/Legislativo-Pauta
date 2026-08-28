@@ -35,6 +35,7 @@ const FLUXO_DEF = [
 ]
 
 const NEGATIVOS = new Set(['reprovado', 'vetado'])
+const CHAVES_COMISSAO = ['comissao1', 'comissao2', 'comissao3']
 const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [string, string] }> = {
   sancaoVeto: { valores: ['sancionado', 'vetado'], labels: ['Sancionado', 'Vetado'] },
   vetoManutencao: { valores: ['aprovado', 'reprovado'], labels: ['Manter Veto', 'Derrubar Veto'] },
@@ -378,6 +379,63 @@ export default function SeggovPage() {
               ? Math.floor((Date.now() - new Date(pautadoDoneAt).getTime()) / 86400000)
               : null
 
+            // Parecer conjunto: as comissões entram numa faixa única, sem setas
+            // entre elas — enfileirá-las sugeriria tramitação sequencial.
+            const doGrupo = fluxo['comissaoConjunta']?.done
+              ? marcados.filter(m => CHAVES_COMISSAO.includes(m.key))
+              : []
+            const agrupar = doGrupo.length >= 2
+            const segmentos: ({ tipo: 'no'; step: typeof marcados[number] } | { tipo: 'grupo'; steps: typeof marcados })[] = []
+            let grupoInserido = false
+            marcados.forEach(step => {
+              if (agrupar && CHAVES_COMISSAO.includes(step.key)) {
+                if (!grupoInserido) { segmentos.push({ tipo: 'grupo', steps: doGrupo }); grupoInserido = true }
+                return
+              }
+              if (agrupar && step.key === 'comissaoConjunta') return
+              segmentos.push({ tipo: 'no', step })
+            })
+            const ultimaChave = marcados.length ? marcados[marcados.length - 1].key : null
+
+            const renderNo = (step: typeof marcados[number]) => {
+              const isLast = step.key === ultimaChave
+              return (
+                <div className="flex flex-col items-center" style={{ width: '56px' }}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
+                    graficoCor === 'vermelho' ? 'bg-red-500' :
+                    (graficoCor === 'normal' && isLast) ? 'bg-blue-500' :
+                    'bg-green-500'
+                  }`}>
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
+                    graficoCor === 'vermelho' ? 'text-red-700' :
+                    (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
+                    'text-gray-700'
+                  }`}>{step.labelCurto}</p>
+                  <p className="text-xs text-gray-400 text-center mt-0.5">{fmtFluxoData(step.doneAt)}</p>
+                  {step.data?.comissaoNome && (
+                    <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
+                  )}
+                  {step.data?.resultado && (
+                    <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${NEGATIVOS.has(step.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                      {labelResultadoCurto(step.key, step.data.resultado)}
+                    </span>
+                  )}
+                  {step.data?.numero && (
+                    <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">
+                      {step.data.emendaTipo ? `${step.data.emendaTipo} ` : ''}{step.data.numero}{step.data.ano ? `/${step.data.ano}` : ''}
+                    </span>
+                  )}
+                  {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.resultado && !step.data?.numero && (
+                    <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
+                  )}
+                </div>
+              )
+            }
+
             return (
               <div key={item.id}
                 className={`rounded-xl border-2 transition-all ${sel ? 'border-green-400 bg-green-50' : 'border-green-200 bg-white hover:border-green-300'}`}>
@@ -434,50 +492,29 @@ export default function SeggovPage() {
                   <div className="border-t border-green-100 px-4 pb-4 pt-3 overflow-x-auto cursor-pointer"
                     onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
                     <div className="flex items-start" style={{ gap: 0 }}>
-                      {marcados.map((step, idx) => {
-                        const isLast = idx === marcados.length - 1
+                      {segmentos.map((seg, i) => {
+                        const ultimoSegmento = i === segmentos.length - 1
                         return (
-                        <div key={step.key} className="flex items-start flex-shrink-0">
-                          <div className="flex flex-col items-center" style={{ width: '56px' }}>
-                            <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
-                              graficoCor === 'vermelho' ? 'bg-red-500' :
-                              (graficoCor === 'normal' && isLast) ? 'bg-blue-500' :
-                              'bg-green-500'
-                            }`}>
-                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
-                            <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
-                              graficoCor === 'vermelho' ? 'text-red-700' :
-                              (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
-                              'text-gray-700'
-                            }`}>{step.labelCurto}</p>
-                            <p className="text-xs text-gray-400 text-center mt-0.5">{fmtFluxoData(step.doneAt)}</p>
-                            {step.data?.comissaoNome && (
-                              <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
+                          <div key={i} className="flex items-start flex-shrink-0">
+                            {seg.tipo === 'no' ? (
+                              renderNo(seg.step)
+                            ) : (
+                              <div className="rounded-lg border-2 border-dashed border-purple-300 bg-purple-50 px-2 pt-1 pb-1.5 self-start">
+                                <p className="text-[10px] font-bold text-purple-700 text-center uppercase tracking-wide mb-1">
+                                  Parecer Conjunto
+                                </p>
+                                <div className="flex items-start">
+                                  {seg.steps.map(s => <div key={s.key}>{renderNo(s)}</div>)}
+                                </div>
+                              </div>
                             )}
-                            {step.data?.resultado && (
-                              <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${NEGATIVOS.has(step.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                                {labelResultadoCurto(step.key, step.data.resultado)}
-                              </span>
-                            )}
-                            {step.data?.numero && (
-                              <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">
-                                {step.data.emendaTipo ? `${step.data.emendaTipo} ` : ''}{step.data.numero}{step.data.ano ? `/${step.data.ano}` : ''}
-                              </span>
-                            )}
-                            {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.resultado && !step.data?.numero && (
-                              <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
+                            {!ultimoSegmento && (
+                              <div className="flex-shrink-0 mt-2.5">
+                                <div className={`h-0.5 w-2 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
+                                <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-2 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
+                              </div>
                             )}
                           </div>
-                          {idx < marcados.length - 1 && (
-                            <div className="flex-shrink-0 mt-2.5">
-                              <div className={`h-0.5 w-2 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
-                              <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-2 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
-                            </div>
-                          )}
-                        </div>
                         )
                       })}
                     </div>

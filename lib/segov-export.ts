@@ -34,6 +34,8 @@ export const COLUNAS_RELATORIO = [
 
 export type ColunasKey = typeof COLUNAS_RELATORIO[number]["key"];
 
+const CHAVES_COMISSAO = ["comissao1", "comissao2", "comissao3"];
+
 const FLUXO_DEF_EXPORT = [
   { key: 'protocolado',         labelCurto: 'Prot.'      },
   { key: 'pautado',             labelCurto: 'Pautado'    },
@@ -228,7 +230,21 @@ export function exportarSegovPDF(
       });
     }
 
-    const marcados = FLUXO_DEF_EXPORT.filter(d => fluxo[d.key]?.done);
+    // Parecer conjunto: as comissões que o emitiram são desenhadas dentro de
+    // uma moldura única, sem setas entre elas, e o passo avulso "C. Conj." sai
+    // do fluxo (a moldura já comunica isso).
+    const conjunta = !!fluxo["comissaoConjunta"]?.done;
+    const comissoesDoGrupo = conjunta
+      ? FLUXO_DEF_EXPORT.filter(d => CHAVES_COMISSAO.includes(d.key) && fluxo[d.key]?.done)
+      : [];
+    const agrupar = comissoesDoGrupo.length >= 2;
+
+    const marcados = FLUXO_DEF_EXPORT.filter(d => {
+      if (!fluxo[d.key]?.done) return false;
+      if (agrupar && d.key === "comissaoConjunta") return false;
+      return true;
+    });
+    const chavesAgrupadas = agrupar ? comissoesDoGrupo.map(d => d.key) : [];
     const porLinha = Math.max(1, Math.floor(innerW / stepW));
 
     const graficoCor: "verde" | "vermelho" | "normal" = fluxo["resultadoFinal"]?.done
@@ -254,6 +270,7 @@ export function exportarSegovPDF(
         labelLinhas: doc.splitTextToSize(step.labelCurto, stepW - 4) as string[],
         temData: !!sd?.doneAt,
         temEtiqueta: !!(sd?.data?.comissaoNome || sd?.data?.resultado),
+        agrupado: chavesAgrupadas.includes(step.key),
       };
     });
     type Passo = typeof passos[number];
@@ -264,6 +281,7 @@ export function exportarSegovPDF(
       Math.max(...f.map(p => p.labelLinhas.length)) * 8 +          // rótulo
       (f.some(p => p.temData) ? 9 : 0) +                           // data
       (f.some(p => p.temEtiqueta) ? 13 : 0) +                      // etiqueta
+      (f.some(p => p.agrupado) ? 11 : 0) +                         // título da moldura
       4;
     const fluxoAltura = fileiras.reduce((s, f) => s + alturaFileira(f), 0);
 
@@ -390,11 +408,29 @@ export function exportarSegovPDF(
       let fy = cy;
       fileiras.forEach((fileira, fi) => {
         const labelLinhasFileira = Math.max(...fileira.map(p => p.labelLinhas.length));
+        const temGrupo = fileira.some(p => p.agrupado);
+        const desloc = temGrupo ? 11 : 0;   // espaço do título "PARECER CONJUNTO"
+
+        // Moldura tracejada em volta das comissões do parecer conjunto
+        if (temGrupo) {
+          const cols = fileira.map((p, i) => (p.agrupado ? i : -1)).filter(i => i >= 0);
+          const x0 = margin + pad + Math.min(...cols) * stepW - 2;
+          const x1 = margin + pad + Math.max(...cols) * stepW + stepW - 6;
+          doc.setDrawColor(147, 51, 234);
+          doc.setLineWidth(0.8);
+          doc.setLineDashPattern([2, 2], 0);
+          doc.roundedRect(x0, fy, x1 - x0, alturaFileira(fileira) - 2, 3, 3, "S");
+          doc.setLineDashPattern([], 0);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(6.5);
+          doc.setTextColor(126, 34, 206);
+          doc.text("PARECER CONJUNTO", (x0 + x1) / 2, fy + 8, { align: "center" });
+        }
 
         fileira.forEach((p, col) => {
           const indiceGeral = fi * porLinha + col;
           const x = margin + pad + nodeR + col * stepW;
-          const nodeY = fy + nodeR;
+          const nodeY = fy + desloc + nodeR;
           const ultimoGeral = indiceGeral === passos.length - 1;
           const ultimoDaFileira = col === fileira.length - 1;
 
@@ -409,7 +445,9 @@ export function exportarSegovPDF(
           doc.line(x - 2.6, nodeY, x - 0.5, nodeY + 2.6);
           doc.line(x - 0.5, nodeY + 2.6, x + 3.2, nodeY - 2.6);
 
-          if (!ultimoGeral && !ultimoDaFileira) {
+          // Sem seta entre comissões do mesmo parecer conjunto — foi um ato só.
+          const dentroDoGrupo = p.agrupado && !!fileira[col + 1]?.agrupado;
+          if (!ultimoGeral && !ultimoDaFileira && !dentroDoGrupo) {
             doc.setDrawColor(nr, ng, nb);
             doc.setLineWidth(0.8);
             const lx1 = x + nodeR + 1;
