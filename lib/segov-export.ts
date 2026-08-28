@@ -141,8 +141,10 @@ export function exportarSegovPDF(
   const innerW = cw - pad * 2;
   const ementaLH = 13;
   const nodeR = 6;
-  const stepW = 74;
-  const fluxoRowH = 44;
+  // Passo curto de propósito: encurta as setas entre os nós e ainda permite
+  // rótulos maiores (os textos abaixo da bolinha quebram em 2 linhas quando
+  // precisam, e a altura da fileira já reserva espaço pra isso).
+  const stepW = 48;
   const chipLH = 14;
   const topoConteudo = 30;
 
@@ -219,7 +221,6 @@ export function exportarSegovPDF(
 
     const marcados = FLUXO_DEF_EXPORT.filter(d => fluxo[d.key]?.done);
     const porLinha = Math.max(1, Math.floor(innerW / stepW));
-    const fluxoLinhas = marcados.length ? Math.ceil(marcados.length / porLinha) : 0;
 
     const graficoCor: "verde" | "vermelho" | "normal" = fluxo["resultadoFinal"]?.done
       ? (fluxo["resultadoFinal"]?.data?.resultado === "aprovado" ? "verde" : "vermelho")
@@ -231,13 +232,39 @@ export function exportarSegovPDF(
     const ementaLinhas = doc.splitTextToSize(item.ementa || "", innerW) as string[];
     const linhasAutores = nomes.length ? linhasDeChips(nomes, innerW) : [];
 
+    // Cada fileira do fluxo é medida pelo que ela realmente contém — uma
+    // fileira só com rótulo de 1 linha não reserva o espaço de outra que tem
+    // rótulo quebrado + data + etiqueta de comissão.
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    const passos = marcados.map(step => {
+      const sd = fluxo[step.key];
+      return {
+        step,
+        sd,
+        labelLinhas: doc.splitTextToSize(step.labelCurto, stepW - 4) as string[],
+        temData: !!sd?.doneAt,
+        temEtiqueta: !!(sd?.data?.comissaoNome || sd?.data?.resultado),
+      };
+    });
+    type Passo = typeof passos[number];
+    const fileiras: Passo[][] = [];
+    for (let i = 0; i < passos.length; i += porLinha) fileiras.push(passos.slice(i, i + porLinha));
+    const alturaFileira = (f: Passo[]) =>
+      12 +                                                        // bolinha
+      Math.max(...f.map(p => p.labelLinhas.length)) * 8 +          // rótulo
+      (f.some(p => p.temData) ? 9 : 0) +                           // data
+      (f.some(p => p.temEtiqueta) ? 13 : 0) +                      // etiqueta
+      4;
+    const fluxoAltura = fileiras.reduce((s, f) => s + alturaFileira(f), 0);
+
     const cardH =
       pad +
       15 +                                                    // cabeçalho do cartão
       8 +
       ementaLinhas.length * ementaLH +
       (linhasAutores.length ? 6 + linhasAutores.length * chipLH : 0) +
-      (fluxoLinhas ? 8 + 1 + 8 + fluxoLinhas * fluxoRowH : 0) +
+      (fileiras.length ? 8 + 1 + 8 + fluxoAltura : 0) +
       pad;
 
     // Faixa de seção ao trocar de grupo (Executivo -> Vereadores)
@@ -338,76 +365,88 @@ export function exportarSegovPDF(
     }
 
     // ── Fluxo de tramitação ──
-    if (fluxoLinhas) {
+    if (fileiras.length) {
       cy += 8;
       doc.setDrawColor(220, 220, 220);
       doc.setLineWidth(0.5);
       doc.line(margin + pad, cy, W - margin - pad, cy);
       cy += 8;
 
-      marcados.forEach((step, i) => {
-        const linha = Math.floor(i / porLinha);
-        const col = i % porLinha;
-        const x = margin + pad + nodeR + col * stepW;
-        const nodeY = cy + linha * fluxoRowH + nodeR;
-        const sd = fluxo[step.key];
-        const ultimoGeral = i === marcados.length - 1;
-        const ultimoDaLinha = col === porLinha - 1;
+      let fy = cy;
+      fileiras.forEach((fileira, fi) => {
+        const labelLinhasFileira = Math.max(...fileira.map(p => p.labelLinhas.length));
 
-        let nr = 22, ng = 163, nb = 74;
-        if (graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
-        else if (graficoCor === "normal" && ultimoGeral) { nr = 37; ng = 99; nb = 235; }
+        fileira.forEach((p, col) => {
+          const indiceGeral = fi * porLinha + col;
+          const x = margin + pad + nodeR + col * stepW;
+          const nodeY = fy + nodeR;
+          const ultimoGeral = indiceGeral === passos.length - 1;
+          const ultimoDaFileira = col === fileira.length - 1;
 
-        doc.setFillColor(nr, ng, nb);
-        doc.circle(x, nodeY, nodeR, "F");
-        doc.setDrawColor(255, 255, 255);
-        doc.setLineWidth(1.1);
-        doc.line(x - 2.6, nodeY, x - 0.5, nodeY + 2.6);
-        doc.line(x - 0.5, nodeY + 2.6, x + 3.2, nodeY - 2.6);
+          let nr = 22, ng = 163, nb = 74;
+          if (graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
+          else if (graficoCor === "normal" && ultimoGeral) { nr = 37; ng = 99; nb = 235; }
 
-        if (!ultimoGeral && !ultimoDaLinha) {
-          doc.setDrawColor(nr, ng, nb);
-          doc.setLineWidth(0.8);
-          const lx1 = x + nodeR + 1;
-          const lx2 = x + stepW - nodeR - 1;
-          doc.line(lx1, nodeY, lx2, nodeY);
-          doc.line(lx2, nodeY, lx2 - 3, nodeY - 2);
-          doc.line(lx2, nodeY, lx2 - 3, nodeY + 2);
-        }
+          doc.setFillColor(nr, ng, nb);
+          doc.circle(x, nodeY, nodeR, "F");
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(1.1);
+          doc.line(x - 2.6, nodeY, x - 0.5, nodeY + 2.6);
+          doc.line(x - 0.5, nodeY + 2.6, x + 3.2, nodeY - 2.6);
 
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(6.5);
-        doc.setTextColor(50, 50, 50);
-        doc.text(step.labelCurto, x, nodeY + nodeR + 8, { align: "center", maxWidth: stepW - 4 });
-
-        if (sd?.doneAt) {
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(5.5);
-          doc.setTextColor(140, 140, 140);
-          doc.text(fmtDDMM(sd.doneAt), x, nodeY + nodeR + 15, { align: "center" });
-        }
-
-        if (sd?.data?.comissaoNome) {
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(5.5);
-          const bw = Math.min(stepW - 6, doc.getTextWidth(sd.data.comissaoNome) + 6);
-          doc.setFillColor(219, 234, 254);
-          doc.rect(x - bw / 2, nodeY + nodeR + 18, bw, 8, "F");
-          doc.setTextColor(29, 78, 216);
-          doc.text(sd.data.comissaoNome, x, nodeY + nodeR + 24, { align: "center", maxWidth: bw - 2 });
-        } else if (sd?.data?.resultado) {
-          const rText = sd.data.resultado === "aprovado" ? "Aprov." : "Reprov.";
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(5.5);
-          const bw = doc.getTextWidth(rText) + 7;
-          if (sd.data.resultado === "aprovado") {
-            doc.setFillColor(187, 247, 208); doc.setTextColor(22, 101, 52);
-          } else {
-            doc.setFillColor(254, 202, 202); doc.setTextColor(185, 28, 28);
+          if (!ultimoGeral && !ultimoDaFileira) {
+            doc.setDrawColor(nr, ng, nb);
+            doc.setLineWidth(0.8);
+            const lx1 = x + nodeR + 1;
+            const lx2 = x + stepW - nodeR - 1;
+            doc.line(lx1, nodeY, lx2, nodeY);
+            doc.line(lx2, nodeY, lx2 - 3, nodeY - 2);
+            doc.line(lx2, nodeY, lx2 - 3, nodeY + 2);
           }
-          doc.rect(x - bw / 2, nodeY + nodeR + 18, bw, 8, "F");
-          doc.text(rText, x, nodeY + nodeR + 24, { align: "center" });
-        }
+
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(8);
+          doc.setTextColor(50, 50, 50);
+          p.labelLinhas.forEach((l, li) => {
+            doc.text(l, x, nodeY + nodeR + 9 + li * 8, { align: "center" });
+          });
+
+          // Data e etiqueta alinham pela fileira (não pelo rótulo de cada nó),
+          // pra não ficarem em alturas diferentes lado a lado.
+          const baseFileira = nodeY + nodeR + 9 + (labelLinhasFileira - 1) * 8;
+
+          if (p.sd?.doneAt) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            doc.setTextColor(140, 140, 140);
+            doc.text(fmtDDMM(p.sd.doneAt), x, baseFileira + 9, { align: "center" });
+          }
+
+          const yEtiqueta = baseFileira + (fileira.some(q => q.temData) ? 9 : 0) + 3;
+          if (p.sd?.data?.comissaoNome) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            const bw = Math.min(stepW - 2, doc.getTextWidth(p.sd.data.comissaoNome) + 7);
+            doc.setFillColor(219, 234, 254);
+            doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
+            doc.setTextColor(29, 78, 216);
+            doc.text(p.sd.data.comissaoNome, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
+          } else if (p.sd?.data?.resultado) {
+            const rText = p.sd.data.resultado === "aprovado" ? "Aprov." : "Reprov.";
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            const bw = doc.getTextWidth(rText) + 7;
+            if (p.sd.data.resultado === "aprovado") {
+              doc.setFillColor(187, 247, 208); doc.setTextColor(22, 101, 52);
+            } else {
+              doc.setFillColor(254, 202, 202); doc.setTextColor(185, 28, 28);
+            }
+            doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
+            doc.text(rText, x, yEtiqueta + 7, { align: "center" });
+          }
+        });
+
+        fy += alturaFileira(fileira);
       });
     }
 
