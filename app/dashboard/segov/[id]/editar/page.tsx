@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/contexts/toast'
+import { buscarVereadorPorNome, splitAutoresTexto } from '@/lib/vereador-match'
 
 const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
 const STATUS_LIST = ['Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
@@ -120,27 +121,29 @@ export default function EditarSeggovPage() {
           setFluxo(item.fluxo as FluxoState)
         }
         const lista: Autor[] = []
-        const nomeRaw: string = item.autorNome || ''
         if (item.vereadorId) {
           const v = vers.find((v: any) => v.id === item.vereadorId)
           if (v) lista.push({ id: v.id, nome: v.nome, isPE: false, ativo: v.ativo })
         }
-        if (nomeRaw) {
-          nomeRaw.split(/\s+e\s+|,\s+/).map((n: string) => n.trim()).filter(Boolean).forEach((nome: string) => {
-            const lower = nome.toLowerCase()
-            if (lower.includes('executivo') || lower.includes('prefeitura')) {
-              if (!lista.some(a => a.isPE)) lista.push({ nome: 'Poder Executivo', isPE: true })
-            } else {
-              const matched = vers.find((v: any) =>
-                nome.toLowerCase().split(/\s+/).filter((p: string) => p.length > 2).some((p: string) => v.nome.toLowerCase().includes(p))
-              )
-              if (matched && !lista.some(a => a.id === matched.id))
-                lista.push({ id: matched.id, nome: matched.nome, isPE: false, ativo: matched.ativo })
-              else if (!matched && !lista.some(a => a.nome === nome))
-                lista.push({ nome, isPE: false })
-            }
-          })
-        }
+        splitAutoresTexto(item.autorNome).forEach((nome: string) => {
+          const lower = nome.toLowerCase()
+          if (lower.includes('executivo') || lower.includes('prefeitura') || lower.includes('prefeito')) {
+            if (!lista.some(a => a.isPE)) lista.push({ nome: 'Poder Executivo', isPE: true })
+            return
+          }
+          // Usa o mesmo casamento da listagem (primeiro nome igual + sobrenome
+          // presente). O critério antigo — "qualquer palavra do autor aparece no
+          // nome de qualquer vereador" — casava, por exemplo, "Nilton da Cruz
+          // Oliveira" com "José Carlos de Oliveira", criando um autor fantasma
+          // que voltava a cada recarga mesmo depois de removido e salvo.
+          const v: any = buscarVereadorPorNome(nome, vers as any[])
+          if (v) {
+            if (!lista.some(a => a.id === v.id))
+              lista.push({ id: v.id, nome: v.nome, isPE: false, ativo: v.ativo })
+          } else if (!lista.some(a => a.nome === nome)) {
+            lista.push({ nome, isPE: false })
+          }
+        })
         setAutores(lista)
       }
       setCarregando(false)

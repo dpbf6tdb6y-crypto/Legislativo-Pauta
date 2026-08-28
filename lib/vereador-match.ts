@@ -11,12 +11,23 @@ export function buscarVereadorPorNome<T extends { nome: string }>(fragmento: str
   const tokens = normalizarNome(fragmento).split(/\s+/).filter(Boolean)
   if (!tokens.length) return null
   const primeiro = tokens[0]
-  return lista.find(v => {
+
+  const estrito = lista.find(v => {
     const vTokens = normalizarNome(v.nome).split(/\s+/).filter(Boolean)
     if (vTokens[0] !== primeiro) return false
     const sobrenome = vTokens[vTokens.length - 1]
     return sobrenome === primeiro || tokens.includes(sobrenome)
-  }) || null
+  })
+  if (estrito) return estrito
+
+  // Autores gravados de forma abreviada ("Abner", "Viviane") não têm sobrenome
+  // para confirmar. Nesse caso aceita o casamento só pelo primeiro nome, mas
+  // apenas quando ele é único na lista — se houver dois "José", fica sem
+  // casar (vira texto livre) em vez de escolher a pessoa errada.
+  const mesmoPrimeiroNome = lista.filter(
+    v => normalizarNome(v.nome).split(/\s+/).filter(Boolean)[0] === primeiro
+  )
+  return mesmoPrimeiroNome.length === 1 ? mesmoPrimeiroNome[0] : null
 }
 
 /** Divide um texto de autores por vírgula ou " e ", em fragmentos de nome individuais. */
