@@ -499,10 +499,15 @@ export default function SeggovPage() {
                             {seg.tipo === 'no' ? (
                               renderNo(seg.step)
                             ) : (
-                              <div className="rounded-lg border-2 border-dashed border-purple-300 bg-purple-50 px-2 pt-1 pb-1.5 self-start">
-                                <p className="text-[10px] font-bold text-purple-700 text-center uppercase tracking-wide mb-1">
+                              <div className="flex flex-col items-stretch self-start px-1">
+                                <p className="text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap mb-0.5">
                                   Parecer Conjunto
                                 </p>
+                                <div className="relative h-2 mb-1">
+                                  <div className="absolute inset-x-0 top-0 border-t-2 border-purple-300" />
+                                  <div className="absolute left-0 top-0 w-0.5 h-2 bg-purple-300" />
+                                  <div className="absolute right-0 top-0 w-0.5 h-2 bg-purple-300" />
+                                </div>
                                 <div className="flex items-start">
                                   {seg.steps.map(s => <div key={s.key}>{renderNo(s)}</div>)}
                                 </div>
