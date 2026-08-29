@@ -36,6 +36,8 @@ const FLUXO_DEF = [
 
 const NEGATIVOS = new Set(['reprovado', 'vetado'])
 const CHAVES_COMISSAO = ['comissao1', 'comissao2', 'comissao3']
+// Etapas em que a cor da bolinha já é o próprio veredito — ver graficoCor.
+const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, 'resultadoFinal'])
 const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [string, string] }> = {
   sancaoVeto: { valores: ['sancionado', 'vetado'], labels: ['Sancionado', 'Vetado'] },
   vetoManutencao: { valores: ['aprovado', 'reprovado'], labels: ['Manter Veto', 'Derrubar Veto'] },
@@ -428,7 +430,10 @@ export default function SeggovPage() {
                   {step.data?.comissaoNome && (
                     <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
                   )}
-                  {step.data?.resultado && (
+                  {/* Nas comissões e no Resultado Final a cor da bolinha já é o
+                      veredito (verde = aprovado, vermelho = reprovado), então o
+                      texto embaixo do nó fica redundante ali. */}
+                  {step.data?.resultado && !PILL_RESULTADO_OCULTA.has(step.key) && (
                     <span className={`mt-1 text-xs px-1.5 py-0.5 rounded font-semibold text-center ${NEGATIVOS.has(step.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                       {labelResultadoCurto(step.key, step.data.resultado)}
                     </span>
