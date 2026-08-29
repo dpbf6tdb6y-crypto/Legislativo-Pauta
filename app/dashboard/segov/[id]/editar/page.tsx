@@ -570,7 +570,7 @@ export default function EditarSeggovPage() {
           </h3>
 
           {marcados.length > 0 && (
-            <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-4 overflow-x-auto">
+            <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-4 pt-8 overflow-x-auto">
               <div className="flex items-start" style={{ gap: 0 }}>
                 {segmentos.map((seg, i) => {
                   const ultimoSegmento = i === segmentos.length - 1
@@ -581,12 +581,14 @@ export default function EditarSeggovPage() {
                       ) : (
                         /* Parecer conjunto: as comissões aparecem lado a lado dentro
                            de uma faixa, SEM setas entre elas — foi um ato único.
-                           Marcadas por um colchete lilás por cima, sem caixa ao redor. */
-                        <div className="flex flex-col items-stretch self-start px-1">
-                          <p className="text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap mb-0.5">
+                           Marcadas por um colchete lilás flutuante por cima, sem caixa
+                           ao redor e sem empurrar as bolinhas pra baixo (ficam na mesma
+                           linha dos outros passos do fluxo). */
+                        <div className="relative flex items-start self-start px-1">
+                          <p className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap">
                             Parecer Conjunto
                           </p>
-                          <div className="relative h-2 mb-1">
+                          <div className="absolute -top-1 left-0 right-0 h-2">
                             <div className="absolute inset-x-0 top-0 border-t-2 border-purple-300" />
                             <div className="absolute left-0 top-0 w-0.5 h-2 bg-purple-300" />
                             <div className="absolute right-0 top-0 w-0.5 h-2 bg-purple-300" />

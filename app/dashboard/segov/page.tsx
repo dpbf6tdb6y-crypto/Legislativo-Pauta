@@ -489,7 +489,7 @@ export default function SeggovPage() {
 
                 {/* Gráfico de tramitação — idêntico à tela de edição */}
                 {marcados.length > 0 && (
-                  <div className="border-t border-green-100 px-4 pb-4 pt-3 overflow-x-auto cursor-pointer"
+                  <div className="border-t border-green-100 px-4 pb-4 pt-6 overflow-x-auto cursor-pointer"
                     onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
                     <div className="flex items-start" style={{ gap: 0 }}>
                       {segmentos.map((seg, i) => {
@@ -499,11 +499,11 @@ export default function SeggovPage() {
                             {seg.tipo === 'no' ? (
                               renderNo(seg.step)
                             ) : (
-                              <div className="flex flex-col items-stretch self-start px-1">
-                                <p className="text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap mb-0.5">
+                              <div className="relative flex items-start self-start px-1">
+                                <p className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap">
                                   Parecer Conjunto
                                 </p>
-                                <div className="relative h-2 mb-1">
+                                <div className="absolute -top-1 left-0 right-0 h-2">
                                   <div className="absolute inset-x-0 top-0 border-t-2 border-purple-300" />
                                   <div className="absolute left-0 top-0 w-0.5 h-2 bg-purple-300" />
                                   <div className="absolute right-0 top-0 w-0.5 h-2 bg-purple-300" />
