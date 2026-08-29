@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import DashboardCharts from './DashboardCharts'
 import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
 import FiltroPoder from '@/app/components/FiltroPoder'
-import { resolverAutores, situacaoAutores } from '@/lib/vereador-match'
+import { resolverAutores, situacaoAutores, ehPoderExecutivo } from '@/lib/vereador-match'
 
 const STATUS_LIST = [
   'Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado',
@@ -24,37 +24,12 @@ const ANO_ATUAL = new Date().getFullYear()
 type Item = {
   id: string; tipo: string; numero: string; ano: number; ementa?: string | null
   status: string; vereadorId: string | null; autorNome: string | null
-  vereador: { id: string; nome: string; apelido?: string | null; ativo?: boolean } | null
+  vereador: { id: string; nome: string; apelido?: string | null; ativo?: boolean; poder?: string } | null
 }
 type Vereador = { id: string; nome: string; apelido?: string | null; ativo: boolean; poder: string }
 type TipoOpcao = { id: string; nome: string }
 
-function isExec(item: { autorNome: string | null }) {
-  return (item.autorNome || '').toLowerCase().includes('executivo')
-      || (item.autorNome || '').toLowerCase().includes('prefeitura')
-      || (item.autorNome || '').toLowerCase().includes('prefeito')
-}
-
-function isInstitucional(nome: string) {
-  const n = nome.toLowerCase()
-  return n.startsWith('mesa diretora') || n === 'autor personalizado'
-}
-
-// Divide o texto de autores por vírgula, mas ignora vírgulas dentro de parênteses
-function splitAutores(campo: string | null): string[] {
-  if (!campo) return []
-  const partes: string[] = []
-  let atual = ''
-  let profundidade = 0
-  for (const ch of campo) {
-    if (ch === '(') profundidade++
-    if (ch === ')') profundidade--
-    if (ch === ',' && profundidade === 0) { partes.push(atual.trim()); atual = '' }
-    else atual += ch
-  }
-  if (atual.trim()) partes.push(atual.trim())
-  return partes.filter(Boolean)
-}
+const isExec = ehPoderExecutivo
 
 function resultadoDe(status: string): 'aprovado' | 'rejeitado' | 'tramitando' {
   if (status === 'Aprovado') return 'aprovado'
@@ -100,6 +75,10 @@ export default function DashboardPage() {
 
   const vereadoresAtivos = useMemo(() => vereadoresTodos.filter(v => v.ativo).length, [vereadoresTodos])
 
+  const mapaVereadores = useMemo(
+    () => new Map(vereadoresTodos.map(v => [v.id, v])),
+    [vereadoresTodos])
+
   const anosDisponiveis = useMemo(() => {
     const set = new Set<number>()
     itens.forEach(i => { if (i.ano >= 2000 && i.ano <= ANO_ATUAL + 1) set.add(i.ano) })
@@ -126,6 +105,18 @@ export default function DashboardPage() {
     return situacaoAutores(autores) === filtroSituacaoAutor
   }
 
+  // Autores de uma matéria que casam com alguém cadastrado em Configurações →
+  // Vereadores/Executivo. Nome solto no texto (grafia antiga, vereador de
+  // mandato anterior já excluído, "Mesa Diretora") não entra.
+  function autoresIds(i: Item): string[] {
+    return resolverAutores(i.vereador, i.autorNome, vereadoresTodos)
+      .map(a => a.vereadorId)
+      .filter((id): id is string => !!id)
+  }
+
+  const passaVereador = (i: Item) =>
+    filtroVereadorIds.size === 0 || autoresIds(i).some(id => filtroVereadorIds.has(id))
+
   const itensFiltrados = useMemo(() => itens.filter(i => {
     if (filtroMateria === 'requerimento' || filtroMateria === 'mocao') return false
     if (filtroAno && String(i.ano) !== filtroAno) return false
@@ -133,7 +124,7 @@ export default function DashboardPage() {
     if (filtroStatus && i.status !== filtroStatus) return false
     if (filtroOrigem === 'executivo' && !isExec(i)) return false
     if (filtroOrigem === 'legislativo' && isExec(i)) return false
-    if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
+    if (!passaVereador(i)) return false
     if (!passaSituacaoAutor(i)) return false
     return true
   }), [itens, filtroAno, filtroTipo, filtroStatus, filtroOrigem, filtroMateria, filtroVereadorIds, filtroSituacaoAutor, vereadoresTodos])
@@ -146,7 +137,7 @@ export default function DashboardPage() {
     if (filtroStatus && i.status !== filtroStatus) return false
     if (filtroOrigem === 'executivo' && !isExec(i)) return false
     if (filtroOrigem === 'legislativo' && isExec(i)) return false
-    if (filtroVereadorIds.size > 0 && !(i.vereadorId && filtroVereadorIds.has(i.vereadorId))) return false
+    if (!passaVereador(i)) return false
     if (!passaSituacaoAutor(i)) return false
     return true
   }), [requerimentos, filtroAno, filtroStatus, filtroOrigem, filtroMateria, filtroVereadorIds, filtroSituacaoAutor, vereadoresTodos])
@@ -178,27 +169,21 @@ export default function DashboardPage() {
     const executivoItens = itensFiltrados.filter(isExec)
     const totalExecutivo = executivoItens.length
 
-    const porVereadorMap: Record<string, { total: number; ativo: boolean; vereadorId: string | null }> = {}
+    const porVereadorMap: Record<string, { total: number; ativo: boolean; nome: string }> = {}
     function contarAutoria(item: Item) {
       if (isExec(item)) return
-      if (item.vereador?.nome) {
-        const label = item.vereador.apelido || item.vereador.nome
-        if (!porVereadorMap[label]) porVereadorMap[label] = { total: 0, ativo: item.vereador.ativo !== false, vereadorId: item.vereador.id }
-        porVereadorMap[label].total++
-        return
-      }
-      const nomes = splitAutores(item.autorNome).flatMap(n => n.split(/\s+e\s+/)).map(n => n.trim()).filter(Boolean)
-      nomes.forEach(n => {
-        if (!n || isExec({ autorNome: n }) || isInstitucional(n)) return
-        if (!porVereadorMap[n]) porVereadorMap[n] = { total: 0, ativo: true, vereadorId: null }
-        porVereadorMap[n].total++
+      autoresIds(item).forEach(id => {
+        const v = mapaVereadores.get(id)
+        if (!v) return
+        if (!porVereadorMap[id]) porVereadorMap[id] = { total: 0, ativo: v.ativo, nome: v.apelido || v.nome }
+        porVereadorMap[id].total++
       })
     }
     itensFiltrados.forEach(contarAutoria)
     requerimentosFiltrados.forEach(contarAutoria)
 
     const porVereador = Object.entries(porVereadorMap)
-      .map(([nome, v]) => ({ nome, total: v.total, ativo: v.ativo, vereadorId: v.vereadorId }))
+      .map(([vereadorId, v]) => ({ nome: v.nome, total: v.total, ativo: v.ativo, vereadorId }))
       .sort((a, b) => b.total - a.total)
 
     const execStatus: Record<string, number> = {}
@@ -236,6 +221,7 @@ export default function DashboardPage() {
       status: item.status,
       autorNome: item.autorNome || null,
       vereadorNome: item.vereador ? (item.vereador.apelido || item.vereador.nome) : null,
+      autorIds: autoresIds(item),
       isExec: isExec(item),
     }))
 
@@ -245,7 +231,7 @@ export default function DashboardPage() {
       totalExecutivo, porVereador, porStatusExecutivo, porTipo, porAno, proposicoes,
       totalRequerimentos: requerimentosFiltrados.length,
     }
-  }, [itensFiltrados, requerimentosFiltrados])
+  }, [itensFiltrados, requerimentosFiltrados, vereadoresTodos, mapaVereadores])
 
   const filtrosAtivos = !!(filtroAno || filtroTipo || filtroVereadorIds.size > 0 || filtroMateria || filtroStatus || filtroOrigem || filtroSituacaoAutor !== 'ativos')
 

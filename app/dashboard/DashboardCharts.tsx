@@ -12,7 +12,10 @@ export type TipoData        = { tipo: string; total: number }
 export type ProposicaoResumo = {
   id: string; tipo: string; numero: string; ano: number
   ementa: string; status: string
-  autorNome: string | null; vereadorNome: string | null; isExec: boolean
+  autorNome: string | null; vereadorNome: string | null
+  /** ids dos autores que casam com o cadastro de Configurações */
+  autorIds: string[]
+  isExec: boolean
 }
 
 const STATUS_COR: Record<string, string> = {
@@ -61,7 +64,7 @@ const VEREADOR_CORES = [
   '#8b5cf6', // lilás
 ]
 
-type Filtro = { tipo: 'vereador' | 'executivo'; valor: string } | null
+type Filtro = { tipo: 'vereador' | 'executivo'; valor: string; vereadorId?: string | null } | null
 
 interface Props {
   porVereador:        VereadorData[]
@@ -83,12 +86,12 @@ export default function DashboardCharts({
 }: Props) {
   const [filtro, setFiltro] = useState<Filtro>(null)
 
-  function toggle(tipo: 'vereador' | 'executivo', valor: string) {
-    setFiltro(prev => prev?.tipo === tipo && prev.valor === valor ? null : { tipo, valor })
+  function toggle(tipo: 'vereador' | 'executivo', valor: string, vereadorId?: string | null) {
+    setFiltro(prev => prev?.tipo === tipo && prev.valor === valor ? null : { tipo, valor, vereadorId })
   }
 
   function clicarVereador(entry: VereadorData) {
-    toggle('vereador', entry.nome)
+    toggle('vereador', entry.nome, entry.vereadorId)
     if (entry.vereadorId) onToggleVereador(entry.vereadorId)
   }
 
@@ -99,12 +102,7 @@ export default function DashboardCharts({
   }
 
   const detalhes = filtro === null ? [] : filtro.tipo === 'vereador'
-    ? proposicoes.filter(p => {
-        if (p.isExec) return false
-        if (p.vereadorNome === filtro.valor) return true
-        const parsed = (p.autorNome || '').split(/\s+e\s+|,\s+/).map(n => n.trim())
-        return parsed.includes(filtro.valor)
-      })
+    ? proposicoes.filter(p => !p.isExec && !!filtro.vereadorId && p.autorIds.includes(filtro.vereadorId))
     : proposicoes.filter(p => p.isExec && p.status === filtro.valor)
 
   const vChartH = Math.max(240, porVereador.length * 30 + 50)
@@ -123,8 +121,8 @@ export default function DashboardCharts({
           {porAno.length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-10">Nenhum dado disponível</p>
           ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={porAno} margin={{ left: 0, right: 16, top: 22, bottom: 2 }}>
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={porAno} margin={{ left: 8, right: 20, top: 26, bottom: 18 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                 <XAxis dataKey="ano" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis allowDecimals={false} hide />
@@ -133,9 +131,15 @@ export default function DashboardCharts({
                   contentStyle={{ fontSize: 11, borderRadius: 8 }}
                 />
                 <Line type="monotone" dataKey="vereadores" name="Vereadores" stroke="#3b82f6" strokeWidth={2.5}
-                  dot={{ r: 3, fill: '#3b82f6' }} activeDot={{ r: 5 }} />
+                  dot={{ r: 3, fill: '#3b82f6' }} activeDot={{ r: 5 }}>
+                  <LabelList dataKey="vereadores" position="top" offset={10}
+                    style={{ fontSize: 11, fontWeight: 700, fill: '#2563eb' }} />
+                </Line>
                 <Line type="monotone" dataKey="executivo" name="Executivo" stroke="#a855f7" strokeWidth={2.5}
-                  dot={{ r: 3, fill: '#a855f7' }} activeDot={{ r: 5 }} />
+                  dot={{ r: 3, fill: '#a855f7' }} activeDot={{ r: 5 }}>
+                  <LabelList dataKey="executivo" position="bottom" offset={10}
+                    style={{ fontSize: 11, fontWeight: 700, fill: '#9333ea' }} />
+                </Line>
               </LineChart>
             </ResponsiveContainer>
           )}
