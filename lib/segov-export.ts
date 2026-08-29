@@ -247,9 +247,18 @@ export function exportarSegovPDF(
     const chavesAgrupadas = agrupar ? comissoesDoGrupo.map(d => d.key) : [];
     const porLinha = Math.max(1, Math.floor(innerW / stepW));
 
+    // Mesma regra das telas: reprovação em qualquer comissão já pinta tudo de
+    // vermelho; aprovação nas três já pinta tudo de verde, sem esperar o
+    // Resultado Final ser marcado.
+    const algumaComissaoReprovada = CHAVES_COMISSAO.some(k => fluxo[k]?.data?.resultado === "reprovado");
+    const todasComissoesAprovadas = CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === "aprovado");
     const graficoCor: "verde" | "vermelho" | "normal" = fluxo["resultadoFinal"]?.done
       ? (fluxo["resultadoFinal"]?.data?.resultado === "aprovado" ? "verde" : "vermelho")
-      : "normal";
+      : algumaComissaoReprovada
+        ? "vermelho"
+        : todasComissoesAprovadas
+          ? "verde"
+          : "normal";
 
     // A fonte precisa estar definida ANTES de medir/quebrar o texto.
     doc.setFont("helvetica", "normal");

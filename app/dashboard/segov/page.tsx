@@ -370,10 +370,19 @@ export default function SeggovPage() {
             const marcados = FLUXO_DEF
               .filter(d => fluxo[d.key]?.done)
               .map(d => ({ ...d, doneAt: fluxo[d.key]?.doneAt, data: fluxo[d.key]?.data }))
+            // Mesma regra da tela de edição: reprovação em qualquer comissão já
+            // pinta tudo de vermelho; aprovação nas três já pinta tudo de verde,
+            // sem esperar o Resultado Final ser marcado.
+            const algumaComissaoReprovada = CHAVES_COMISSAO.some(k => fluxo[k]?.data?.resultado === 'reprovado')
+            const todasComissoesAprovadas = CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === 'aprovado')
             const graficoCor: 'verde' | 'vermelho' | 'normal' =
               fluxo['resultadoFinal']?.done
                 ? fluxo['resultadoFinal'].data?.resultado === 'aprovado' ? 'verde' : 'vermelho'
-                : 'normal'
+                : algumaComissaoReprovada
+                  ? 'vermelho'
+                  : todasComissoesAprovadas
+                    ? 'verde'
+                    : 'normal'
             const pautadoDoneAt = fluxo['pautado']?.doneAt
             const diasAberto = pautadoDoneAt
               ? Math.floor((Date.now() - new Date(pautadoDoneAt).getTime()) / 86400000)

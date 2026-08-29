@@ -182,8 +182,9 @@ export default function EditarSeggovPage() {
 
     if (def.tipo === 'comissao') {
       if (!p.comissaoId) { toast.error('Selecione uma comissão antes de marcar.'); return }
+      if (!p.resultado) { toast.error('Informe se o parecer foi Aprovado ou Reprovado.'); return }
       const com = comissoes.find((c: any) => c.id === p.comissaoId)
-      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome }
+      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, resultado: p.resultado }
     } else if (def.tipo === 'comissao3nomes') {
       data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '' }
     } else if (def.tipo === 'nome1') {
@@ -291,10 +292,21 @@ export default function EditarSeggovPage() {
     )
   }
 
+  // Comissões (1, 2 e 3) têm veredito próprio (Aprovado/Reprovado). Uma
+  // reprovação em qualquer uma delas já pinta o fluxo de vermelho, mesmo com
+  // as demais etapas em aberto; e passar aprovado pelas três já pinta tudo de
+  // verde, sem esperar o Resultado Final ser marcado manualmente.
+  const algumaComissaoReprovada = CHAVES_COMISSAO.some(k => fluxo[k]?.data?.resultado === 'reprovado')
+  const todasComissoesAprovadas = CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === 'aprovado')
+
   const graficoCor: 'verde' | 'vermelho' | 'normal' =
     fluxo['resultadoFinal']?.done
       ? fluxo['resultadoFinal'].data?.resultado === 'aprovado' ? 'verde' : 'vermelho'
-      : 'normal'
+      : algumaComissaoReprovada
+        ? 'vermelho'
+        : todasComissoesAprovadas
+          ? 'verde'
+          : 'normal'
 
   const diasEmAberto = useMemo(() => {
     const st = fluxo['pautado']
@@ -333,12 +345,15 @@ export default function EditarSeggovPage() {
     const done = !!state?.done
     const p = pending[def.key] || {}
     const destaque = ['resultadoFinal', 'emendaResultado', 'sancaoVeto', 'vetoManutencao'].includes(def.key)
+    const negativo = NEGATIVOS.has(state?.data?.resultado || '')
 
     const cardClass = !done
       ? 'border-gray-200 bg-white'
-      : destaque
-        ? (NEGATIVOS.has(state?.data?.resultado || '') ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-100')
-        : 'border-green-300 bg-green-50'
+      : negativo
+        ? 'border-red-500 bg-red-50'
+        : destaque
+          ? 'border-green-500 bg-green-100'
+          : 'border-green-300 bg-green-50'
 
     const circle = (
       <button type="button"
@@ -415,10 +430,25 @@ export default function EditarSeggovPage() {
         )}
 
         {!done && def.tipo === 'comissao' && (
-          <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
-            <option value="">— Selecionar comissão —</option>
-            {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
-          </select>
+          <>
+            <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
+              <option value="">— Selecionar comissão —</option>
+              {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
+            </select>
+            <div className="mt-1.5 flex gap-1 flex-wrap">
+              {getOpcoes(def.key).valores.map((r, i) => (
+                <button key={r} type="button"
+                  onClick={() => setPendingData(def.key, 'resultado', r)}
+                  className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
+                    p.resultado === r
+                      ? NEGATIVOS.has(r) ? 'border-red-400 bg-red-50 text-red-700' : 'border-green-400 bg-green-50 text-green-700'
+                      : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                  }`}>
+                  {getOpcoes(def.key).labels[i]}
+                </button>
+              ))}
+            </div>
+          </>
         )}
 
         {!done && def.tipo === 'nome1' && (
