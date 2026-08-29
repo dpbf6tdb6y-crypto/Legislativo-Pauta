@@ -37,7 +37,7 @@ const FLUXO_DEF = [
 const NEGATIVOS = new Set(['reprovado', 'vetado'])
 const CHAVES_COMISSAO = ['comissao1', 'comissao2', 'comissao3']
 // Etapas em que a cor da bolinha já é o próprio veredito — ver graficoCor.
-const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, 'resultadoFinal'])
+const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, 'comissaoEspecial', 'resultadoFinal'])
 const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [string, string] }> = {
   sancaoVeto: { valores: ['sancionado', 'vetado'], labels: ['Sancionado', 'Vetado'] },
   vetoManutencao: { valores: ['aprovado', 'reprovado'], labels: ['Manter Veto', 'Derrubar Veto'] },
@@ -372,11 +372,13 @@ export default function SeggovPage() {
             const marcados = FLUXO_DEF
               .filter(d => fluxo[d.key]?.done)
               .map(d => ({ ...d, doneAt: fluxo[d.key]?.doneAt, data: fluxo[d.key]?.data }))
-            // Mesma regra da tela de edição: reprovação em qualquer comissão já
-            // pinta tudo de vermelho; aprovação nas três já pinta tudo de verde,
-            // sem esperar o Resultado Final ser marcado.
-            const algumaComissaoReprovada = CHAVES_COMISSAO.some(k => fluxo[k]?.data?.resultado === 'reprovado')
-            const todasComissoesAprovadas = CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === 'aprovado')
+            // Mesma regra da tela de edição: reprovação em qualquer comissão (1/2/3
+            // ou Especial) já pinta tudo de vermelho; aprovação nas três sequenciais
+            // OU na Especial já pinta tudo de verde, sem esperar o Resultado Final.
+            const algumaComissaoReprovada = [...CHAVES_COMISSAO, 'comissaoEspecial'].some(k => fluxo[k]?.data?.resultado === 'reprovado')
+            const todasComissoesAprovadas =
+              CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === 'aprovado')
+              || (fluxo['comissaoEspecial']?.done && fluxo['comissaoEspecial']?.data?.resultado === 'aprovado')
             const graficoCor: 'verde' | 'vermelho' | 'normal' =
               fluxo['resultadoFinal']?.done
                 ? fluxo['resultadoFinal'].data?.resultado === 'aprovado' ? 'verde' : 'vermelho'
@@ -443,7 +445,9 @@ export default function SeggovPage() {
                       {step.data.emendaTipo ? `${step.data.emendaTipo} ` : ''}{step.data.numero}{step.data.ano ? `/${step.data.ano}` : ''}
                     </span>
                   )}
-                  {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.resultado && !step.data?.numero && (
+                  {/* Comissão Especial guarda nome1/2/3 (membros) E resultado ao
+                      mesmo tempo — não pode depender de !resultado. */}
+                  {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.numero && (
                     <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
                   )}
                 </div>

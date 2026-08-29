@@ -53,7 +53,7 @@ const CHAVES_COMISSAO = ['comissao1', 'comissao2', 'comissao3']
 // Etapas em que a cor da bolinha no fluxograma já é o próprio veredito
 // (verde = aprovado, vermelho = reprovado — ver graficoCor), então a
 // etiqueta de texto embaixo do nó fica redundante.
-const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, 'resultadoFinal'])
+const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, 'comissaoEspecial', 'resultadoFinal'])
 const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [string, string] }> = {
   sancaoVeto: { valores: ['sancionado', 'vetado'], labels: ['Sancionado', 'Vetado'] },
   vetoManutencao: { valores: ['aprovado', 'reprovado'], labels: ['Manter Veto', 'Derrubar Veto'] },
@@ -98,6 +98,11 @@ export default function EditarSeggovPage() {
   const [autores, setAutores] = useState<Autor[]>([])
   const [fluxo, setFluxo] = useState<FluxoState>({})
   const [pending, setPendingState] = useState<Record<string, StepData>>({})
+  // Controle único de Aprovado/Reprovado pra Comissão 1/2/3 e Comissão
+  // Especial — fica no final do quadrante Comissões em vez de repetir os
+  // mesmos botões em cada card. Vale pra comissão marcada no momento em que
+  // "Marcar" é clicado, e é limpo em seguida.
+  const [resultadoComissao, setResultadoComissao] = useState<string>('')
 
   useEffect(() => {
     Promise.all([
@@ -186,11 +191,15 @@ export default function EditarSeggovPage() {
 
     if (def.tipo === 'comissao') {
       if (!p.comissaoId) { toast.error('Selecione uma comissão antes de marcar.'); return }
-      if (!p.resultado) { toast.error('Informe se o parecer foi Aprovado ou Reprovado.'); return }
+      // O Aprovado/Reprovado das comissões (Com.1/2/3 e Comissão Especial) fica
+      // num único controle no final do quadrante Comissões, em vez de repetir
+      // os mesmos botões em cada card — vale para a que for marcada agora.
+      if (!resultadoComissao) { toast.error('Escolha Aprovado ou Reprovado (no final do quadrante Comissões) antes de marcar.'); return }
       const com = comissoes.find((c: any) => c.id === p.comissaoId)
-      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, resultado: p.resultado }
+      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, resultado: resultadoComissao }
     } else if (def.tipo === 'comissao3nomes') {
-      data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '' }
+      if (!resultadoComissao) { toast.error('Escolha Aprovado ou Reprovado (no final do quadrante Comissões) antes de marcar.'); return }
+      data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', resultado: resultadoComissao }
     } else if (def.tipo === 'nome1') {
       data = { nome1: p.nome1 || '' }
     } else if (def.tipo === 'resultado' || def.tipo === 'sancao') {
@@ -212,6 +221,7 @@ export default function EditarSeggovPage() {
       return next
     })
     setPendingState(prev => { const n = { ...prev }; delete n[key]; return n })
+    if (def.tipo === 'comissao' || def.tipo === 'comissao3nomes') setResultadoComissao('')
   }
 
   function desmarcar(key: string) {
@@ -295,19 +305,25 @@ export default function EditarSeggovPage() {
             {labelResultado(step.key, step.data.resultado)}
           </span>
         )}
-        {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.resultado && (
+        {/* Comissão Especial guarda nome1/2/3 (membros) E resultado ao mesmo
+            tempo — não pode depender de !resultado, senão o badge de membros
+            some quando a etiqueta de Aprovado/Reprovado é ocultada acima. */}
+        {step.data?.nome1 && !step.data?.comissaoNome && (
           <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
         )}
       </div>
     )
   }
 
-  // Comissões (1, 2 e 3) têm veredito próprio (Aprovado/Reprovado). Uma
-  // reprovação em qualquer uma delas já pinta o fluxo de vermelho, mesmo com
-  // as demais etapas em aberto; e passar aprovado pelas três já pinta tudo de
-  // verde, sem esperar o Resultado Final ser marcado manualmente.
-  const algumaComissaoReprovada = CHAVES_COMISSAO.some(k => fluxo[k]?.data?.resultado === 'reprovado')
-  const todasComissoesAprovadas = CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === 'aprovado')
+  // Comissões (1, 2, 3 e Especial) têm veredito próprio (Aprovado/Reprovado).
+  // Uma reprovação em qualquer uma delas já pinta o fluxo de vermelho, mesmo
+  // com as demais etapas em aberto. Passar aprovado pelas três sequenciais OU
+  // ser aprovado pela Comissão Especial (caminho alternativo, não cumulativo
+  // com 1/2/3) já pinta tudo de verde, sem esperar o Resultado Final.
+  const algumaComissaoReprovada = [...CHAVES_COMISSAO, 'comissaoEspecial'].some(k => fluxo[k]?.data?.resultado === 'reprovado')
+  const todasComissoesAprovadas =
+    CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === 'aprovado')
+    || (fluxo['comissaoEspecial']?.done && fluxo['comissaoEspecial']?.data?.resultado === 'aprovado')
 
   const graficoCor: 'verde' | 'vermelho' | 'normal' =
     fluxo['resultadoFinal']?.done
@@ -440,25 +456,10 @@ export default function EditarSeggovPage() {
         )}
 
         {!done && def.tipo === 'comissao' && (
-          <>
-            <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
-              <option value="">— Selecionar comissão —</option>
-              {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
-            </select>
-            <div className="mt-1.5 flex gap-1 flex-wrap">
-              {getOpcoes(def.key).valores.map((r, i) => (
-                <button key={r} type="button"
-                  onClick={() => setPendingData(def.key, 'resultado', r)}
-                  className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
-                    p.resultado === r
-                      ? NEGATIVOS.has(r) ? 'border-red-400 bg-red-50 text-red-700' : 'border-green-400 bg-green-50 text-green-700'
-                      : 'border-gray-200 text-gray-400 hover:border-gray-300'
-                  }`}>
-                  {getOpcoes(def.key).labels[i]}
-                </button>
-              ))}
-            </div>
-          </>
+          <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
+            <option value="">— Selecionar comissão —</option>
+            {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
+          </select>
         )}
 
         {!done && def.tipo === 'nome1' && (
@@ -671,6 +672,27 @@ export default function EditarSeggovPage() {
                 {renderStepCard('comissao3')}
                 {renderStepCard('comissaoConjunta')}
                 {renderStepCard('comissaoEspecial')}
+
+                {/* Controle único de Aprovado/Reprovado pra Com.1/2/3 e Comissão
+                    Especial — evita repetir os mesmos botões em cada card.
+                    Escolha aqui e depois clique em "Marcar" na comissão desejada. */}
+                <div className="mt-1 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2">
+                  <p className="text-[10px] font-semibold text-gray-500 leading-tight">Parecer da comissão a marcar</p>
+                  <p className="text-[9px] text-gray-400 leading-tight mb-1">Escolha antes de clicar em "Marcar" — vale para Com. 1/2/3 e Comissão Especial</p>
+                  <div className="flex gap-1 flex-wrap">
+                    {getOpcoes('comissao1').valores.map((r, i) => (
+                      <button key={r} type="button"
+                        onClick={() => setResultadoComissao(r)}
+                        className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
+                          resultadoComissao === r
+                            ? NEGATIVOS.has(r) ? 'border-red-400 bg-red-50 text-red-700' : 'border-green-400 bg-green-50 text-green-700'
+                            : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                        }`}>
+                        {getOpcoes('comissao1').labels[i]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-col gap-2 rounded-xl border border-green-200 p-2 h-full">

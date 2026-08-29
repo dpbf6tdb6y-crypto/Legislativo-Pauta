@@ -35,6 +35,9 @@ export const COLUNAS_RELATORIO = [
 export type ColunasKey = typeof COLUNAS_RELATORIO[number]["key"];
 
 const CHAVES_COMISSAO = ["comissao1", "comissao2", "comissao3"];
+// Etapas em que a cor do nó já é o próprio veredito (ver graficoCor) — mesma
+// regra das telas, pra não repetir "Aprov./Reprov." embaixo do nó.
+const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, "comissaoEspecial", "resultadoFinal"]);
 
 const FLUXO_DEF_EXPORT = [
   { key: 'protocolado',         labelCurto: 'Prot.'      },
@@ -247,11 +250,13 @@ export function exportarSegovPDF(
     const chavesAgrupadas = agrupar ? comissoesDoGrupo.map(d => d.key) : [];
     const porLinha = Math.max(1, Math.floor(innerW / stepW));
 
-    // Mesma regra das telas: reprovação em qualquer comissão já pinta tudo de
-    // vermelho; aprovação nas três já pinta tudo de verde, sem esperar o
-    // Resultado Final ser marcado.
-    const algumaComissaoReprovada = CHAVES_COMISSAO.some(k => fluxo[k]?.data?.resultado === "reprovado");
-    const todasComissoesAprovadas = CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === "aprovado");
+    // Mesma regra das telas: reprovação em qualquer comissão (1/2/3 ou Especial)
+    // já pinta tudo de vermelho; aprovação nas três sequenciais OU na Especial
+    // já pinta tudo de verde, sem esperar o Resultado Final ser marcado.
+    const algumaComissaoReprovada = [...CHAVES_COMISSAO, "comissaoEspecial"].some(k => fluxo[k]?.data?.resultado === "reprovado");
+    const todasComissoesAprovadas =
+      CHAVES_COMISSAO.every(k => fluxo[k]?.done && fluxo[k]?.data?.resultado === "aprovado")
+      || (fluxo["comissaoEspecial"]?.done && fluxo["comissaoEspecial"]?.data?.resultado === "aprovado");
     const graficoCor: "verde" | "vermelho" | "normal" = fluxo["resultadoFinal"]?.done
       ? (fluxo["resultadoFinal"]?.data?.resultado === "aprovado" ? "verde" : "vermelho")
       : algumaComissaoReprovada
@@ -278,7 +283,7 @@ export function exportarSegovPDF(
         sd,
         labelLinhas: doc.splitTextToSize(step.labelCurto, stepW - 4) as string[],
         temData: !!sd?.doneAt,
-        temEtiqueta: !!(sd?.data?.comissaoNome || sd?.data?.resultado),
+        temEtiqueta: !!(sd?.data?.comissaoNome || (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(step.key))),
         agrupado: chavesAgrupadas.includes(step.key),
       };
     });
@@ -493,7 +498,7 @@ export function exportarSegovPDF(
             doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
             doc.setTextColor(29, 78, 216);
             doc.text(p.sd.data.comissaoNome, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
-          } else if (p.sd?.data?.resultado) {
+          } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
             const rText = p.sd.data.resultado === "aprovado" ? "Aprov." : "Reprov.";
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7);
