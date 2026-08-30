@@ -11,6 +11,7 @@ export default function NovoSeggovPage() {
   const router = useRouter()
   const toast = useToast()
   const [vereadores, setVereadores] = useState<any[]>([])
+  const [pessoasExecutivo, setPessoasExecutivo] = useState<any[]>([])
   const [salvando, setSalvando] = useState(false)
   const [form, setForm] = useState({
     numero: '', ano: String(new Date().getFullYear()), tipo: 'PL',
@@ -19,6 +20,7 @@ export default function NovoSeggovPage() {
 
   useEffect(() => {
     fetch('/api/vereadores?poder=legislativo').then(r => r.json()).then(setVereadores)
+    fetch('/api/vereadores?poder=executivo').then(r => r.json()).then(setPessoasExecutivo)
   }, [])
 
   function set(field: string, value: string) {
@@ -98,11 +100,16 @@ export default function NovoSeggovPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Vereador</label>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Autor</label>
             <select value={form.vereadorId} onChange={e => set('vereadorId', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-800/30">
               <option value="">— Selecione —</option>
-              {vereadores.map((v: any) => <option key={v.id} value={v.id}>{v.nome}</option>)}
+              <optgroup label="Poder Executivo">
+                {pessoasExecutivo.map((v: any) => <option key={v.id} value={v.id}>⚡ {v.nome}{v.cargo ? ` (${v.cargo})` : ''}</option>)}
+              </optgroup>
+              <optgroup label="Vereadores">
+                {vereadores.map((v: any) => <option key={v.id} value={v.id}>{v.nome}</option>)}
+              </optgroup>
             </select>
           </div>
           <div>

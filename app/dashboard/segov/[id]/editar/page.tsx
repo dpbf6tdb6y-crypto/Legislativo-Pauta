@@ -92,6 +92,7 @@ export default function EditarSeggovPage() {
   const toast = useToast()
   const { id } = useParams<{ id: string }>()
   const [vereadores, setVereadores] = useState<any[]>([])
+  const [pessoasExecutivo, setPessoasExecutivo] = useState<any[]>([])
   const [comissoes, setComissoes] = useState<any[]>([])
   const [salvando, setSalvando] = useState(false)
   const [carregando, setCarregando] = useState(true)
@@ -115,9 +116,12 @@ export default function EditarSeggovPage() {
       fetch('/api/vereadores?poder=legislativo&ativo=false').then(r => r.json()),
       fetch('/api/segov').then(r => r.json()),
       fetch('/api/comissoes').then(r => r.json()),
-    ]).then(([vers, todos, coms]) => {
+      fetch('/api/vereadores?poder=executivo&ativo=false').then(r => r.json()),
+    ]).then(([vers, todos, coms, execs]) => {
       setVereadores(vers)
       setComissoes(coms)
+      setPessoasExecutivo(execs)
+      const todosCadastrados = [...vers, ...execs]
       const item = todos.find((i: any) => i.id === id)
       if (item) {
         setUpdatedAt(item.updatedAt || '')
@@ -137,25 +141,29 @@ export default function EditarSeggovPage() {
         }
         const lista: Autor[] = []
         if (item.vereadorId) {
-          const v = vers.find((v: any) => v.id === item.vereadorId)
-          if (v) lista.push({ id: v.id, nome: v.nome, isPE: false, ativo: v.ativo })
+          const v = todosCadastrados.find((v: any) => v.id === item.vereadorId)
+          if (v) lista.push({ id: v.id, nome: v.nome, isPE: v.poder === 'executivo', ativo: v.ativo })
         }
         splitAutoresTexto(item.autorNome).forEach((nome: string) => {
-          const lower = nome.toLowerCase()
-          if (lower.includes('executivo') || lower.includes('prefeitura') || lower.includes('prefeito')) {
-            if (!lista.some(a => a.isPE)) lista.push({ nome: 'Poder Executivo', isPE: true })
-            return
-          }
           // Usa o mesmo casamento da listagem (primeiro nome igual + sobrenome
           // presente). O critério antigo — "qualquer palavra do autor aparece no
           // nome de qualquer vereador" — casava, por exemplo, "Nilton da Cruz
           // Oliveira" com "José Carlos de Oliveira", criando um autor fantasma
           // que voltava a cada recarga mesmo depois de removido e salvo.
-          const v: any = buscarVereadorPorNome(nome, vers as any[])
+          // Tenta achar a pessoa certa (vereador OU prefeito/vice) pelo nome
+          // antes de cair no rótulo genérico "Poder Executivo" sem vínculo.
+          const v: any = buscarVereadorPorNome(nome, todosCadastrados as any[])
           if (v) {
             if (!lista.some(a => a.id === v.id))
-              lista.push({ id: v.id, nome: v.nome, isPE: false, ativo: v.ativo })
-          } else if (!lista.some(a => a.nome === nome)) {
+              lista.push({ id: v.id, nome: v.nome, isPE: v.poder === 'executivo', ativo: v.ativo })
+            return
+          }
+          const lower = nome.toLowerCase()
+          if (lower.includes('executivo') || lower.includes('prefeitura') || lower.includes('prefeito')) {
+            if (!lista.some(a => a.isPE && !a.id)) lista.push({ nome: 'Poder Executivo', isPE: true })
+            return
+          }
+          if (!lista.some(a => a.nome === nome)) {
             lista.push({ nome, isPE: false })
           }
         })
@@ -171,14 +179,9 @@ export default function EditarSeggovPage() {
 
   function adicionarAutor(valor: string) {
     if (!valor) return
-    if (valor === 'executivo') {
-      if (!autores.some(a => a.isPE))
-        setAutores(prev => [...prev, { nome: 'Poder Executivo', isPE: true }])
-      return
-    }
-    const v = vereadores.find((v: any) => v.id === valor)
+    const v = vereadores.find((v: any) => v.id === valor) || pessoasExecutivo.find((v: any) => v.id === valor)
     if (v && !autores.some(a => a.id === v.id))
-      setAutores(prev => [...prev, { id: v.id, nome: v.nome, isPE: false }])
+      setAutores(prev => [...prev, { id: v.id, nome: v.nome, isPE: v.poder === 'executivo' }])
   }
 
   function removerAutor(idx: number) {
@@ -413,7 +416,10 @@ export default function EditarSeggovPage() {
     e.preventDefault()
     setSalvando(true)
     const autorNome = autores.map(a => a.nome).join(' e ') || null
-    const vereadorId = autores.find(a => !a.isPE && a.id)?.id || null
+    // Antes só vinculava vereador legislativo — agora o Poder Executivo pode
+    // ser uma pessoa cadastrada (prefeito/vice) também, então qualquer autor
+    // com id real (isPE ou não) pode ocupar o vínculo.
+    const vereadorId = autores.find(a => a.id)?.id || null
     // O status deixa de ser escolhido à mão e passa a ser calculado a partir
     // do próprio fluxo — exceto Arquivado/Retirado, que são decisões
     // administrativas que a função preserva sem alteração.
@@ -654,7 +660,9 @@ export default function EditarSeggovPage() {
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Autor</label>
             <select onChange={e => { adicionarAutor(e.target.value); e.target.value = '' }} className={inp}>
               <option value="">— Selecionar —</option>
-              <option value="executivo">⚡ Executivo</option>
+              <optgroup label="Poder Executivo">
+                {pessoasExecutivo.map((v: any) => <option key={v.id} value={v.id}>⚡ {v.nome}{v.cargo ? ` (${v.cargo})` : ''}</option>)}
+              </optgroup>
               <optgroup label="Vereadores">
                 {vereadores.map((v: any) => <option key={v.id} value={v.id}>{v.nome}{!v.ativo && ' (inativo)'}</option>)}
               </optgroup>
