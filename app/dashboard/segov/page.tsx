@@ -317,8 +317,9 @@ export default function SeggovPage() {
   return (
     <div className="space-y-2">
 
-      {/* Barra de filtros */}
-      <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto sticky top-0 z-10">
+      {/* Barra de filtros — fixa logo abaixo do cabeçalho do sistema (48px de
+          altura) enquanto rola só a lista de proposições. */}
+      <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto sticky top-12 z-30">
         {filtrosColunaAtivos && (
           <button onClick={limparFiltrosColuna} title="Limpar filtros"
             className="text-gray-400 hover:text-red-600 transition flex-shrink-0">
@@ -364,8 +365,9 @@ export default function SeggovPage() {
         </div>
       </div>
 
-      {/* Facetas de status */}
-      <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-1.5 items-center flex-wrap">
+      {/* Facetas de status — fixas logo abaixo da barra de filtros (48px do
+          cabeçalho + 57px da barra de filtros + 8px do espaçamento entre elas). */}
+      <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-1.5 items-center flex-wrap sticky top-[113px] z-20">
         <button onClick={() => setColStatus('')}
           className={`text-xs font-medium px-2.5 py-1 rounded-full border transition ${
             colStatus === '' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
