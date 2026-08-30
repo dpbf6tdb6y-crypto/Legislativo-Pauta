@@ -163,7 +163,9 @@ export function exportarSegovPDF(
   let pageNum = 1;
 
   function cabecalhoPagina() {
-    doc.setFillColor(139, 0, 0);
+    // Azul já usado nos botões e destaques do sistema (bg-blue-600), no lugar
+    // do vermelho anterior.
+    doc.setFillColor(37, 99, 235);
     doc.rect(0, 0, W, alturaCabecalho, "F");
 
     // "Líder de Governo" é o título em destaque do relatório.
@@ -174,7 +176,7 @@ export function exportarSegovPDF(
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.setTextColor(255, 225, 225);
+    doc.setTextColor(219, 234, 254);
     doc.text("Câmara Municipal de Nova Lima", margin, 32);
 
     doc.setFontSize(7.5);
