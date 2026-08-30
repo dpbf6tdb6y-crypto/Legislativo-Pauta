@@ -45,7 +45,7 @@ const FLUXO_DEF: StepDef[] = [
   { key: 'resultadoFinal',     label: 'Resultado Final do Projeto',     labelCurto: 'Resultado',  tipo: 'resultado' },
   { key: 'sancaoVeto',         label: 'Sanção / Veto',                  labelCurto: 'Sanção/Veto',tipo: 'sancao' },
   { key: 'vetoManutencao',     label: 'Votação de Manutenção do Veto',  labelCurto: 'V. Veto',    tipo: 'resultado' },
-  { key: 'promulgacao',        label: 'Promulgação',                    labelCurto: 'Promul.',    tipo: 'data' },
+  { key: 'promulgacao',        label: 'Promulgação',                    labelCurto: 'Promul.',    tipo: 'sancao' },
 ]
 
 const NEGATIVOS = new Set(['reprovado', 'vetado'])
@@ -57,7 +57,12 @@ const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, 'comissaoEspecial', '
 const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [string, string] }> = {
   sancaoVeto: { valores: ['sancionado', 'vetado'], labels: ['Sancionado', 'Vetado'] },
   vetoManutencao: { valores: ['aprovado', 'reprovado'], labels: ['Manter Veto', 'Derrubar Veto'] },
+  promulgacao: { valores: ['promulgado', 'vetado'], labels: ['Promulgado', 'Vetado'] },
 }
+/** Etapas tipo 'sancao' cujo resultado costuma só ser sabido depois de
+ * marcadas (igual comissão) — Sanção/Veto e Promulgação são escolhidas como
+ * caminho primeiro, e o resultado é preenchido quando sai a decisão. */
+const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
 function getOpcoes(key: string) {
   return OPCOES_POR_CHAVE[key] || { valores: ['aprovado', 'reprovado'] as [string, string], labels: ['Aprovado', 'Reprovado'] as [string, string] }
 }
@@ -202,10 +207,17 @@ export default function EditarSeggovPage() {
       data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', ...(resultadoComissao ? { resultado: resultadoComissao } : {}) }
     } else if (def.tipo === 'nome1') {
       data = { nome1: p.nome1 || '' }
-    } else if (def.tipo === 'resultado' || def.tipo === 'sancao') {
-      // Diferente da comissão, aqui o resultado já é conhecido no momento de
-      // marcar (a votação aconteceu naquele dia) — por isso não pode ter um
-      // valor padrão silencioso, tem que ser escolhido.
+    } else if (def.tipo === 'sancao') {
+      // Sanção/Veto e Promulgação: igual comissão, o resultado normalmente só
+      // é sabido depois de marcar o caminho (o Executivo/a Mesa ainda vai se
+      // manifestar) — marcar aqui só reserva a escolha; se já souber o
+      // resultado, grava junto, senão completa depois pelo aviso "Falta o
+      // parecer" no próprio card.
+      data = { ...(p.resultado ? { resultado: p.resultado } : {}) }
+    } else if (def.tipo === 'resultado') {
+      // Diferente de comissão/sanção, aqui o resultado já é conhecido no
+      // momento de marcar (a votação aconteceu naquele dia) — por isso não
+      // pode ter um valor padrão silencioso, tem que ser escolhido.
       if (!p.resultado) { toast.error(`Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes de marcar.`); return }
       data = { resultado: p.resultado }
     } else if (def.tipo === 'data') {
@@ -241,13 +253,12 @@ export default function EditarSeggovPage() {
   }
 
   /**
-   * Informa (ou corrige) o Aprovado/Reprovado de uma comissão que já está
-   * marcada, sem precisar desmarcar e marcar de novo — evita ter que
-   * reescolher a comissão e reinformar a data original só pra acrescentar o
-   * resultado (caso das proposições antigas, importadas antes desse campo
-   * existir).
+   * Informa (ou corrige) o resultado de uma etapa que já está marcada mas
+   * ficou pendente — comissão (Aprovado/Reprovado), Sanção/Veto (Sancionado/
+   * Vetado) ou Promulgação (Promulgado/Vetado) — sem precisar desmarcar e
+   * marcar de novo, o que perderia a data original.
    */
-  function alterarResultadoComissao(key: string, resultado: string) {
+  function alterarResultado(key: string, resultado: string) {
     setFluxo(prev => prev[key]
       ? { ...prev, [key]: { ...prev[key], data: { ...(prev[key].data || {}), resultado } } }
       : prev)
@@ -255,7 +266,10 @@ export default function EditarSeggovPage() {
 
   const marcados = useMemo(() =>
     FLUXO_DEF
-      .filter(d => fluxo[d.key]?.done)
+      // Sanção/Veto e Promulgação marcados mas sem resultado ainda são só um
+      // caminho reservado (igual comissão sem parecer) — não entram no fluxo
+      // como nó normal, viram a bolinha fantasma abaixo até ter resultado.
+      .filter(d => fluxo[d.key]?.done && !(d.tipo === 'sancao' && !fluxo[d.key]?.data?.resultado))
       .map(d => ({ ...d, ...(fluxo[d.key] || {}) })),
     [fluxo]
   )
@@ -267,15 +281,19 @@ export default function EditarSeggovPage() {
    * verdade foi um ato só. O nó avulso "C. Conj." sai do gráfico nesse caso,
    * porque a faixa já comunica isso (ele continua marcável no formulário).
    */
-  // Depois do Resultado Final aprovado, falta ao Executivo se manifestar
-  // (Sanção/Veto) — enquanto isso não é marcado (nem a Promulgação direto,
-  // caso não se registre a sanção separadamente), o fluxo mostra uma bolinha
-  // fantasma indicando a próxima etapa esperada.
+  // Depois do Resultado Final aprovado, falta ao Executivo/à Mesa se
+  // manifestar. Três estados: (1) nada escolhido ainda → fantasma genérico
+  // "Aguard. Sanção"; (2) Sanção/Veto ou Promulgação já escolhida como
+  // caminho mas sem resultado → fantasma específico daquela etapa; (3) com
+  // resultado → vira nó normal (colorido) no fluxo, não precisa de fantasma.
+  const chaveSancaoIncompleta = CHAVES_SANCAO.find(k => fluxo[k]?.done && !fluxo[k]?.data?.resultado)
+  const labelFantasmaSancao = chaveSancaoIncompleta
+    ? `Aguard. ${FLUXO_DEF.find(d => d.key === chaveSancaoIncompleta)!.labelCurto}`
+    : 'Aguard. Sanção'
   const aguardandoSancao =
     fluxo['resultadoFinal']?.done &&
     fluxo['resultadoFinal']?.data?.resultado === 'aprovado' &&
-    !fluxo['sancaoVeto']?.done &&
-    !fluxo['promulgacao']?.done
+    (!!chaveSancaoIncompleta || (!fluxo['sancaoVeto']?.done && !fluxo['promulgacao']?.done))
 
   const segmentos = useMemo(() => {
     type No = typeof marcados[number]
@@ -294,9 +312,9 @@ export default function EditarSeggovPage() {
       if (agrupar && step.key === 'comissaoConjunta') return
       out.push({ tipo: 'no', step })
     })
-    if (aguardandoSancao) out.push({ tipo: 'fantasma', label: 'Aguard. Sanção' })
+    if (aguardandoSancao) out.push({ tipo: 'fantasma', label: labelFantasmaSancao })
     return out
-  }, [marcados, fluxo, aguardandoSancao])
+  }, [marcados, fluxo, aguardandoSancao, labelFantasmaSancao])
 
   const ultimaChaveMarcada = marcados.length ? marcados[marcados.length - 1].key : null
 
@@ -415,21 +433,27 @@ export default function EditarSeggovPage() {
     const state = fluxo[def.key]
     const done = !!state?.done
     const p = pending[def.key] || {}
-    const destaque = ['resultadoFinal', 'emendaResultado', 'sancaoVeto', 'vetoManutencao'].includes(def.key)
+    const destaque = ['resultadoFinal', 'emendaResultado', 'sancaoVeto', 'vetoManutencao', 'promulgacao'].includes(def.key)
     const negativo = NEGATIVOS.has(state?.data?.resultado || '')
+    // Sanção/Veto ou Promulgação marcada mas ainda sem resultado é só um
+    // caminho reservado, não uma decisão positiva — fica azul, como a
+    // bolinha fantasma, em vez de verde.
+    const reservadoSemResultado = done && def.tipo === 'sancao' && !state?.data?.resultado
 
     const cardClass = !done
       ? 'border-gray-200 bg-white'
       : negativo
         ? 'border-red-500 bg-red-50'
-        : destaque
-          ? 'border-green-500 bg-green-100'
-          : 'border-green-300 bg-green-50'
+        : reservadoSemResultado
+          ? 'border-blue-300 bg-blue-50'
+          : destaque
+            ? 'border-green-500 bg-green-100'
+            : 'border-green-300 bg-green-50'
 
     // Votações, emenda, sanção/veto etc.: o resultado já é sabido na hora
     // (a votação aconteceu naquele dia), então marcar sem escolher Aprovado
     // ou Reprovado explicitamente não pode virar "Aprovado" por padrão.
-    const faltaEscolhaResultado = !done && (def.tipo === 'resultado' || def.tipo === 'sancao') && !p.resultado
+    const faltaEscolhaResultado = !done && def.tipo === 'resultado' && !p.resultado
 
     const circle = (
       <button type="button"
@@ -437,7 +461,7 @@ export default function EditarSeggovPage() {
         disabled={faltaEscolhaResultado}
         title={done ? 'Clique para desmarcar' : faltaEscolhaResultado ? `Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes` : 'Clique para marcar'}
         className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition ${
-          done ? 'bg-green-500 text-white hover:bg-green-600' :
+          done ? (negativo ? 'bg-red-500 text-white hover:bg-red-600' : reservadoSemResultado ? 'bg-blue-400 text-white hover:bg-blue-500' : 'bg-green-500 text-white hover:bg-green-600') :
           faltaEscolhaResultado ? 'bg-gray-100 border border-gray-200 cursor-not-allowed' :
           'bg-white border border-gray-300 hover:border-green-400'
         }`}>
@@ -460,7 +484,9 @@ export default function EditarSeggovPage() {
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-1.5 min-w-0">
             <div className="mt-0.5">{circle}</div>
-            <span className={`text-xs font-medium leading-tight ${done ? 'text-green-700' : 'text-gray-700'}`}>{def.label}</span>
+            <span className={`text-xs font-medium leading-tight ${
+              !done ? 'text-gray-700' : negativo ? 'text-red-700' : reservadoSemResultado ? 'text-blue-600' : 'text-green-700'
+            }`}>{def.label}</span>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0">
             {/* Data editável mesmo depois de marcada — permite lançar
@@ -526,19 +552,20 @@ export default function EditarSeggovPage() {
           </select>
         )}
 
-        {/* Comissão já marcada mas sem Aprovado/Reprovado gravado — caso das
-            proposições antigas, cadastradas antes desse campo existir. Aqui dá
-            pra informar sem precisar desmarcar (o que perderia a data). */}
-        {done && (def.tipo === 'comissao' || def.tipo === 'comissao3nomes') && !state.data?.resultado && (
+        {/* Etapa já marcada (comissão, Sanção/Veto ou Promulgação) mas ainda
+            sem resultado — o caminho foi escolhido/encaminhado, mas a decisão
+            (parecer, sanção, promulgação) só chega depois. Informa aqui sem
+            precisar desmarcar (o que perderia a data). */}
+        {done && (def.tipo === 'comissao' || def.tipo === 'comissao3nomes' || def.tipo === 'sancao') && !state.data?.resultado && (
           <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-            <span className="text-[10px] text-amber-600 font-medium">Falta o parecer:</span>
-            {getOpcoes('comissao1').valores.map((r, i) => (
+            <span className="text-[10px] text-amber-600 font-medium">Falta o resultado:</span>
+            {getOpcoes(def.key).valores.map((r, i) => (
               <button key={r} type="button"
-                onClick={() => alterarResultadoComissao(def.key, r)}
+                onClick={() => alterarResultado(def.key, r)}
                 className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
                   NEGATIVOS.has(r) ? 'border-red-300 text-red-600 hover:bg-red-50' : 'border-green-300 text-green-700 hover:bg-green-50'
                 }`}>
-                {getOpcoes('comissao1').labels[i]}
+                {getOpcoes(def.key).labels[i]}
               </button>
             ))}
           </div>

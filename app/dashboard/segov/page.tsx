@@ -41,7 +41,12 @@ const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, 'comissaoEspecial', '
 const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [string, string] }> = {
   sancaoVeto: { valores: ['sancionado', 'vetado'], labels: ['Sancionado', 'Vetado'] },
   vetoManutencao: { valores: ['aprovado', 'reprovado'], labels: ['Manter Veto', 'Derrubar Veto'] },
+  promulgacao: { valores: ['promulgado', 'vetado'], labels: ['Promulgado', 'Vetado'] },
 }
+// Sanção/Veto e Promulgação são escolhidas como caminho primeiro (igual
+// comissão) — o resultado só chega depois, então marcadas sem resultado
+// ainda não valem como nó normal do fluxo, viram a bolinha fantasma.
+const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
 function labelResultadoCurto(key: string, valor?: string) {
   if (!valor) return ''
   const { valores, labels } = OPCOES_POR_CHAVE[key] || { valores: ['aprovado', 'reprovado'], labels: ['Aprov.', 'Reprov.'] }
@@ -403,7 +408,10 @@ export default function SeggovPage() {
             const sel = selecionados.has(item.id)
             const fluxo = (item.fluxo || {}) as Record<string, { done: boolean; doneAt?: string; data?: any }>
             const marcados = FLUXO_DEF
-              .filter(d => fluxo[d.key]?.done)
+              // Sanção/Veto e Promulgação marcadas mas sem resultado ainda são
+              // só um caminho reservado — não entram como nó normal, viram a
+              // bolinha fantasma mais abaixo.
+              .filter(d => fluxo[d.key]?.done && !(CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado))
               .map(d => ({ ...d, doneAt: fluxo[d.key]?.doneAt, data: fluxo[d.key]?.data }))
             // Mesma regra da tela de edição: reprovação em qualquer comissão (1/2/3
             // ou Especial) já pinta tudo de vermelho; aprovação nas três sequenciais
@@ -441,15 +449,20 @@ export default function SeggovPage() {
               if (agrupar && step.key === 'comissaoConjunta') return
               segmentos.push({ tipo: 'no', step })
             })
-            // Depois do Resultado Final aprovado, falta o Executivo se
-            // manifestar (Sanção/Veto) — mostra uma bolinha fantasma até isso
-            // (ou a Promulgação direto) ser marcado.
+            // Depois do Resultado Final aprovado, falta o Executivo/a Mesa se
+            // manifestar. Três estados: nada escolhido ainda → fantasma
+            // genérico "Aguard. Sanção"; Sanção/Veto ou Promulgação já
+            // escolhida como caminho mas sem resultado → fantasma específico
+            // daquela etapa; com resultado → nó normal, sem fantasma.
+            const chaveSancaoIncompleta = CHAVES_SANCAO.find(k => fluxo[k]?.done && !fluxo[k]?.data?.resultado)
+            const labelFantasmaSancao = chaveSancaoIncompleta
+              ? `Aguard. ${FLUXO_DEF.find(d => d.key === chaveSancaoIncompleta)!.labelCurto}`
+              : 'Aguard. Sanção'
             const aguardandoSancao =
               fluxo['resultadoFinal']?.done &&
               fluxo['resultadoFinal']?.data?.resultado === 'aprovado' &&
-              !fluxo['sancaoVeto']?.done &&
-              !fluxo['promulgacao']?.done
-            if (aguardandoSancao) segmentos.push({ tipo: 'fantasma', label: 'Aguard. Sanção' })
+              (!!chaveSancaoIncompleta || (!fluxo['sancaoVeto']?.done && !fluxo['promulgacao']?.done))
+            if (aguardandoSancao) segmentos.push({ tipo: 'fantasma', label: labelFantasmaSancao })
             const ultimaChave = marcados.length ? marcados[marcados.length - 1].key : null
 
             const renderNo = (step: typeof marcados[number]) => {
