@@ -456,8 +456,8 @@ export default function SeggovPage() {
             // daquela etapa; com resultado → nó normal, sem fantasma.
             const chaveSancaoIncompleta = CHAVES_SANCAO.find(k => fluxo[k]?.done && !fluxo[k]?.data?.resultado)
             const labelFantasmaSancao = chaveSancaoIncompleta
-              ? `Aguard. ${FLUXO_DEF.find(d => d.key === chaveSancaoIncompleta)!.labelCurto}`
-              : 'Aguard. Sanção'
+              ? FLUXO_DEF.find(d => d.key === chaveSancaoIncompleta)!.labelCurto
+              : 'Sanção'
             const aguardandoSancao =
               fluxo['resultadoFinal']?.done &&
               fluxo['resultadoFinal']?.data?.resultado === 'aprovado' &&
@@ -515,11 +515,15 @@ export default function SeggovPage() {
             }
 
             // Bolinha tracejada azul indicando a próxima etapa esperada, ainda
-            // não marcada — só indicativo visual, não é clicável.
+            // não marcada — só indicativo visual, não é clicável. Largura
+            // maior que os outros nós porque "Sanção/Veto" não cabe numa
+            // linha só nos 56px padrão; "Aguardando" fica numa legenda curta
+            // separada, em vez de grudada no nome.
             const renderNoFantasma = (label: string) => (
-              <div className="flex flex-col items-center" style={{ width: '56px' }}>
+              <div className="flex flex-col items-center flex-shrink-0" style={{ width: '84px' }}>
                 <div className="w-5 h-5 rounded-full border-2 border-dashed border-blue-400 bg-blue-50" />
-                <p className="text-xs font-semibold mt-1 text-center leading-tight px-1 text-blue-500">{label}</p>
+                <p className="text-[9px] font-bold mt-1 text-center leading-tight text-blue-400 uppercase tracking-wide">Aguardando</p>
+                <p className="text-xs font-semibold text-center leading-tight px-1 text-blue-500">{label}</p>
               </div>
             )
 
