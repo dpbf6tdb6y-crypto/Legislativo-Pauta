@@ -236,6 +236,19 @@ export default function EditarSeggovPage() {
       : prev)
   }
 
+  /**
+   * Informa (ou corrige) o Aprovado/Reprovado de uma comissão que já está
+   * marcada, sem precisar desmarcar e marcar de novo — evita ter que
+   * reescolher a comissão e reinformar a data original só pra acrescentar o
+   * resultado (caso das proposições antigas, importadas antes desse campo
+   * existir).
+   */
+  function alterarResultadoComissao(key: string, resultado: string) {
+    setFluxo(prev => prev[key]
+      ? { ...prev, [key]: { ...prev[key], data: { ...(prev[key].data || {}), resultado } } }
+      : prev)
+  }
+
   const marcados = useMemo(() =>
     FLUXO_DEF
       .filter(d => fluxo[d.key]?.done)
@@ -467,6 +480,24 @@ export default function EditarSeggovPage() {
             <option value="">— Selecionar vereador —</option>
             {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
           </select>
+        )}
+
+        {/* Comissão já marcada mas sem Aprovado/Reprovado gravado — caso das
+            proposições antigas, cadastradas antes desse campo existir. Aqui dá
+            pra informar sem precisar desmarcar (o que perderia a data). */}
+        {done && (def.tipo === 'comissao' || def.tipo === 'comissao3nomes') && !state.data?.resultado && (
+          <div className="mt-1.5 flex items-center gap-1 flex-wrap">
+            <span className="text-[10px] text-amber-600 font-medium">Falta o parecer:</span>
+            {getOpcoes('comissao1').valores.map((r, i) => (
+              <button key={r} type="button"
+                onClick={() => alterarResultadoComissao(def.key, r)}
+                className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
+                  NEGATIVOS.has(r) ? 'border-red-300 text-red-600 hover:bg-red-50' : 'border-green-300 text-green-700 hover:bg-green-50'
+                }`}>
+                {getOpcoes('comissao1').labels[i]}
+              </button>
+            ))}
+          </div>
         )}
 
         {done && (state.data?.resultado || state.data?.comissaoNome || state.data?.nome1) && (
