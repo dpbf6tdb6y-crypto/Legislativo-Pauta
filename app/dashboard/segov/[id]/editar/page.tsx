@@ -203,7 +203,11 @@ export default function EditarSeggovPage() {
     } else if (def.tipo === 'nome1') {
       data = { nome1: p.nome1 || '' }
     } else if (def.tipo === 'resultado' || def.tipo === 'sancao') {
-      data = { resultado: p.resultado || getOpcoes(def.key).valores[0] }
+      // Diferente da comissão, aqui o resultado já é conhecido no momento de
+      // marcar (a votação aconteceu naquele dia) — por isso não pode ter um
+      // valor padrão silencioso, tem que ser escolhido.
+      if (!p.resultado) { toast.error(`Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes de marcar.`); return }
+      data = { resultado: p.resultado }
     } else if (def.tipo === 'data') {
       if (!p.data) { toast.error('Selecione a data antes de marcar.'); return }
     }
@@ -394,12 +398,20 @@ export default function EditarSeggovPage() {
           ? 'border-green-500 bg-green-100'
           : 'border-green-300 bg-green-50'
 
+    // Votações, emenda, sanção/veto etc.: o resultado já é sabido na hora
+    // (a votação aconteceu naquele dia), então marcar sem escolher Aprovado
+    // ou Reprovado explicitamente não pode virar "Aprovado" por padrão.
+    const faltaEscolhaResultado = !done && (def.tipo === 'resultado' || def.tipo === 'sancao') && !p.resultado
+
     const circle = (
       <button type="button"
-        onClick={() => done ? desmarcar(def.key) : marcar(def.key)}
-        title={done ? 'Clique para desmarcar' : 'Clique para marcar'}
+        onClick={() => { if (done) desmarcar(def.key); else if (!faltaEscolhaResultado) marcar(def.key) }}
+        disabled={faltaEscolhaResultado}
+        title={done ? 'Clique para desmarcar' : faltaEscolhaResultado ? `Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes` : 'Clique para marcar'}
         className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition ${
-          done ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-white border border-gray-300 hover:border-green-400'
+          done ? 'bg-green-500 text-white hover:bg-green-600' :
+          faltaEscolhaResultado ? 'bg-gray-100 border border-gray-200 cursor-not-allowed' :
+          'bg-white border border-gray-300 hover:border-green-400'
         }`}>
         {done && <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
       </button>
@@ -409,7 +421,11 @@ export default function EditarSeggovPage() {
       ? <button type="button" onClick={() => desmarcar(def.key)}
           className="text-[10px] text-red-400 hover:text-red-600 transition px-1 py-0.5 rounded border border-red-200 hover:border-red-300 hover:bg-red-50 flex-shrink-0">✕</button>
       : <button type="button" onClick={() => marcar(def.key)}
-          className="text-[10px] px-2 py-0.5 rounded-md bg-green-500 text-white hover:bg-green-600 transition font-medium whitespace-nowrap flex-shrink-0">Marcar</button>
+          disabled={faltaEscolhaResultado}
+          title={faltaEscolhaResultado ? `Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes` : undefined}
+          className={`text-[10px] px-2 py-0.5 rounded-md transition font-medium whitespace-nowrap flex-shrink-0 ${
+            faltaEscolhaResultado ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'
+          }`}>Marcar</button>
 
     return (
       <div key={def.key} className={`rounded-lg border shadow-sm transition-all p-2 ${cardClass}`}>
