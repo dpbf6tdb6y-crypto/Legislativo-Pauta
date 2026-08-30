@@ -1,12 +1,13 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
+import { resolverAutores } from "@/lib/vereador-match";
 
 export type RequerimentoItem = {
   tipo: string;
   numero: string;
   ano: number;
   descricao: string;
-  vereador?: { nome: string } | null;
+  vereador?: { id: string; nome: string; apelido?: string | null; ativo?: boolean; poder?: string } | null;
   autorNome?: string | null;
   status: string;
   dataEnvio?: string | null;
@@ -125,14 +126,9 @@ export function exportarRequerimentosPDF(
   itens.forEach((item, idx) => {
     const fluxo = (item.fluxo || {}) as Record<string, { done: boolean; doneAt?: string; data?: any }>;
 
-    const nomes: string[] = [];
-    if (item.vereador?.nome) nomes.push(item.vereador.nome);
-    if (item.autorNome) {
-      (item.autorNome as string).split(/\s+e\s+|,\s+/).forEach((n: string) => {
-        const t = n.trim();
-        if (t && !nomes.includes(t)) nomes.push(t);
-      });
-    }
+    // Mesma resolução usada nas telas — autor do Poder Executivo aparece como
+    // "Poder Executivo - Nome", não só o nome solto.
+    const nomes = resolverAutores(item.vereador, item.autorNome, []).map(a => a.label);
 
     const marcados = FLUXO_DEF_EXPORT.filter(d => fluxo[d.key]?.done);
     const hasFluxo = marcados.length > 0;

@@ -39,31 +39,59 @@ export function splitAutoresTexto(texto: string | null | undefined): string[] {
 export type AutorResolvido = { label: string; vereadorId: string | null; ativo: boolean }
 
 /**
+ * Rótulo de exibição de um autor cadastrado: apelido/primeiro nome pro
+ * Legislativo, "Poder Executivo - Nome" pro Executivo (prefeito/vice) — nome
+ * completo, sem cortar no primeiro espaço, porque nomes como "João Marcelo"
+ * e "Cissa Caroline" são compostos.
+ */
+function labelDeVereador(v: { nome: string; apelido?: string | null; poder?: string }): string {
+  if (v.poder === 'executivo') return `Poder Executivo - ${v.apelido || v.nome}`
+  return v.apelido || v.nome.split(/\s+/)[0]
+}
+
+/**
  * Resolve uma lista de fragmentos de autor (incluindo o vereador já vinculado, se houver)
  * em labels deduplicados, preferindo o apelido cadastrado do vereador.
  * Passe a lista de vereadores incluindo inativos (ex: /api/vereadores?ativo=false) para que
  * autores que já saíram do mandato sejam corretamente identificados e marcados como inativos.
  */
 export function resolverAutores(
-  vereadorPrincipal: { id: string; nome: string; apelido?: string | null; ativo?: boolean } | null | undefined,
+  vereadorPrincipal: { id: string; nome: string; apelido?: string | null; ativo?: boolean; poder?: string } | null | undefined,
   autorNomeTexto: string | null | undefined,
-  vereadores: { id: string; nome: string; apelido?: string | null; ativo?: boolean }[]
+  vereadores: { id: string; nome: string; apelido?: string | null; ativo?: boolean; poder?: string }[]
 ): AutorResolvido[] {
-  const fragmentos: string[] = []
-  if (vereadorPrincipal?.nome) fragmentos.push(vereadorPrincipal.nome)
-  fragmentos.push(...splitAutoresTexto(autorNomeTexto))
-
   const vistos = new Set<string>()
   const resolvidos: AutorResolvido[] = []
-  fragmentos.forEach(f => {
+
+  // O vereador já vinculado (vereadorId) vem com o registro completo — resolve
+  // direto por ele, sem tentar recasar o nome contra a lista recebida (que às
+  // vezes só tem o Legislativo, e nunca acharia o prefeito/vice ali).
+  if (vereadorPrincipal?.id) {
+    vistos.add(vereadorPrincipal.id)
+    resolvidos.push({
+      label: labelDeVereador(vereadorPrincipal),
+      vereadorId: vereadorPrincipal.id,
+      ativo: vereadorPrincipal.ativo !== false,
+    })
+  }
+
+  splitAutoresTexto(autorNomeTexto).forEach(f => {
     const v = buscarVereadorPorNome(f, vereadores)
     const chave = v ? v.id : normalizarNome(f)
     if (vistos.has(chave)) return
     vistos.add(chave)
+    if (v) {
+      resolvidos.push({ label: labelDeVereador(v), vereadorId: v.id, ativo: v.ativo !== false })
+      return
+    }
+    // Texto livre sem vínculo — "Poder Executivo"/"Prefeitura"/"Prefeito"
+    // digitado à mão vira o rótulo genérico, em vez de truncar no primeiro
+    // espaço (o que dava "Poder" pra um autor "Poder Executivo").
+    const generico = /executivo|prefeitura|prefeito/i.test(f)
     resolvidos.push({
-      label: v ? (v.apelido || v.nome.split(/\s+/)[0]) : f.split(/\s+/)[0],
-      vereadorId: v ? v.id : null,
-      ativo: v ? v.ativo !== false : true,
+      label: generico ? 'Poder Executivo' : f.split(/\s+/)[0],
+      vereadorId: null,
+      ativo: true,
     })
   })
   return resolvidos

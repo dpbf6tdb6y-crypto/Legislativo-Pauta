@@ -700,7 +700,7 @@ export default function EditarSeggovPage() {
                 a.isPE ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
               }`}>
                 {a.isPE && <span>⚡</span>}
-                {a.nome}
+                {a.isPE ? `Poder Executivo - ${a.nome}` : a.nome}
                 {a.ativo === false && <span className="text-gray-400 font-normal">(inativo)</span>}
                 <button type="button" onClick={() => removerAutor(i)} className="text-gray-400 hover:text-red-500 transition">
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

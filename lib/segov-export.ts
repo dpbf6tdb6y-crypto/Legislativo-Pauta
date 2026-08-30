@@ -1,13 +1,13 @@
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import { ehPoderExecutivo } from "@/lib/vereador-match";
+import { ehPoderExecutivo, resolverAutores } from "@/lib/vereador-match";
 
 export type SegovItem = {
   tipo: string;
   numero: string;
   ano: number;
   ementa: string;
-  vereador?: { nome: string; poder?: string } | null;
+  vereador?: { id: string; nome: string; apelido?: string | null; ativo?: boolean; poder?: string } | null;
   autorNome?: string | null;
   observacao?: string | null;
   parecerComissao?: string | null;
@@ -244,14 +244,9 @@ export function exportarSegovPDF(
       ? Math.floor((Date.now() - new Date(pautadoDoneAt).getTime()) / 86400000)
       : null;
 
-    const nomes: string[] = [];
-    if (item.vereador?.nome) nomes.push(item.vereador.nome);
-    if (item.autorNome) {
-      (item.autorNome as string).split(/\s+e\s+|,\s+/).forEach((n: string) => {
-        const t = n.trim();
-        if (t && !nomes.includes(t)) nomes.push(t);
-      });
-    }
+    // Mesma resolução usada nas telas — autor do Poder Executivo aparece como
+    // "Poder Executivo - Nome", não só o nome solto.
+    const nomes = resolverAutores(item.vereador, item.autorNome, []).map(a => a.label);
 
     // Parecer conjunto: as comissões que o emitiram são desenhadas dentro de
     // uma moldura única, sem setas entre elas, e o passo avulso "C. Conj." sai
