@@ -332,7 +332,9 @@ export function exportarSegovPDF(
 
     if (y + cardH > H - 20) y = novaPagina();
 
-    doc.setDrawColor(22, 163, 74);
+    // Mesmo azul usado no cabeçalho e nos contornos das telas (bg-blue-600),
+    // no lugar do verde anterior.
+    doc.setDrawColor(37, 99, 235);
     doc.setLineWidth(1.2);
     doc.rect(margin, y, cw, cardH, "S");
 

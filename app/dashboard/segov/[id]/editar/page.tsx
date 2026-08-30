@@ -696,7 +696,7 @@ export default function EditarSeggovPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-stretch">
-              <div className="flex flex-col gap-2 rounded-xl border border-green-200 p-2 h-full">
+              <div className="flex flex-col gap-2 rounded-xl border border-blue-200 p-2 h-full">
                 <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Comissões</h4>
                 {renderStepCard('comissao1')}
                 {renderStepCard('comissao2')}
@@ -726,7 +726,7 @@ export default function EditarSeggovPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2 rounded-xl border border-green-200 p-2 h-full">
+              <div className="flex flex-col gap-2 rounded-xl border border-blue-200 p-2 h-full">
                 <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Dispensas e Pedidos</h4>
                 {renderStepCard('dispensaParecer')}
                 {renderStepCard('dispensaIntersticio')}
@@ -734,7 +734,7 @@ export default function EditarSeggovPage() {
                 {renderStepCard('pedidoAdiamento')}
               </div>
 
-              <div className="flex flex-col gap-2 rounded-xl border border-green-200 p-2 h-full">
+              <div className="flex flex-col gap-2 rounded-xl border border-blue-200 p-2 h-full">
                 <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Emenda</h4>
                 {renderStepCard('emenda')}
                 {renderIdentificacaoCard()}
@@ -746,7 +746,7 @@ export default function EditarSeggovPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-green-200 p-2">
+            <div className="rounded-xl border border-blue-200 p-2">
               <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Projeto de Lei</h4>
               <div className="space-y-2">
                 {renderIdentificacaoCard()}
@@ -758,7 +758,7 @@ export default function EditarSeggovPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-green-200 p-2">
+            <div className="rounded-xl border border-blue-200 p-2">
               <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Sanção e Promulgação</h4>
               <div className="space-y-2">
                 {renderStepCard('sancaoVeto')}

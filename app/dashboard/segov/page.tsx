@@ -489,7 +489,7 @@ export default function SeggovPage() {
 
             return (
               <div key={item.id}
-                className={`rounded-xl border-2 transition-all ${sel ? 'border-green-400 bg-green-50' : 'border-green-200 bg-white hover:border-green-300'}`}>
+                className={`rounded-xl border-2 transition-all ${sel ? 'border-blue-400 bg-blue-50' : 'border-blue-200 bg-white hover:border-blue-300'}`}>
                 {/* Cabeçalho do card */}
                 <div className="flex items-start gap-3 p-4 cursor-pointer"
                   onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
@@ -540,7 +540,7 @@ export default function SeggovPage() {
 
                 {/* Gráfico de tramitação — idêntico à tela de edição */}
                 {marcados.length > 0 && (
-                  <div className="border-t border-green-100 px-4 pb-4 pt-6 overflow-x-auto cursor-pointer"
+                  <div className="border-t border-blue-100 px-4 pb-4 pt-6 overflow-x-auto cursor-pointer"
                     onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
                     <div className="flex items-start" style={{ gap: 0 }}>
                       {segmentos.map((seg, i) => {
