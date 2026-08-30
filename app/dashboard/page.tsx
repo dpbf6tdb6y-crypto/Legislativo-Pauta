@@ -7,7 +7,7 @@ import FiltroPoder from '@/app/components/FiltroPoder'
 import { resolverAutores, situacaoAutores, ehPoderExecutivo } from '@/lib/vereador-match'
 
 const STATUS_LIST = [
-  'Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado',
+  'Aguardando', 'Em análise', 'Com Parecer', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado',
 ] as const
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
@@ -15,6 +15,8 @@ const STATUS_STYLE: Record<string, { bg: string; text: string; border: string }>
   'Com Parecer': { bg: 'bg-purple-50',  text: 'text-purple-700',  border: 'border-purple-200'  },
   'Em análise':  { bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-200'    },
   'Aprovado':    { bg: 'bg-green-50',   text: 'text-green-700',   border: 'border-green-200'   },
+  'Sancionado':  { bg: 'bg-cyan-50',    text: 'text-cyan-700',    border: 'border-cyan-200'    },
+  'Promulgado':  { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
   'Rejeitado':   { bg: 'bg-red-50',     text: 'text-red-700',     border: 'border-red-200'     },
   'Arquivado':   { bg: 'bg-gray-50',    text: 'text-gray-600',    border: 'border-gray-200'    },
   'Retirado':    { bg: 'bg-orange-50',  text: 'text-orange-700',  border: 'border-orange-200'  },
@@ -33,7 +35,7 @@ type TipoOpcao = { id: string; nome: string }
 const isExec = ehPoderExecutivo
 
 function resultadoDe(status: string): 'aprovado' | 'rejeitado' | 'tramitando' {
-  if (status === 'Aprovado') return 'aprovado'
+  if (status === 'Aprovado' || status === 'Sancionado' || status === 'Promulgado') return 'aprovado'
   if (status === 'Rejeitado') return 'rejeitado'
   return 'tramitando'
 }
@@ -391,7 +393,7 @@ export default function DashboardPage() {
       <div className="flex gap-3">
         <div className="bg-white rounded-xl shadow-sm px-4 py-3 flex-1">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Proposições por Status <span className="normal-case font-normal text-gray-300">— clique para filtrar</span></p>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {STATUS_LIST.map(s => {
               const c = STATUS_STYLE[s]
               const ativo = filtroStatus === s
@@ -434,7 +436,7 @@ export default function DashboardPage() {
           <span className="ml-1 normal-case font-normal text-gray-300">— {stats.totalRequerimentos} registro(s)</span>
         </p>
         <div className="grid grid-cols-6 gap-2">
-          {STATUS_LIST.filter(s => s !== 'Com Parecer').map(s => {
+          {STATUS_LIST.filter(s => !['Com Parecer', 'Sancionado', 'Promulgado'].includes(s)).map(s => {
             const c = STATUS_STYLE[s]
             return (
               <div key={s} className={`rounded-lg border p-2 text-center ${c.bg} ${c.border}`}>

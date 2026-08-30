@@ -130,6 +130,8 @@ function statusChip(status: string): { bg: [number,number,number]; fg: [number,n
     case "Com Parecer":  return { bg: [233,213,255], fg: [107,33,168] };
     case "Em análise":   return { bg: [219,234,254], fg: [29,78,216]  };
     case "Aprovado":     return { bg: [187,247,208], fg: [22,101,52]  };
+    case "Sancionado":   return { bg: [207,250,254], fg: [21,94,117]  };
+    case "Promulgado":   return { bg: [209,250,229], fg: [4,120,87]   };
     case "Rejeitado":    return { bg: [254,202,202], fg: [185,28,28]  };
     case "Arquivado":    return { bg: [243,244,246], fg: [75,85,99]   };
     case "Retirado":     return { bg: [255,237,213], fg: [154,52,18]  };
@@ -171,7 +173,7 @@ export function exportarSegovPDF(
   const topoConteudo = alturaCabecalho + 10;
 
   const grupoDe = (i: SegovItem) => (ehPoderExecutivo(i) ? 0 : 1);
-  const aprovadoDe = (i: SegovItem) => (i.status === "Aprovado" ? 1 : 0);
+  const aprovadoDe = (i: SegovItem) => (["Aprovado", "Sancionado", "Promulgado"].includes(i.status) ? 1 : 0);
   const ordenados = [...itens].sort(
     (a, b) => grupoDe(a) - grupoDe(b) || aprovadoDe(a) - aprovadoDe(b)
   );

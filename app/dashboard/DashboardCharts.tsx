@@ -23,6 +23,8 @@ const STATUS_COR: Record<string, string> = {
   'Com Parecer': '#a855f7', // roxo (logo)
   'Em análise':  '#3b82f6', // azul (logo)
   'Aprovado':    '#22c55e', // verde (logo)
+  'Sancionado':  '#06b6d4', // ciano
+  'Promulgado':  '#10b981', // esmeralda
   'Rejeitado':   '#ef4444', // vermelho
   'Arquivado':   '#94a3b8', // slate
   'Retirado':    '#f97316', // laranja (logo)
@@ -33,6 +35,8 @@ const STATUS_CHIP: Record<string, string> = {
   'Com Parecer': 'bg-purple-50 text-purple-700 border-purple-200',
   'Em análise':  'bg-blue-50 text-blue-700 border-blue-200',
   'Aprovado':    'bg-green-50 text-green-700 border-green-200',
+  'Sancionado':  'bg-cyan-50 text-cyan-700 border-cyan-200',
+  'Promulgado':  'bg-emerald-50 text-emerald-700 border-emerald-200',
   'Rejeitado':   'bg-red-50 text-red-700 border-red-200',
   'Arquivado':   'bg-gray-50 text-gray-600 border-gray-200',
   'Retirado':    'bg-orange-50 text-orange-700 border-orange-200',

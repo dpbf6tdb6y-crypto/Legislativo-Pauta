@@ -59,13 +59,15 @@ function fmtFluxoData(iso?: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 }
 
-const STATUS_LIST = ['Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
+const STATUS_LIST = ['Aguardando', 'Em análise', 'Com Parecer', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 const STATUS_COR: Record<string, string> = {
   'Aguardando':   'bg-yellow-100 text-yellow-800',
   'Com Parecer':  'bg-purple-100 text-purple-800',
   'Em análise':   'bg-blue-100 text-blue-800',
   'Aprovado':     'bg-green-100 text-green-800',
+  'Sancionado':   'bg-cyan-100 text-cyan-800',
+  'Promulgado':   'bg-emerald-100 text-emerald-800',
   'Rejeitado':    'bg-red-100 text-red-800',
   'Arquivado':    'bg-gray-100 text-gray-700',
   'Retirado':     'bg-orange-100 text-orange-800',

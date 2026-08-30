@@ -4,9 +4,10 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/contexts/toast'
 import { buscarVereadorPorNome, splitAutoresTexto } from '@/lib/vereador-match'
+import { derivarStatusSegov } from '@/lib/segov-status'
 
 const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
-const STATUS_LIST = ['Aguardando', 'Com Parecer', 'Em análise', 'Aprovado', 'Rejeitado', 'Arquivado', 'Retirado']
+const STATUS_LIST = ['Aguardando', 'Em análise', 'Com Parecer', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 type Autor = { id?: string; nome: string; isPE: boolean; ativo?: boolean }
 
@@ -413,10 +414,14 @@ export default function EditarSeggovPage() {
     setSalvando(true)
     const autorNome = autores.map(a => a.nome).join(' e ') || null
     const vereadorId = autores.find(a => !a.isPE && a.id)?.id || null
+    // O status deixa de ser escolhido à mão e passa a ser calculado a partir
+    // do próprio fluxo — exceto Arquivado/Retirado, que são decisões
+    // administrativas que a função preserva sem alteração.
+    const status = derivarStatusSegov(fluxo, form.status)
     const res = await fetch(`/api/segov/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, autorNome, vereadorId, fluxo }),
+      body: JSON.stringify({ ...form, status, autorNome, vereadorId, fluxo }),
     })
     if (res.ok) { router.refresh(); router.push('/dashboard/segov') }
     else { toast.error('Erro ao salvar'); setSalvando(false) }
@@ -660,6 +665,9 @@ export default function EditarSeggovPage() {
             <select value={form.status} onChange={e => set('status', e.target.value)} className={inp}>
               {STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
+            <p className="text-[10px] text-gray-400 mt-1 leading-tight">
+              Calculado automaticamente pelo fluxo ao salvar — só fica como escolhido aqui se for Arquivado ou Retirado.
+            </p>
           </div>
           <div className="w-64 flex-shrink-0">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Dias em Aberto</label>
