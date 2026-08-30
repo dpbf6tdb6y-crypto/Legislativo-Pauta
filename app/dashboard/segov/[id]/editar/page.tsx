@@ -394,12 +394,22 @@ export default function EditarSeggovPage() {
           ? 'border-green-500 bg-green-100'
           : 'border-green-300 bg-green-50'
 
+    // Com.1/2/3 e Comissão Especial só marcam depois de escolher Aprovado ou
+    // Reprovado no controle compartilhado do final do quadrante — antes disso
+    // o botão Marcar (e o círculo) ficam desabilitados, pra não dar a
+    // impressão de que travou sem explicação (já aconteceu de o usuário
+    // preencher data+comissão e não conseguir marcar por causa disso).
+    const faltaResultadoComissao = !done && (def.tipo === 'comissao' || def.tipo === 'comissao3nomes') && !resultadoComissao
+
     const circle = (
       <button type="button"
-        onClick={() => done ? desmarcar(def.key) : marcar(def.key)}
-        title={done ? 'Clique para desmarcar' : 'Clique para marcar'}
+        onClick={() => { if (done) desmarcar(def.key); else if (!faltaResultadoComissao) marcar(def.key) }}
+        disabled={faltaResultadoComissao}
+        title={done ? 'Clique para desmarcar' : faltaResultadoComissao ? 'Escolha Aprovado ou Reprovado no quadro "Parecer da comissão a marcar" antes' : 'Clique para marcar'}
         className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition ${
-          done ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-white border border-gray-300 hover:border-green-400'
+          done ? 'bg-green-500 text-white hover:bg-green-600' :
+          faltaResultadoComissao ? 'bg-gray-100 border border-gray-200 cursor-not-allowed' :
+          'bg-white border border-gray-300 hover:border-green-400'
         }`}>
         {done && <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
       </button>
@@ -409,7 +419,11 @@ export default function EditarSeggovPage() {
       ? <button type="button" onClick={() => desmarcar(def.key)}
           className="text-[10px] text-red-400 hover:text-red-600 transition px-1 py-0.5 rounded border border-red-200 hover:border-red-300 hover:bg-red-50 flex-shrink-0">✕</button>
       : <button type="button" onClick={() => marcar(def.key)}
-          className="text-[10px] px-2 py-0.5 rounded-md bg-green-500 text-white hover:bg-green-600 transition font-medium whitespace-nowrap flex-shrink-0">Marcar</button>
+          disabled={faltaResultadoComissao}
+          title={faltaResultadoComissao ? 'Escolha Aprovado ou Reprovado no quadro "Parecer da comissão a marcar" antes' : undefined}
+          className={`text-[10px] px-2 py-0.5 rounded-md transition font-medium whitespace-nowrap flex-shrink-0 ${
+            faltaResultadoComissao ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'
+          }`}>Marcar</button>
 
     return (
       <div key={def.key} className={`rounded-lg border shadow-sm transition-all p-2 ${cardClass}`}>
@@ -473,6 +487,12 @@ export default function EditarSeggovPage() {
             <option value="">— Selecionar comissão —</option>
             {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
           </select>
+        )}
+
+        {faltaResultadoComissao && (
+          <p className="mt-1.5 text-[10px] text-amber-600 font-medium leading-snug">
+            ⚠ Escolha Aprovado/Reprovado no quadro "Parecer da comissão a marcar", no final deste quadrante, antes de clicar em Marcar.
+          </p>
         )}
 
         {!done && def.tipo === 'nome1' && (
