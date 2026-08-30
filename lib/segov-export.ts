@@ -425,20 +425,22 @@ export function exportarSegovPDF(
         const temGrupo = fileira.some(p => p.agrupado);
         const desloc = temGrupo ? 11 : 0;   // espaço do título "PARECER CONJUNTO"
 
-        // Moldura tracejada em volta das comissões do parecer conjunto
+        // Colchete lilás por cima das comissões do parecer conjunto — mesmo
+        // desenho da tela (sem caixa ao redor, só o traço + rótulo por cima).
         if (temGrupo) {
           const cols = fileira.map((p, i) => (p.agrupado ? i : -1)).filter(i => i >= 0);
           const x0 = margin + pad + Math.min(...cols) * stepW - 2;
           const x1 = margin + pad + Math.max(...cols) * stepW + stepW - 6;
-          doc.setDrawColor(147, 51, 234);
+          const lineY = fy + 9;
+          doc.setDrawColor(168, 85, 247);
           doc.setLineWidth(0.8);
-          doc.setLineDashPattern([2, 2], 0);
-          doc.roundedRect(x0, fy, x1 - x0, alturaFileira(fileira) - 2, 3, 3, "S");
-          doc.setLineDashPattern([], 0);
+          doc.line(x0, lineY, x1, lineY);
+          doc.line(x0, lineY, x0, lineY + 2.5);
+          doc.line(x1, lineY, x1, lineY + 2.5);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(6.5);
           doc.setTextColor(126, 34, 206);
-          doc.text("PARECER CONJUNTO", (x0 + x1) / 2, fy + 8, { align: "center" });
+          doc.text("PARECER CONJUNTO", (x0 + x1) / 2, fy + 6, { align: "center" });
         }
 
         fileira.forEach((p, col) => {
