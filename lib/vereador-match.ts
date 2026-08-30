@@ -68,6 +68,12 @@ export function resolverAutores(
   // vezes só tem o Legislativo, e nunca acharia o prefeito/vice ali).
   if (vereadorPrincipal?.id) {
     vistos.add(vereadorPrincipal.id)
+    // O nome do vinculado normalmente também está repetido dentro do texto
+    // livre (autorNome guarda todos os autores, incluindo o já vinculado) —
+    // marca pelo nome também, senão o mesmo autor aparece duas vezes quando
+    // o texto livre não casa com a lista recebida (ex.: Executivo numa lista
+    // só de Legislativo) e cai no rótulo de "não achei ninguém".
+    vistos.add(normalizarNome(vereadorPrincipal.nome))
     resolvidos.push({
       label: labelDeVereador(vereadorPrincipal),
       vereadorId: vereadorPrincipal.id,
@@ -76,6 +82,7 @@ export function resolverAutores(
   }
 
   splitAutoresTexto(autorNomeTexto).forEach(f => {
+    if (vistos.has(normalizarNome(f))) return
     const v = buscarVereadorPorNome(f, vereadores)
     const chave = v ? v.id : normalizarNome(f)
     if (vistos.has(chave)) return
