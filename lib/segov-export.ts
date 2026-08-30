@@ -35,6 +35,7 @@ export const COLUNAS_RELATORIO = [
 export type ColunasKey = typeof COLUNAS_RELATORIO[number]["key"];
 
 const CHAVES_COMISSAO = ["comissao1", "comissao2", "comissao3"];
+const NEGATIVOS = new Set(["reprovado", "vetado"]);
 // Etapas em que a cor do nó já é o próprio veredito (ver graficoCor) — mesma
 // regra das telas, pra não repetir "Aprov./Reprov." embaixo do nó.
 const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, "comissaoEspecial", "resultadoFinal"]);
@@ -56,7 +57,22 @@ const FLUXO_DEF_EXPORT = [
   { key: 'votacao1',            labelCurto: '1ª Vot.'    },
   { key: 'votacao2',            labelCurto: '2ª Vot.'    },
   { key: 'resultadoFinal',      labelCurto: 'Resultado'  },
+  { key: 'sancaoVeto',          labelCurto: 'Sanção/Veto'},
+  { key: 'promulgacao',         labelCurto: 'Promul.'    },
 ]
+
+// Sanção/Veto e Promulgação são escolhidas como caminho primeiro (igual
+// comissão) — o resultado só chega depois. Marcadas sem resultado ainda não
+// valem como nó normal do fluxo, viram a bolinha fantasma no relatório
+// também, igual já acontece nas telas.
+const CHAVES_SANCAO = ["sancaoVeto", "promulgacao"];
+const OPCOES_LABEL_PDF: Record<string, Record<string, string>> = {
+  sancaoVeto: { sancionado: "Sancionado", vetado: "Vetado" },
+  promulgacao: { promulgado: "Promulgado", vetado: "Vetado" },
+};
+function labelResultadoPdf(key: string, valor: string) {
+  return OPCOES_LABEL_PDF[key]?.[valor] || (valor === "aprovado" ? "Aprov." : "Reprov.");
+}
 
 function formatarData(d?: string | null) {
   return d ? new Date(d).toLocaleDateString("pt-BR") : "—";
@@ -246,6 +262,10 @@ export function exportarSegovPDF(
 
     const marcados = FLUXO_DEF_EXPORT.filter(d => {
       if (!fluxo[d.key]?.done) return false;
+      // Sanção/Veto e Promulgação marcadas mas sem resultado ainda são só um
+      // caminho reservado — não entram como nó normal, viram a bolinha
+      // fantasma mais abaixo.
+      if (CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado) return false;
       if (agrupar && d.key === "comissaoConjunta") return false;
       return true;
     });
@@ -267,6 +287,20 @@ export function exportarSegovPDF(
           ? "verde"
           : "normal";
 
+    // Depois do Resultado Final aprovado, falta o Executivo/a Mesa se
+    // manifestar. Três estados: nada escolhido ainda → fantasma genérico
+    // "Sanção"; Sanção/Veto ou Promulgação já escolhida como caminho mas sem
+    // resultado → fantasma específico daquela etapa; com resultado → nó
+    // normal, sem fantasma.
+    const chaveSancaoIncompleta = CHAVES_SANCAO.find(k => fluxo[k]?.done && !fluxo[k]?.data?.resultado);
+    const labelFantasmaSancao = chaveSancaoIncompleta
+      ? FLUXO_DEF_EXPORT.find(d => d.key === chaveSancaoIncompleta)!.labelCurto
+      : "Sanção";
+    const aguardandoSancao =
+      !!fluxo["resultadoFinal"]?.done &&
+      fluxo["resultadoFinal"]?.data?.resultado === "aprovado" &&
+      (!!chaveSancaoIncompleta || (!fluxo["sancaoVeto"]?.done && !fluxo["promulgacao"]?.done));
+
     // A fonte precisa estar definida ANTES de medir/quebrar o texto.
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9.5);
@@ -278,7 +312,7 @@ export function exportarSegovPDF(
     // rótulo quebrado + data + etiqueta de comissão.
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    const passos = marcados.map(step => {
+    const passosReais = marcados.map(step => {
       const sd = fluxo[step.key];
       return {
         step,
@@ -287,8 +321,24 @@ export function exportarSegovPDF(
         temData: !!sd?.doneAt,
         temEtiqueta: !!(sd?.data?.comissaoNome || (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(step.key))),
         agrupado: chavesAgrupadas.includes(step.key),
+        fantasma: false,
       };
     });
+    // Bolinha tracejada azul indicando a próxima etapa esperada, ainda não
+    // marcada — mesmo indicativo visual das telas, sem seta colorida saindo
+    // dela (a espera ainda não é um fato).
+    const labelFantasmaTexto = `Aguardando ${labelFantasmaSancao}`;
+    const passos = aguardandoSancao
+      ? [...passosReais, {
+          step: { key: "_fantasma", labelCurto: labelFantasmaTexto },
+          sd: undefined,
+          labelLinhas: doc.splitTextToSize(labelFantasmaTexto, stepW - 4) as string[],
+          temData: false,
+          temEtiqueta: false,
+          agrupado: false,
+          fantasma: true,
+        }]
+      : passosReais;
     type Passo = typeof passos[number];
     const fileiras: Passo[][] = [];
     for (let i = 0; i < passos.length; i += porLinha) fileiras.push(passos.slice(i, i + porLinha));
@@ -454,8 +504,31 @@ export function exportarSegovPDF(
           const ultimoGeral = indiceGeral === passos.length - 1;
           const ultimoDaFileira = col === fileira.length - 1;
 
+          if (p.fantasma) {
+            // Bolinha tracejada azul — próxima etapa esperada, ainda não
+            // marcada. Só indicativo, sem preenchimento nem "check".
+            doc.setDrawColor(96, 165, 250);
+            doc.setLineWidth(1);
+            doc.setLineDashPattern([1.5, 1.5], 0);
+            doc.circle(x, nodeY, nodeR, "S");
+            doc.setLineDashPattern([], 0);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(59, 130, 246);
+            p.labelLinhas.forEach((l, li) => {
+              doc.text(l, x, nodeY + nodeR + 9 + li * 8, { align: "center" });
+            });
+            return;
+          }
+
+          // Sanção/Veto e Promulgação têm veredito próprio (Sancionado/
+          // Vetado, Promulgado/Vetado) que não entra no cálculo geral do
+          // fluxo (graficoCor) — sem isso, um Veto marcado depois do
+          // Resultado Final aprovado apareceria verde do mesmo jeito.
+          const negativoLocal = !!p.sd?.data?.resultado && NEGATIVOS.has(p.sd.data.resultado);
+
           let nr = 22, ng = 163, nb = 74;
-          if (graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
+          if (negativoLocal || graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
           else if (graficoCor === "normal" && ultimoGeral) { nr = 37; ng = 99; nb = 235; }
 
           doc.setFillColor(nr, ng, nb);
@@ -467,7 +540,16 @@ export function exportarSegovPDF(
 
           // Sem seta entre comissões do mesmo parecer conjunto — foi um ato só.
           const dentroDoGrupo = p.agrupado && !!fileira[col + 1]?.agrupado;
-          if (!ultimoGeral && !ultimoDaFileira && !dentroDoGrupo) {
+          const proximoEhFantasma = !!fileira[col + 1]?.fantasma;
+          if (!ultimoGeral && !ultimoDaFileira && !dentroDoGrupo && proximoEhFantasma) {
+            // Seta tracejada azul até a bolinha fantasma — a espera ainda não
+            // é um fato, não pode ter a cor "concluído" do resto do fluxo.
+            doc.setDrawColor(96, 165, 250);
+            doc.setLineWidth(0.8);
+            doc.setLineDashPattern([1.5, 1.5], 0);
+            doc.line(x + nodeR + 1, nodeY, x + stepW - nodeR - 1, nodeY);
+            doc.setLineDashPattern([], 0);
+          } else if (!ultimoGeral && !ultimoDaFileira && !dentroDoGrupo) {
             doc.setDrawColor(nr, ng, nb);
             doc.setLineWidth(0.8);
             const lx1 = x + nodeR + 1;
@@ -505,11 +587,11 @@ export function exportarSegovPDF(
             doc.setTextColor(29, 78, 216);
             doc.text(p.sd.data.comissaoNome, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
           } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
-            const rText = p.sd.data.resultado === "aprovado" ? "Aprov." : "Reprov.";
+            const rText = labelResultadoPdf(p.step.key, p.sd.data.resultado);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7);
             const bw = doc.getTextWidth(rText) + 7;
-            if (p.sd.data.resultado === "aprovado") {
+            if (!NEGATIVOS.has(p.sd.data.resultado)) {
               doc.setFillColor(187, 247, 208); doc.setTextColor(22, 101, 52);
             } else {
               doc.setFillColor(254, 202, 202); doc.setTextColor(185, 28, 28);
