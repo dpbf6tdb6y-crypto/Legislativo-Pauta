@@ -454,10 +454,15 @@ export default function SeggovPage() {
 
             const renderNo = (step: typeof marcados[number]) => {
               const isLast = step.key === ultimaChave
+              // Sanção/Veto (e outras etapas de resultado fora do cálculo geral
+              // do fluxo) precisam da própria cor: sem isso, um Veto marcado
+              // depois do Resultado Final aprovado apareceria verde do mesmo
+              // jeito, porque o gráfico já estava "verde" globalmente.
+              const negativoLocal = !!step.data?.resultado && NEGATIVOS.has(step.data.resultado)
               return (
                 <div className="flex flex-col items-center" style={{ width: '56px' }}>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
-                    graficoCor === 'vermelho' ? 'bg-red-500' :
+                    negativoLocal || graficoCor === 'vermelho' ? 'bg-red-500' :
                     (graficoCor === 'normal' && isLast) ? 'bg-blue-500' :
                     'bg-green-500'
                   }`}>
@@ -466,7 +471,7 @@ export default function SeggovPage() {
                     </svg>
                   </div>
                   <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
-                    graficoCor === 'vermelho' ? 'text-red-700' :
+                    negativoLocal || graficoCor === 'vermelho' ? 'text-red-700' :
                     (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
                     'text-gray-700'
                   }`}>{step.labelCurto}</p>
