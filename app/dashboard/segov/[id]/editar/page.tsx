@@ -832,20 +832,22 @@ export default function EditarSeggovPage() {
               <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Projeto de Lei</h4>
               <div className="space-y-2">
                 {renderIdentificacaoCard()}
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {renderStepCard('votacao1')}
                   {renderStepCard('votacao2')}
+                  {renderStepCard('resultadoFinal')}
                 </div>
-                {renderStepCard('resultadoFinal')}
               </div>
             </div>
 
             <div className="rounded-xl border border-blue-200 p-2">
               <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Sanção e Promulgação</h4>
               <div className="space-y-2">
-                {renderStepCard('sancaoVeto')}
+                <div className="grid grid-cols-2 gap-2">
+                  {renderStepCard('sancaoVeto')}
+                  {renderStepCard('promulgacao')}
+                </div>
                 {fluxo['sancaoVeto']?.data?.resultado === 'vetado' && renderStepCard('vetoManutencao')}
-                {renderStepCard('promulgacao')}
               </div>
             </div>
           </div>
