@@ -292,10 +292,10 @@ export function exportarSegovPDF(
     // "Sanção"; Sanção/Veto ou Promulgação já escolhida como caminho mas sem
     // resultado → fantasma específico daquela etapa; com resultado → nó
     // normal, sem fantasma.
+    // Rótulo curto de propósito — a coluna do fluxo no PDF é estreita (48pt) e
+    // "Sanção/Veto" força quebra no meio da palavra sem espaço pra respirar.
     const chaveSancaoIncompleta = CHAVES_SANCAO.find(k => fluxo[k]?.done && !fluxo[k]?.data?.resultado);
-    const labelFantasmaSancao = chaveSancaoIncompleta
-      ? FLUXO_DEF_EXPORT.find(d => d.key === chaveSancaoIncompleta)!.labelCurto
-      : "Sanção";
+    const labelFantasmaSancao = chaveSancaoIncompleta === "promulgacao" ? "Promul." : "Sanção";
     const aguardandoSancao =
       !!fluxo["resultadoFinal"]?.done &&
       fluxo["resultadoFinal"]?.data?.resultado === "aprovado" &&
@@ -327,7 +327,7 @@ export function exportarSegovPDF(
     // Bolinha tracejada azul indicando a próxima etapa esperada, ainda não
     // marcada — mesmo indicativo visual das telas, sem seta colorida saindo
     // dela (a espera ainda não é um fato).
-    const labelFantasmaTexto = `Aguardando ${labelFantasmaSancao}`;
+    const labelFantasmaTexto = `Aguard. ${labelFantasmaSancao}`;
     const passos = aguardandoSancao
       ? [...passosReais, {
           step: { key: "_fantasma", labelCurto: labelFantasmaTexto },
