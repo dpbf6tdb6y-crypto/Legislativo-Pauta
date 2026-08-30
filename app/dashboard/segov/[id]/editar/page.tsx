@@ -267,6 +267,16 @@ export default function EditarSeggovPage() {
    * verdade foi um ato só. O nó avulso "C. Conj." sai do gráfico nesse caso,
    * porque a faixa já comunica isso (ele continua marcável no formulário).
    */
+  // Depois do Resultado Final aprovado, falta ao Executivo se manifestar
+  // (Sanção/Veto) — enquanto isso não é marcado (nem a Promulgação direto,
+  // caso não se registre a sanção separadamente), o fluxo mostra uma bolinha
+  // fantasma indicando a próxima etapa esperada.
+  const aguardandoSancao =
+    fluxo['resultadoFinal']?.done &&
+    fluxo['resultadoFinal']?.data?.resultado === 'aprovado' &&
+    !fluxo['sancaoVeto']?.done &&
+    !fluxo['promulgacao']?.done
+
   const segmentos = useMemo(() => {
     type No = typeof marcados[number]
     const doGrupo = fluxo['comissaoConjunta']?.done
@@ -274,7 +284,7 @@ export default function EditarSeggovPage() {
       : []
     const agrupar = doGrupo.length >= 2
 
-    const out: ({ tipo: 'no'; step: No } | { tipo: 'grupo'; steps: No[] })[] = []
+    const out: ({ tipo: 'no'; step: No } | { tipo: 'grupo'; steps: No[] } | { tipo: 'fantasma'; label: string })[] = []
     let grupoInserido = false
     marcados.forEach(step => {
       if (agrupar && CHAVES_COMISSAO.includes(step.key)) {
@@ -284,8 +294,9 @@ export default function EditarSeggovPage() {
       if (agrupar && step.key === 'comissaoConjunta') return
       out.push({ tipo: 'no', step })
     })
+    if (aguardandoSancao) out.push({ tipo: 'fantasma', label: 'Aguard. Sanção' })
     return out
-  }, [marcados, fluxo])
+  }, [marcados, fluxo, aguardandoSancao])
 
   const ultimaChaveMarcada = marcados.length ? marcados[marcados.length - 1].key : null
 
@@ -328,6 +339,18 @@ export default function EditarSeggovPage() {
         {step.data?.nome1 && !step.data?.comissaoNome && (
           <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
         )}
+      </div>
+    )
+  }
+
+  /** Bolinha tracejada azul indicando a próxima etapa esperada, ainda não
+   * marcada (hoje só usada para "Aguardando Sanção" após o Resultado Final
+   * aprovado) — não é clicável, é só um indicativo visual. */
+  function renderNoFantasma(label: string) {
+    return (
+      <div className="flex flex-col items-center" style={{ width: '56px' }}>
+        <div className="w-5 h-5 rounded-full border-2 border-dashed border-blue-400 bg-blue-50" />
+        <p className="text-xs font-semibold mt-1 text-center leading-tight px-1 text-blue-500">{label}</p>
       </div>
     )
   }
@@ -662,10 +685,13 @@ export default function EditarSeggovPage() {
               <div className="flex items-start" style={{ gap: 0 }}>
                 {segmentos.map((seg, i) => {
                   const ultimoSegmento = i === segmentos.length - 1
+                  const proximoEhFantasma = segmentos[i + 1]?.tipo === 'fantasma'
                   return (
                     <div key={i} className="flex items-start flex-shrink-0">
                       {seg.tipo === 'no' ? (
                         renderNoFluxo(seg.step)
+                      ) : seg.tipo === 'fantasma' ? (
+                        renderNoFantasma(seg.label)
                       ) : (
                         /* Parecer conjunto: as comissões aparecem lado a lado dentro
                            de uma faixa, SEM setas entre elas — foi um ato único.
@@ -686,7 +712,10 @@ export default function EditarSeggovPage() {
                           </div>
                         </div>
                       )}
-                      {!ultimoSegmento && (
+                      {!ultimoSegmento && proximoEhFantasma && (
+                        <div className="flex-shrink-0 mt-2.5 border-t-2 border-dashed border-blue-300 w-2 h-0" />
+                      )}
+                      {!ultimoSegmento && !proximoEhFantasma && (
                         <div className="flex-shrink-0 mt-2.5">
                           <div className={`h-0.5 w-2 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
                           <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-2 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />

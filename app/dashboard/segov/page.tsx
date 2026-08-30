@@ -431,7 +431,7 @@ export default function SeggovPage() {
               ? marcados.filter(m => CHAVES_COMISSAO.includes(m.key))
               : []
             const agrupar = doGrupo.length >= 2
-            const segmentos: ({ tipo: 'no'; step: typeof marcados[number] } | { tipo: 'grupo'; steps: typeof marcados })[] = []
+            const segmentos: ({ tipo: 'no'; step: typeof marcados[number] } | { tipo: 'grupo'; steps: typeof marcados } | { tipo: 'fantasma'; label: string })[] = []
             let grupoInserido = false
             marcados.forEach(step => {
               if (agrupar && CHAVES_COMISSAO.includes(step.key)) {
@@ -441,6 +441,15 @@ export default function SeggovPage() {
               if (agrupar && step.key === 'comissaoConjunta') return
               segmentos.push({ tipo: 'no', step })
             })
+            // Depois do Resultado Final aprovado, falta o Executivo se
+            // manifestar (Sanção/Veto) — mostra uma bolinha fantasma até isso
+            // (ou a Promulgação direto) ser marcado.
+            const aguardandoSancao =
+              fluxo['resultadoFinal']?.done &&
+              fluxo['resultadoFinal']?.data?.resultado === 'aprovado' &&
+              !fluxo['sancaoVeto']?.done &&
+              !fluxo['promulgacao']?.done
+            if (aguardandoSancao) segmentos.push({ tipo: 'fantasma', label: 'Aguard. Sanção' })
             const ultimaChave = marcados.length ? marcados[marcados.length - 1].key : null
 
             const renderNo = (step: typeof marcados[number]) => {
@@ -486,6 +495,15 @@ export default function SeggovPage() {
                 </div>
               )
             }
+
+            // Bolinha tracejada azul indicando a próxima etapa esperada, ainda
+            // não marcada — só indicativo visual, não é clicável.
+            const renderNoFantasma = (label: string) => (
+              <div className="flex flex-col items-center" style={{ width: '56px' }}>
+                <div className="w-5 h-5 rounded-full border-2 border-dashed border-blue-400 bg-blue-50" />
+                <p className="text-xs font-semibold mt-1 text-center leading-tight px-1 text-blue-500">{label}</p>
+              </div>
+            )
 
             return (
               <div key={item.id}
@@ -545,10 +563,13 @@ export default function SeggovPage() {
                     <div className="flex items-start" style={{ gap: 0 }}>
                       {segmentos.map((seg, i) => {
                         const ultimoSegmento = i === segmentos.length - 1
+                        const proximoEhFantasma = segmentos[i + 1]?.tipo === 'fantasma'
                         return (
                           <div key={i} className="flex items-start flex-shrink-0">
                             {seg.tipo === 'no' ? (
                               renderNo(seg.step)
+                            ) : seg.tipo === 'fantasma' ? (
+                              renderNoFantasma(seg.label)
                             ) : (
                               <div className="relative flex items-start self-start px-1">
                                 <p className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap">
@@ -564,7 +585,10 @@ export default function SeggovPage() {
                                 </div>
                               </div>
                             )}
-                            {!ultimoSegmento && (
+                            {!ultimoSegmento && proximoEhFantasma && (
+                              <div className="flex-shrink-0 mt-2.5 border-t-2 border-dashed border-blue-300 w-2 h-0" />
+                            )}
+                            {!ultimoSegmento && !proximoEhFantasma && (
                               <div className="flex-shrink-0 mt-2.5">
                                 <div className={`h-0.5 w-2 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
                                 <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-2 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
