@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import DashboardCharts from './DashboardCharts'
 import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
 import FiltroPoder from '@/app/components/FiltroPoder'
@@ -38,6 +39,7 @@ function resultadoDe(status: string): 'aprovado' | 'rejeitado' | 'tramitando' {
 }
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [itens, setItens] = useState<Item[]>([])
   const [requerimentos, setRequerimentos] = useState<Item[]>([])
   const [vereadoresTodos, setVereadoresTodos] = useState<Vereador[]>([])
@@ -240,10 +242,6 @@ export default function DashboardPage() {
     setFiltroMateria(''); setFiltroStatus(''); setFiltroOrigem(''); setFiltroSituacaoAutor('ativos')
   }
 
-  function toggleMateria(m: typeof filtroMateria) {
-    setFiltroMateria(prev => prev === m ? '' : m)
-  }
-
   function toggleOrigem(o: typeof filtroOrigem) {
     setFiltroOrigem(prev => prev === o ? '' : o)
   }
@@ -365,17 +363,17 @@ export default function DashboardPage() {
         <StatCard
           label="Proposições" value={stats.total} color="#8B0000"
           icon="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          ativo={filtroMateria === 'proposicao'} onClick={() => toggleMateria('proposicao')}
+          onClick={() => router.push('/dashboard/segov')}
         />
         <StatCard
           label="Requerimentos" value={stats.totalReq} color="#0e7490"
           icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-          ativo={filtroMateria === 'requerimento'} onClick={() => toggleMateria('requerimento')}
+          onClick={() => router.push('/dashboard/requerimentos')}
         />
         <StatCard
           label="Moções" value={stats.totalMoc} color="#6d28d9"
           icon="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z"
-          ativo={filtroMateria === 'mocao'} onClick={() => toggleMateria('mocao')}
+          onClick={() => router.push('/dashboard/mocoes')}
         />
         <StatCard
           label="Vereadores Ativos" value={vereadoresAtivos} color="#1d4ed8"

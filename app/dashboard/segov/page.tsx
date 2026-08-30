@@ -101,8 +101,41 @@ export default function SeggovPage() {
   ), [vereadores, filtroSituacaoAutor])
 
   useEffect(() => {
-    if (colVereador && !vereadoresParaFiltro.some(v => v.id === colVereador)) setColVereador('')
+    // Só limpa se os vereadores já carregaram — sem essa checagem, o filtro
+    // restaurado do sessionStorage (ver abaixo) era apagado antes da lista de
+    // vereadores chegar da API, porque nesse instante vereadoresParaFiltro
+    // ainda está vazio.
+    if (colVereador && vereadores.length > 0 && !vereadoresParaFiltro.some(v => v.id === colVereador)) setColVereador('')
   }, [vereadoresParaFiltro]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Lembra o filtro aplicado (busca, ano, status, vereador etc.) entre uma
+  // visita e outra desta tela — principalmente ao abrir uma proposição pra
+  // editar e depois clicar em Voltar ou Salvar: sem isso, a lista sempre
+  // voltava zerada, sem o filtro que o usuário tinha aplicado.
+  const FILTROS_SEGOV_KEY = 'segov-filtros-lista'
+  useEffect(() => {
+    try {
+      const salvo = sessionStorage.getItem(FILTROS_SEGOV_KEY)
+      if (!salvo) return
+      const f = JSON.parse(salvo)
+      if (f.colProposicao) setColProposicao(f.colProposicao)
+      if (f.colEmenta) setColEmenta(f.colEmenta)
+      if (f.colVereador) setColVereador(f.colVereador)
+      if (f.colStatus) setColStatus(f.colStatus)
+      if (f.colTipo) setColTipo(f.colTipo)
+      if (f.colAno) setColAno(f.colAno)
+      if (f.filtroSituacaoAutor) setFiltroSituacaoAutor(f.filtroSituacaoAutor)
+      if (f.filtroPoder) setFiltroPoder(f.filtroPoder)
+    } catch {}
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(FILTROS_SEGOV_KEY, JSON.stringify({
+        colProposicao, colEmenta, colVereador, colStatus, colTipo, colAno, filtroSituacaoAutor, filtroPoder,
+      }))
+    } catch {}
+  }, [colProposicao, colEmenta, colVereador, colStatus, colTipo, colAno, filtroSituacaoAutor, filtroPoder])
 
   async function carregar() {
     setLoading(true)

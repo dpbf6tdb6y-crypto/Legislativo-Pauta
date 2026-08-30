@@ -15,7 +15,7 @@ type Item = {
   id: string; numero: string; ano: number; tipo: string; descricao: string
   status: string; dataEnvio: string | null; autorNome: string | null
   fluxo: Record<string, { done: boolean; doneAt?: string; data?: any }> | null
-  vereador: { id: string; nome: string; apelido?: string | null } | null
+  vereador: { id: string; nome: string; apelido?: string | null; poder?: string } | null
 }
 type Vereador = { id: string; nome: string; apelido?: string | null; ativo?: boolean }
 
@@ -95,8 +95,38 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
   ), [vereadores, filtroSituacaoAutor])
 
   useEffect(() => {
-    if (filtroVereadorId && !vereadoresParaFiltro.some(v => v.id === filtroVereadorId)) setFiltroVereadorId('')
+    // Só limpa depois que os vereadores carregarem — senão apagava o filtro
+    // restaurado do sessionStorage antes da API responder.
+    if (filtroVereadorId && vereadores.length > 0 && !vereadoresParaFiltro.some(v => v.id === filtroVereadorId)) setFiltroVereadorId('')
   }, [vereadoresParaFiltro]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Lembra o filtro aplicado nesta lista (Requerimentos e Moções usam o mesmo
+  // componente, por isso a chave inclui o título) entre uma visita e outra —
+  // principalmente ao abrir um item pra editar e voltar ou salvar, pra não
+  // perder a busca/filtro que já estava aplicado.
+  const FILTROS_REQ_KEY = `requerimentos-filtros-${titulo}`
+  useEffect(() => {
+    try {
+      const salvo = sessionStorage.getItem(FILTROS_REQ_KEY)
+      if (!salvo) return
+      const f = JSON.parse(salvo)
+      if (f.busca) setBusca(f.busca)
+      if (f.filtroTipo) setFiltroTipo(f.filtroTipo)
+      if (f.filtroStatus) setFiltroStatus(f.filtroStatus)
+      if (f.filtroVereadorId) setFiltroVereadorId(f.filtroVereadorId)
+      if (f.filtroAno) setFiltroAno(f.filtroAno)
+      if (f.filtroSituacaoAutor) setFiltroSituacaoAutor(f.filtroSituacaoAutor)
+      if (f.filtroPoder) setFiltroPoder(f.filtroPoder)
+    } catch {}
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(FILTROS_REQ_KEY, JSON.stringify({
+        busca, filtroTipo, filtroStatus, filtroVereadorId, filtroAno, filtroSituacaoAutor, filtroPoder,
+      }))
+    } catch {}
+  }, [busca, filtroTipo, filtroStatus, filtroVereadorId, filtroAno, filtroSituacaoAutor, filtroPoder]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const mostrarFiltroTipo = tiposExibidos.length > 1
 
