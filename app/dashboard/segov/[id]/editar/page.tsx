@@ -851,7 +851,7 @@ export default function EditarSeggovPage() {
                            linha dos outros passos do fluxo). */
                         <div className="relative flex items-start self-start px-1">
                           <p className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap">
-                            Parecer Conjunto
+                            Parecer Conjunto{fluxo['comissaoConjunta']?.data?.nome1 ? ` — ${fluxo['comissaoConjunta']?.data?.nome1}` : ''}
                           </p>
                           <div className="absolute -top-1 left-0 right-0 h-2">
                             <div className="absolute inset-x-0 top-0 border-t-2 border-purple-300" />

@@ -517,7 +517,8 @@ export function exportarSegovPDF(
           doc.setFont("helvetica", "bold");
           doc.setFontSize(6.5);
           doc.setTextColor(126, 34, 206);
-          doc.text("PARECER CONJUNTO", (x0 + x1) / 2, fy + 6, { align: "center" });
+          const nomeConjunta = fluxo["comissaoConjunta"]?.data?.nome1;
+          doc.text(nomeConjunta ? `PARECER CONJUNTO — ${nomeConjunta}` : "PARECER CONJUNTO", (x0 + x1) / 2, fy + 6, { align: "center" });
         }
 
         fileira.forEach((p, col) => {
