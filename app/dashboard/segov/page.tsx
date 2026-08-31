@@ -456,6 +456,13 @@ export default function SeggovPage() {
             const diasAberto = pautadoDoneAt
               ? Math.floor((Date.now() - new Date(pautadoDoneAt).getTime()) / 86400000)
               : null
+            // Sancionado: total fixo do processo inteiro (Protocolado até a
+            // Sanção), em vez de continuar contando pra sempre desde o Pautado.
+            const sancaoDoneAt = fluxo['sancaoVeto']?.data?.resultado === 'sancionado' ? fluxo['sancaoVeto']?.doneAt : null
+            const protocoladoDoneAt = fluxo['protocolado']?.doneAt
+            const diasProcessoConcluido = sancaoDoneAt && protocoladoDoneAt
+              ? Math.floor((new Date(sancaoDoneAt).getTime() - new Date(protocoladoDoneAt).getTime()) / 86400000)
+              : null
 
             // Parecer conjunto: as comissões entram numa faixa única, sem setas
             // entre elas — enfileirá-las sugeriria tramitação sequencial.
@@ -577,7 +584,11 @@ export default function SeggovPage() {
                       {pautadoDoneAt && (
                         <span className="text-xs text-gray-400">Pautado: {new Date(pautadoDoneAt).toLocaleDateString('pt-BR')}</span>
                       )}
-                      {diasAberto !== null && (
+                      {diasProcessoConcluido !== null ? (
+                        <span className="text-xs font-bold text-green-700">
+                          Concluído em {diasProcessoConcluido} dias
+                        </span>
+                      ) : diasAberto !== null && (
                         <span className={`text-xs font-bold ${diasAberto > 30 ? 'text-red-600' : diasAberto > 15 ? 'text-yellow-600' : 'text-green-600'}`}>
                           {diasAberto} dias em aberto
                         </span>

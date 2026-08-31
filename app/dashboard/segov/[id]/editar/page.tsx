@@ -471,6 +471,16 @@ export default function EditarSeggovPage() {
     return Math.floor((Date.now() - new Date(st.doneAt).getTime()) / 86400000)
   }, [fluxo])
 
+  // Quando sanciona, o "Dias em Aberto" (que conta pra sempre) vira um total
+  // fixo do processo inteiro — do Protocolado até a data da Sanção.
+  const diasProcessoConcluido = useMemo(() => {
+    const sancao = fluxo['sancaoVeto']
+    if (!sancao?.done || sancao.data?.resultado !== 'sancionado') return null
+    const protocolado = fluxo['protocolado']
+    if (!protocolado?.done || !protocolado.doneAt || !sancao.doneAt) return null
+    return Math.floor((new Date(sancao.doneAt).getTime() - new Date(protocolado.doneAt).getTime()) / 86400000)
+  }, [fluxo])
+
   async function salvar(e: React.FormEvent) {
     e.preventDefault()
     setSalvando(true)
@@ -757,8 +767,17 @@ export default function EditarSeggovPage() {
             </p>
           </div>
           <div className="w-64 flex-shrink-0">
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Dias em Aberto</label>
-            {diasEmAberto !== null ? (
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+              {diasProcessoConcluido !== null ? 'Duração do Processo' : 'Dias em Aberto'}
+            </label>
+            {diasProcessoConcluido !== null ? (
+              <div className="rounded-lg border px-3 py-2 bg-green-50 border-green-200">
+                <p className="text-2xl font-bold tabular-nums leading-none text-green-700">
+                  {diasProcessoConcluido} <span className="text-sm font-normal">dias</span></p>
+                <p className="text-xs text-green-600 mt-1 font-medium">Concluído (Sancionado)</p>
+                <p className="text-xs text-gray-400">{fmtData(fluxo['protocolado']?.doneAt)} até {fmtData(fluxo['sancaoVeto']?.doneAt)}</p>
+              </div>
+            ) : diasEmAberto !== null ? (
               <div className="rounded-lg border px-3 py-2 bg-blue-50 border-blue-200">
                 <p className="text-2xl font-bold tabular-nums leading-none text-blue-600">
                   {diasEmAberto} <span className="text-sm font-normal">dias</span></p>

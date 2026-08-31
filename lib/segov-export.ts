@@ -244,6 +244,13 @@ export function exportarSegovPDF(
     const diasEmAberto = pautadoDoneAt
       ? Math.floor((Date.now() - new Date(pautadoDoneAt).getTime()) / 86400000)
       : null;
+    // Sancionado: total fixo do processo inteiro (Protocolado até a Sanção),
+    // em vez de continuar contando pra sempre desde o Pautado.
+    const sancaoDoneAt = fluxo["sancaoVeto"]?.data?.resultado === "sancionado" ? fluxo["sancaoVeto"]?.doneAt : null;
+    const protocoladoDoneAt = fluxo["protocolado"]?.doneAt;
+    const diasProcessoConcluido = sancaoDoneAt && protocoladoDoneAt
+      ? Math.floor((new Date(sancaoDoneAt).getTime() - new Date(protocoladoDoneAt).getTime()) / 86400000)
+      : null;
 
     // Mesma resolução usada nas telas — autor do Poder Executivo aparece como
     // "Poder Executivo - Nome", não só o nome solto.
@@ -438,7 +445,12 @@ export function exportarSegovPDF(
       cx += doc.getTextWidth(pText) + 7;
     }
 
-    if (diasEmAberto !== null) {
+    if (diasProcessoConcluido !== null) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(21, 128, 61);
+      doc.text(`Concluído em ${diasProcessoConcluido} dias`, cx, cy + 9.5);
+    } else if (diasEmAberto !== null) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7);
       if (diasEmAberto > 30)      doc.setTextColor(220, 38, 38);
