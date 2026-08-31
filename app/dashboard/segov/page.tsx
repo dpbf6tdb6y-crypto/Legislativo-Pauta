@@ -24,8 +24,8 @@ const FLUXO_DEF = [
   { key: 'pedidoVista',         labelCurto: 'P. Vista' },
   { key: 'pedidoAdiamento',     labelCurto: 'P. Adj.'  },
   { key: 'emenda',              labelCurto: 'Emenda'    },
-  { key: 'emendaVotacao1',      labelCurto: '1ª V. Emd.' },
-  { key: 'emendaVotacao2',      labelCurto: '2ª V. Emd.' },
+  { key: 'emendaVotacao1',      labelCurto: '1ª Emd.'    },
+  { key: 'emendaVotacao2',      labelCurto: '2ª Emd.'    },
   { key: 'emendaResultado',     labelCurto: 'Res. Emd.'  },
   { key: 'votacao1',            labelCurto: '1ª Vot.'   },
   { key: 'votacao2',            labelCurto: '2ª Vot.'   },
@@ -507,7 +507,7 @@ export default function SeggovPage() {
               // "Retirado" — independe do resto do fluxo estar verde/vermelho/azul.
               const isRetirado = step.key === 'retiradoPauta'
               return (
-                <div className="flex flex-col items-center" style={{ width: '56px' }}>
+                <div className="flex flex-col items-center" style={{ width: '68px' }}>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
                     isRetirado ? 'bg-orange-500' :
                     negativoLocal || graficoCor === 'vermelho' ? 'bg-red-500' :
@@ -648,12 +648,12 @@ export default function SeggovPage() {
                               </div>
                             )}
                             {!ultimoSegmento && proximoEhFantasma && (
-                              <div className="flex-shrink-0 mt-2.5 border-t-2 border-dashed border-blue-300 w-2 h-0" />
+                              <div className="flex-shrink-0 mt-2.5 border-t-2 border-dashed border-blue-300 w-4 h-0" />
                             )}
                             {!ultimoSegmento && !proximoEhFantasma && (
                               <div className="flex-shrink-0 mt-2.5">
-                                <div className={`h-0.5 w-2 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
-                                <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-2 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
+                                <div className={`h-0.5 w-4 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
+                                <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-4 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
                               </div>
                             )}
                           </div>

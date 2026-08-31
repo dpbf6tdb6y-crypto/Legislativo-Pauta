@@ -39,8 +39,8 @@ const FLUXO_DEF: StepDef[] = [
   { key: 'pedidoVista',        label: 'Pedido de Vista',                labelCurto: 'P. Vista',   tipo: 'nome1' },
   { key: 'pedidoAdiamento',    label: 'Pedido de Adiamento de Votação', labelCurto: 'P. Adj.',    tipo: 'nome1' },
   { key: 'emenda',             label: 'Emenda(s)',                      labelCurto: 'Emenda',     tipo: 'resultado' },
-  { key: 'emendaVotacao1',     label: '1ª Votação da Emenda',           labelCurto: '1ª V. Emd.', tipo: 'resultado' },
-  { key: 'emendaVotacao2',     label: '2ª Votação da Emenda',           labelCurto: '2ª V. Emd.', tipo: 'resultado' },
+  { key: 'emendaVotacao1',     label: '1ª Votação da Emenda',           labelCurto: '1ª Emd.',    tipo: 'resultado' },
+  { key: 'emendaVotacao2',     label: '2ª Votação da Emenda',           labelCurto: '2ª Emd.',    tipo: 'resultado' },
   { key: 'emendaResultado',    label: 'Resultado da Emenda',            labelCurto: 'Res. Emd.',  tipo: 'resultado' },
   { key: 'votacao1',           label: '1ª Votação do Projeto de Lei',   labelCurto: '1ª Vot.',    tipo: 'resultado' },
   { key: 'votacao2',           label: '2ª Votação do Projeto de Lei',   labelCurto: '2ª Vot.',    tipo: 'resultado' },
@@ -387,7 +387,7 @@ export default function EditarSeggovPage() {
     // independe do resto do fluxo estar verde/vermelho/azul.
     const isRetirado = step.key === 'retiradoPauta'
     return (
-      <div className="flex flex-col items-center" style={{ width: '56px' }}>
+      <div className="flex flex-col items-center" style={{ width: '68px' }}>
         <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
           isRetirado ? 'bg-orange-500' :
           negativoLocal || graficoCor === 'vermelho' ? 'bg-red-500' :
@@ -864,12 +864,12 @@ export default function EditarSeggovPage() {
                         </div>
                       )}
                       {!ultimoSegmento && proximoEhFantasma && (
-                        <div className="flex-shrink-0 mt-2.5 border-t-2 border-dashed border-blue-300 w-2 h-0" />
+                        <div className="flex-shrink-0 mt-2.5 border-t-2 border-dashed border-blue-300 w-4 h-0" />
                       )}
                       {!ultimoSegmento && !proximoEhFantasma && (
                         <div className="flex-shrink-0 mt-2.5">
-                          <div className={`h-0.5 w-2 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
-                          <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-2 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
+                          <div className={`h-0.5 w-4 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
+                          <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-4 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
                         </div>
                       )}
                     </div>
