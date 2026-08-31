@@ -238,7 +238,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
       {/* Conteúdo principal */}
       <div className="flex-1 flex flex-col overflow-auto">
-        <header className="bg-white shadow-sm px-5 py-2 flex items-center justify-between flex-shrink-0 sticky top-0 z-40">
+        <header className="bg-white shadow-sm px-5 py-2 flex items-center justify-between flex-shrink-0 sticky top-0 z-40 will-change-transform">
           <TopbarLeft />
           <TopbarRight />
           <div className="flex items-center gap-3">

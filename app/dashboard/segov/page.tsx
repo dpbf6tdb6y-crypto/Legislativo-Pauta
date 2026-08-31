@@ -321,8 +321,11 @@ export default function SeggovPage() {
           do cabeçalho do sistema (48px), enquanto rola só a lista de
           proposições. As duas ficam dentro do MESMO sticky (em vez de cada
           uma ter o seu com um "top" calculado à mão) pra nunca se
-          desalinharem entre si durante o scroll. */}
-      <div className="sticky top-12 z-30 bg-gray-100 space-y-2 pb-2">
+          desalinharem entre si durante o scroll. will-change força esse
+          bloco pra própria camada de composição — sem isso, arrastar a
+          barra de rolagem (diferente de rodinha do mouse) fazia o navegador
+          repintar o sticky com atraso e ele "andava" junto por um instante. */}
+      <div className="sticky top-12 z-30 bg-gray-100 space-y-2 pb-2 will-change-transform">
       <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto">
         {filtrosColunaAtivos && (
           <button onClick={limparFiltrosColuna} title="Limpar filtros"
