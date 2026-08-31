@@ -106,11 +106,13 @@ export default function EditarSeggovPage() {
   const [autores, setAutores] = useState<Autor[]>([])
   const [fluxo, setFluxo] = useState<FluxoState>({})
   const [pending, setPendingState] = useState<Record<string, StepData>>({})
-  // Controle único de Aprovado/Reprovado pra Comissão 1/2/3 e Comissão
-  // Especial — fica no final do quadrante Comissões em vez de repetir os
-  // mesmos botões em cada card. Vale pra comissão marcada no momento em que
-  // "Marcar" é clicado, e é limpo em seguida.
-  const [resultadoComissao, setResultadoComissao] = useState<string>('')
+  // Etapa selecionada em cada um dos 3 quadrantes de preenchimento (lista +
+  // painel de edição). null = segue a seleção automática (primeira etapa
+  // ainda não marcada do quadrante); um valor aqui é porque o usuário clicou
+  // manualmente em algum item da lista.
+  const [selManual1, setSelManual1] = useState<string | null>(null)
+  const [selManual2, setSelManual2] = useState<string | null>(null)
+  const [selManual3, setSelManual3] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -203,13 +205,13 @@ export default function EditarSeggovPage() {
       if (!p.comissaoId) { toast.error('Selecione uma comissão antes de marcar.'); return }
       // O parecer (Aprovado/Reprovado) normalmente ainda não existe no
       // momento de encaminhar pra comissão — só se sabe na sessão em que ele é
-      // lido. Por isso é opcional aqui: se já tiver escolhido no quadro no
-      // final do quadrante Comissões, grava junto; senão, fica em aberto e é
-      // informado depois pelo aviso "Falta o parecer" no próprio card.
+      // lido. Por isso é opcional aqui: se já tiver escolhido no painel da
+      // etapa, grava junto; senão, fica em aberto e é informado depois pelo
+      // mesmo bloco de resultado, que continua disponível após marcar.
       const com = comissoes.find((c: any) => c.id === p.comissaoId)
-      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, ...(resultadoComissao ? { resultado: resultadoComissao } : {}) }
+      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, ...(p.resultado ? { resultado: p.resultado } : {}) }
     } else if (def.tipo === 'comissao3nomes') {
-      data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', ...(resultadoComissao ? { resultado: resultadoComissao } : {}) }
+      data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', ...(p.resultado ? { resultado: p.resultado } : {}) }
     } else if (def.tipo === 'nome1') {
       data = { nome1: p.nome1 || '' }
     } else if (def.tipo === 'sancao') {
@@ -242,7 +244,6 @@ export default function EditarSeggovPage() {
       return next
     })
     setPendingState(prev => { const n = { ...prev }; delete n[key]; return n })
-    if (def.tipo === 'comissao' || def.tipo === 'comissao3nomes') setResultadoComissao('')
   }
 
   /**
@@ -261,10 +262,10 @@ export default function EditarSeggovPage() {
     if (def.tipo === 'comissao') {
       if (!p.comissaoId) return null
       const com = comissoes.find((c: any) => c.id === p.comissaoId)
-      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, ...(resultadoComissao ? { resultado: resultadoComissao } : {}) }
+      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, ...(p.resultado ? { resultado: p.resultado } : {}) }
     } else if (def.tipo === 'comissao3nomes') {
       if (!p.nome1 && !p.nome2 && !p.nome3 && !p.data) return null
-      data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', ...(resultadoComissao ? { resultado: resultadoComissao } : {}) }
+      data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', ...(p.resultado ? { resultado: p.resultado } : {}) }
     } else if (def.tipo === 'nome1') {
       if (!p.nome1) return null
       data = { nome1: p.nome1 }
@@ -533,181 +534,221 @@ export default function EditarSeggovPage() {
   const inp = "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-800/30"
   const inpSm = "w-full border border-gray-200 rounded-md px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-400/60 bg-white"
 
-  function renderStepCard(key: string) {
+  /** Uma linha da lista de etapas (lado esquerdo de cada quadrante). */
+  function renderLinhaLista(key: string, ativo: boolean, onClick: () => void) {
     const def = FLUXO_DEF.find(d => d.key === key)!
-    const state = fluxo[def.key]
+    const state = fluxo[key]
     const done = !!state?.done
-    const p = pending[def.key] || {}
-    const destaque = ['resultadoFinal', 'emendaResultado', 'sancaoVeto', 'vetoManutencao', 'promulgacao'].includes(def.key)
     const negativo = NEGATIVOS.has(state?.data?.resultado || '')
-    // Sanção/Veto ou Promulgação marcada mas ainda sem resultado é só um
-    // caminho reservado, não uma decisão positiva — fica azul, como a
-    // bolinha fantasma, em vez de verde.
-    const reservadoSemResultado = done && def.tipo === 'sancao' && !state?.data?.resultado
-
-    const cardClass = !done
-      ? 'border-gray-200 bg-white'
-      : negativo
-        ? 'border-red-500 bg-red-50'
-        : reservadoSemResultado
-          ? 'border-blue-300 bg-blue-50'
-          : destaque
-            ? 'border-green-500 bg-green-100'
-            : 'border-green-300 bg-green-50'
-
-    // Votações, emenda, sanção/veto etc.: o resultado já é sabido na hora
-    // (a votação aconteceu naquele dia), então marcar sem escolher Aprovado
-    // ou Reprovado explicitamente não pode virar "Aprovado" por padrão.
-    const faltaEscolhaResultado = !done && def.tipo === 'resultado' && !p.resultado
-
-    const circle = (
-      <button type="button"
-        onClick={() => { if (done) desmarcar(def.key); else if (!faltaEscolhaResultado) marcar(def.key) }}
-        disabled={faltaEscolhaResultado}
-        title={done ? 'Clique para desmarcar' : faltaEscolhaResultado ? `Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes` : 'Clique para marcar'}
-        className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition ${
-          done ? (negativo ? 'bg-red-500 text-white hover:bg-red-600' : reservadoSemResultado ? 'bg-blue-400 text-white hover:bg-blue-500' : 'bg-green-500 text-white hover:bg-green-600') :
-          faltaEscolhaResultado ? 'bg-gray-100 border border-gray-200 cursor-not-allowed' :
-          'bg-white border border-gray-300 hover:border-green-400'
+    const reservado = done && (def.tipo === 'sancao' || def.tipo === 'comissao' || def.tipo === 'comissao3nomes') && !state?.data?.resultado
+    const sufixo = state?.data?.resultado ? ` — ${labelResultado(key, state.data.resultado)}` : ''
+    return (
+      <button key={key} type="button" onClick={onClick}
+        className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition ${
+          ativo ? 'bg-blue-100 text-blue-800' : done ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-400 hover:bg-gray-100'
         }`}>
-        {done && <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+        <span className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+          !done ? 'border border-gray-300 bg-white' : negativo ? 'bg-red-500' : reservado ? 'bg-blue-400' : 'bg-green-500'
+        }`}>
+          {done && <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+        </span>
+        <span className="font-medium leading-tight whitespace-nowrap">{def.label}{sufixo}</span>
       </button>
     )
+  }
 
-    const btnMarcar = done
-      ? <button type="button" onClick={() => desmarcar(def.key)}
-          className="text-[10px] text-red-400 hover:text-red-600 transition px-1 py-0.5 rounded border border-red-200 hover:border-red-300 hover:bg-red-50 flex-shrink-0">✕</button>
-      : <button type="button" onClick={() => marcar(def.key)}
-          disabled={faltaEscolhaResultado}
-          title={faltaEscolhaResultado ? `Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes` : undefined}
-          className={`text-[10px] px-2 py-0.5 rounded-md transition font-medium whitespace-nowrap flex-shrink-0 ${
-            faltaEscolhaResultado ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'
-          }`}>Marcar</button>
+  /** Painel de edição da etapa selecionada (lado direito de cada quadrante). */
+  function renderPainelDetalhe(key: string) {
+    const def = FLUXO_DEF.find(d => d.key === key)!
+    const state = fluxo[key]
+    const done = !!state?.done
+    const p = pending[key] || {}
+    const negativo = NEGATIVOS.has(state?.data?.resultado || '')
+    const reservado = done && (def.tipo === 'sancao' || def.tipo === 'comissao' || def.tipo === 'comissao3nomes') && !state?.data?.resultado
+    // Votações, emenda etc.: o resultado já é sabido na hora (a votação
+    // aconteceu naquele dia), então marcar sem escolher Aprovado/Reprovado
+    // explicitamente não pode virar "Aprovado" por padrão.
+    const faltaEscolhaResultado = !done && def.tipo === 'resultado' && !p.resultado
 
     return (
-      <div key={def.key} className={`rounded-lg border shadow-sm transition-all p-2 ${cardClass}`}>
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-1.5 min-w-0">
-            <div className="mt-0.5">{circle}</div>
-            <span className={`text-xs font-medium leading-tight ${
-              !done ? 'text-gray-700' : negativo ? 'text-red-700' : reservadoSemResultado ? 'text-blue-600' : 'text-green-700'
-            }`}>{def.label}</span>
-          </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Data editável mesmo depois de marcada — permite lançar
-                proposições antigas e corrigir datas erradas. */}
-            {done && (
-              <input type="date"
-                value={(state.doneAt || '').split('T')[0]}
-                onChange={e => alterarData(def.key, e.target.value)}
-                title="Clique para alterar a data desta etapa"
-                className="text-xs text-gray-500 bg-transparent border border-transparent hover:border-gray-300 focus:border-green-400 rounded px-0.5 py-0.5 cursor-pointer focus:outline-none" />
+      <div key={key}>
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <p className="text-base font-semibold text-gray-800">{def.label}</p>
+            {done ? (
+              <p className={`text-xs mt-0.5 flex items-center gap-1 ${negativo ? 'text-red-600' : reservado ? 'text-blue-600' : 'text-green-600'}`}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                {reservado ? 'Marcada — falta o resultado' : state?.data?.resultado ? `Marcada — ${labelResultado(key, state.data.resultado)}` : 'Marcada'}
+              </p>
+            ) : (
+              <p className="text-xs text-gray-400 mt-0.5">Ainda não marcada</p>
             )}
-            {btnMarcar}
           </div>
+          {done && (
+            <button type="button" onClick={() => desmarcar(def.key)}
+              className="text-[11px] text-red-400 hover:text-red-600 border border-red-200 hover:border-red-300 hover:bg-red-50 rounded-md px-2 py-1 transition flex-shrink-0">
+              Desmarcar
+            </button>
+          )}
         </div>
 
-        {/* Toda etapa aceita data — em branco, assume hoje (exceto as do tipo
-            'data', em que informar é obrigatório). */}
+        <div className="flex flex-wrap gap-4 mb-4">
+          {/* Toda etapa aceita data — em branco, assume hoje. Editável mesmo
+              depois de marcada, pra lançar proposições antigas e corrigir
+              datas erradas. */}
+          <div className="w-40">
+            <label className="block text-xs text-gray-500 mb-1">Data</label>
+            <input type="date"
+              value={done ? (state!.doneAt || '').split('T')[0] : (p.data || '')}
+              onChange={e => done ? alterarData(def.key, e.target.value) : setPendingData(def.key, 'data', e.target.value)}
+              title={def.tipo === 'data' && !done ? 'Informe a data' : undefined}
+              className={inpSm} />
+          </div>
+
+          {def.tipo === 'comissao' && (
+            <div className="w-64">
+              <label className="block text-xs text-gray-500 mb-1">Comissão</label>
+              {done ? (
+                <p className="text-sm text-gray-700 px-0.5 py-1.5">{state?.data?.comissaoNome || '—'}</p>
+              ) : (
+                <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={inpSm}>
+                  <option value="">— Selecionar comissão —</option>
+                  {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
+                </select>
+              )}
+            </div>
+          )}
+
+          {def.tipo === 'nome1' && (
+            <div className="w-56">
+              <label className="block text-xs text-gray-500 mb-1">Vereador</label>
+              {done ? (
+                <p className="text-sm text-gray-700 px-0.5 py-1.5">{state?.data?.nome1 || '—'}</p>
+              ) : (
+                <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={inpSm}>
+                  <option value="">— Selecionar vereador —</option>
+                  {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
+                </select>
+              )}
+            </div>
+          )}
+
+          {def.tipo === 'comissao3nomes' && (
+            <div className="w-full">
+              <label className="block text-xs text-gray-500 mb-1">Membros</label>
+              {done ? (
+                <div className="flex flex-wrap gap-1">
+                  {[state?.data?.nome1, state?.data?.nome2, state?.data?.nome3].filter(Boolean).map((n, i) => (
+                    <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">{n}</span>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 max-w-md">
+                  {(['nome1', 'nome2', 'nome3'] as const).map((campo, i) => (
+                    <select key={campo} value={p[campo] || ''} onChange={e => setPendingData(def.key, campo, e.target.value)} className={inpSm}>
+                      <option value="">— Membro {i + 1} —</option>
+                      {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}{!v.ativo && ' (inativo)'}</option>)}
+                    </select>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Resultado: obrigatório em votações (já se sabe na hora); opcional
+            em comissão/comissão especial/sanção/promulgação, que podem ser
+            marcadas reservando o caminho e completadas depois — os mesmos
+            botões continuam disponíveis após marcar, pra informar o
+            resultado quando ele sair. */}
+        {(def.tipo === 'resultado' || def.tipo === 'sancao' || def.tipo === 'comissao' || def.tipo === 'comissao3nomes') && (
+          <div className="mb-4">
+            <label className="block text-xs text-gray-500 mb-1">
+              Resultado {def.tipo === 'resultado' ? '(obrigatório)' : '(opcional agora)'}
+            </label>
+            <div className="flex gap-2 max-w-xs">
+              {getOpcoes(def.key).valores.map((r, i) => {
+                const ativo = done ? state?.data?.resultado === r : p.resultado === r
+                return (
+                  <button key={r} type="button"
+                    onClick={() => done ? alterarResultado(def.key, r) : setPendingData(def.key, 'resultado', r)}
+                    className={`flex-1 text-xs px-3 py-1.5 rounded-md border transition font-medium ${
+                      ativo
+                        ? NEGATIVOS.has(r) ? 'border-red-400 bg-red-50 text-red-700' : 'border-green-400 bg-green-50 text-green-700'
+                        : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                    }`}>
+                    {getOpcoes(def.key).labels[i]}
+                  </button>
+                )
+              })}
+            </div>
+            {def.tipo !== 'resultado' && (
+              <p className="text-[11px] text-gray-400 mt-1.5">Pode marcar sem escolher e completar quando sair a decisão.</p>
+            )}
+          </div>
+        )}
+
         {!done && (
-          <input type="date" value={p.data || ''}
-            onChange={e => setPendingData(def.key, 'data', e.target.value)}
-            title={def.tipo === 'data' ? 'Informe a data' : 'Data da etapa (em branco = hoje)'}
-            className={`mt-1.5 w-full ${inpSm}`} />
-        )}
-
-        {!done && def.tipo === 'comissao3nomes' && (
-          <div className="mt-1.5 grid grid-cols-1 sm:grid-cols-3 gap-1.5">
-            {(['nome1', 'nome2', 'nome3'] as const).map((campo, i) => (
-              <select key={campo} value={p[campo] || ''} onChange={e => setPendingData(def.key, campo, e.target.value)} className={inpSm}>
-                <option value="">— Membro {i + 1} —</option>
-                {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}{!v.ativo && ' (inativo)'}</option>)}
-              </select>
-            ))}
-          </div>
-        )}
-
-        {!done && (def.tipo === 'resultado' || def.tipo === 'sancao') && (
-          <div className="mt-1.5 flex gap-1 flex-wrap">
-            {getOpcoes(def.key).valores.map((r, i) => (
-              <button key={r} type="button"
-                onClick={() => setPendingData(def.key, 'resultado', r)}
-                className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
-                  p.resultado === r
-                    ? NEGATIVOS.has(r) ? 'border-red-400 bg-red-50 text-red-700' : 'border-green-400 bg-green-50 text-green-700'
-                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
-                }`}>
-                {getOpcoes(def.key).labels[i]}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {!done && def.tipo === 'comissao' && (
-          <select value={p.comissaoId || ''} onChange={e => setPendingData(def.key, 'comissaoId', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
-            <option value="">— Selecionar comissão —</option>
-            {comissoes.map((c: any) => <option key={c.id} value={c.id}>{c.sigla ? `${c.sigla} — ${c.nome}` : c.nome}</option>)}
-          </select>
-        )}
-
-        {!done && def.tipo === 'nome1' && (
-          <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={`mt-1.5 w-full ${inpSm}`}>
-            <option value="">— Selecionar vereador —</option>
-            {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
-          </select>
-        )}
-
-        {/* Etapa já marcada (comissão, Sanção/Veto ou Promulgação) mas ainda
-            sem resultado — o caminho foi escolhido/encaminhado, mas a decisão
-            (parecer, sanção, promulgação) só chega depois. Informa aqui sem
-            precisar desmarcar (o que perderia a data). */}
-        {done && (def.tipo === 'comissao' || def.tipo === 'comissao3nomes' || def.tipo === 'sancao') && !state.data?.resultado && (
-          <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-            <span className="text-[10px] text-amber-600 font-medium">Falta o resultado:</span>
-            {getOpcoes(def.key).valores.map((r, i) => (
-              <button key={r} type="button"
-                onClick={() => alterarResultado(def.key, r)}
-                className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
-                  NEGATIVOS.has(r) ? 'border-red-300 text-red-600 hover:bg-red-50' : 'border-green-300 text-green-700 hover:bg-green-50'
-                }`}>
-                {getOpcoes(def.key).labels[i]}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {done && (state.data?.resultado || state.data?.comissaoNome || state.data?.nome1) && (
-          <div className="mt-1 flex flex-wrap gap-1">
-            {state.data?.resultado && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${NEGATIVOS.has(state.data.resultado) ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                {labelResultado(def.key, state.data.resultado)}
-              </span>
-            )}
-            {state.data?.comissaoNome && <span className="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium">{state.data.comissaoNome}</span>}
-            {[state.data?.nome1, state.data?.nome2, state.data?.nome3].filter(Boolean).map((n, i) => (
-              <span key={i} className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{n}</span>
-            ))}
-          </div>
+          <button type="button"
+            onClick={() => marcar(def.key)}
+            disabled={faltaEscolhaResultado}
+            title={faltaEscolhaResultado ? `Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes` : undefined}
+            className={`text-sm px-4 py-2 rounded-lg font-medium transition ${
+              faltaEscolhaResultado ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-500 text-white hover:bg-green-600'
+            }`}>
+            Marcar {def.label.toLowerCase()}
+          </button>
         )}
       </div>
     )
   }
 
-  function renderIdentificacaoCard() {
+  /** Um quadrante completo: lista de etapas agrupadas à esquerda, painel de
+      edição da etapa selecionada à direita. */
+  function renderQuadrante(grupos: { titulo: string; keys: string[] }[], selecionado: string, onSelecionar: (k: string) => void) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 flex items-center gap-2">
-        <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-100 text-blue-600">
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+      <div className="rounded-xl border border-blue-200 bg-white overflow-hidden flex flex-col md:flex-row">
+        <div className="w-full md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-blue-100 bg-gray-50 p-1.5 overflow-x-auto">
+          {grupos.map(g => (
+            <div key={g.titulo}>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide px-2.5 pt-2.5 pb-1">{g.titulo}</p>
+              {g.keys.map(k => renderLinhaLista(k, k === selecionado, () => onSelecionar(k)))}
+            </div>
+          ))}
         </div>
-        <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wide font-semibold leading-tight">Identificação</p>
-          <p className="text-xs font-semibold text-gray-700 leading-tight">{form.tipo} {formatNumero(form.numero)}/{form.ano}</p>
+        <div className="flex-1 p-4 min-w-0">
+          {renderPainelDetalhe(selecionado)}
         </div>
       </div>
     )
   }
+
+  // Agrupamento das 21 etapas em 3 quadrantes (lista + painel de edição
+  // cada um). Vetação de Manutenção do Veto só entra na lista quando faz
+  // sentido preenchê-la (depois de Sanção/Veto marcado como "Vetado").
+  const quad1Grupos = [
+    { titulo: 'Início', keys: ['protocolado', 'pautado', 'retiradoPauta'] },
+    { titulo: 'Comissões', keys: ['comissao1', 'comissao2', 'comissao3', 'comissaoEspecial', 'comissaoConjunta', 'dispensaParecer'] },
+    { titulo: 'Situações especiais', keys: ['dispensaIntersticio', 'pedidoVista', 'pedidoAdiamento'] },
+  ]
+  const quad2Grupos = [
+    { titulo: 'Emendas', keys: ['emenda', 'emendaVotacao1', 'emendaVotacao2', 'emendaResultado'] },
+  ]
+  const quad3Grupos = [
+    { titulo: 'Votação e sanção', keys: ['votacao1', 'votacao2', 'resultadoFinal', 'sancaoVeto', 'promulgacao',
+      ...(fluxo['sancaoVeto']?.data?.resultado === 'vetado' ? ['vetoManutencao'] : [])] },
+  ]
+  const quad1Keys = quad1Grupos.flatMap(g => g.keys)
+  const quad2Keys = quad2Grupos.flatMap(g => g.keys)
+  const quad3Keys = quad3Grupos.flatMap(g => g.keys)
+  // Seleção automática: a primeira etapa ainda não marcada do quadrante (ou
+  // a última, se já estiver tudo feito) — até o usuário clicar em outra.
+  function selecaoPadrao(keys: string[]) {
+    return keys.find(k => !fluxo[k]?.done) || keys[keys.length - 1]
+  }
+  const selQuad1 = selManual1 && quad1Keys.includes(selManual1) ? selManual1 : selecaoPadrao(quad1Keys)
+  const selQuad2 = selManual2 && quad2Keys.includes(selManual2) ? selManual2 : selecaoPadrao(quad2Keys)
+  const selQuad3 = selManual3 && quad3Keys.includes(selManual3) ? selManual3 : selecaoPadrao(quad3Keys)
 
   return (
     <div className="max-w-7xl mx-auto space-y-5 pb-10">
@@ -885,86 +926,10 @@ export default function EditarSeggovPage() {
             </div>
           )}
 
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-2 items-start">
-              {renderStepCard('protocolado')}
-              {renderStepCard('pautado')}
-              {renderStepCard('retiradoPauta')}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-stretch">
-              <div className="flex flex-col gap-2 rounded-xl border border-blue-200 p-2 h-full">
-                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Comissões</h4>
-                {renderStepCard('comissao1')}
-                {renderStepCard('comissao2')}
-                {renderStepCard('comissao3')}
-                {renderStepCard('comissaoConjunta')}
-                {renderStepCard('comissaoEspecial')}
-
-                {/* Controle único de Aprovado/Reprovado pra Com.1/2/3 e Comissão
-                    Especial — evita repetir os mesmos botões em cada card.
-                    Escolha aqui e depois clique em "Marcar" na comissão desejada. */}
-                <div className="mt-1 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2">
-                  <p className="text-[10px] font-semibold text-gray-500 leading-tight">Parecer da comissão a marcar (opcional)</p>
-                  <p className="text-[9px] text-gray-400 leading-tight mb-1">Se já souber o resultado, escolha antes de clicar em "Marcar" — vale para Com. 1/2/3 e Comissão Especial. Senão, dá pra informar depois, quando o parecer for lido.</p>
-                  <div className="flex gap-1 flex-wrap">
-                    {getOpcoes('comissao1').valores.map((r, i) => (
-                      <button key={r} type="button"
-                        onClick={() => setResultadoComissao(r)}
-                        className={`text-[10px] px-2 py-0.5 rounded-md border transition font-medium ${
-                          resultadoComissao === r
-                            ? NEGATIVOS.has(r) ? 'border-red-400 bg-red-50 text-red-700' : 'border-green-400 bg-green-50 text-green-700'
-                            : 'border-gray-200 text-gray-400 hover:border-gray-300'
-                        }`}>
-                        {getOpcoes('comissao1').labels[i]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2 rounded-xl border border-blue-200 p-2 h-full">
-                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Dispensas e Pedidos</h4>
-                {renderStepCard('dispensaParecer')}
-                {renderStepCard('dispensaIntersticio')}
-                {renderStepCard('pedidoVista')}
-                {renderStepCard('pedidoAdiamento')}
-              </div>
-
-              <div className="flex flex-col gap-2 rounded-xl border border-blue-200 p-2 h-full">
-                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Emenda</h4>
-                {renderStepCard('emenda')}
-                {renderIdentificacaoCard()}
-                <div className="grid grid-cols-2 gap-2">
-                  {renderStepCard('emendaVotacao1')}
-                  {renderStepCard('emendaVotacao2')}
-                </div>
-                {renderStepCard('emendaResultado')}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-blue-200 p-2">
-              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Projeto de Lei</h4>
-              <div className="space-y-2">
-                {renderIdentificacaoCard()}
-                <div className="grid grid-cols-3 gap-2">
-                  {renderStepCard('votacao1')}
-                  {renderStepCard('votacao2')}
-                  {renderStepCard('resultadoFinal')}
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-blue-200 p-2">
-              <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">Sanção e Promulgação</h4>
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  {renderStepCard('sancaoVeto')}
-                  {renderStepCard('promulgacao')}
-                </div>
-                {fluxo['sancaoVeto']?.data?.resultado === 'vetado' && renderStepCard('vetoManutencao')}
-              </div>
-            </div>
+          <div className="space-y-4">
+            {renderQuadrante(quad1Grupos, selQuad1, k => setSelManual1(k))}
+            {renderQuadrante(quad2Grupos, selQuad2, k => setSelManual2(k))}
+            {renderQuadrante(quad3Grupos, selQuad3, k => setSelManual3(k))}
           </div>
         </div>
 
