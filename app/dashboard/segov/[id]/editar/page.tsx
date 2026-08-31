@@ -244,6 +244,47 @@ export default function EditarSeggovPage() {
     if (def.tipo === 'comissao' || def.tipo === 'comissao3nomes') setResultadoComissao('')
   }
 
+  /**
+   * Calcula o que uma etapa ainda pendente (campos preenchidos, mas sem
+   * clicar em "Marcar") viraria se fosse marcada — usado no Salvar geral pra
+   * não perder o que a pessoa digitou. Ao contrário de marcar(), nunca
+   * mostra erro nem assume um resultado sozinho: se faltar algo obrigatório,
+   * só devolve null (a etapa continua pendente, nada é perdido nem forçado).
+   */
+  function computarEtapaPendente(key: string): StepState | null {
+    const def = FLUXO_DEF.find(d => d.key === key)
+    const p = pending[key]
+    if (!def || !p) return null
+
+    let data: StepData = {}
+    if (def.tipo === 'comissao') {
+      if (!p.comissaoId) return null
+      const com = comissoes.find((c: any) => c.id === p.comissaoId)
+      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, ...(resultadoComissao ? { resultado: resultadoComissao } : {}) }
+    } else if (def.tipo === 'comissao3nomes') {
+      if (!p.nome1 && !p.nome2 && !p.nome3 && !p.data) return null
+      data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', ...(resultadoComissao ? { resultado: resultadoComissao } : {}) }
+    } else if (def.tipo === 'nome1') {
+      if (!p.nome1) return null
+      data = { nome1: p.nome1 }
+    } else if (def.tipo === 'sancao') {
+      if (!p.resultado && !p.data) return null
+      data = { ...(p.resultado ? { resultado: p.resultado } : {}) }
+    } else if (def.tipo === 'resultado') {
+      // Nunca assume Aprovado/Reprovado sozinho — sem escolha explícita,
+      // a etapa continua pendente (não marca, não perde o que já tinha).
+      if (!p.resultado) return null
+      data = { resultado: p.resultado }
+    } else if (def.tipo === 'data') {
+      if (!p.data) return null
+    } else {
+      return null
+    }
+
+    const doneAt = p.data ? p.data + 'T12:00:00.000Z' : new Date().toISOString()
+    return { done: true, doneAt, data }
+  }
+
   function desmarcar(key: string) {
     setFluxo(prev => { const n = { ...prev }; delete n[key]; return n })
   }
@@ -423,11 +464,31 @@ export default function EditarSeggovPage() {
     // O status deixa de ser escolhido à mão e passa a ser calculado a partir
     // do próprio fluxo — exceto Arquivado/Retirado, que são decisões
     // administrativas que a função preserva sem alteração.
-    const status = derivarStatusSegov(fluxo, form.status)
+
+    // Se alguma etapa tem campos preenchidos mas ninguém clicou em "Marcar"
+    // (ex.: preencheu a Comissão Especial inteira e foi direto pro Salvar),
+    // aplica automaticamente aqui — sem isso, o que foi digitado se perdia
+    // silenciosamente, porque só o fluxo já marcado é enviado ao servidor.
+    let fluxoFinal = fluxo
+    const autoMarcados: string[] = []
+    Object.keys(pending).forEach(key => {
+      const etapa = computarEtapaPendente(key)
+      if (etapa) {
+        fluxoFinal = { ...fluxoFinal, [key]: etapa }
+        autoMarcados.push(FLUXO_DEF.find(d => d.key === key)?.label || key)
+      }
+    })
+    if (autoMarcados.length) {
+      setFluxo(fluxoFinal)
+      setPendingState({})
+      toast.info(`Marcado automaticamente ao salvar: ${autoMarcados.join(', ')}`)
+    }
+
+    const status = derivarStatusSegov(fluxoFinal, form.status)
     const res = await fetch(`/api/segov/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, status, autorNome, vereadorId, fluxo }),
+      body: JSON.stringify({ ...form, status, autorNome, vereadorId, fluxo: fluxoFinal }),
     })
     if (res.ok) { router.refresh(); router.push('/dashboard/segov') }
     else { toast.error('Erro ao salvar'); setSalvando(false) }
