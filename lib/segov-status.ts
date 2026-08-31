@@ -7,8 +7,11 @@ const CHAVES_COMISSAO = ['comissao1', 'comissao2', 'comissao3']
  * próprio fluxo de tramitação, em vez de depender de alguém escolher à mão.
  *
  * Regra (na ordem em que é avaliada):
- * - Arquivado/Retirado são decisões administrativas manuais, não vêm do
- *   fluxo — preservadas sem alteração.
+ * - Arquivado é decisão administrativa manual, não vem do fluxo — preservado
+ *   sem alteração.
+ * - Retirado de Pauta marcado          → "Retirado" (tem prioridade sobre
+ *   qualquer outra etapa já preenchida — uma vez retirado, é esse o status,
+ *   não importa até onde a tramitação tinha ido antes)
  * - Promulgação = Promulgado          → "Promulgado"
  * - Sanção/Veto = Sancionado          → "Sancionado"
  * - Resultado Final = Aprovado        → "Aprovado"
@@ -25,7 +28,8 @@ const CHAVES_COMISSAO = ['comissao1', 'comissao2', 'comissao3']
  */
 export function derivarStatusSegov(fluxo: FluxoLike, statusAtual: string): string {
   if (!fluxo) return statusAtual
-  if (statusAtual === 'Arquivado' || statusAtual === 'Retirado') return statusAtual
+  if (statusAtual === 'Arquivado') return statusAtual
+  if (fluxo['retiradoPauta']?.done) return 'Retirado'
 
   const promulgacao = fluxo['promulgacao']
   if (promulgacao?.done && promulgacao.data?.resultado === 'promulgado') return 'Promulgado'

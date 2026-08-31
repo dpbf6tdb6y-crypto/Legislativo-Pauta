@@ -13,6 +13,7 @@ import { usePermissao } from '@/lib/usePermissao'
 const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
   { key: 'pautado',             labelCurto: 'Pautado'  },
+  { key: 'retiradoPauta',       labelCurto: 'Retirado' },
   { key: 'comissao1',           labelCurto: 'Com. 1'   },
   { key: 'comissao2',           labelCurto: 'Com. 2'   },
   { key: 'comissao3',           labelCurto: 'Com. 3'   },
@@ -417,12 +418,25 @@ export default function SeggovPage() {
           {itensExibidos.map((item: any) => {
             const sel = selecionados.has(item.id)
             const fluxo = (item.fluxo || {}) as Record<string, { done: boolean; doneAt?: string; data?: any }>
-            const marcados = FLUXO_DEF
+            const marcadosBase = FLUXO_DEF
               // Sanção/Veto e Promulgação marcadas mas sem resultado ainda são
               // só um caminho reservado — não entram como nó normal, viram a
               // bolinha fantasma mais abaixo.
               .filter(d => fluxo[d.key]?.done && !(CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado))
               .map(d => ({ ...d, doneAt: fluxo[d.key]?.doneAt, data: fluxo[d.key]?.data }))
+            // Retirado de Pauta pode acontecer a qualquer momento da
+            // tramitação — reposiciona pela DATA real dele em vez da ordem
+            // fixa do array, pra aparecer onde de fato aconteceu.
+            const idxRetirado = marcadosBase.findIndex(m => m.key === 'retiradoPauta')
+            let marcados = marcadosBase
+            if (idxRetirado !== -1) {
+              const retirado = marcadosBase[idxRetirado]
+              const semRetirado = marcadosBase.filter((_, i) => i !== idxRetirado)
+              let posicao = semRetirado.findIndex(m => (m.doneAt || '') > (retirado.doneAt || ''))
+              if (posicao === -1) posicao = semRetirado.length
+              semRetirado.splice(posicao, 0, retirado)
+              marcados = semRetirado
+            }
             // Mesma regra da tela de edição: reprovação em qualquer comissão (1/2/3
             // ou Especial) já pinta tudo de vermelho; aprovação nas três sequenciais
             // OU na Especial já pinta tudo de verde, sem esperar o Resultado Final.
@@ -482,9 +496,13 @@ export default function SeggovPage() {
               // depois do Resultado Final aprovado apareceria verde do mesmo
               // jeito, porque o gráfico já estava "verde" globalmente.
               const negativoLocal = !!step.data?.resultado && NEGATIVOS.has(step.data.resultado)
+              // Retirado de Pauta é sempre laranja, a mesma cor do status
+              // "Retirado" — independe do resto do fluxo estar verde/vermelho/azul.
+              const isRetirado = step.key === 'retiradoPauta'
               return (
                 <div className="flex flex-col items-center" style={{ width: '56px' }}>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
+                    isRetirado ? 'bg-orange-500' :
                     negativoLocal || graficoCor === 'vermelho' ? 'bg-red-500' :
                     (graficoCor === 'normal' && isLast) ? 'bg-blue-500' :
                     'bg-green-500'
@@ -494,6 +512,7 @@ export default function SeggovPage() {
                     </svg>
                   </div>
                   <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
+                    isRetirado ? 'text-orange-600' :
                     negativoLocal || graficoCor === 'vermelho' ? 'text-red-700' :
                     (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
                     'text-gray-700'

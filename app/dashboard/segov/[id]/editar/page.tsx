@@ -28,6 +28,7 @@ type StepDef = { key: string; label: string; labelCurto: string; tipo: StepTipo 
 const FLUXO_DEF: StepDef[] = [
   { key: 'protocolado',        label: 'Protocolado',                    labelCurto: 'Prot.',      tipo: 'simples' },
   { key: 'pautado',            label: 'Pautado',                        labelCurto: 'Pautado',    tipo: 'data' },
+  { key: 'retiradoPauta',      label: 'Retirado de Pauta',              labelCurto: 'Retirado',   tipo: 'simples' },
   { key: 'comissao1',          label: 'Comissão 1',                     labelCurto: 'Com. 1',     tipo: 'comissao' },
   { key: 'comissao2',          label: 'Comissão 2',                     labelCurto: 'Com. 2',     tipo: 'comissao' },
   { key: 'comissao3',          label: 'Comissão 3',                     labelCurto: 'Com. 3',     tipo: 'comissao' },
@@ -309,15 +310,27 @@ export default function EditarSeggovPage() {
       : prev)
   }
 
-  const marcados = useMemo(() =>
-    FLUXO_DEF
+  const marcados = useMemo(() => {
+    const base = FLUXO_DEF
       // Sanção/Veto e Promulgação marcados mas sem resultado ainda são só um
       // caminho reservado (igual comissão sem parecer) — não entram no fluxo
       // como nó normal, viram a bolinha fantasma abaixo até ter resultado.
       .filter(d => fluxo[d.key]?.done && !(d.tipo === 'sancao' && !fluxo[d.key]?.data?.resultado))
-      .map(d => ({ ...d, ...(fluxo[d.key] || {}) })),
-    [fluxo]
-  )
+      .map(d => ({ ...d, ...(fluxo[d.key] || {}) }))
+
+    // Retirado de Pauta pode acontecer a qualquer momento da tramitação —
+    // reposiciona pela DATA real dela em vez da ordem fixa do array, pra
+    // aparecer no fluxo exatamente onde aconteceu (ex.: depois de uma
+    // comissão já aprovada, se a retirada foi depois disso).
+    const idxRetirado = base.findIndex(m => m.key === 'retiradoPauta')
+    if (idxRetirado === -1) return base
+    const retirado = base[idxRetirado]
+    const semRetirado = base.filter((_, i) => i !== idxRetirado)
+    let posicao = semRetirado.findIndex(m => (m.doneAt || '') > (retirado.doneAt || ''))
+    if (posicao === -1) posicao = semRetirado.length
+    semRetirado.splice(posicao, 0, retirado)
+    return semRetirado
+  }, [fluxo])
 
   /**
    * Quando o parecer é conjunto, as comissões que o emitiram são mostradas
@@ -370,9 +383,13 @@ export default function EditarSeggovPage() {
     // depois do Resultado Final aprovado apareceria verde do mesmo jeito,
     // porque o gráfico já estava "verde" globalmente.
     const negativoLocal = !!step.data?.resultado && NEGATIVOS.has(step.data.resultado)
+    // Retirado de Pauta é sempre laranja, a mesma cor do status "Retirado" —
+    // independe do resto do fluxo estar verde/vermelho/azul.
+    const isRetirado = step.key === 'retiradoPauta'
     return (
       <div className="flex flex-col items-center" style={{ width: '56px' }}>
         <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
+          isRetirado ? 'bg-orange-500' :
           negativoLocal || graficoCor === 'vermelho' ? 'bg-red-500' :
           (graficoCor === 'normal' && isLast) ? 'bg-blue-500' :
           'bg-green-500'
@@ -382,6 +399,7 @@ export default function EditarSeggovPage() {
           </svg>
         </div>
         <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
+          isRetirado ? 'text-orange-600' :
           negativoLocal || graficoCor === 'vermelho' ? 'text-red-700' :
           (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
           'text-gray-700'
@@ -849,9 +867,10 @@ export default function EditarSeggovPage() {
           )}
 
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2 items-start">
+            <div className="grid grid-cols-3 gap-2 items-start">
               {renderStepCard('protocolado')}
               {renderStepCard('pautado')}
+              {renderStepCard('retiradoPauta')}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-stretch">

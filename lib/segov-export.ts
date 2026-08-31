@@ -43,6 +43,7 @@ const PILL_RESULTADO_OCULTA = new Set([...CHAVES_COMISSAO, "comissaoEspecial", "
 const FLUXO_DEF_EXPORT = [
   { key: 'protocolado',         labelCurto: 'Prot.'      },
   { key: 'pautado',             labelCurto: 'Pautado'    },
+  { key: 'retiradoPauta',       labelCurto: 'Retirado'   },
   { key: 'comissao1',           labelCurto: 'Com. 1'     },
   { key: 'comissao2',           labelCurto: 'Com. 2'     },
   { key: 'comissao3',           labelCurto: 'Com. 3'     },
@@ -257,7 +258,7 @@ export function exportarSegovPDF(
       : [];
     const agrupar = comissoesDoGrupo.length >= 2;
 
-    const marcados = FLUXO_DEF_EXPORT.filter(d => {
+    const marcadosBase = FLUXO_DEF_EXPORT.filter(d => {
       if (!fluxo[d.key]?.done) return false;
       // Sanção/Veto e Promulgação marcadas mas sem resultado ainda são só um
       // caminho reservado — não entram como nó normal, viram a bolinha
@@ -266,6 +267,19 @@ export function exportarSegovPDF(
       if (agrupar && d.key === "comissaoConjunta") return false;
       return true;
     });
+    // Retirado de Pauta pode acontecer a qualquer momento da tramitação —
+    // reposiciona pela DATA real dele em vez da ordem fixa do array.
+    const idxRetirado = marcadosBase.findIndex(d => d.key === "retiradoPauta");
+    let marcados = marcadosBase;
+    if (idxRetirado !== -1) {
+      const retirado = marcadosBase[idxRetirado];
+      const semRetirado = marcadosBase.filter((_, i) => i !== idxRetirado);
+      const dataRetirado = fluxo[retirado.key]?.doneAt || "";
+      let posicao = semRetirado.findIndex(d => (fluxo[d.key]?.doneAt || "") > dataRetirado);
+      if (posicao === -1) posicao = semRetirado.length;
+      semRetirado.splice(posicao, 0, retirado);
+      marcados = semRetirado;
+    }
     const chavesAgrupadas = agrupar ? comissoesDoGrupo.map(d => d.key) : [];
     const porLinha = Math.max(1, Math.floor(innerW / stepW));
 
@@ -523,9 +537,13 @@ export function exportarSegovPDF(
           // fluxo (graficoCor) — sem isso, um Veto marcado depois do
           // Resultado Final aprovado apareceria verde do mesmo jeito.
           const negativoLocal = !!p.sd?.data?.resultado && NEGATIVOS.has(p.sd.data.resultado);
+          // Retirado de Pauta é sempre laranja, a mesma cor do status
+          // "Retirado" — independe do resto do fluxo.
+          const isRetirado = p.step.key === "retiradoPauta";
 
           let nr = 22, ng = 163, nb = 74;
-          if (negativoLocal || graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
+          if (isRetirado) { nr = 249; ng = 115; nb = 22; }
+          else if (negativoLocal || graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
           else if (graficoCor === "normal" && ultimoGeral) { nr = 37; ng = 99; nb = 235; }
 
           doc.setFillColor(nr, ng, nb);
