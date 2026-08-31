@@ -601,7 +601,7 @@ export default function EditarSeggovPage() {
                 value={(state.doneAt || '').split('T')[0]}
                 onChange={e => alterarData(def.key, e.target.value)}
                 title="Clique para alterar a data desta etapa"
-                className="text-[10px] text-gray-500 bg-transparent border border-transparent hover:border-gray-300 focus:border-green-400 rounded px-0.5 py-0.5 cursor-pointer focus:outline-none" />
+                className="text-xs text-gray-500 bg-transparent border border-transparent hover:border-gray-300 focus:border-green-400 rounded px-0.5 py-0.5 cursor-pointer focus:outline-none" />
             )}
             {btnMarcar}
           </div>
