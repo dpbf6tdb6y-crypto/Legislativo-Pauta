@@ -348,7 +348,7 @@ export function exportarSegovPDF(
         sd,
         labelLinhas: doc.splitTextToSize(step.labelCurto, stepW - 4) as string[],
         temData: !!sd?.doneAt,
-        temEtiqueta: !!(sd?.data?.comissaoNome || sd?.data?.nome1 || (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(step.key))),
+        temEtiqueta: !!(sd?.data?.comissaoNome || sd?.data?.nome1 || sd?.data?.autores?.length || (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(step.key))),
         agrupado: chavesAgrupadas.includes(step.key),
         fantasma: false,
       };
@@ -629,17 +629,21 @@ export function exportarSegovPDF(
             doc.setTextColor(29, 78, 216);
             doc.text(sigla, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
           } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
-            const rText = labelResultadoPdf(p.step.key, p.sd.data.resultado);
+            // Emenda pode ter resultado E autor(es) ao mesmo tempo — como só
+            // cabe uma etiqueta por nó no PDF (ao contrário das telas, que
+            // mostram as duas empilhadas), junta os dois num texto só.
+            const autoresTxt = p.sd?.data?.autores?.length ? ` — ${p.sd.data.autores.join(" e ")}` : "";
+            const rText = labelResultadoPdf(p.step.key, p.sd.data.resultado) + autoresTxt;
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7);
-            const bw = doc.getTextWidth(rText) + 7;
+            const bw = Math.min(stepW * 2, doc.getTextWidth(rText) + 7);
             if (!NEGATIVOS.has(p.sd.data.resultado)) {
               doc.setFillColor(187, 247, 208); doc.setTextColor(22, 101, 52);
             } else {
               doc.setFillColor(254, 202, 202); doc.setTextColor(185, 28, 28);
             }
             doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
-            doc.text(rText, x, yEtiqueta + 7, { align: "center" });
+            doc.text(rText, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
           } else if (p.sd?.data?.nome1) {
             // Nome de quem pediu (Retirado de Pauta, Dispensa de Parecer/
             // Interstício, Pedido de Vista/Adiamento, Comissão Especial) —
@@ -651,6 +655,16 @@ export function exportarSegovPDF(
             doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
             doc.setTextColor(75, 85, 99);
             doc.text(p.sd.data.nome1, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
+          } else if (p.sd?.data?.autores?.length) {
+            // Emenda sem resultado ainda, mas com autor(es) já informado(s).
+            const texto = p.sd.data.autores.join(" e ");
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            const bw = Math.min(stepW * 2, doc.getTextWidth(texto) + 7);
+            doc.setFillColor(243, 244, 246);
+            doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
+            doc.setTextColor(75, 85, 99);
+            doc.text(texto, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
           }
         });
 

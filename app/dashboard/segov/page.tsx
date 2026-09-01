@@ -553,6 +553,9 @@ export default function SeggovPage() {
                   {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.numero && (
                     <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
                   )}
+                  {step.data?.autores && step.data.autores.length > 0 && (
+                    <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.autores.join(' e ')}</span>
+                  )}
                 </div>
               )
             }

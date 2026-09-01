@@ -17,6 +17,7 @@ type StepData = {
   nome1?: string
   nome2?: string
   nome3?: string
+  autores?: string[]
   data?: string
   resultado?: string
 }
@@ -71,6 +72,9 @@ const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
  * valer só pra pular o intervalo antes da 2ª Votação — nesse caso aparece
  * logo antes dela, não lá atrás perto das comissões. */
 const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio']
+/** Etapas em que dá pra informar o(s) vereador(es) que propuseram — hoje só
+ * Emenda(s), que pode ter um autor só ou vários. */
+const CHAVES_COM_AUTORES = new Set(['emenda'])
 /** Etapas tipo 'nome1' em que o Poder Executivo também pode ser quem pediu —
  * Retirado de Pauta pode partir do prefeito/vice, não só de um vereador.
  * As demais (Comissão Conjunta, Dispensa de Interstício, Pedido de Vista/
@@ -212,6 +216,27 @@ export default function EditarSeggovPage() {
     setPendingState(prev => ({ ...prev, [key]: { ...(prev[key] || {}), [field]: value } }))
   }
 
+  /** Adiciona/remove um nome da lista de autores de uma etapa ainda não
+   * marcada (ex.: Emenda) — pode ter um autor só ou vários. */
+  function togglePendingAutor(key: string, nome: string) {
+    setPendingState(prev => {
+      const atual = prev[key]?.autores || []
+      const novo = atual.includes(nome) ? atual.filter(n => n !== nome) : [...atual, nome]
+      return { ...prev, [key]: { ...(prev[key] || {}), autores: novo } }
+    })
+  }
+
+  /** Mesma coisa, mas pra uma etapa já marcada — corrige sem precisar
+   * desmarcar (o que perderia a data/resultado já lançados). */
+  function alterarAutores(key: string, nome: string) {
+    setFluxo(prev => {
+      if (!prev[key]) return prev
+      const atual = prev[key].data?.autores || []
+      const novo = atual.includes(nome) ? atual.filter(n => n !== nome) : [...atual, nome]
+      return { ...prev, [key]: { ...prev[key], data: { ...(prev[key].data || {}), autores: novo } } }
+    })
+  }
+
   function marcar(key: string) {
     const def = FLUXO_DEF.find(d => d.key === key)!
     const p = pending[key] || {}
@@ -243,7 +268,7 @@ export default function EditarSeggovPage() {
       // momento de marcar (a votação aconteceu naquele dia) — por isso não
       // pode ter um valor padrão silencioso, tem que ser escolhido.
       if (!p.resultado) { toast.error(`Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes de marcar.`); return }
-      data = { resultado: p.resultado }
+      data = { resultado: p.resultado, ...(p.autores?.length ? { autores: p.autores } : {}) }
     } else if (def.tipo === 'data') {
       if (!p.data) { toast.error('Selecione a data antes de marcar.'); return }
     }
@@ -293,7 +318,7 @@ export default function EditarSeggovPage() {
       // Nunca assume Aprovado/Reprovado sozinho — sem escolha explícita,
       // a etapa continua pendente (não marca, não perde o que já tinha).
       if (!p.resultado) return null
-      data = { resultado: p.resultado }
+      data = { resultado: p.resultado, ...(p.autores?.length ? { autores: p.autores } : {}) }
     } else if (def.tipo === 'data') {
       if (!p.data) return null
     } else {
@@ -447,6 +472,9 @@ export default function EditarSeggovPage() {
             some quando a etiqueta de Aprovado/Reprovado é ocultada acima. */}
         {step.data?.nome1 && !step.data?.comissaoNome && (
           <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
+        )}
+        {step.data?.autores && step.data.autores.length > 0 && (
+          <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.autores.join(' e ')}</span>
         )}
       </div>
     )
@@ -690,6 +718,32 @@ export default function EditarSeggovPage() {
               )}
             </div>
           )}
+
+          {CHAVES_COM_AUTORES.has(def.key) && (() => {
+            const listaAtual = (done ? state?.data?.autores : p.autores) || []
+            const disponiveis = vereadores.filter((v: any) => !listaAtual.includes(primeiroNome(v.nome)))
+            return (
+              <div className="w-full">
+                <label className="block text-xs text-gray-500 mb-1">Vereador(es) que propuseram (opcional)</label>
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  {listaAtual.map((nome: string) => (
+                    <span key={nome} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                      {nome}
+                      <button type="button"
+                        onClick={() => done ? alterarAutores(def.key, nome) : togglePendingAutor(def.key, nome)}
+                        className="text-gray-400 hover:text-red-500 transition">×</button>
+                    </span>
+                  ))}
+                  <select value=""
+                    onChange={e => { if (e.target.value) { done ? alterarAutores(def.key, e.target.value) : togglePendingAutor(def.key, e.target.value) } }}
+                    className="text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-green-400/60">
+                    <option value="">— Adicionar vereador —</option>
+                    {disponiveis.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}{!v.ativo && ' (inativo)'}</option>)}
+                  </select>
+                </div>
+              </div>
+            )
+          })()}
         </div>
 
         {/* Resultado: obrigatório em votações (já se sabe na hora); opcional
