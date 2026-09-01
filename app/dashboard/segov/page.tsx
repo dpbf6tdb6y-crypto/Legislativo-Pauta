@@ -437,7 +437,9 @@ export default function SeggovPage() {
               if (idx === -1) return
               const item = marcados[idx]
               const semItem = marcados.filter((_, i) => i !== idx)
-              let posicao = semItem.findIndex(m => (m.doneAt || '') > (item.doneAt || ''))
+              // Empate (mesma data que a etapa fixa vizinha) → a livre entra
+              // antes dela (ver editar/page.tsx).
+              let posicao = semItem.findIndex(m => (m.doneAt || '') >= (item.doneAt || ''))
               if (posicao === -1) posicao = semItem.length
               semItem.splice(posicao, 0, item)
               marcados = semItem
