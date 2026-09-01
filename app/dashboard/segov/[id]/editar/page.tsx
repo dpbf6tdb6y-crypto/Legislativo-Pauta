@@ -388,19 +388,43 @@ export default function EditarSeggovPage() {
     return resultado
   }, [fluxo])
 
-  /** Move uma etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) uma posição
-   * pra frente ou pra trás no fluxo, sem precisar calcular uma data manual —
-   * ajusta a data dela pra 1 minuto antes/depois do vizinho (não aparece pro
-   * usuário, já que a data só é exibida em dia/mês/ano). A ordem continua
-   * vindo só da data; isso só facilita mexer nela com um clique. */
+  /** Move uma etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) exatamente uma
+   * posição pra frente ou pra trás no fluxo, sem precisar calcular uma data
+   * manual. Troca ela de lugar com o vizinho e, se não sobrar espaço entre
+   * as datas pra refletir a nova ordem (comum: várias etapas marcadas no
+   * mesmo dia, com o mesmo horário-fantasma T12:00:00 — não existe um valor
+   * "entre" duas datas idênticas), redistribui em passos de 1 minuto a
+   * partir dali só o necessário pra abrir espaço. Nunca muda a data de quem
+   * já tinha espaço de sobra, e nunca troca a ordem relativa de duas etapas
+   * fixas entre si — só empurra o suficiente pra caber a que está sendo
+   * movida. Isso não aparece pro usuário, já que a data só é exibida em
+   * dia/mês/ano. */
   function moverEtapa(key: string, direcao: 'antes' | 'depois') {
     const idx = marcados.findIndex(m => m.key === key)
     if (idx === -1) return
-    const vizinho = direcao === 'antes' ? marcados[idx - 1] : marcados[idx + 1]
-    if (!vizinho?.doneAt) return
-    const delta = direcao === 'antes' ? -60000 : 60000
-    const novaData = new Date(new Date(vizinho.doneAt).getTime() + delta).toISOString()
-    setFluxo(prev => prev[key] ? { ...prev, [key]: { ...prev[key], doneAt: novaData } } : prev)
+    const alvo = direcao === 'antes' ? idx - 1 : idx + 1
+    if (alvo < 0 || alvo >= marcados.length) return
+
+    const nova = [...marcados]
+    ;[nova[idx], nova[alvo]] = [nova[alvo], nova[idx]]
+
+    const atualizacoes: Record<string, string> = {}
+    let anteriorMs = nova[0]?.doneAt ? new Date(nova[0].doneAt).getTime() : 0
+    for (let i = 1; i < nova.length; i++) {
+      const atualMs = nova[i].doneAt ? new Date(nova[i].doneAt as string).getTime() : anteriorMs + 60000
+      const novoMs = atualMs > anteriorMs ? atualMs : anteriorMs + 60000
+      if (novoMs !== atualMs) atualizacoes[nova[i].key] = new Date(novoMs).toISOString()
+      anteriorMs = novoMs
+    }
+    if (!Object.keys(atualizacoes).length) return
+
+    setFluxo(prev => {
+      const next = { ...prev }
+      Object.entries(atualizacoes).forEach(([k, doneAt]) => {
+        if (next[k]) next[k] = { ...next[k], doneAt }
+      })
+      return next
+    })
   }
 
   /**
