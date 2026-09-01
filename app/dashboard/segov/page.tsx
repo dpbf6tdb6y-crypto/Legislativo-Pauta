@@ -50,7 +50,7 @@ const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [str
 const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
 // Etapas que podem acontecer a qualquer momento da tramitação — reposiciona
 // pela DATA real delas em vez da ordem fixa do array (ver editar/page.tsx).
-const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio']
+const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio', 'dispensaParecer', 'pedidoVista', 'pedidoAdiamento']
 function labelResultadoCurto(key: string, valor?: string) {
   if (!valor) return ''
   const { valores, labels } = OPCOES_POR_CHAVE[key] || { valores: ['aprovado', 'reprovado'], labels: ['Aprov.', 'Reprov.'] }

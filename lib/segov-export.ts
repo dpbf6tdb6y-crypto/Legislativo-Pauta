@@ -73,7 +73,7 @@ const FLUXO_DEF_EXPORT = [
 const CHAVES_SANCAO = ["sancaoVeto", "promulgacao"];
 // Etapas que podem acontecer a qualquer momento da tramitação — reposiciona
 // pela DATA real delas em vez da ordem fixa do array (ver editar/page.tsx).
-const CHAVES_REPOSICIONAR_POR_DATA = ["retiradoPauta", "dispensaIntersticio"];
+const CHAVES_REPOSICIONAR_POR_DATA = ["retiradoPauta", "dispensaIntersticio", "dispensaParecer", "pedidoVista", "pedidoAdiamento"];
 const OPCOES_LABEL_PDF: Record<string, Record<string, string>> = {
   sancaoVeto: { sancionado: "Sancionado", vetado: "Vetado" },
   promulgacao: { promulgado: "Promulgado", vetado: "Vetado" },
