@@ -382,6 +382,21 @@ export default function EditarSeggovPage() {
     return base
   }, [fluxo])
 
+  /** Move uma etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) uma posição
+   * pra frente ou pra trás no fluxo, sem precisar calcular uma data manual —
+   * ajusta a data dela pra 1 minuto antes/depois do vizinho (não aparece pro
+   * usuário, já que a data só é exibida em dia/mês/ano). A ordem continua
+   * vindo só da data; isso só facilita mexer nela com um clique. */
+  function moverEtapa(key: string, direcao: 'antes' | 'depois') {
+    const idx = marcados.findIndex(m => m.key === key)
+    if (idx === -1) return
+    const vizinho = direcao === 'antes' ? marcados[idx - 1] : marcados[idx + 1]
+    if (!vizinho?.doneAt) return
+    const delta = direcao === 'antes' ? -60000 : 60000
+    const novaData = new Date(new Date(vizinho.doneAt).getTime() + delta).toISOString()
+    setFluxo(prev => prev[key] ? { ...prev, [key]: { ...prev[key], doneAt: novaData } } : prev)
+  }
+
   /**
    * Quando o parecer é conjunto, as comissões que o emitiram são mostradas
    * dentro de uma faixa única, sem setas entre elas — enfileirá-las daria a
@@ -660,6 +675,27 @@ export default function EditarSeggovPage() {
               title={def.tipo === 'data' && !done ? 'Informe a data' : undefined}
               className={inpSm} />
           </div>
+
+          {/* Mover no fluxo é mais prático que calcular uma data manualmente
+              — os botões ajustam a data por trás das cortinas (1 minuto antes/
+              depois do vizinho, sem aparecer pro usuário), então a ordem
+              continua vindo só da data, e a bolinha pula pra posição certa
+              com um clique. Só pras etapas "livres" já marcadas. */}
+          {done && CHAVES_REPOSICIONAR_POR_DATA.includes(def.key) && (
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Posição no fluxo</label>
+              <div className="flex gap-1">
+                <button type="button" onClick={() => moverEtapa(def.key, 'antes')}
+                  disabled={marcados.findIndex(m => m.key === def.key) <= 0}
+                  title="Mover uma posição antes no fluxo"
+                  className="px-2.5 py-1.5 rounded-md border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition">◀</button>
+                <button type="button" onClick={() => moverEtapa(def.key, 'depois')}
+                  disabled={marcados.findIndex(m => m.key === def.key) >= marcados.length - 1}
+                  title="Mover uma posição depois no fluxo"
+                  className="px-2.5 py-1.5 rounded-md border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition">▶</button>
+              </div>
+            </div>
+          )}
 
           {def.tipo === 'comissao' && (
             <div className="w-64">
