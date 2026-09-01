@@ -337,7 +337,7 @@ export function exportarSegovPDF(
         sd,
         labelLinhas: doc.splitTextToSize(step.labelCurto, stepW - 4) as string[],
         temData: !!sd?.doneAt,
-        temEtiqueta: !!(sd?.data?.comissaoNome || (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(step.key))),
+        temEtiqueta: !!(sd?.data?.comissaoNome || sd?.data?.nome1 || (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(step.key))),
         agrupado: chavesAgrupadas.includes(step.key),
         fantasma: false,
       };
@@ -626,6 +626,17 @@ export function exportarSegovPDF(
             }
             doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
             doc.text(rText, x, yEtiqueta + 7, { align: "center" });
+          } else if (p.sd?.data?.nome1) {
+            // Nome de quem pediu (Retirado de Pauta, Dispensa de Parecer/
+            // Interstício, Pedido de Vista/Adiamento, Comissão Especial) —
+            // mesma etiqueta cinza usada nas telas.
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            const bw = Math.min(stepW - 2, doc.getTextWidth(p.sd.data.nome1) + 7);
+            doc.setFillColor(243, 244, 246);
+            doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
+            doc.setTextColor(75, 85, 99);
+            doc.text(p.sd.data.nome1, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
           }
         });
 
