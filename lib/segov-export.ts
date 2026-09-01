@@ -614,13 +614,16 @@ export function exportarSegovPDF(
 
           const yEtiqueta = baseFileira + (fileira.some(q => q.temData) ? 9 : 0) + 3;
           if (p.sd?.data?.comissaoNome) {
+            // No fluxo só a sigla — o nome completo (guardado junto em
+            // "SIGLA — Nome") fica só na tela de edição, onde tem espaço.
+            const sigla = p.sd.data.comissaoNome.split(" — ")[0];
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7);
-            const bw = Math.min(stepW - 2, doc.getTextWidth(p.sd.data.comissaoNome) + 7);
+            const bw = Math.min(stepW - 2, doc.getTextWidth(sigla) + 7);
             doc.setFillColor(219, 234, 254);
             doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
             doc.setTextColor(29, 78, 216);
-            doc.text(p.sd.data.comissaoNome, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
+            doc.text(sigla, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
           } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
             const rText = labelResultadoPdf(p.step.key, p.sd.data.resultado);
             doc.setFont("helvetica", "normal");

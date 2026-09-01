@@ -417,8 +417,12 @@ export default function EditarSeggovPage() {
           'text-gray-700'
         }`}>{step.labelCurto}</p>
         <p className="text-xs text-gray-400 text-center mt-0.5">{fmtData(step.doneAt)}</p>
+        {/* No fluxo só a sigla — o nome completo da comissão (guardado junto
+            em "SIGLA — Nome") fica só no painel de edição, onde tem espaço;
+            aqui embaixo do nó, o nome inteiro quebrava em várias linhas e
+            distorcia o gráfico. */}
         {step.data?.comissaoNome && (
-          <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
+          <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome.split(' — ')[0]}</span>
         )}
         {/* Nas comissões e no Resultado Final a cor da bolinha (verde/vermelho)
             já entrega o veredito — escrever "Aprovado"/"Reprovado" embaixo
