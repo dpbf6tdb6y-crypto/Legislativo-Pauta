@@ -293,7 +293,9 @@ export function exportarSegovPDF(
       const item = marcados[idx];
       const semItem = marcados.filter((_, i) => i !== idx);
       const dataItem = fluxo[item.key]?.doneAt || "";
-      let posicao = semItem.findIndex(d => (fluxo[d.key]?.doneAt || "") > dataItem);
+      // Empate (mesma data que a etapa fixa vizinha) → a livre entra antes
+      // dela (ver editar/page.tsx).
+      let posicao = semItem.findIndex(d => (fluxo[d.key]?.doneAt || "") >= dataItem);
       if (posicao === -1) posicao = semItem.length;
       semItem.splice(posicao, 0, item);
       marcados = semItem;

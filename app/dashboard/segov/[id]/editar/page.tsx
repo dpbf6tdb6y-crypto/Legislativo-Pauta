@@ -365,13 +365,16 @@ export default function EditarSeggovPage() {
       .map(d => ({ ...d, ...(fluxo[d.key] || {}) }))
 
     // Reposiciona cada etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) pela
-    // sua data real, em vez da ordem fixa do array.
+    // sua data real, em vez da ordem fixa do array. Em caso de empate (mesma
+    // data que uma etapa fixa vizinha), a etapa livre entra ANTES dela — ex.:
+    // dispensa de interstício no mesmo dia da 2ª votação normalmente foi
+    // concedida antes da votação acontecer, não depois.
     CHAVES_REPOSICIONAR_POR_DATA.forEach(chave => {
       const idx = base.findIndex(m => m.key === chave)
       if (idx === -1) return
       const item = base[idx]
       const semItem = base.filter((_, i) => i !== idx)
-      let posicao = semItem.findIndex(m => (m.doneAt || '') > (item.doneAt || ''))
+      let posicao = semItem.findIndex(m => (m.doneAt || '') >= (item.doneAt || ''))
       if (posicao === -1) posicao = semItem.length
       semItem.splice(posicao, 0, item)
       base = semItem
