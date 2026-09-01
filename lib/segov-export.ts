@@ -58,7 +58,11 @@ const FLUXO_DEF_EXPORT = [
   { key: 'votacao1',            labelCurto: '1ª Vot.'    },
   { key: 'votacao2',            labelCurto: '2ª Vot.'    },
   { key: 'resultadoFinal',      labelCurto: 'Resultado'  },
-  { key: 'sancaoVeto',          labelCurto: 'Sanção/Veto'},
+  // "Sanção/Veto" quebra no meio da palavra ("Vet" + "o" numa segunda linha)
+  // na coluna estreita do PDF (48pt) — encurtado só aqui, no relatório; nas
+  // telas (mais largas) o rótulo completo continua igual. A etiqueta colorida
+  // embaixo do nó (Sancionado/Vetado) já entrega o resultado específico.
+  { key: 'sancaoVeto',          labelCurto: 'Sanção'},
   { key: 'promulgacao',         labelCurto: 'Promul.'    },
 ]
 
