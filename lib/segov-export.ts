@@ -71,6 +71,9 @@ const FLUXO_DEF_EXPORT = [
 // valem como nó normal do fluxo, viram a bolinha fantasma no relatório
 // também, igual já acontece nas telas.
 const CHAVES_SANCAO = ["sancaoVeto", "promulgacao"];
+// Etapas que podem acontecer a qualquer momento da tramitação — reposiciona
+// pela DATA real delas em vez da ordem fixa do array (ver editar/page.tsx).
+const CHAVES_REPOSICIONAR_POR_DATA = ["retiradoPauta", "dispensaIntersticio"];
 const OPCOES_LABEL_PDF: Record<string, Record<string, string>> = {
   sancaoVeto: { sancionado: "Sancionado", vetado: "Vetado" },
   promulgacao: { promulgado: "Promulgado", vetado: "Vetado" },
@@ -281,19 +284,20 @@ export function exportarSegovPDF(
       if (agrupar && d.key === "comissaoConjunta") return false;
       return true;
     });
-    // Retirado de Pauta pode acontecer a qualquer momento da tramitação —
-    // reposiciona pela DATA real dele em vez da ordem fixa do array.
-    const idxRetirado = marcadosBase.findIndex(d => d.key === "retiradoPauta");
+    // Reposiciona cada etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) pela
+    // sua data real, em vez da ordem fixa do array.
     let marcados = marcadosBase;
-    if (idxRetirado !== -1) {
-      const retirado = marcadosBase[idxRetirado];
-      const semRetirado = marcadosBase.filter((_, i) => i !== idxRetirado);
-      const dataRetirado = fluxo[retirado.key]?.doneAt || "";
-      let posicao = semRetirado.findIndex(d => (fluxo[d.key]?.doneAt || "") > dataRetirado);
-      if (posicao === -1) posicao = semRetirado.length;
-      semRetirado.splice(posicao, 0, retirado);
-      marcados = semRetirado;
-    }
+    CHAVES_REPOSICIONAR_POR_DATA.forEach(chave => {
+      const idx = marcados.findIndex(d => d.key === chave);
+      if (idx === -1) return;
+      const item = marcados[idx];
+      const semItem = marcados.filter((_, i) => i !== idx);
+      const dataItem = fluxo[item.key]?.doneAt || "";
+      let posicao = semItem.findIndex(d => (fluxo[d.key]?.doneAt || "") > dataItem);
+      if (posicao === -1) posicao = semItem.length;
+      semItem.splice(posicao, 0, item);
+      marcados = semItem;
+    });
     const chavesAgrupadas = agrupar ? comissoesDoGrupo.map(d => d.key) : [];
     const porLinha = Math.max(1, Math.floor(innerW / stepW));
 
