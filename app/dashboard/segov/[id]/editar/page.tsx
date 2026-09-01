@@ -70,8 +70,11 @@ const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
  * pela DATA real delas em vez da ordem fixa do array, pra aparecer no fluxo
  * exatamente onde aconteceram. Dispensa de Interstício, por exemplo, pode
  * valer só pra pular o intervalo antes da 2ª Votação — nesse caso aparece
- * logo antes dela, não lá atrás perto das comissões. */
-const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio']
+ * logo antes dela, não lá atrás perto das comissões. Não inclui Comissões
+ * nem Votação/Emenda: a ordem dessas é regra do processo legislativo, não
+ * coincidência de data, e mexer nelas quebraria o colchete do "Parecer
+ * Conjunto" (que assume Com. 1/2/3 sempre juntas). */
+const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio', 'dispensaParecer', 'pedidoVista', 'pedidoAdiamento']
 /** Etapas em que dá pra informar o(s) vereador(es) que propuseram — hoje só
  * Emenda(s), que pode ter um autor só ou vários. */
 const CHAVES_COM_AUTORES = new Set(['emenda'])
