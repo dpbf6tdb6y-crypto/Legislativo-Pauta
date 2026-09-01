@@ -357,29 +357,35 @@ export default function EditarSeggovPage() {
   }
 
   const marcados = useMemo(() => {
-    let base = FLUXO_DEF
+    const base = FLUXO_DEF
       // Sanção/Veto e Promulgação marcados mas sem resultado ainda são só um
       // caminho reservado (igual comissão sem parecer) — não entram no fluxo
       // como nó normal, viram a bolinha fantasma abaixo até ter resultado.
       .filter(d => fluxo[d.key]?.done && !(d.tipo === 'sancao' && !fluxo[d.key]?.data?.resultado))
       .map(d => ({ ...d, ...(fluxo[d.key] || {}) }))
 
-    // Reposiciona cada etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) pela
-    // sua data real, em vez da ordem fixa do array. Em caso de empate (mesma
-    // data que uma etapa fixa vizinha), a etapa livre entra ANTES dela — ex.:
-    // dispensa de interstício no mesmo dia da 2ª votação normalmente foi
-    // concedida antes da votação acontecer, não depois.
-    CHAVES_REPOSICIONAR_POR_DATA.forEach(chave => {
-      const idx = base.findIndex(m => m.key === chave)
-      if (idx === -1) return
-      const item = base[idx]
-      const semItem = base.filter((_, i) => i !== idx)
-      let posicao = semItem.findIndex(m => (m.doneAt || '') >= (item.doneAt || ''))
-      if (posicao === -1) posicao = semItem.length
-      semItem.splice(posicao, 0, item)
-      base = semItem
+    // Reposiciona as etapas "livres" (ver CHAVES_REPOSICIONAR_POR_DATA) pela
+    // data real, em vez da ordem fixa do array — mesclando-as entre as fixas
+    // (que mantêm a ordem original entre si). As livres são ordenadas pela
+    // própria data ANTES de mesclar, pra garantir um resultado consistente
+    // (mesclar direto na ordem do array — comparando cada uma com a data
+    // *antiga* das outras que ainda não foram tratadas — jogava a etapa lá
+    // pro final ou de volta pro lugar de origem, dependendo de qual vinha
+    // primeiro no array). Em caso de empate (mesma data), a livre entra
+    // ANTES da fixa/livre vizinha — ex.: dispensa de interstício no mesmo
+    // dia da 2ª votação normalmente foi concedida antes dela acontecer.
+    const fixas = base.filter(m => !CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
+    const livres = base
+      .filter(m => CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
+      .sort((a, b) => (a.doneAt || '').localeCompare(b.doneAt || ''))
+
+    const resultado = [...fixas]
+    livres.forEach(item => {
+      let posicao = resultado.findIndex(m => (m.doneAt || '') >= (item.doneAt || ''))
+      if (posicao === -1) posicao = resultado.length
+      resultado.splice(posicao, 0, item)
     })
-    return base
+    return resultado
   }, [fluxo])
 
   /** Move uma etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) uma posição

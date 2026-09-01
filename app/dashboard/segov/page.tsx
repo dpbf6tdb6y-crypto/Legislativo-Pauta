@@ -429,20 +429,22 @@ export default function SeggovPage() {
               // bolinha fantasma mais abaixo.
               .filter(d => fluxo[d.key]?.done && !(CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado))
               .map(d => ({ ...d, doneAt: fluxo[d.key]?.doneAt, data: fluxo[d.key]?.data }))
-            // Reposiciona cada etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA)
-            // pela sua data real, em vez da ordem fixa do array.
-            let marcados = marcadosBase
-            CHAVES_REPOSICIONAR_POR_DATA.forEach(chave => {
-              const idx = marcados.findIndex(m => m.key === chave)
-              if (idx === -1) return
-              const item = marcados[idx]
-              const semItem = marcados.filter((_, i) => i !== idx)
-              // Empate (mesma data que a etapa fixa vizinha) → a livre entra
-              // antes dela (ver editar/page.tsx).
-              let posicao = semItem.findIndex(m => (m.doneAt || '') >= (item.doneAt || ''))
-              if (posicao === -1) posicao = semItem.length
-              semItem.splice(posicao, 0, item)
-              marcados = semItem
+            // Reposiciona as etapas "livres" (ver CHAVES_REPOSICIONAR_POR_DATA)
+            // pela data real, mesclando-as entre as fixas (que mantêm a ordem
+            // original entre si). Ordena as livres pela própria data ANTES de
+            // mesclar — mesclar direto na ordem do array, comparando com a
+            // data antiga de livres ainda não tratadas, jogava a etapa lá pro
+            // final ou de volta pro lugar de origem. Empate → livre entra
+            // antes da vizinha (ver editar/page.tsx).
+            const fixas = marcadosBase.filter(m => !CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
+            const livres = marcadosBase
+              .filter(m => CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
+              .sort((a, b) => (a.doneAt || '').localeCompare(b.doneAt || ''))
+            const marcados = [...fixas]
+            livres.forEach(item => {
+              let posicao = marcados.findIndex(m => (m.doneAt || '') >= (item.doneAt || ''))
+              if (posicao === -1) posicao = marcados.length
+              marcados.splice(posicao, 0, item)
             })
             // Mesma regra da tela de edição: reprovação em qualquer comissão (1/2/3
             // ou Especial) já pinta tudo de vermelho; aprovação nas três sequenciais
