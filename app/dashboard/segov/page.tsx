@@ -527,8 +527,10 @@ export default function SeggovPage() {
                     'text-gray-700'
                   }`}>{step.labelCurto}</p>
                   <p className="text-xs text-gray-400 text-center mt-0.5">{fmtFluxoData(step.doneAt)}</p>
+                  {/* No fluxo só a sigla — o nome completo (guardado junto
+                      em "SIGLA — Nome") fica só no painel de edição. */}
                   {step.data?.comissaoNome && (
-                    <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
+                    <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome.split(' — ')[0]}</span>
                   )}
                   {/* Nas comissões e no Resultado Final a cor da bolinha já é o
                       veredito (verde = aprovado, vermelho = reprovado), então o
