@@ -329,29 +329,31 @@ export default function SeggovPage() {
       <div className="sticky top-12 z-30 bg-gray-100 space-y-2 pb-2 will-change-transform">
       <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto">
         {filtrosColunaAtivos && (
-          <button onClick={limparFiltrosColuna} title="Limpar filtros"
-            className="text-gray-400 hover:text-red-600 transition flex-shrink-0">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button onClick={limparFiltrosColuna}
+            className="text-xs font-medium text-gray-400 hover:text-red-600 transition flex-shrink-0 whitespace-nowrap px-1">
+            Limpar
           </button>
         )}
+        {/* Anel azul indica visualmente qual filtro está com algo selecionado
+            — antes todos os campos pareciam sempre "vazios", mesmo com filtro
+            aplicado, e só dava pra saber pela contagem de itens. */}
         <input value={colProposicao} onChange={e => setColProposicao(e.target.value)}
           placeholder="Buscar nº..."
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-20 flex-shrink-0" />
+          className={`border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-20 flex-shrink-0 ${colProposicao ? 'ring-2 ring-blue-400' : ''}`} />
         <input value={colEmenta} onChange={e => setColEmenta(e.target.value)}
           placeholder="Buscar palavra na ementa..."
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-1 min-w-[120px]" />
+          className={`border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-1 min-w-[120px] ${colEmenta ? 'ring-2 ring-blue-400' : ''}`} />
         <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} className="flex-shrink-0" />
-        <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={colVereador} onChange={setColVereador} className="w-32 flex-shrink-0" />
+        <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={colVereador} onChange={setColVereador}
+          className={`w-32 flex-shrink-0 ${colVereador ? 'ring-2 ring-blue-400' : ''}`} />
         <FiltroSituacaoAutor value={filtroSituacaoAutor} onChange={setFiltroSituacaoAutor} className="flex-shrink-0" />
         <select value={colAno} onChange={e => setColAno(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-16 flex-shrink-0">
+          className={`border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-16 flex-shrink-0 ${colAno ? 'ring-2 ring-blue-400' : ''}`}>
           <option value="">Ano</option>
           {anosDisponiveis.map(a => <option key={a} value={a}>{a}</option>)}
         </select>
         <select value={colTipo} onChange={e => setColTipo(e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-36 flex-shrink-0">
+          className={`border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-36 flex-shrink-0 ${colTipo ? 'ring-2 ring-blue-400' : ''}`}>
           <option value="">Todos os tipos ({Object.values(contagemPorTipo).reduce((a, b) => a + b, 0)})</option>
           {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome} ({contagemPorTipo[t.nome] || 0})</option>)}
         </select>

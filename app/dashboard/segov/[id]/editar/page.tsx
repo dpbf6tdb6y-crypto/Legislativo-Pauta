@@ -28,13 +28,13 @@ type StepDef = { key: string; label: string; labelCurto: string; tipo: StepTipo 
 const FLUXO_DEF: StepDef[] = [
   { key: 'protocolado',        label: 'Protocolado',                    labelCurto: 'Prot.',      tipo: 'simples' },
   { key: 'pautado',            label: 'Pautado',                        labelCurto: 'Pautado',    tipo: 'data' },
-  { key: 'retiradoPauta',      label: 'Retirado de Pauta',              labelCurto: 'Retirado',   tipo: 'simples' },
+  { key: 'retiradoPauta',      label: 'Retirado de Pauta',              labelCurto: 'Retirado',   tipo: 'nome1' },
   { key: 'comissao1',          label: 'Comissão 1',                     labelCurto: 'Com. 1',     tipo: 'comissao' },
   { key: 'comissao2',          label: 'Comissão 2',                     labelCurto: 'Com. 2',     tipo: 'comissao' },
   { key: 'comissao3',          label: 'Comissão 3',                     labelCurto: 'Com. 3',     tipo: 'comissao' },
   { key: 'comissaoEspecial',   label: 'Comissão Especial',              labelCurto: 'C. Esp.',    tipo: 'comissao3nomes' },
   { key: 'comissaoConjunta',   label: 'Comissão Conjunta',              labelCurto: 'C. Conj.',   tipo: 'nome1' },
-  { key: 'dispensaParecer',    label: 'Dispensa de Parecer',            labelCurto: 'D. Par.',    tipo: 'simples' },
+  { key: 'dispensaParecer',    label: 'Dispensa de Parecer',            labelCurto: 'D. Par.',    tipo: 'nome1' },
   { key: 'dispensaIntersticio',label: 'Dispensa de Interstício',        labelCurto: 'D. Int.',    tipo: 'nome1' },
   { key: 'pedidoVista',        label: 'Pedido de Vista',                labelCurto: 'P. Vista',   tipo: 'nome1' },
   { key: 'pedidoAdiamento',    label: 'Pedido de Adiamento de Votação', labelCurto: 'P. Adj.',    tipo: 'nome1' },
@@ -65,6 +65,17 @@ const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [str
  * marcadas (igual comissão) — Sanção/Veto e Promulgação são escolhidas como
  * caminho primeiro, e o resultado é preenchido quando sai a decisão. */
 const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
+/** Etapas tipo 'nome1' em que o Poder Executivo também pode ser quem pediu —
+ * Retirado de Pauta pode partir do prefeito/vice, não só de um vereador.
+ * As demais (Comissão Conjunta, Dispensa de Interstício, Pedido de Vista/
+ * Adiamento) continuam só com vereadores. */
+const CHAVES_NOME1_COM_EXECUTIVO = new Set(['retiradoPauta'])
+/** "SIGLA — Nome completo da comissão" quando ambos existem, pra não perder
+ * a referência de qual comissão é quando só a sigla aparecia. */
+function nomeComissao(com: any): string | undefined {
+  if (!com) return undefined
+  return com.sigla && com.nome ? `${com.sigla} — ${com.nome}` : (com.sigla || com.nome)
+}
 function getOpcoes(key: string) {
   return OPCOES_POR_CHAVE[key] || { valores: ['aprovado', 'reprovado'] as [string, string], labels: ['Aprovado', 'Reprovado'] as [string, string] }
 }
@@ -209,7 +220,7 @@ export default function EditarSeggovPage() {
       // etapa, grava junto; senão, fica em aberto e é informado depois pelo
       // mesmo bloco de resultado, que continua disponível após marcar.
       const com = comissoes.find((c: any) => c.id === p.comissaoId)
-      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, ...(p.resultado ? { resultado: p.resultado } : {}) }
+      data = { comissaoId: p.comissaoId, comissaoNome: nomeComissao(com), ...(p.resultado ? { resultado: p.resultado } : {}) }
     } else if (def.tipo === 'comissao3nomes') {
       data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', ...(p.resultado ? { resultado: p.resultado } : {}) }
     } else if (def.tipo === 'nome1') {
@@ -262,7 +273,7 @@ export default function EditarSeggovPage() {
     if (def.tipo === 'comissao') {
       if (!p.comissaoId) return null
       const com = comissoes.find((c: any) => c.id === p.comissaoId)
-      data = { comissaoId: p.comissaoId, comissaoNome: com?.sigla || com?.nome, ...(p.resultado ? { resultado: p.resultado } : {}) }
+      data = { comissaoId: p.comissaoId, comissaoNome: nomeComissao(com), ...(p.resultado ? { resultado: p.resultado } : {}) }
     } else if (def.tipo === 'comissao3nomes') {
       if (!p.nome1 && !p.nome2 && !p.nome3 && !p.data) return null
       data = { nome1: p.nome1 || '', nome2: p.nome2 || '', nome3: p.nome3 || '', ...(p.resultado ? { resultado: p.resultado } : {}) }
@@ -619,19 +630,33 @@ export default function EditarSeggovPage() {
             </div>
           )}
 
-          {def.tipo === 'nome1' && (
-            <div className="w-56">
-              <label className="block text-xs text-gray-500 mb-1">Vereador</label>
-              {done ? (
-                <p className="text-sm text-gray-700 px-0.5 py-1.5">{state?.data?.nome1 || '—'}</p>
-              ) : (
-                <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={inpSm}>
-                  <option value="">— Selecionar vereador —</option>
-                  {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
-                </select>
-              )}
-            </div>
-          )}
+          {def.tipo === 'nome1' && (() => {
+            const comExecutivo = CHAVES_NOME1_COM_EXECUTIVO.has(def.key)
+            return (
+              <div className="w-56">
+                <label className="block text-xs text-gray-500 mb-1">{comExecutivo ? 'Vereador ou Executivo' : 'Vereador'}</label>
+                {done ? (
+                  <p className="text-sm text-gray-700 px-0.5 py-1.5">{state?.data?.nome1 || '—'}</p>
+                ) : (
+                  <select value={p.nome1 || ''} onChange={e => setPendingData(def.key, 'nome1', e.target.value)} className={inpSm}>
+                    <option value="">— Selecionar —</option>
+                    {comExecutivo ? (
+                      <>
+                        <optgroup label="Poder Executivo">
+                          {pessoasExecutivo.map((v: any) => <option key={v.id} value={v.nome}>{v.nome}</option>)}
+                        </optgroup>
+                        <optgroup label="Vereadores">
+                          {vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)}
+                        </optgroup>
+                      </>
+                    ) : (
+                      vereadores.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}</option>)
+                    )}
+                  </select>
+                )}
+              </div>
+            )
+          })()}
 
           {def.tipo === 'comissao3nomes' && (
             <div className="w-full">
@@ -708,7 +733,11 @@ export default function EditarSeggovPage() {
   function renderQuadrante(grupos: { titulo: string; keys: string[] }[], selecionado: string, onSelecionar: (k: string) => void) {
     return (
       <div className="rounded-xl border border-blue-200 bg-white overflow-hidden flex flex-col md:flex-row">
-        <div className="w-full md:w-64 flex-shrink-0 border-b md:border-b-0 md:border-r border-blue-100 bg-gray-50 p-1.5 overflow-x-auto">
+        {/* w-64 (256px) + 20% ≈ 308px — pedido do usuário pra caber nome de
+            comissão "SIGLA — Nome completo" numa linha só; o painel da
+            direita (flex-1) absorve a diferença e fica proporcionalmente
+            menor. */}
+        <div className="w-full md:w-[308px] flex-shrink-0 border-b md:border-b-0 md:border-r border-blue-100 bg-gray-50 p-1.5 overflow-x-auto">
           {grupos.map(g => (
             <div key={g.titulo}>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide px-2.5 pt-2.5 pb-1">{g.titulo}</p>
