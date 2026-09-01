@@ -284,21 +284,23 @@ export function exportarSegovPDF(
       if (agrupar && d.key === "comissaoConjunta") return false;
       return true;
     });
-    // Reposiciona cada etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) pela
-    // sua data real, em vez da ordem fixa do array.
-    let marcados = marcadosBase;
-    CHAVES_REPOSICIONAR_POR_DATA.forEach(chave => {
-      const idx = marcados.findIndex(d => d.key === chave);
-      if (idx === -1) return;
-      const item = marcados[idx];
-      const semItem = marcados.filter((_, i) => i !== idx);
+    // Reposiciona as etapas "livres" (ver CHAVES_REPOSICIONAR_POR_DATA) pela
+    // data real, mesclando-as entre as fixas (que mantêm a ordem original
+    // entre si). Ordena as livres pela própria data ANTES de mesclar —
+    // mesclar direto na ordem do array, comparando com a data antiga de
+    // livres ainda não tratadas, jogava a etapa lá pro final ou de volta pro
+    // lugar de origem. Empate → livre entra antes da vizinha (ver
+    // editar/page.tsx).
+    const fixasOrdenadas = marcadosBase.filter(d => !CHAVES_REPOSICIONAR_POR_DATA.includes(d.key));
+    const livresOrdenadas = marcadosBase
+      .filter(d => CHAVES_REPOSICIONAR_POR_DATA.includes(d.key))
+      .sort((a, b) => (fluxo[a.key]?.doneAt || "").localeCompare(fluxo[b.key]?.doneAt || ""));
+    const marcados = [...fixasOrdenadas];
+    livresOrdenadas.forEach(item => {
       const dataItem = fluxo[item.key]?.doneAt || "";
-      // Empate (mesma data que a etapa fixa vizinha) → a livre entra antes
-      // dela (ver editar/page.tsx).
-      let posicao = semItem.findIndex(d => (fluxo[d.key]?.doneAt || "") >= dataItem);
-      if (posicao === -1) posicao = semItem.length;
-      semItem.splice(posicao, 0, item);
-      marcados = semItem;
+      let posicao = marcados.findIndex(d => (fluxo[d.key]?.doneAt || "") >= dataItem);
+      if (posicao === -1) posicao = marcados.length;
+      marcados.splice(posicao, 0, item);
     });
     const chavesAgrupadas = agrupar ? comissoesDoGrupo.map(d => d.key) : [];
     const porLinha = Math.max(1, Math.floor(innerW / stepW));
