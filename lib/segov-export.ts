@@ -57,10 +57,10 @@ const FLUXO_DEF_EXPORT = [
   { key: 'emendaNumero',        labelCurto: 'Id. Emenda' },
   { key: 'votacao1',            labelCurto: '1ª Vot.'    },
   { key: 'votacao2',            labelCurto: '2ª Vot.'    },
-  { key: 'resultadoFinal',      labelCurto: 'Resultado'  },
+  { key: 'resultadoFinal',      labelCurto: 'Result.'    },
   // "Sanção/Veto" quebra no meio da palavra ("Vet" + "o" numa segunda linha)
-  // na coluna estreita do PDF (48pt) — encurtado só aqui, no relatório; nas
-  // telas (mais largas) o rótulo completo continua igual. A etiqueta colorida
+  // na coluna estreita do PDF — encurtado só aqui, no relatório; nas telas
+  // (mais largas) o rótulo completo continua igual. A etiqueta colorida
   // embaixo do nó (Sancionado/Vetado) já entrega o resultado específico.
   { key: 'sancaoVeto',          labelCurto: 'Sanção'},
   { key: 'promulgacao',         labelCurto: 'Promul.'    },
@@ -171,8 +171,11 @@ export function exportarSegovPDF(
   const nodeR = 6;
   // Passo curto de propósito: encurta as setas entre os nós e ainda permite
   // rótulos maiores (os textos abaixo da bolinha quebram em 2 linhas quando
-  // precisam, e a altura da fileira já reserva espaço pra isso).
-  const stepW = 48;
+  // precisam, e a altura da fileira já reserva espaço pra isso). Reduzido de
+  // 48 pra 42 — cabiam só 10 nós por fileira, e proposições com parecer
+  // conjunto + pedido de vista/emenda já passam disso, fazendo o fluxo pular
+  // pra uma segunda fileira solta. Com 42 cabem 12.
+  const stepW = 42;
   const chipLH = 14;
   const alturaCabecalho = 40;
   const topoConteudo = alturaCabecalho + 10;
