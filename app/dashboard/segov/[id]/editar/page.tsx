@@ -65,6 +65,12 @@ const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [str
  * marcadas (igual comissão) — Sanção/Veto e Promulgação são escolhidas como
  * caminho primeiro, e o resultado é preenchido quando sai a decisão. */
 const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
+/** Etapas que podem acontecer a qualquer momento da tramitação — reposiciona
+ * pela DATA real delas em vez da ordem fixa do array, pra aparecer no fluxo
+ * exatamente onde aconteceram. Dispensa de Interstício, por exemplo, pode
+ * valer só pra pular o intervalo antes da 2ª Votação — nesse caso aparece
+ * logo antes dela, não lá atrás perto das comissões. */
+const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio']
 /** Etapas tipo 'nome1' em que o Poder Executivo também pode ser quem pediu —
  * Retirado de Pauta pode partir do prefeito/vice, não só de um vereador.
  * As demais (Comissão Conjunta, Dispensa de Interstício, Pedido de Vista/
@@ -323,25 +329,26 @@ export default function EditarSeggovPage() {
   }
 
   const marcados = useMemo(() => {
-    const base = FLUXO_DEF
+    let base = FLUXO_DEF
       // Sanção/Veto e Promulgação marcados mas sem resultado ainda são só um
       // caminho reservado (igual comissão sem parecer) — não entram no fluxo
       // como nó normal, viram a bolinha fantasma abaixo até ter resultado.
       .filter(d => fluxo[d.key]?.done && !(d.tipo === 'sancao' && !fluxo[d.key]?.data?.resultado))
       .map(d => ({ ...d, ...(fluxo[d.key] || {}) }))
 
-    // Retirado de Pauta pode acontecer a qualquer momento da tramitação —
-    // reposiciona pela DATA real dela em vez da ordem fixa do array, pra
-    // aparecer no fluxo exatamente onde aconteceu (ex.: depois de uma
-    // comissão já aprovada, se a retirada foi depois disso).
-    const idxRetirado = base.findIndex(m => m.key === 'retiradoPauta')
-    if (idxRetirado === -1) return base
-    const retirado = base[idxRetirado]
-    const semRetirado = base.filter((_, i) => i !== idxRetirado)
-    let posicao = semRetirado.findIndex(m => (m.doneAt || '') > (retirado.doneAt || ''))
-    if (posicao === -1) posicao = semRetirado.length
-    semRetirado.splice(posicao, 0, retirado)
-    return semRetirado
+    // Reposiciona cada etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA) pela
+    // sua data real, em vez da ordem fixa do array.
+    CHAVES_REPOSICIONAR_POR_DATA.forEach(chave => {
+      const idx = base.findIndex(m => m.key === chave)
+      if (idx === -1) return
+      const item = base[idx]
+      const semItem = base.filter((_, i) => i !== idx)
+      let posicao = semItem.findIndex(m => (m.doneAt || '') > (item.doneAt || ''))
+      if (posicao === -1) posicao = semItem.length
+      semItem.splice(posicao, 0, item)
+      base = semItem
+    })
+    return base
   }, [fluxo])
 
   /**

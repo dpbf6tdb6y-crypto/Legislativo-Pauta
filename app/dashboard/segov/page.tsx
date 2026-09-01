@@ -48,6 +48,9 @@ const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [str
 // comissão) — o resultado só chega depois, então marcadas sem resultado
 // ainda não valem como nó normal do fluxo, viram a bolinha fantasma.
 const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
+// Etapas que podem acontecer a qualquer momento da tramitação — reposiciona
+// pela DATA real delas em vez da ordem fixa do array (ver editar/page.tsx).
+const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio']
 function labelResultadoCurto(key: string, valor?: string) {
   if (!valor) return ''
   const { valores, labels } = OPCOES_POR_CHAVE[key] || { valores: ['aprovado', 'reprovado'], labels: ['Aprov.', 'Reprov.'] }
@@ -426,19 +429,19 @@ export default function SeggovPage() {
               // bolinha fantasma mais abaixo.
               .filter(d => fluxo[d.key]?.done && !(CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado))
               .map(d => ({ ...d, doneAt: fluxo[d.key]?.doneAt, data: fluxo[d.key]?.data }))
-            // Retirado de Pauta pode acontecer a qualquer momento da
-            // tramitação — reposiciona pela DATA real dele em vez da ordem
-            // fixa do array, pra aparecer onde de fato aconteceu.
-            const idxRetirado = marcadosBase.findIndex(m => m.key === 'retiradoPauta')
+            // Reposiciona cada etapa "livre" (ver CHAVES_REPOSICIONAR_POR_DATA)
+            // pela sua data real, em vez da ordem fixa do array.
             let marcados = marcadosBase
-            if (idxRetirado !== -1) {
-              const retirado = marcadosBase[idxRetirado]
-              const semRetirado = marcadosBase.filter((_, i) => i !== idxRetirado)
-              let posicao = semRetirado.findIndex(m => (m.doneAt || '') > (retirado.doneAt || ''))
-              if (posicao === -1) posicao = semRetirado.length
-              semRetirado.splice(posicao, 0, retirado)
-              marcados = semRetirado
-            }
+            CHAVES_REPOSICIONAR_POR_DATA.forEach(chave => {
+              const idx = marcados.findIndex(m => m.key === chave)
+              if (idx === -1) return
+              const item = marcados[idx]
+              const semItem = marcados.filter((_, i) => i !== idx)
+              let posicao = semItem.findIndex(m => (m.doneAt || '') > (item.doneAt || ''))
+              if (posicao === -1) posicao = semItem.length
+              semItem.splice(posicao, 0, item)
+              marcados = semItem
+            })
             // Mesma regra da tela de edição: reprovação em qualquer comissão (1/2/3
             // ou Especial) já pinta tudo de vermelho; aprovação nas três sequenciais
             // OU na Especial já pinta tudo de verde, sem esperar o Resultado Final.
