@@ -740,7 +740,7 @@ export default function EditarSeggovPage() {
         <div className="w-full md:w-[308px] flex-shrink-0 border-b md:border-b-0 md:border-r border-blue-100 bg-gray-50 p-1.5 overflow-x-auto">
           {grupos.map(g => (
             <div key={g.titulo}>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide px-2.5 pt-2.5 pb-1">{g.titulo}</p>
+              <p className="text-[10px] font-bold text-gray-600 uppercase tracking-wide px-2.5 pt-2.5 pb-1">{g.titulo}</p>
               {g.keys.map(k => renderLinhaLista(k, k === selecionado, () => onSelecionar(k)))}
             </div>
           ))}
