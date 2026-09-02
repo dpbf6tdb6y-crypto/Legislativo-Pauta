@@ -7,7 +7,7 @@ import { buscarVereadorPorNome, splitAutoresTexto } from '@/lib/vereador-match'
 import { derivarStatusSegov } from '@/lib/segov-status'
 
 const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
-const STATUS_LIST = ['Aguardando', 'Em análise', 'Com Parecer', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
+const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 type Autor = { id?: string; nome: string; isPE: boolean; ativo?: boolean }
 

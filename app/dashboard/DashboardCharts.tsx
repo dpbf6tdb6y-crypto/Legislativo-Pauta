@@ -20,7 +20,6 @@ export type ProposicaoResumo = {
 
 const STATUS_COR: Record<string, string> = {
   'Aguardando':  '#f59e0b', // âmbar
-  'Com Parecer': '#a855f7', // roxo (logo)
   'Em análise':  '#3b82f6', // azul (logo)
   'Aprovado':    '#22c55e', // verde (logo)
   'Sancionado':  '#06b6d4', // ciano
@@ -32,7 +31,6 @@ const STATUS_COR: Record<string, string> = {
 
 const STATUS_CHIP: Record<string, string> = {
   'Aguardando':  'bg-yellow-50 text-yellow-700 border-yellow-200',
-  'Com Parecer': 'bg-purple-50 text-purple-700 border-purple-200',
   'Em análise':  'bg-blue-50 text-blue-700 border-blue-200',
   'Aprovado':    'bg-green-50 text-green-700 border-green-200',
   'Sancionado':  'bg-cyan-50 text-cyan-700 border-cyan-200',

@@ -63,11 +63,10 @@ function fmtFluxoData(iso?: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 }
 
-const STATUS_LIST = ['Aguardando', 'Em análise', 'Com Parecer', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
+const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 const STATUS_COR: Record<string, string> = {
   'Aguardando':   'bg-yellow-100 text-yellow-800',
-  'Com Parecer':  'bg-purple-100 text-purple-800',
   'Em análise':   'bg-blue-100 text-blue-800',
   'Aprovado':     'bg-green-100 text-green-800',
   'Sancionado':   'bg-cyan-100 text-cyan-800',
@@ -101,7 +100,9 @@ export default function SeggovPage() {
   const [colProposicao, setColProposicao] = useState('')
   const [colEmenta, setColEmenta] = useState('')
   const [colVereador, setColVereador] = useState('')
-  const [colStatus, setColStatus] = useState('')
+  // Conjunto, não string única — permite marcar vários status ao mesmo tempo
+  // (ex.: "Em análise" + "Aprovado" juntos).
+  const [colStatus, setColStatus] = useState<Set<string>>(new Set())
   const [colTipo, setColTipo] = useState('')
   const [colAno, setColAno] = useState('')
   const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
@@ -132,7 +133,7 @@ export default function SeggovPage() {
       if (f.colProposicao) setColProposicao(f.colProposicao)
       if (f.colEmenta) setColEmenta(f.colEmenta)
       if (f.colVereador) setColVereador(f.colVereador)
-      if (f.colStatus) setColStatus(f.colStatus)
+      if (Array.isArray(f.colStatus) && f.colStatus.length) setColStatus(new Set(f.colStatus))
       if (f.colTipo) setColTipo(f.colTipo)
       if (f.colAno) setColAno(f.colAno)
       if (f.filtroSituacaoAutor) setFiltroSituacaoAutor(f.filtroSituacaoAutor)
@@ -143,7 +144,7 @@ export default function SeggovPage() {
   useEffect(() => {
     try {
       sessionStorage.setItem(FILTROS_SEGOV_KEY, JSON.stringify({
-        colProposicao, colEmenta, colVereador, colStatus, colTipo, colAno, filtroSituacaoAutor, filtroPoder,
+        colProposicao, colEmenta, colVereador, colStatus: Array.from(colStatus), colTipo, colAno, filtroSituacaoAutor, filtroPoder,
       }))
     } catch {}
   }, [colProposicao, colEmenta, colVereador, colStatus, colTipo, colAno, filtroSituacaoAutor, filtroPoder])
@@ -206,7 +207,7 @@ export default function SeggovPage() {
       if (colVereador && !autores.some(a => a.vereadorId === colVereador)) return false
       if (filtroSituacaoAutor !== 'todos' && situacaoAutores(autores) !== filtroSituacaoAutor) return false
     }
-    if (exceto !== 'status' && colStatus && item.status !== colStatus) return false
+    if (exceto !== 'status' && colStatus.size > 0 && !colStatus.has(item.status)) return false
     if (exceto !== 'tipo' && colTipo && item.tipo !== colTipo) return false
     if (colAno && String(item.ano) !== colAno) return false
     return true
@@ -232,10 +233,18 @@ export default function SeggovPage() {
     return mapa
   }, [itens, colProposicao, colEmenta, colVereador, colStatus, colAno, filtroSituacaoAutor, filtroPoder, vereadores])
 
-  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus || colTipo || colAno || filtroSituacaoAutor !== 'ativos' || filtroPoder
+  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus.size > 0 || colTipo || colAno || filtroSituacaoAutor !== 'ativos' || filtroPoder
 
   function limparFiltrosColuna() {
-    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(''); setColTipo(''); setColAno(''); setFiltroSituacaoAutor('ativos'); setFiltroPoder('')
+    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(new Set()); setColTipo(''); setColAno(''); setFiltroSituacaoAutor('ativos'); setFiltroPoder('')
+  }
+
+  function toggleStatus(s: string) {
+    setColStatus(prev => {
+      const next = new Set(prev)
+      next.has(s) ? next.delete(s) : next.add(s)
+      return next
+    })
   }
 
   const todosSelecionados = itensExibidos.length > 0 && itensExibidos.every(i => selecionados.has(i.id))
@@ -333,7 +342,7 @@ export default function SeggovPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto">
         {filtrosColunaAtivos && (
           <button onClick={limparFiltrosColuna}
-            className="text-xs font-medium text-gray-400 hover:text-red-600 transition flex-shrink-0 whitespace-nowrap px-1">
+            className="text-xs font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 transition flex-shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg">
             Limpar
           </button>
         )}
@@ -378,19 +387,23 @@ export default function SeggovPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-1.5 items-center flex-wrap">
-        <button onClick={() => setColStatus('')}
-          className={`text-xs font-medium px-2.5 py-1 rounded-full border transition ${
-            colStatus === '' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+      {/* Cada status agora pode ser marcado junto com outros (ex.: "Em
+          análise" + "Aprovado" ao mesmo tempo) — clique de novo pra
+          desmarcar. "Todos" volta a mostrar tudo, limpando a seleção. Botões
+          maiores (px-4 py-2, text-sm) a pedido do usuário. */}
+      <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-2 items-center flex-wrap">
+        <button onClick={() => setColStatus(new Set())}
+          className={`text-sm font-medium px-4 py-2 rounded-full border transition ${
+            colStatus.size === 0 ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
           }`}>
           Todos ({Object.values(contagemPorStatus).reduce((a, b) => a + b, 0)})
         </button>
         {STATUS_LIST.map(s => {
-          const ativo = colStatus === s
+          const ativo = colStatus.has(s)
           const cor = STATUS_COR[s]
           return (
-            <button key={s} onClick={() => setColStatus(ativo ? '' : s)}
-              className={`text-xs font-medium px-2.5 py-1 rounded-full border transition ${
+            <button key={s} onClick={() => toggleStatus(s)}
+              className={`text-sm font-medium px-4 py-2 rounded-full border transition ${
                 ativo ? `${cor} border-transparent ring-2 ring-offset-1 ring-gray-300` : `${cor} border-transparent opacity-60 hover:opacity-100`
               }`}>
               {s} ({contagemPorStatus[s] || 0})
