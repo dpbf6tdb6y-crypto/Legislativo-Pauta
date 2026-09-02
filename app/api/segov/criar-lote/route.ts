@@ -53,7 +53,7 @@ export async function POST(req: Request) {
             parecerConjunto: !!item.parecerConjunto,
             proxComissao: item.proxComissao || null,
             dataParecere: item.dataParecere ? new Date(item.dataParecere) : null,
-            status: "Com Parecer",
+            status: "Em análise",
           },
         });
         atualizados++;
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
             ano: parseInt(item.ano),
             ementa: item.ementa?.trim() || "(sem ementa)",
             autorNome: item.autorNome || null,
-            status: "Com Parecer",
+            status: "Em análise",
             parecerComissao: item.parecerComissao || null,
             parecerConjunto: !!item.parecerConjunto,
             proxComissao: item.proxComissao || null,

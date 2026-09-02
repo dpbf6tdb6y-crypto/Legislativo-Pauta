@@ -135,7 +135,6 @@ function fmtDDMM(iso?: string) {
 
 function statusChip(status: string): { bg: [number,number,number]; fg: [number,number,number] } {
   switch (status) {
-    case "Com Parecer":  return { bg: [233,213,255], fg: [107,33,168] };
     case "Em análise":   return { bg: [219,234,254], fg: [29,78,216]  };
     case "Aprovado":     return { bg: [187,247,208], fg: [22,101,52]  };
     case "Sancionado":   return { bg: [207,250,254], fg: [21,94,117]  };

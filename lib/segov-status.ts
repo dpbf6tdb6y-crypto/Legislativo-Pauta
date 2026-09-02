@@ -19,10 +19,9 @@ const CHAVES_COMISSAO = ['comissao1', 'comissao2', 'comissao3']
  *   1ª ou 2ª Votação = Reprovado,
  *   Sanção/Veto = Vetado, ou
  *   qualquer comissão reprovada       → "Rejeitado"
- * - Todas as comissões que o projeto realmente usa já aprovadas (aceita
- *   projetos que passam por só 1 ou 2 comissões, não exige as 3), ou
- *   Comissão Especial aprovada        → "Com Parecer"
- * - Pautado, mas comissões ainda não fecharam                → "Em análise"
+ * - Pautado (comissões aprovadas ou não, resultado final ainda não saiu)
+ *                                      → "Em análise" ("Com Parecer" foi
+ *   removido do sistema — não existe mais como status separado)
  * - Só protocolado                    → "Aguardando"
  * - Nada disso ainda foi marcado      → mantém o status atual
  */
@@ -51,13 +50,6 @@ export function derivarStatusSegov(fluxo: FluxoLike, statusAtual: string): strin
     k => fluxo[k]?.data?.resultado === 'reprovado'
   )
   if (algumaComissaoReprovada) return 'Rejeitado'
-
-  const comissoesMarcadas = CHAVES_COMISSAO.filter(k => fluxo[k]?.done)
-  const todasComissoesMarcadasAprovadas =
-    comissoesMarcadas.length > 0 && comissoesMarcadas.every(k => fluxo[k]?.data?.resultado === 'aprovado')
-  const comissaoEspecial = fluxo['comissaoEspecial']
-  const comissaoEspecialAprovada = !!comissaoEspecial?.done && comissaoEspecial.data?.resultado === 'aprovado'
-  if (todasComissoesMarcadasAprovadas || comissaoEspecialAprovada) return 'Com Parecer'
 
   if (fluxo['pautado']?.done) return 'Em análise'
   if (fluxo['protocolado']?.done) return 'Aguardando'

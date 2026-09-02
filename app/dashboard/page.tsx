@@ -7,12 +7,11 @@ import FiltroPoder from '@/app/components/FiltroPoder'
 import { resolverAutores, situacaoAutores, ehPoderExecutivo } from '@/lib/vereador-match'
 
 const STATUS_LIST = [
-  'Aguardando', 'Em análise', 'Com Parecer', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado',
+  'Aguardando', 'Em análise', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado',
 ] as const
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
   'Aguardando':  { bg: 'bg-yellow-50',  text: 'text-yellow-700',  border: 'border-yellow-200'  },
-  'Com Parecer': { bg: 'bg-purple-50',  text: 'text-purple-700',  border: 'border-purple-200'  },
   'Em análise':  { bg: 'bg-blue-50',    text: 'text-blue-700',    border: 'border-blue-200'    },
   'Aprovado':    { bg: 'bg-green-50',   text: 'text-green-700',   border: 'border-green-200'   },
   'Sancionado':  { bg: 'bg-cyan-50',    text: 'text-cyan-700',    border: 'border-cyan-200'    },
@@ -436,7 +435,7 @@ export default function DashboardPage() {
           <span className="ml-1 normal-case font-normal text-gray-300">— {stats.totalRequerimentos} registro(s)</span>
         </p>
         <div className="grid grid-cols-6 gap-2">
-          {STATUS_LIST.filter(s => !['Com Parecer', 'Sancionado', 'Promulgado'].includes(s)).map(s => {
+          {STATUS_LIST.filter(s => !['Sancionado', 'Promulgado'].includes(s)).map(s => {
             const c = STATUS_STYLE[s]
             return (
               <div key={s} className={`rounded-lg border p-2 text-center ${c.bg} ${c.border}`}>
