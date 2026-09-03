@@ -603,12 +603,6 @@ export default function EditarSeggovPage() {
     ? (autores[0].isPE ? `Poder Executivo - ${autores[0].nome}` : autores[0].nome)
     : autores.length > 1 ? `${autores.length} autores` : null
 
-  /** Recarrega a proposição do servidor, descartando qualquer edição local
-   * não salva — útil se alguém mais mexeu nela nesse meio-tempo. */
-  function atualizarPagina() {
-    window.location.reload()
-  }
-
   async function salvar(e: React.FormEvent) {
     e.preventDefault()
     setSalvando(true)
@@ -993,13 +987,6 @@ export default function EditarSeggovPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button type="button" onClick={atualizarPagina}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 border border-gray-300 hover:bg-gray-50 transition">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Atualizar
-          </button>
           <Link href="/dashboard/segov"
             className="px-4 py-1.5 rounded-lg text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
             Cancelar
@@ -1031,7 +1018,10 @@ export default function EditarSeggovPage() {
               {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-          <div className="flex-1 min-w-[220px]">
+          {/* Largura fixa em vez de flex-1 — antes Autor e Status esticavam
+              pra dividir o resto da linha, abrindo um vão grande entre os
+              dois; assim ficam colados junto de Número/Ano/Tipo. */}
+          <div className="w-56 flex-shrink-0">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Autor</label>
             <select onChange={e => { adicionarAutor(e.target.value); e.target.value = '' }} className={inp}>
               <option value="">— Selecionar —</option>
@@ -1043,7 +1033,7 @@ export default function EditarSeggovPage() {
               </optgroup>
             </select>
           </div>
-          <div className="flex-1 min-w-[180px]">
+          <div className="w-48 flex-shrink-0">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
             <select value={form.status} onChange={e => set('status', e.target.value)} className={inp}>
               {STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
