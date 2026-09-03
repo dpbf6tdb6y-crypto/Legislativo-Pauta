@@ -1001,7 +1001,11 @@ export default function EditarSeggovPage() {
 
       <form id="form-editar-segov" onSubmit={salvar} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
 
-        <div className="flex gap-3 items-end">
+        {/* items-start, não items-end: Status tem uma legenda extra embaixo
+            do select que o deixa mais alto que os outros campos — alinhando
+            pela base, o rótulo "Status" subia em relação aos demais e dava
+            a impressão de estar numa linha à parte. */}
+        <div className="flex gap-3 items-start">
           <div className="w-24 flex-shrink-0">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Número</label>
             <input required value={formatNumero(form.numero)}
