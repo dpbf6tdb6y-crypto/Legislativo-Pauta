@@ -260,15 +260,22 @@ export function exportarSegovPDF(
    * as duas contas nunca fiquem fora de sincronia. */
   function textoEtiqueta(sd: { data?: any } | undefined, stepKey: string): string {
     // Só chamada no modo detalhado (ver marcos4 pro resumido) — sempre nome
-    // completo da comissão.
+    // completo da comissão, sem a sigla na frente (a sigla sozinha não diz
+    // nada pra quem não conhece o sistema) — mesmo corte de app/dashboard/
+    // segov/page.tsx e segov/[id]/editar/page.tsx.
     if (sd?.data?.comissaoNome) {
-      return sd.data.comissaoNome;
+      return sd.data.comissaoNome.includes(" — ")
+        ? sd.data.comissaoNome.split(" — ").slice(1).join(" — ")
+        : sd.data.comissaoNome;
     }
     if (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(stepKey)) {
       const autoresTxt = sd?.data?.autores?.length ? ` — ${sd.data.autores.join(" e ")}` : "";
       return labelResultadoPdf(stepKey, sd.data.resultado) + autoresTxt;
     }
-    if (sd?.data?.nome1) return sd.data.nome1;
+    // Comissão Especial não mostra nome de membro aqui — mostrar só nome1
+    // seria parcial (a comissão pode ter até 3 membros) e não identifica a
+    // comissão toda, mesmo corte das telas.
+    if (sd?.data?.nome1 && stepKey !== "comissaoEspecial") return sd.data.nome1;
     if (sd?.data?.autores?.length) return sd.data.autores.join(" e ");
     return "";
   }
@@ -378,7 +385,10 @@ export function exportarSegovPDF(
       const sd = fluxo[step.key];
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
-      const labelLinhas = doc.splitTextToSize(step.labelCurto, stepW - 4) as string[];
+      // "Com. 1/2/3" some quando o nó já mostra o nome completo da comissão
+      // embaixo (etiqueta) — mesmo corte das telas, o número da coluna não
+      // identifica a comissão pra quem lê.
+      const labelLinhas = sd?.data?.comissaoNome ? [] : (doc.splitTextToSize(step.labelCurto, stepW - 4) as string[]);
       const textoEt = textoEtiqueta(sd, step.key);
       // Etiqueta é desenhada em 7pt normal — mede no mesmo tamanho, senão a
       // altura reservada não bate com o que realmente é desenhado.
