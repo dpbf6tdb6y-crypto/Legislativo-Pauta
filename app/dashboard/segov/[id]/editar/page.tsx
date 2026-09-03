@@ -8,6 +8,18 @@ import { derivarStatusSegov } from '@/lib/segov-status'
 
 const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
+// Mesma paleta da lista de Proposições — usada no resumo compacto da barra
+// fixa do topo desta tela.
+const STATUS_COR: Record<string, string> = {
+  'Aguardando':   'bg-yellow-100 text-yellow-800',
+  'Em análise':   'bg-blue-100 text-blue-800',
+  'Aprovado':     'bg-green-100 text-green-800',
+  'Sancionado':   'bg-cyan-100 text-cyan-800',
+  'Promulgado':   'bg-emerald-100 text-emerald-800',
+  'Rejeitado':    'bg-red-100 text-red-800',
+  'Arquivado':    'bg-gray-100 text-gray-700',
+  'Retirado':     'bg-orange-100 text-orange-800',
+}
 
 type Autor = { id?: string; nome: string; isPE: boolean; ativo?: boolean }
 
@@ -584,6 +596,19 @@ export default function EditarSeggovPage() {
     return Math.floor((new Date(sancao.doneAt).getTime() - new Date(protocolado.doneAt).getTime()) / 86400000)
   }, [fluxo])
 
+  // Resumo do(s) autor(es) pra barra fixa do topo — nome de quem é o único,
+  // ou a contagem quando são vários (o nome completo continua no corpo da
+  // página, no chip de autor de sempre).
+  const autorResumo = autores.length === 1
+    ? (autores[0].isPE ? `Poder Executivo - ${autores[0].nome}` : autores[0].nome)
+    : autores.length > 1 ? `${autores.length} autores` : null
+
+  /** Recarrega a proposição do servidor, descartando qualquer edição local
+   * não salva — útil se alguém mais mexeu nela nesse meio-tempo. */
+  function atualizarPagina() {
+    window.location.reload()
+  }
+
   async function salvar(e: React.FormEvent) {
     e.preventDefault()
     setSalvando(true)
@@ -938,24 +963,47 @@ export default function EditarSeggovPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-5 pb-10">
       {/* Barra fixa ao rolar a página (mesmo mecanismo da barra de filtros da
-          lista de Proposições) — o botão Salvar fica sempre acessível, sem
-          precisar rolar até o fim do formulário pra salvar. O botão aqui
-          submete o <form> de baixo via o atributo form=, mesmo estando fora
-          dele visualmente. O rodapé do formulário mantém seu próprio
-          Cancelar/Salvar, pra quem já estiver lá embaixo. */}
-      <div className="sticky top-12 z-30 flex items-center bg-gray-100 py-2 will-change-transform">
+          lista de Proposições), compacta: número/status/dias/autor resumidos
+          numa linha só, e Atualizar/Cancelar/Salvar sempre à mão — sem
+          precisar rolar até o fim do formulário. Status e Dias em Aberto/
+          Duração saem da linha de campos logo abaixo (esse resumo já cobre)
+          — o campo Status em si (editável, pra Arquivado/Retirado) continua
+          lá. O botão Salvar submete o <form> de baixo via o atributo form=,
+          mesmo estando fora dele visualmente. */}
+      <div className="sticky top-12 z-30 flex items-center gap-4 bg-gray-100 py-2 will-change-transform">
         <Link href="/dashboard/segov"
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition w-32">
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition flex-shrink-0">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Voltar
         </Link>
-        <div className="flex-1 text-center">
-          <h1 className="text-xl font-bold text-gray-800">Editar</h1>
-          <p className="text-sm text-gray-500">{form.tipo} {formatNumero(form.numero)}/{form.ano}</p>
+
+        <div className="flex-1 flex items-center gap-2.5 min-w-0 overflow-x-auto whitespace-nowrap">
+          <span className="font-bold text-gray-800">{form.tipo} {formatNumero(form.numero)}/{form.ano}</span>
+          <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold flex-shrink-0 ${STATUS_COR[form.status] || 'bg-gray-100 text-gray-700'}`}>
+            {form.status}
+          </span>
+          {diasProcessoConcluido !== null ? (
+            <span className="text-xs text-green-600 font-medium flex-shrink-0">Concluído em {diasProcessoConcluido} dias</span>
+          ) : diasEmAberto !== null && (
+            <span className="text-xs text-gray-400 flex-shrink-0">{diasEmAberto} dias em aberto</span>
+          )}
+          {autorResumo && <span className="text-xs text-gray-400 flex-shrink-0">· {autorResumo}</span>}
         </div>
-        <div className="w-32 flex justify-end">
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button type="button" onClick={atualizarPagina}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 border border-gray-300 hover:bg-gray-50 transition">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Atualizar
+          </button>
+          <Link href="/dashboard/segov"
+            className="px-4 py-1.5 rounded-lg text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+            Cancelar
+          </Link>
           <button type="submit" form="form-editar-segov" disabled={salvando}
             className="px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition disabled:opacity-60"
             style={{ background: '#8B0000' }}>
@@ -1003,29 +1051,6 @@ export default function EditarSeggovPage() {
             <p className="text-[10px] text-gray-400 mt-1 leading-tight">
               Calculado automaticamente pelo fluxo ao salvar — só fica como escolhido aqui se for Arquivado ou Retirado.
             </p>
-          </div>
-          <div className="w-64 flex-shrink-0">
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              {diasProcessoConcluido !== null ? 'Duração do Processo' : 'Dias em Aberto'}
-            </label>
-            {diasProcessoConcluido !== null ? (
-              <div className="rounded-lg border px-3 py-2 bg-green-50 border-green-200">
-                <p className="text-2xl font-bold tabular-nums leading-none text-green-700">
-                  {diasProcessoConcluido} <span className="text-sm font-normal">dias</span></p>
-                <p className="text-xs text-green-600 mt-1 font-medium">Concluído (Sancionado)</p>
-                <p className="text-xs text-gray-400">{fmtData(fluxo['protocolado']?.doneAt)} até {fmtData(fluxo['sancaoVeto']?.doneAt)}</p>
-              </div>
-            ) : diasEmAberto !== null ? (
-              <div className="rounded-lg border px-3 py-2 bg-blue-50 border-blue-200">
-                <p className="text-2xl font-bold tabular-nums leading-none text-blue-600">
-                  {diasEmAberto} <span className="text-sm font-normal">dias</span></p>
-                <p className="text-xs text-gray-400 mt-1">desde {fmtData(fluxo['pautado']?.doneAt)}</p>
-              </div>
-            ) : (
-              <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400">
-                Pautado não marcado
-              </div>
-            )}
           </div>
         </div>
 
@@ -1131,17 +1156,6 @@ export default function EditarSeggovPage() {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
-          <Link href="/dashboard/segov"
-            className="px-5 py-2.5 rounded-lg text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
-            Cancelar
-          </Link>
-          <button type="submit" disabled={salvando}
-            className="px-8 py-2.5 rounded-lg text-sm font-semibold text-white transition disabled:opacity-60"
-            style={{ background: '#8B0000' }}>
-            {salvando ? 'Salvando...' : 'Salvar Alterações'}
-          </button>
-        </div>
       </form>
     </div>
   )
