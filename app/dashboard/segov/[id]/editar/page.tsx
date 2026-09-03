@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useToast } from '@/contexts/toast'
+import { useTopbar } from '@/contexts/topbar'
 import { buscarVereadorPorNome, splitAutoresTexto } from '@/lib/vereador-match'
 import { derivarStatusSegov } from '@/lib/segov-status'
 
@@ -127,7 +128,15 @@ function fmtData(iso?: string | null) {
 export default function EditarSeggovPage() {
   const router = useRouter()
   const toast = useToast()
+  const { setHideAtualizar } = useTopbar()
   const { id } = useParams<{ id: string }>()
+
+  // A barra fixa desta tela já tem seu próprio botão Atualizar — some com o
+  // do cabeçalho global enquanto essa página está aberta, pra não duplicar.
+  useEffect(() => {
+    setHideAtualizar(true)
+    return () => setHideAtualizar(false)
+  }, [setHideAtualizar])
   const [vereadores, setVereadores] = useState<any[]>([])
   const [pessoasExecutivo, setPessoasExecutivo] = useState<any[]>([])
   const [comissoes, setComissoes] = useState<any[]>([])
@@ -987,6 +996,14 @@ export default function EditarSeggovPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          <button type="button" onClick={() => window.location.reload()}
+            title="Atualizar proposição"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 border border-gray-300 hover:bg-gray-50 transition">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Atualizar
+          </button>
           <Link href="/dashboard/segov"
             className="px-4 py-1.5 rounded-lg text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
             Cancelar
@@ -1024,7 +1041,19 @@ export default function EditarSeggovPage() {
           </div>
           {/* Largura fixa em vez de flex-1 — antes Autor e Status esticavam
               pra dividir o resto da linha, abrindo um vão grande entre os
-              dois; assim ficam colados junto de Número/Ano/Tipo. */}
+              dois; assim ficam colados junto de Número/Ano/Tipo. Status
+              antes de Autor (trocados de lugar), e os chips de autor
+              selecionado ficam do lado, na mesma linha, em vez de numa linha
+              própria embaixo — ganha espaço vertical. */}
+          <div className="w-48 flex-shrink-0">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
+            <select value={form.status} onChange={e => set('status', e.target.value)} className={inp}>
+              {STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <p className="text-[10px] text-gray-400 mt-1 leading-tight">
+              Calculado automaticamente pelo fluxo ao salvar — só fica como escolhido aqui se for Arquivado ou Retirado.
+            </p>
+          </div>
           <div className="w-56 flex-shrink-0">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Autor</label>
             <select onChange={e => { adicionarAutor(e.target.value); e.target.value = '' }} className={inp}>
@@ -1037,35 +1066,25 @@ export default function EditarSeggovPage() {
               </optgroup>
             </select>
           </div>
-          <div className="w-48 flex-shrink-0">
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
-            <select value={form.status} onChange={e => set('status', e.target.value)} className={inp}>
-              {STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <p className="text-[10px] text-gray-400 mt-1 leading-tight">
-              Calculado automaticamente pelo fluxo ao salvar — só fica como escolhido aqui se for Arquivado ou Retirado.
-            </p>
-          </div>
+          {autores.length > 0 && (
+            <div className="flex-1 min-w-0 flex flex-wrap gap-2 pt-6">
+              {autores.map((a, i) => (
+                <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                  a.isPE ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                }`}>
+                  {a.isPE && <span>⚡</span>}
+                  {a.isPE ? `Poder Executivo - ${a.nome}` : a.nome}
+                  {a.ativo === false && <span className="text-gray-400 font-normal">(inativo)</span>}
+                  <button type="button" onClick={() => removerAutor(i)} className="text-gray-400 hover:text-red-500 transition">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
-
-        {autores.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {autores.map((a, i) => (
-              <span key={i} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                a.isPE ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-              }`}>
-                {a.isPE && <span>⚡</span>}
-                {a.isPE ? `Poder Executivo - ${a.nome}` : a.nome}
-                {a.ativo === false && <span className="text-gray-400 font-normal">(inativo)</span>}
-                <button type="button" onClick={() => removerAutor(i)} className="text-gray-400 hover:text-red-500 transition">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
 
         {updatedAt && (
           <div className="text-xs text-gray-400">
