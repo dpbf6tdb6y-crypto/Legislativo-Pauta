@@ -318,24 +318,11 @@ export default function SeggovPage() {
     return () => setLeftContent(null)
   }, [itensExibidos, selecionados, podeCriar, podeImportar, podeExportar])
 
-  // Botão Excluir no lado direito do topbar (antes do Atualizar)
-  useEffect(() => {
-    if (selecionados.size === 0 || !podeExcluir) {
-      setRightContent(null)
-      return
-    }
-    setRightContent(
-      <button onClick={excluirSelecionados} disabled={excluindo}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-normal leading-5 text-white bg-red-400 hover:bg-red-500 transition disabled:opacity-60">
-        {excluindo
-          ? <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-          : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-        }
-        Excluir {selecionados.size} selecionado{selecionados.size > 1 ? 's' : ''}
-      </button>
-    )
-    return () => setRightContent(null)
-  }, [selecionados, excluindo, podeExcluir])
+  // O botão Excluir ficava no topbar, colado no "Relatório" — fácil de
+  // clicar sem querer indo pra outro botão. Saiu de lá: agora é só um ícone
+  // pequeno junto do indicador "N selecionado(s)" na barra de filtros (ver
+  // mais abaixo), longe dos outros botões de ação.
+  useEffect(() => { setRightContent(null) }, [])
 
   function toggleColuna(key: ColunasKey) {
     setColunasSel(prev => {
@@ -428,6 +415,18 @@ export default function SeggovPage() {
             <button onClick={() => setSelecionados(new Set())}
               className="text-xs text-red-600 font-medium hover:underline">
               · {selecionados.size} selecionado(s) ✕
+            </button>
+          )}
+          {/* Longe do "Relatório" de propósito (ver comentário no useEffect
+              do topbar) — só some daqui se nada estiver selecionado. */}
+          {selecionados.size > 0 && podeExcluir && (
+            <button onClick={excluirSelecionados} disabled={excluindo} title="Excluir selecionados"
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs text-red-500 hover:bg-red-50 hover:text-red-700 transition disabled:opacity-60">
+              {excluindo
+                ? <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              }
+              Excluir
             </button>
           )}
         </div>
