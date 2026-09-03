@@ -666,19 +666,28 @@ export default function SeggovPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
-                    isRetirado ? 'text-orange-600' :
-                    negativoLocal || graficoCor === 'vermelho' ? 'text-red-700' :
-                    (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
-                    'text-gray-700'
-                  }`}>{step.labelCurto}</p>
+                  {/* "Com. 1/2/3" some quando o nó já mostra o nome completo
+                      da comissão embaixo — o número da coluna é só um rótulo
+                      técnico, não identifica a comissão pra quem lê. */}
+                  {!step.data?.comissaoNome && (
+                    <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
+                      isRetirado ? 'text-orange-600' :
+                      negativoLocal || graficoCor === 'vermelho' ? 'text-red-700' :
+                      (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
+                      'text-gray-700'
+                    }`}>{step.labelCurto}</p>
+                  )}
                   <p className="text-xs text-gray-400 text-center mt-0.5">{fmtFluxoData(step.doneAt)}</p>
-                  {/* Nome completo da comissão — esse nó só aparece no fluxo
-                      detalhado (agrupado por fase), onde cada fase tem sua
-                      própria altura de linha e o nome quebrando em 2-3
-                      linhas não distorce as fases vizinhas. */}
+                  {/* Nome completo da comissão, sem a sigla na frente (a
+                      sigla sozinha não diz nada pra quem não conhece o
+                      sistema — só o nome completo já basta aqui). Esse nó só
+                      aparece no fluxo detalhado (agrupado por fase), onde
+                      cada fase tem sua própria altura de linha e o nome
+                      quebrando em 2-3 linhas não distorce as fases vizinhas. */}
                   {step.data?.comissaoNome && (
-                    <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
+                    <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">
+                      {step.data.comissaoNome.includes(' — ') ? step.data.comissaoNome.split(' — ').slice(1).join(' — ') : step.data.comissaoNome}
+                    </span>
                   )}
                   {/* Nas comissões e no Resultado Final a cor da bolinha já é o
                       veredito (verde = aprovado, vermelho = reprovado), então o
@@ -693,9 +702,10 @@ export default function SeggovPage() {
                       {step.data.emendaTipo ? `${step.data.emendaTipo} ` : ''}{step.data.numero}{step.data.ano ? `/${step.data.ano}` : ''}
                     </span>
                   )}
-                  {/* Comissão Especial guarda nome1/2/3 (membros) E resultado ao
-                      mesmo tempo — não pode depender de !resultado. */}
-                  {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.numero && (
+                  {/* Comissão Especial não mostra o nome do relator aqui —
+                      "C. Esp." + a data já bastam, o nome de 1 membro só
+                      não identifica a comissão toda. */}
+                  {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.numero && step.key !== 'comissaoEspecial' && (
                     <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
                   )}
                   {step.data?.autores && step.data.autores.length > 0 && (
@@ -778,7 +788,8 @@ export default function SeggovPage() {
                     alternado pelo botão na barra de filtros, vale pra todos
                     os cartões de uma vez. */}
                 {marcados.length > 0 && !flowDetalhado && (
-                  <div className="border-t border-blue-100 px-4 pb-4 pt-5 cursor-pointer"
+                  <div className="border-t border-blue-100 pr-4 pb-4 pt-5 cursor-pointer"
+                    style={{ paddingLeft: '1cm' }}
                     onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
                     <div className="flex items-start">
                       {marcos.map((marco, mi) => {

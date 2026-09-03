@@ -550,20 +550,28 @@ export default function EditarSeggovPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
-          isRetirado ? 'text-orange-600' :
-          negativoLocal || graficoCor === 'vermelho' ? 'text-red-700' :
-          (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
-          'text-gray-700'
-        }`}>{step.labelCurto}</p>
+        {/* "Com. 1/2/3" some quando o nó já mostra o nome completo da
+            comissão embaixo — o número da coluna é só um rótulo técnico,
+            não identifica a comissão pra quem lê. */}
+        {!step.data?.comissaoNome && (
+          <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
+            isRetirado ? 'text-orange-600' :
+            negativoLocal || graficoCor === 'vermelho' ? 'text-red-700' :
+            (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
+            'text-gray-700'
+          }`}>{step.labelCurto}</p>
+        )}
         <p className="text-xs text-gray-400 text-center mt-0.5">{fmtData(step.doneAt)}</p>
-        {/* Nome completo da comissão (não só a sigla) — nesta tela o fluxo
+        {/* Nome completo da comissão, sem a sigla na frente (a sigla sozinha
+            não diz nada pra quem não conhece o sistema) — nesta tela o fluxo
             agora é sempre o "detalhado", agrupado por fase (ver blocosFase
             abaixo), então cada fase tem sua própria altura de linha e o
             nome completo quebrando em 2-3 linhas não distorce as outras
             fases vizinhas como distorcia quando tudo era uma fileira só. */}
         {step.data?.comissaoNome && (
-          <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
+          <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">
+            {step.data.comissaoNome.includes(' — ') ? step.data.comissaoNome.split(' — ').slice(1).join(' — ') : step.data.comissaoNome}
+          </span>
         )}
         {/* Nas comissões e no Resultado Final a cor da bolinha (verde/vermelho)
             já entrega o veredito — escrever "Aprovado"/"Reprovado" embaixo
@@ -576,10 +584,10 @@ export default function EditarSeggovPage() {
             {labelResultado(step.key, step.data.resultado)}
           </span>
         )}
-        {/* Comissão Especial guarda nome1/2/3 (membros) E resultado ao mesmo
-            tempo — não pode depender de !resultado, senão o badge de membros
-            some quando a etiqueta de Aprovado/Reprovado é ocultada acima. */}
-        {step.data?.nome1 && !step.data?.comissaoNome && (
+        {/* Comissão Especial não mostra nome de membro aqui — "C. Esp." + a
+            data já bastam; mostrar só nome1 seria parcial (a comissão pode
+            ter até 3 membros) e não identifica a comissão toda. */}
+        {step.data?.nome1 && !step.data?.comissaoNome && step.key !== 'comissaoEspecial' && (
           <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
         )}
         {step.data?.autores && step.data.autores.length > 0 && (
