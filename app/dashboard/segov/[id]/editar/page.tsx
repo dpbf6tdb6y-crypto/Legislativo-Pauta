@@ -137,6 +137,7 @@ export default function EditarSeggovPage() {
   const [selManual1, setSelManual1] = useState<string | null>(null)
   const [selManual2, setSelManual2] = useState<string | null>(null)
   const [selManual3, setSelManual3] = useState<string | null>(null)
+  const [selManual4, setSelManual4] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -643,10 +644,18 @@ export default function EditarSeggovPage() {
     const negativo = NEGATIVOS.has(state?.data?.resultado || '')
     const reservado = done && (def.tipo === 'sancao' || def.tipo === 'comissao' || def.tipo === 'comissao3nomes') && !state?.data?.resultado
     const sufixo = state?.data?.resultado ? ` — ${labelResultado(key, state.data.resultado)}` : ''
+    // Selecionar uma etapa não pode apagar a cor do próprio status dela — uma
+    // já concluída (verde) continua verde mesmo selecionada; azul fica só
+    // pra quem ainda está pendente (é a etapa "sendo preenchida agora").
+    const corSelecionada = !done
+      ? 'bg-blue-100 text-blue-800'
+      : negativo ? 'bg-red-100 text-red-800'
+      : reservado ? 'bg-blue-100 text-blue-800'
+      : 'bg-green-100 text-green-800'
     return (
       <button key={key} type="button" onClick={onClick}
         className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-xs transition ${
-          ativo ? 'bg-blue-100 text-blue-800' : done ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-400 hover:bg-gray-100'
+          ativo ? corSelecionada : done ? 'text-gray-700 hover:bg-gray-100' : 'text-gray-400 hover:bg-gray-100'
         }`}>
         <span className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
           !done ? 'border border-gray-300 bg-white' : negativo ? 'bg-red-500' : reservado ? 'bg-blue-400' : 'bg-green-500'
@@ -869,11 +878,12 @@ export default function EditarSeggovPage() {
       edição da etapa selecionada à direita. */
   function renderQuadrante(grupos: { titulo: string; keys: string[] }[], selecionado: string, onSelecionar: (k: string) => void) {
     return (
-      <div className="rounded-xl border border-blue-200 bg-white overflow-hidden flex flex-col md:flex-row">
-        {/* w-64 (256px) + 20% ≈ 308px — pedido do usuário pra caber nome de
-            comissão "SIGLA — Nome completo" numa linha só; o painel da
-            direita (flex-1) absorve a diferença e fica proporcionalmente
-            menor. */}
+      // min-h fixo e igual nos 4 quadrantes — pedido do usuário pra ficarem
+      // do mesmo tamanho (largura já vem igual pela grade 2 colunas). Com
+      // 380px cabe a lista mais longa (Início e Comissões) e o painel mais
+      // cheio sem precisar de rolagem interna; quadrantes com menos itens
+      // (Situações Especiais, Emendas) só sobram com espaço em branco.
+      <div className="rounded-xl border-2 border-blue-300 bg-white overflow-hidden flex flex-col md:flex-row min-h-[380px]">
         <div className="w-full md:w-[308px] flex-shrink-0 border-b md:border-b-0 md:border-r border-blue-100 bg-gray-50 p-1.5 overflow-x-auto">
           {grupos.map(g => (
             <div key={g.titulo}>
@@ -889,24 +899,32 @@ export default function EditarSeggovPage() {
     )
   }
 
-  // Agrupamento das 21 etapas em 3 quadrantes (lista + painel de edição
-  // cada um). Vetação de Manutenção do Veto só entra na lista quando faz
-  // sentido preenchê-la (depois de Sanção/Veto marcado como "Vetado").
+  // Agrupamento das 21 etapas em 4 quadrantes (lista + painel de edição
+  // cada um), em grade 2x2. Retirado de Pauta saiu do quadrante "Início"
+  // (onde ficava meio perdido junto de Protocolado/Pautado) e foi pro
+  // mesmo quadrante das outras etapas "livres" (Interstício, Vista,
+  // Adiamento) — todas compartilham a mesma natureza de poder acontecer a
+  // qualquer momento da tramitação. Vetação de Manutenção do Veto só entra
+  // na lista quando faz sentido preenchê-la (depois de Sanção/Veto marcado
+  // como "Vetado").
   const quad1Grupos = [
-    { titulo: 'Início', keys: ['protocolado', 'pautado', 'retiradoPauta'] },
+    { titulo: 'Início', keys: ['protocolado', 'pautado'] },
     { titulo: 'Comissões', keys: ['comissao1', 'comissao2', 'comissao3', 'comissaoEspecial', 'comissaoConjunta', 'dispensaParecer'] },
-    { titulo: 'Situações especiais', keys: ['dispensaIntersticio', 'pedidoVista', 'pedidoAdiamento'] },
   ]
   const quad2Grupos = [
-    { titulo: 'Emendas', keys: ['emenda', 'emendaVotacao1', 'emendaVotacao2', 'emendaResultado'] },
+    { titulo: 'Situações especiais', keys: ['retiradoPauta', 'dispensaIntersticio', 'pedidoVista', 'pedidoAdiamento'] },
   ]
   const quad3Grupos = [
+    { titulo: 'Emendas', keys: ['emenda', 'emendaVotacao1', 'emendaVotacao2', 'emendaResultado'] },
+  ]
+  const quad4Grupos = [
     { titulo: 'Votação e sanção', keys: ['votacao1', 'votacao2', 'resultadoFinal', 'sancaoVeto', 'promulgacao',
       ...(fluxo['sancaoVeto']?.data?.resultado === 'vetado' ? ['vetoManutencao'] : [])] },
   ]
   const quad1Keys = quad1Grupos.flatMap(g => g.keys)
   const quad2Keys = quad2Grupos.flatMap(g => g.keys)
   const quad3Keys = quad3Grupos.flatMap(g => g.keys)
+  const quad4Keys = quad4Grupos.flatMap(g => g.keys)
   // Seleção automática: a primeira etapa ainda não marcada do quadrante (ou
   // a última, se já estiver tudo feito) — até o usuário clicar em outra.
   function selecaoPadrao(keys: string[]) {
@@ -915,12 +933,19 @@ export default function EditarSeggovPage() {
   const selQuad1 = selManual1 && quad1Keys.includes(selManual1) ? selManual1 : selecaoPadrao(quad1Keys)
   const selQuad2 = selManual2 && quad2Keys.includes(selManual2) ? selManual2 : selecaoPadrao(quad2Keys)
   const selQuad3 = selManual3 && quad3Keys.includes(selManual3) ? selManual3 : selecaoPadrao(quad3Keys)
+  const selQuad4 = selManual4 && quad4Keys.includes(selManual4) ? selManual4 : selecaoPadrao(quad4Keys)
 
   return (
     <div className="max-w-7xl mx-auto space-y-5 pb-10">
-      <div className="flex items-center">
+      {/* Barra fixa ao rolar a página (mesmo mecanismo da barra de filtros da
+          lista de Proposições) — o botão Salvar fica sempre acessível, sem
+          precisar rolar até o fim do formulário pra salvar. O botão aqui
+          submete o <form> de baixo via o atributo form=, mesmo estando fora
+          dele visualmente. O rodapé do formulário mantém seu próprio
+          Cancelar/Salvar, pra quem já estiver lá embaixo. */}
+      <div className="sticky top-12 z-30 flex items-center bg-gray-100 py-2 will-change-transform">
         <Link href="/dashboard/segov"
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition w-24">
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition w-32">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
@@ -930,10 +955,16 @@ export default function EditarSeggovPage() {
           <h1 className="text-xl font-bold text-gray-800">Editar</h1>
           <p className="text-sm text-gray-500">{form.tipo} {formatNumero(form.numero)}/{form.ano}</p>
         </div>
-        <div className="w-24" />
+        <div className="w-32 flex justify-end">
+          <button type="submit" form="form-editar-segov" disabled={salvando}
+            className="px-4 py-1.5 rounded-lg text-sm font-semibold text-white transition disabled:opacity-60"
+            style={{ background: '#8B0000' }}>
+            {salvando ? 'Salvando...' : 'Salvar'}
+          </button>
+        </div>
       </div>
 
-      <form onSubmit={salvar} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+      <form id="form-editar-segov" onSubmit={salvar} className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
 
         <div className="flex gap-3 items-end">
           <div className="w-24 flex-shrink-0">
@@ -1092,10 +1123,11 @@ export default function EditarSeggovPage() {
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {renderQuadrante(quad1Grupos, selQuad1, k => setSelManual1(k))}
             {renderQuadrante(quad2Grupos, selQuad2, k => setSelManual2(k))}
             {renderQuadrante(quad3Grupos, selQuad3, k => setSelManual3(k))}
+            {renderQuadrante(quad4Grupos, selQuad4, k => setSelManual4(k))}
           </div>
         </div>
 
