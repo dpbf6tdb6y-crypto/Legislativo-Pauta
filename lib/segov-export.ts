@@ -35,6 +35,14 @@ export const COLUNAS_RELATORIO = [
 export type ColunasKey = typeof COLUNAS_RELATORIO[number]["key"];
 
 const CHAVES_COMISSAO = ["comissao1", "comissao2", "comissao3"];
+// As 4 chaves que podem virar um marco extra (roxo) no resumo de 4 marcos —
+// mesma lista de app/dashboard/segov/page.tsx (SITUACOES_ESPECIAIS_DEF).
+const SITUACOES_ESPECIAIS_DEF = [
+  { key: "dispensaParecer",     label: "Dispensa de Parecer" },
+  { key: "dispensaIntersticio", label: "Dispensa de Interstício" },
+  { key: "pedidoVista",         label: "Pedido de Vista" },
+  { key: "pedidoAdiamento",     label: "Pedido de Adiamento" },
+];
 const NEGATIVOS = new Set(["reprovado", "vetado"]);
 // Etapas em que a cor do nó já é o próprio veredito (ver graficoCor) — mesma
 // regra das telas, pra não repetir "Aprov./Reprov." embaixo do nó.
@@ -429,30 +437,45 @@ export function exportarSegovPDF(
     };
     const fluxoAltura = fileiras.reduce((s, f) => s + alturaFileira(f), 0);
 
-    // Modo resumido do PDF: os mesmos 4 marcos grandes da listagem (Protocolo
-    // / Aprovado-ou-Reprovado pelas comissões / Votado em plenário /
-    // Sancionado), em vez do fluxo detalhado passo a passo — ver marcos.map
-    // em app/dashboard/segov/page.tsx, mesma lógica replicada aqui.
+    // Modo resumido do PDF: os mesmos marcos grandes da listagem (Protocolo
+    // / Aprovado-ou-Reprovado pelas comissões / [situações especiais, se
+    // houver] / Votado em plenário / Sancionado), em vez do fluxo detalhado
+    // passo a passo — ver marcos.map em app/dashboard/segov/page.tsx, mesma
+    // lógica replicada aqui.
     const marcoProtocolo = !!fluxo["protocolado"]?.done;
     const marcoComissoes = todasComissoesAprovadas || algumaComissaoReprovada
       || CHAVES_COMISSAO.some(k => fluxo[k]?.done) || !!fluxo["comissaoEspecial"]?.done;
     const marcoVotacao = !!fluxo["resultadoFinal"]?.done;
     const marcoSancao = (fluxo["sancaoVeto"]?.done && !!fluxo["sancaoVeto"]?.data?.resultado)
       || (fluxo["promulgacao"]?.done && !!fluxo["promulgacao"]?.data?.resultado);
-    const marcos4 = [
+    type MarcoItem = { label: string; feito: boolean; data?: string; especial?: boolean; nome?: string };
+    const marcosBase: MarcoItem[] = [
       { label: "Protocolo", feito: marcoProtocolo, data: fluxo["protocolado"]?.doneAt },
-      { label: algumaComissaoReprovada ? "Reprovado pelas comissões" : "Aprovado pelas comissões", feito: marcoComissoes, data: undefined as string | undefined },
+      { label: algumaComissaoReprovada ? "Reprovado pelas comissões" : "Aprovado pelas comissões", feito: marcoComissoes, data: undefined },
       { label: "Votado em plenário", feito: marcoVotacao, data: fluxo["resultadoFinal"]?.doneAt },
       { label: fluxo["promulgacao"]?.data?.resultado === "promulgado" ? "Promulgado"
           : fluxo["sancaoVeto"]?.data?.resultado === "vetado" ? "Vetado" : "Sancionado",
         feito: marcoSancao, data: fluxo["sancaoVeto"]?.doneAt || fluxo["promulgacao"]?.doneAt },
     ];
+    // Dispensa de Parecer/Interstício, Pedido de Vista/Adiamento — marcos
+    // extras (roxo), só quando acontecem, encaixados entre "comissões" e
+    // "votação", ordenados pela própria data quando há mais de um.
+    const situacoesEspeciais: MarcoItem[] = SITUACOES_ESPECIAIS_DEF
+      .filter(s => fluxo[s.key]?.done)
+      .map(s => ({ label: s.label, feito: true, data: fluxo[s.key]?.doneAt, especial: true, nome: fluxo[s.key]?.data?.nome1 }))
+      .sort((a, b) => (a.data || "").localeCompare(b.data || ""));
+    const marcos: MarcoItem[] = [marcosBase[0], marcosBase[1], ...situacoesEspeciais, marcosBase[2], marcosBase[3]];
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    const colW4 = innerW / 4;
-    const marco4Linhas = marcos4.map(m => doc.splitTextToSize(m.label, colW4 - 6) as string[]);
+    const colW4 = innerW / marcos.length;
+    const marco4Linhas = marcos.map(m => doc.splitTextToSize(m.label, colW4 - 6) as string[]);
     const maxLinhas4 = Math.max(...marco4Linhas.map(l => l.length));
-    const alturaMarcos4 = 16 + 5 + maxLinhas4 * 9 + (marcos4.some(m => m.data) ? 11 : 0) + 4;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    const marcoNomeLinhas = marcos.map(m => m.nome ? (doc.splitTextToSize(m.nome, colW4 - 6) as string[]) : []);
+    const maxLinhasNome = Math.max(0, ...marcoNomeLinhas.map(l => l.length));
+    const alturaMarcos4 = 16 + 5 + maxLinhas4 * 9 + (maxLinhasNome > 0 ? maxLinhasNome * 8 : 0) + (marcos.some(m => m.data) ? 11 : 0) + 4;
 
     const cardH =
       pad +
@@ -586,14 +609,15 @@ export function exportarSegovPDF(
 
       const nodeR4 = 8;
       const nodeY4 = cy + nodeR4;
-      marcos4.forEach((marco, mi) => {
+      marcos.forEach((marco, mi) => {
         const x = margin + pad + colW4 * mi + colW4 / 2;
 
         if (mi > 0) {
           const xPrev = margin + pad + colW4 * (mi - 1) + colW4 / 2;
-          const anterior = marcos4[mi - 1];
+          const anterior = marcos[mi - 1];
           if (marco.feito && anterior.feito) {
-            const [lr, lg, lb] = graficoCor === "vermelho" ? [248, 113, 113] : [74, 222, 128];
+            const roxo = marco.especial || anterior.especial;
+            const [lr, lg, lb] = roxo ? [216, 180, 254] : graficoCor === "vermelho" ? [248, 113, 113] : [74, 222, 128];
             doc.setDrawColor(lr, lg, lb);
           } else {
             doc.setDrawColor(229, 231, 235);
@@ -603,13 +627,21 @@ export function exportarSegovPDF(
         }
 
         if (marco.feito) {
-          const [nr, ng, nb] = graficoCor === "vermelho" ? [239, 68, 68] : [34, 197, 94];
+          const [nr, ng, nb] = marco.especial ? [168, 85, 247] : graficoCor === "vermelho" ? [239, 68, 68] : [34, 197, 94];
           doc.setFillColor(nr, ng, nb);
           doc.circle(x, nodeY4, nodeR4, "F");
           doc.setDrawColor(255, 255, 255);
           doc.setLineWidth(1.3);
-          doc.line(x - 3.2, nodeY4, x - 0.8, nodeY4 + 3.2);
-          doc.line(x - 0.8, nodeY4 + 3.2, x + 3.8, nodeY4 - 3.2);
+          if (marco.especial) {
+            // Relógio, no lugar do "check" — mesmo ícone da tela pra marco
+            // de situação especial (dispensa/vista/adiamento).
+            doc.circle(x, nodeY4, nodeR4 - 3.5, "S");
+            doc.line(x, nodeY4 - 2, x, nodeY4);
+            doc.line(x, nodeY4, x + 2, nodeY4 + 1.2);
+          } else {
+            doc.line(x - 3.2, nodeY4, x - 0.8, nodeY4 + 3.2);
+            doc.line(x - 0.8, nodeY4 + 3.2, x + 3.8, nodeY4 - 3.2);
+          }
         } else {
           doc.setFillColor(229, 231, 235);
           doc.circle(x, nodeY4, nodeR4, "F");
@@ -617,15 +649,26 @@ export function exportarSegovPDF(
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
-        doc.setTextColor(marco.feito ? 55 : 156, marco.feito ? 65 : 163, marco.feito ? 81 : 175);
+        if (marco.especial) doc.setTextColor(126, 34, 206);
+        else doc.setTextColor(marco.feito ? 55 : 156, marco.feito ? 65 : 163, marco.feito ? 81 : 175);
         marco4Linhas[mi].forEach((l, li) => {
           doc.text(l, x, nodeY4 + nodeR4 + 10 + li * 9, { align: "center" });
         });
+        let baseY = nodeY4 + nodeR4 + 10 + marco4Linhas[mi].length * 9;
+        if (marco.nome) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(168, 85, 247);
+          marcoNomeLinhas[mi].forEach((l, li) => {
+            doc.text(l, x, baseY + li * 8, { align: "center" });
+          });
+          baseY += marcoNomeLinhas[mi].length * 8;
+        }
         if (marco.data) {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(7);
           doc.setTextColor(140, 140, 140);
-          doc.text(fmtDDMM(marco.data), x, nodeY4 + nodeR4 + 10 + marco4Linhas[mi].length * 9 + 2, { align: "center" });
+          doc.text(fmtDDMM(marco.data), x, baseY + 2, { align: "center" });
         }
       });
     } else if (fileiras.length) {
