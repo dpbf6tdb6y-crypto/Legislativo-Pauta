@@ -176,16 +176,10 @@ export function exportarSegovPDF(
   const innerW = cw - pad * 2;
   const ementaLH = 13;
   const nodeR = 6;
-  // Passo curto de propósito: encurta as setas entre os nós e ainda permite
-  // rótulos maiores (os textos abaixo da bolinha quebram em 2 linhas quando
-  // precisam, e a altura da fileira já reserva espaço pra isso). Reduzido de
-  // 48 pra 42 — cabiam só 10 nós por fileira, e proposições com parecer
-  // conjunto + pedido de vista/emenda já passam disso, fazendo o fluxo pular
-  // pra uma segunda fileira solta. Com 42 cabem 12.
-  // No modo detalhado (nome completo da comissão em vez de sigla) a coluna
-  // precisa de mais espaço — menos nós cabem por fileira, mas o nome não
-  // fica espremido.
-  const stepW = detalhado ? 64 : 42;
+  // Passo das colunas do fluxo detalhado (nó a nó, com nome completo da
+  // comissão) — só usado quando detalhado=true; o resumido não desenha essa
+  // grade, ver marcos4 mais abaixo.
+  const stepW = 64;
   const chipLH = 14;
   const alturaCabecalho = 40;
   const topoConteudo = alturaCabecalho + 10;
@@ -257,8 +251,10 @@ export function exportarSegovPDF(
    * altura certa na fileira) quanto pra desenhar de verdade, garantindo que
    * as duas contas nunca fiquem fora de sincronia. */
   function textoEtiqueta(sd: { data?: any } | undefined, stepKey: string): string {
+    // Só chamada no modo detalhado (ver marcos4 pro resumido) — sempre nome
+    // completo da comissão.
     if (sd?.data?.comissaoNome) {
-      return detalhado ? sd.data.comissaoNome : sd.data.comissaoNome.split(" — ")[0];
+      return sd.data.comissaoNome;
     }
     if (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(stepKey)) {
       const autoresTxt = sd?.data?.autores?.length ? ` — ${sd.data.autores.join(" e ")}` : "";
@@ -433,13 +429,38 @@ export function exportarSegovPDF(
     };
     const fluxoAltura = fileiras.reduce((s, f) => s + alturaFileira(f), 0);
 
+    // Modo resumido do PDF: os mesmos 4 marcos grandes da listagem (Protocolo
+    // / Aprovado-ou-Reprovado pelas comissões / Votado em plenário /
+    // Sancionado), em vez do fluxo detalhado passo a passo — ver marcos.map
+    // em app/dashboard/segov/page.tsx, mesma lógica replicada aqui.
+    const marcoProtocolo = !!fluxo["protocolado"]?.done;
+    const marcoComissoes = todasComissoesAprovadas || algumaComissaoReprovada
+      || CHAVES_COMISSAO.some(k => fluxo[k]?.done) || !!fluxo["comissaoEspecial"]?.done;
+    const marcoVotacao = !!fluxo["resultadoFinal"]?.done;
+    const marcoSancao = (fluxo["sancaoVeto"]?.done && !!fluxo["sancaoVeto"]?.data?.resultado)
+      || (fluxo["promulgacao"]?.done && !!fluxo["promulgacao"]?.data?.resultado);
+    const marcos4 = [
+      { label: "Protocolo", feito: marcoProtocolo, data: fluxo["protocolado"]?.doneAt },
+      { label: algumaComissaoReprovada ? "Reprovado pelas comissões" : "Aprovado pelas comissões", feito: marcoComissoes, data: undefined as string | undefined },
+      { label: "Votado em plenário", feito: marcoVotacao, data: fluxo["resultadoFinal"]?.doneAt },
+      { label: fluxo["promulgacao"]?.data?.resultado === "promulgado" ? "Promulgado"
+          : fluxo["sancaoVeto"]?.data?.resultado === "vetado" ? "Vetado" : "Sancionado",
+        feito: marcoSancao, data: fluxo["sancaoVeto"]?.doneAt || fluxo["promulgacao"]?.doneAt },
+    ];
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    const colW4 = innerW / 4;
+    const marco4Linhas = marcos4.map(m => doc.splitTextToSize(m.label, colW4 - 6) as string[]);
+    const maxLinhas4 = Math.max(...marco4Linhas.map(l => l.length));
+    const alturaMarcos4 = 16 + 5 + maxLinhas4 * 9 + (marcos4.some(m => m.data) ? 11 : 0) + 4;
+
     const cardH =
       pad +
       15 +                                                    // cabeçalho do cartão
       8 +
       ementaLinhas.length * ementaLH +
       (linhasAutores.length ? 6 + linhasAutores.length * chipLH : 0) +
-      (fileiras.length ? 8 + 1 + 8 + fluxoAltura : 0) +
+      (fileiras.length ? 8 + 1 + 8 + (detalhado ? fluxoAltura : alturaMarcos4) : 0) +
       pad;
 
     // Faixa de seção ao trocar de grupo (Executivo -> Vereadores)
@@ -553,7 +574,61 @@ export function exportarSegovPDF(
     }
 
     // ── Fluxo de tramitação ──
-    if (fileiras.length) {
+    if (fileiras.length && !detalhado) {
+      // Resumido: os 4 marcos grandes, igual à listagem — 4 colunas iguais,
+      // bolinha maior que a do fluxo detalhado, com linha conectora colorida
+      // entre marcos concluídos consecutivos.
+      cy += 8;
+      doc.setDrawColor(220, 220, 220);
+      doc.setLineWidth(0.5);
+      doc.line(margin + pad, cy, W - margin - pad, cy);
+      cy += 8;
+
+      const nodeR4 = 8;
+      const nodeY4 = cy + nodeR4;
+      marcos4.forEach((marco, mi) => {
+        const x = margin + pad + colW4 * mi + colW4 / 2;
+
+        if (mi > 0) {
+          const xPrev = margin + pad + colW4 * (mi - 1) + colW4 / 2;
+          const anterior = marcos4[mi - 1];
+          if (marco.feito && anterior.feito) {
+            const [lr, lg, lb] = graficoCor === "vermelho" ? [248, 113, 113] : [74, 222, 128];
+            doc.setDrawColor(lr, lg, lb);
+          } else {
+            doc.setDrawColor(229, 231, 235);
+          }
+          doc.setLineWidth(1.3);
+          doc.line(xPrev + nodeR4, nodeY4, x - nodeR4, nodeY4);
+        }
+
+        if (marco.feito) {
+          const [nr, ng, nb] = graficoCor === "vermelho" ? [239, 68, 68] : [34, 197, 94];
+          doc.setFillColor(nr, ng, nb);
+          doc.circle(x, nodeY4, nodeR4, "F");
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(1.3);
+          doc.line(x - 3.2, nodeY4, x - 0.8, nodeY4 + 3.2);
+          doc.line(x - 0.8, nodeY4 + 3.2, x + 3.8, nodeY4 - 3.2);
+        } else {
+          doc.setFillColor(229, 231, 235);
+          doc.circle(x, nodeY4, nodeR4, "F");
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(marco.feito ? 55 : 156, marco.feito ? 65 : 163, marco.feito ? 81 : 175);
+        marco4Linhas[mi].forEach((l, li) => {
+          doc.text(l, x, nodeY4 + nodeR4 + 10 + li * 9, { align: "center" });
+        });
+        if (marco.data) {
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(140, 140, 140);
+          doc.text(fmtDDMM(marco.data), x, nodeY4 + nodeR4 + 10 + marco4Linhas[mi].length * 9 + 2, { align: "center" });
+        }
+      });
+    } else if (fileiras.length) {
       cy += 8;
       doc.setDrawColor(220, 220, 220);
       doc.setLineWidth(0.5);
