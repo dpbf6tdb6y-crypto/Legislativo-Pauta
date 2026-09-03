@@ -493,6 +493,41 @@ export default function EditarSeggovPage() {
 
   const ultimaChaveMarcada = marcados.length ? marcados[marcados.length - 1].key : null
 
+  // Fluxo "detalhado": agrupa as etapas por fase do processo (com legenda em
+  // texto completo) em vez de uma fileira só com abreviações — pedido do
+  // usuário pra quem não conhece o sistema entender o que está vendo. Cada
+  // fase vira um bloco independente (sem setas entre os blocos, só um
+  // divisor), então uma fase com etapas mais "altas" (comissão com nome
+  // completo, por exemplo) não distorce a altura das fases vizinhas, como
+  // distorcia quando tudo era uma fileira única.
+  const FASE_DA_CHAVE: Record<string, string> = {
+    protocolado: 'Protocolo', pautado: 'Protocolo',
+    retiradoPauta: 'Retirado de pauta',
+    comissao1: 'Comissões', comissao2: 'Comissões', comissao3: 'Comissões',
+    comissaoEspecial: 'Comissões', comissaoConjunta: 'Comissões', dispensaParecer: 'Comissões',
+    dispensaIntersticio: 'Situação especial', pedidoVista: 'Situação especial', pedidoAdiamento: 'Situação especial',
+    emenda: 'Emenda', emendaVotacao1: 'Emenda', emendaVotacao2: 'Emenda', emendaResultado: 'Emenda',
+    votacao1: 'Votação em plenário', votacao2: 'Votação em plenário', resultadoFinal: 'Votação em plenário',
+    sancaoVeto: 'Sanção', vetoManutencao: 'Sanção',
+    promulgacao: 'Promulgação',
+  }
+  function faseDoSegmento(seg: typeof segmentos[number]): string {
+    if (seg.tipo === 'grupo') return 'Comissões'
+    if (seg.tipo === 'fantasma') return 'Sanção'
+    return FASE_DA_CHAVE[seg.step.key] || ''
+  }
+  const blocosFase = useMemo(() => {
+    const out: { fase: string; segs: typeof segmentos }[] = []
+    segmentos.forEach(seg => {
+      const fase = faseDoSegmento(seg)
+      const ultimo = out[out.length - 1]
+      if (ultimo && ultimo.fase === fase) ultimo.segs.push(seg)
+      else out.push({ fase, segs: [seg] })
+    })
+    return out
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segmentos])
+
   function renderNoFluxo(step: typeof marcados[number]) {
     const isLast = step.key === ultimaChaveMarcada
     // Sanção/Veto (e outras etapas de resultado que não entram no cálculo
@@ -504,7 +539,7 @@ export default function EditarSeggovPage() {
     // independe do resto do fluxo estar verde/vermelho/azul.
     const isRetirado = step.key === 'retiradoPauta'
     return (
-      <div className="flex flex-col items-center" style={{ width: '68px' }}>
+      <div className="flex flex-col items-center" style={{ width: '84px' }}>
         <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
           isRetirado ? 'bg-orange-500' :
           negativoLocal || graficoCor === 'vermelho' ? 'bg-red-500' :
@@ -522,12 +557,13 @@ export default function EditarSeggovPage() {
           'text-gray-700'
         }`}>{step.labelCurto}</p>
         <p className="text-xs text-gray-400 text-center mt-0.5">{fmtData(step.doneAt)}</p>
-        {/* No fluxo só a sigla — o nome completo da comissão (guardado junto
-            em "SIGLA — Nome") fica só no painel de edição, onde tem espaço;
-            aqui embaixo do nó, o nome inteiro quebrava em várias linhas e
-            distorcia o gráfico. */}
+        {/* Nome completo da comissão (não só a sigla) — nesta tela o fluxo
+            agora é sempre o "detalhado", agrupado por fase (ver blocosFase
+            abaixo), então cada fase tem sua própria altura de linha e o
+            nome completo quebrando em 2-3 linhas não distorce as outras
+            fases vizinhas como distorcia quando tudo era uma fileira só. */}
         {step.data?.comissaoNome && (
-          <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome.split(' — ')[0]}</span>
+          <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
         )}
         {/* Nas comissões e no Resultado Final a cor da bolinha (verde/vermelho)
             já entrega o veredito — escrever "Aprovado"/"Reprovado" embaixo
@@ -1108,49 +1144,42 @@ export default function EditarSeggovPage() {
           </h3>
 
           {marcados.length > 0 && (
-            <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-4 pt-8 overflow-x-auto">
+            <div className="mb-6 bg-gray-50 rounded-xl border border-gray-200 p-4 overflow-x-auto">
               <div className="flex items-start" style={{ gap: 0 }}>
-                {segmentos.map((seg, i) => {
-                  const ultimoSegmento = i === segmentos.length - 1
-                  const proximoEhFantasma = segmentos[i + 1]?.tipo === 'fantasma'
-                  return (
-                    <div key={i} className="flex items-start flex-shrink-0">
-                      {seg.tipo === 'no' ? (
-                        renderNoFluxo(seg.step)
-                      ) : seg.tipo === 'fantasma' ? (
-                        renderNoFantasma(seg.label)
-                      ) : (
-                        /* Parecer conjunto: as comissões aparecem lado a lado dentro
-                           de uma faixa, SEM setas entre elas — foi um ato único.
-                           Marcadas por um colchete lilás flutuante por cima, sem caixa
-                           ao redor e sem empurrar as bolinhas pra baixo (ficam na mesma
-                           linha dos outros passos do fluxo). */
-                        <div className="relative flex items-start self-start px-1">
-                          <p className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap">
-                            Parecer Conjunto{fluxo['comissaoConjunta']?.data?.nome1 ? ` — ${fluxo['comissaoConjunta']?.data?.nome1}` : ''}
-                          </p>
-                          <div className="absolute -top-1 left-0 right-0 h-2">
-                            <div className="absolute inset-x-0 top-0 border-t-2 border-purple-300" />
-                            <div className="absolute left-0 top-0 w-0.5 h-2 bg-purple-300" />
-                            <div className="absolute right-0 top-0 w-0.5 h-2 bg-purple-300" />
-                          </div>
-                          <div className="flex items-start">
-                            {seg.steps.map(s => <div key={s.key}>{renderNoFluxo(s)}</div>)}
-                          </div>
+                {blocosFase.map((bloco, bi) => (
+                  <div key={bi} className={`flex flex-col flex-shrink-0 ${bi > 0 ? 'pl-4 ml-4 border-l border-gray-200' : ''}`}>
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2 whitespace-nowrap">{bloco.fase}</p>
+                    <div className="flex items-start pt-4" style={{ gap: '12px' }}>
+                      {bloco.segs.map((seg, i) => (
+                        <div key={i}>
+                          {seg.tipo === 'no' ? (
+                            renderNoFluxo(seg.step)
+                          ) : seg.tipo === 'fantasma' ? (
+                            renderNoFantasma(seg.label)
+                          ) : (
+                            /* Parecer conjunto: as comissões aparecem lado a lado
+                               dentro de uma faixa, SEM setas entre elas — foi um
+                               ato único. Marcadas por um colchete lilás flutuante
+                               por cima, sem caixa ao redor. */
+                            <div className="relative flex items-start self-start px-1">
+                              <p className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap">
+                                Parecer Conjunto{fluxo['comissaoConjunta']?.data?.nome1 ? ` — ${fluxo['comissaoConjunta']?.data?.nome1}` : ''}
+                              </p>
+                              <div className="absolute -top-1 left-0 right-0 h-2">
+                                <div className="absolute inset-x-0 top-0 border-t-2 border-purple-300" />
+                                <div className="absolute left-0 top-0 w-0.5 h-2 bg-purple-300" />
+                                <div className="absolute right-0 top-0 w-0.5 h-2 bg-purple-300" />
+                              </div>
+                              <div className="flex items-start" style={{ gap: '12px' }}>
+                                {seg.steps.map(s => <div key={s.key}>{renderNoFluxo(s)}</div>)}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {!ultimoSegmento && proximoEhFantasma && (
-                        <div className="flex-shrink-0 mt-2.5 border-t-2 border-dashed border-blue-300 w-4 h-0" />
-                      )}
-                      {!ultimoSegmento && !proximoEhFantasma && (
-                        <div className="flex-shrink-0 mt-2.5">
-                          <div className={`h-0.5 w-4 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
-                          <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-4 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
-                        </div>
-                      )}
+                      ))}
                     </div>
-                  )
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           )}

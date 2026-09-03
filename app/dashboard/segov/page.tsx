@@ -51,6 +51,20 @@ const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
 // Etapas que podem acontecer a qualquer momento da tramitação — reposiciona
 // pela DATA real delas em vez da ordem fixa do array (ver editar/page.tsx).
 const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio', 'dispensaParecer', 'pedidoVista', 'pedidoAdiamento']
+// Classificação de cada etapa numa fase do processo — usada pelo fluxo
+// "detalhado" (ver editar/page.tsx), que agrupa as etapas por fase com
+// legenda em texto completo, em vez de siglas soltas numa fileira só.
+const FASE_DA_CHAVE: Record<string, string> = {
+  protocolado: 'Protocolo', pautado: 'Protocolo',
+  retiradoPauta: 'Retirado de pauta',
+  comissao1: 'Comissões', comissao2: 'Comissões', comissao3: 'Comissões',
+  comissaoEspecial: 'Comissões', comissaoConjunta: 'Comissões', dispensaParecer: 'Comissões',
+  dispensaIntersticio: 'Situação especial', pedidoVista: 'Situação especial', pedidoAdiamento: 'Situação especial',
+  emenda: 'Emenda', emendaVotacao1: 'Emenda', emendaVotacao2: 'Emenda', emendaResultado: 'Emenda',
+  votacao1: 'Votação em plenário', votacao2: 'Votação em plenário', resultadoFinal: 'Votação em plenário',
+  sancaoVeto: 'Sanção', vetoManutencao: 'Sanção',
+  promulgacao: 'Promulgação',
+}
 function labelResultadoCurto(key: string, valor?: string) {
   if (!valor) return ''
   const { valores, labels } = OPCOES_POR_CHAVE[key] || { valores: ['aprovado', 'reprovado'], labels: ['Aprov.', 'Reprov.'] }
@@ -92,9 +106,20 @@ export default function SeggovPage() {
   const [menuRelatorios, setMenuRelatorios] = useState(false)
   const [modalRelatorio, setModalRelatorio] = useState(false)
   const [formatoRelatorio, setFormatoRelatorio] = useState<'excel' | 'pdf'>('pdf')
+  // Só vale pro PDF — nome completo da comissão em vez de sigla (o fluxo
+  // continua na mesma fileira única do PDF, sem o agrupamento por fase que a
+  // tela tem). Sem toggle possível num PDF (é estático), então a escolha é
+  // feita aqui, na hora de gerar.
+  const [relatorioDetalhado, setRelatorioDetalhado] = useState(false)
   const [colunasSel, setColunasSel] = useState<Set<ColunasKey>>(
     new Set(COLUNAS_RELATORIO.map(c => c.key))
   )
+
+  // Fluxo de cada cartão: resumido (4 marcos grandes, tipo rastreamento de
+  // encomenda) por padrão, ou detalhado (agrupado por fase, com nome
+  // completo das comissões) quando ligado — vale pra todos os cartões de
+  // uma vez, alternado pelo botão na barra de filtros.
+  const [flowDetalhado, setFlowDetalhado] = useState(false)
 
   // Filtros por coluna (busca livre, aplicados sobre os itens já carregados)
   const [colProposicao, setColProposicao] = useState('')
@@ -322,7 +347,7 @@ export default function SeggovPage() {
       exportarSegovExcel(itensParaExportar, cols, 'segov.xlsx')
     } else {
       // O PDF reproduz o cartão da tela inteiro — não depende da seleção de colunas.
-      exportarSegovPDF(itensParaExportar, undefined, 'segov.pdf')
+      exportarSegovPDF(itensParaExportar, undefined, 'segov.pdf', relatorioDetalhado)
     }
     setModalRelatorio(false)
   }
@@ -369,6 +394,19 @@ export default function SeggovPage() {
           <option value="">Todos os tipos ({Object.values(contagemPorTipo).reduce((a, b) => a + b, 0)})</option>
           {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome} ({contagemPorTipo[t.nome] || 0})</option>)}
         </select>
+        {/* Alterna TODOS os cartões de uma vez entre o resumo de 4 marcos
+            (padrão) e o fluxo detalhado, agrupado por fase com nome
+            completo das comissões — pedido do usuário pra ficar bem
+            visível, com destaque, na barra fixa de filtros. */}
+        <button onClick={() => setFlowDetalhado(v => !v)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex-shrink-0 whitespace-nowrap ${
+            flowDetalhado ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
+          }`}>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+          {flowDetalhado ? 'Fluxo detalhado' : 'Fluxo resumido'}
+        </button>
         <div className="ml-auto flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
           <input type="checkbox"
             checked={todosSelecionados}
@@ -518,6 +556,41 @@ export default function SeggovPage() {
             if (aguardandoSancao) segmentos.push({ tipo: 'fantasma', label: labelFantasmaSancao })
             const ultimaChave = marcados.length ? marcados[marcados.length - 1].key : null
 
+            // Fluxo detalhado: agrupa os mesmos segmentos por fase (ver
+            // FASE_DA_CHAVE), com legenda em texto completo acima de cada
+            // grupo, em vez de uma fileira só com siglas — mesma lógica da
+            // tela de editar.
+            function faseDoSegmento(seg: typeof segmentos[number]): string {
+              if (seg.tipo === 'grupo') return 'Comissões'
+              if (seg.tipo === 'fantasma') return 'Sanção'
+              return FASE_DA_CHAVE[seg.step.key] || ''
+            }
+            const blocosFase: { fase: string; segs: typeof segmentos }[] = []
+            segmentos.forEach(seg => {
+              const fase = faseDoSegmento(seg)
+              const ultimo = blocosFase[blocosFase.length - 1]
+              if (ultimo && ultimo.fase === fase) ultimo.segs.push(seg)
+              else blocosFase.push({ fase, segs: [seg] })
+            })
+
+            // Resumo de 4 marcos grandes (visão padrão, tipo rastreamento de
+            // encomenda) — calculado direto do fluxo, sem depender da ordem
+            // dos segmentos.
+            const marcoProtocolo = !!fluxo['protocolado']?.done
+            const marcoComissoes = todasComissoesAprovadas || algumaComissaoReprovada
+              || CHAVES_COMISSAO.some(k => fluxo[k]?.done) || !!fluxo['comissaoEspecial']?.done
+            const marcoVotacao = !!fluxo['resultadoFinal']?.done
+            const marcoSancao = (fluxo['sancaoVeto']?.done && !!fluxo['sancaoVeto']?.data?.resultado)
+              || (fluxo['promulgacao']?.done && !!fluxo['promulgacao']?.data?.resultado)
+            const marcos = [
+              { label: 'Protocolo', feito: marcoProtocolo, data: fluxo['protocolado']?.doneAt },
+              { label: algumaComissaoReprovada ? 'Reprovado pelas comissões' : 'Aprovado pelas comissões', feito: marcoComissoes, data: undefined },
+              { label: 'Votado em plenário', feito: marcoVotacao, data: fluxo['resultadoFinal']?.doneAt },
+              { label: fluxo['promulgacao']?.data?.resultado === 'promulgado' ? 'Promulgado'
+                  : fluxo['sancaoVeto']?.data?.resultado === 'vetado' ? 'Vetado' : 'Sancionado',
+                feito: marcoSancao, data: fluxo['sancaoVeto']?.doneAt || fluxo['promulgacao']?.doneAt },
+            ]
+
             const renderNo = (step: typeof marcados[number]) => {
               const isLast = step.key === ultimaChave
               // Sanção/Veto (e outras etapas de resultado fora do cálculo geral
@@ -529,7 +602,7 @@ export default function SeggovPage() {
               // "Retirado" — independe do resto do fluxo estar verde/vermelho/azul.
               const isRetirado = step.key === 'retiradoPauta'
               return (
-                <div className="flex flex-col items-center" style={{ width: '68px' }}>
+                <div className="flex flex-col items-center" style={{ width: '84px' }}>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
                     isRetirado ? 'bg-orange-500' :
                     negativoLocal || graficoCor === 'vermelho' ? 'bg-red-500' :
@@ -547,10 +620,12 @@ export default function SeggovPage() {
                     'text-gray-700'
                   }`}>{step.labelCurto}</p>
                   <p className="text-xs text-gray-400 text-center mt-0.5">{fmtFluxoData(step.doneAt)}</p>
-                  {/* No fluxo só a sigla — o nome completo (guardado junto
-                      em "SIGLA — Nome") fica só no painel de edição. */}
+                  {/* Nome completo da comissão — esse nó só aparece no fluxo
+                      detalhado (agrupado por fase), onde cada fase tem sua
+                      própria altura de linha e o nome quebrando em 2-3
+                      linhas não distorce as fases vizinhas. */}
                   {step.data?.comissaoNome && (
-                    <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome.split(' — ')[0]}</span>
+                    <span className="mt-1 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-medium text-center leading-snug break-words">{step.data.comissaoNome}</span>
                   )}
                   {/* Nas comissões e no Resultado Final a cor da bolinha já é o
                       veredito (verde = aprovado, vermelho = reprovado), então o
@@ -645,47 +720,70 @@ export default function SeggovPage() {
                   </div>
                 </div>
 
-                {/* Gráfico de tramitação — idêntico à tela de edição */}
-                {marcados.length > 0 && (
-                  <div className="border-t border-blue-100 px-4 pb-4 pt-6 overflow-x-auto cursor-pointer"
+                {/* Fluxo resumido (4 marcos grandes, padrão) ou detalhado
+                    (agrupado por fase, com nome completo das comissões) —
+                    alternado pelo botão na barra de filtros, vale pra todos
+                    os cartões de uma vez. */}
+                {marcados.length > 0 && !flowDetalhado && (
+                  <div className="border-t border-blue-100 px-4 pb-4 pt-5 cursor-pointer"
                     onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
-                    <div className="flex items-start" style={{ gap: 0 }}>
-                      {segmentos.map((seg, i) => {
-                        const ultimoSegmento = i === segmentos.length - 1
-                        const proximoEhFantasma = segmentos[i + 1]?.tipo === 'fantasma'
-                        return (
-                          <div key={i} className="flex items-start flex-shrink-0">
-                            {seg.tipo === 'no' ? (
-                              renderNo(seg.step)
-                            ) : seg.tipo === 'fantasma' ? (
-                              renderNoFantasma(seg.label)
-                            ) : (
-                              <div className="relative flex items-start self-start px-1">
-                                <p className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap">
-                                  Parecer Conjunto{fluxo['comissaoConjunta']?.data?.nome1 ? ` — ${fluxo['comissaoConjunta']?.data?.nome1}` : ''}
-                                </p>
-                                <div className="absolute -top-1 left-0 right-0 h-2">
-                                  <div className="absolute inset-x-0 top-0 border-t-2 border-purple-300" />
-                                  <div className="absolute left-0 top-0 w-0.5 h-2 bg-purple-300" />
-                                  <div className="absolute right-0 top-0 w-0.5 h-2 bg-purple-300" />
-                                </div>
-                                <div className="flex items-start">
-                                  {seg.steps.map(s => <div key={s.key}>{renderNo(s)}</div>)}
-                                </div>
-                              </div>
-                            )}
-                            {!ultimoSegmento && proximoEhFantasma && (
-                              <div className="flex-shrink-0 mt-2.5 border-t-2 border-dashed border-blue-300 w-4 h-0" />
-                            )}
-                            {!ultimoSegmento && !proximoEhFantasma && (
-                              <div className="flex-shrink-0 mt-2.5">
-                                <div className={`h-0.5 w-4 ${graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'}`} />
-                                <div className={`w-0 h-0 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent border-l-[5px] -mt-[2.5px] ml-4 ${graficoCor === 'vermelho' ? 'border-l-red-400' : 'border-l-green-400'}`} />
-                              </div>
+                    <div className="flex items-start">
+                      {marcos.map((marco, mi) => (
+                        <div key={mi} className="flex-1 flex flex-col items-center relative">
+                          {mi > 0 && (
+                            <div className={`absolute top-[15px] right-1/2 w-full h-0.5 ${marco.feito && marcos[mi - 1].feito ? (graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400') : 'bg-gray-200'}`} />
+                          )}
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${
+                            !marco.feito ? 'bg-gray-200' :
+                            graficoCor === 'vermelho' ? 'bg-red-500' : 'bg-green-500'
+                          }`}>
+                            {marco.feito && (
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
                             )}
                           </div>
-                        )
-                      })}
+                          <p className={`text-xs font-medium mt-1.5 text-center leading-tight px-1 ${marco.feito ? 'text-gray-700' : 'text-gray-400'}`}>{marco.label}</p>
+                          {marco.data && <p className="text-xs text-gray-400 mt-0.5">{fmtFluxoData(marco.data)}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {marcados.length > 0 && flowDetalhado && (
+                  <div className="border-t border-blue-100 px-4 pb-4 pt-4 overflow-x-auto cursor-pointer"
+                    onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
+                    <div className="flex items-start" style={{ gap: 0 }}>
+                      {blocosFase.map((bloco, bi) => (
+                        <div key={bi} className={`flex flex-col flex-shrink-0 ${bi > 0 ? 'pl-4 ml-4 border-l border-gray-200' : ''}`}>
+                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2 whitespace-nowrap">{bloco.fase}</p>
+                          <div className="flex items-start pt-4" style={{ gap: '12px' }}>
+                            {bloco.segs.map((seg, i) => (
+                              <div key={i}>
+                                {seg.tipo === 'no' ? (
+                                  renderNo(seg.step)
+                                ) : seg.tipo === 'fantasma' ? (
+                                  renderNoFantasma(seg.label)
+                                ) : (
+                                  <div className="relative flex items-start self-start px-1">
+                                    <p className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-purple-600 text-center uppercase tracking-wide whitespace-nowrap">
+                                      Parecer Conjunto{fluxo['comissaoConjunta']?.data?.nome1 ? ` — ${fluxo['comissaoConjunta']?.data?.nome1}` : ''}
+                                    </p>
+                                    <div className="absolute -top-1 left-0 right-0 h-2">
+                                      <div className="absolute inset-x-0 top-0 border-t-2 border-purple-300" />
+                                      <div className="absolute left-0 top-0 w-0.5 h-2 bg-purple-300" />
+                                      <div className="absolute right-0 top-0 w-0.5 h-2 bg-purple-300" />
+                                    </div>
+                                    <div className="flex items-start" style={{ gap: '12px' }}>
+                                      {seg.steps.map(s => <div key={s.key}>{renderNo(s)}</div>)}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -753,10 +851,27 @@ export default function SeggovPage() {
               )}
 
               {formatoRelatorio === 'pdf' && (
-                <p className="text-xs text-gray-500">
-                  O PDF reproduz o mesmo cartão exibido na tela (número, status, ementa,
-                  autores e fluxo de tramitação), em retrato, com o Poder Executivo primeiro.
-                </p>
+                <div>
+                  <p className="text-xs text-gray-500 mb-3">
+                    O PDF reproduz o mesmo cartão exibido na tela (número, status, ementa,
+                    autores e fluxo de tramitação), em retrato, com o Poder Executivo primeiro.
+                  </p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Fluxo de tramitação</p>
+                  <div className="flex gap-3">
+                    {([
+                      { valor: false, titulo: 'Resumido', desc: 'Sigla da comissão' },
+                      { valor: true, titulo: 'Detalhado', desc: 'Nome completo da comissão' },
+                    ] as const).map(op => (
+                      <button key={String(op.valor)} type="button" onClick={() => setRelatorioDetalhado(op.valor)}
+                        className={`flex-1 py-2 px-3 rounded-lg border text-left transition ${
+                          relatorioDetalhado === op.valor ? 'border-red-800 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                        }`}>
+                        <p className={`text-sm font-medium ${relatorioDetalhado === op.valor ? 'text-red-800' : 'text-gray-700'}`}>{op.titulo}</p>
+                        <p className="text-xs text-gray-400">{op.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
 
               <p className="text-xs text-gray-400">
