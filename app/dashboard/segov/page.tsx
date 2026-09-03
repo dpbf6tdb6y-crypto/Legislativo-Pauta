@@ -77,6 +77,16 @@ function fmtFluxoData(iso?: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 }
 
+// As 4 chaves que podem virar um marco extra (roxo) no resumo de 4 marcos,
+// entre "comissões" e "votação" — ver marcos/situacoesEspeciais no render.
+const SITUACOES_ESPECIAIS_DEF = [
+  { key: 'dispensaParecer',     label: 'Dispensa de Parecer' },
+  { key: 'dispensaIntersticio', label: 'Dispensa de Interstício' },
+  { key: 'pedidoVista',         label: 'Pedido de Vista' },
+  { key: 'pedidoAdiamento',     label: 'Pedido de Adiamento' },
+]
+type MarcoItem = { label: string; feito: boolean; data?: string; tipo?: 'especial'; nome?: string }
+
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
 
 const STATUS_COR: Record<string, string> = {
@@ -582,7 +592,7 @@ export default function SeggovPage() {
             const marcoVotacao = !!fluxo['resultadoFinal']?.done
             const marcoSancao = (fluxo['sancaoVeto']?.done && !!fluxo['sancaoVeto']?.data?.resultado)
               || (fluxo['promulgacao']?.done && !!fluxo['promulgacao']?.data?.resultado)
-            const marcos = [
+            const marcosBase: MarcoItem[] = [
               { label: 'Protocolo', feito: marcoProtocolo, data: fluxo['protocolado']?.doneAt },
               { label: algumaComissaoReprovada ? 'Reprovado pelas comissões' : 'Aprovado pelas comissões', feito: marcoComissoes, data: undefined },
               { label: 'Votado em plenário', feito: marcoVotacao, data: fluxo['resultadoFinal']?.doneAt },
@@ -590,6 +600,19 @@ export default function SeggovPage() {
                   : fluxo['sancaoVeto']?.data?.resultado === 'vetado' ? 'Vetado' : 'Sancionado',
                 feito: marcoSancao, data: fluxo['sancaoVeto']?.doneAt || fluxo['promulgacao']?.doneAt },
             ]
+            // Situações especiais (dispensa de parecer/interstício, pedido de
+            // vista/adiamento) — só aparecem no resumo quando acontecem,
+            // encaixadas entre "comissões" e "votação" (é sempre nesse
+            // intervalo que elas ocorrem na prática), ordenadas pela própria
+            // data quando há mais de uma. Mostram o nome de quem solicitou.
+            const situacoesEspeciais: MarcoItem[] = SITUACOES_ESPECIAIS_DEF
+              .filter(s => fluxo[s.key]?.done)
+              .map(s => ({
+                label: s.label, feito: true, data: fluxo[s.key]?.doneAt,
+                tipo: 'especial' as const, nome: fluxo[s.key]?.data?.nome1,
+              }))
+              .sort((a, b) => (a.data || '').localeCompare(b.data || ''))
+            const marcos = [marcosBase[0], marcosBase[1], ...situacoesEspeciais, marcosBase[2], marcosBase[3]]
 
             const renderNo = (step: typeof marcados[number]) => {
               const isLast = step.key === ultimaChave
@@ -728,25 +751,46 @@ export default function SeggovPage() {
                   <div className="border-t border-blue-100 px-4 pb-4 pt-5 cursor-pointer"
                     onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
                     <div className="flex items-start">
-                      {marcos.map((marco, mi) => (
+                      {marcos.map((marco, mi) => {
+                        // Situação especial (dispensa/vista/adiamento) é um
+                        // marco extra, roxo com ícone de relógio — some no
+                        // meio dos 4 marcos fixos só quando acontece, por
+                        // isso não entra na alternância de cor verde/vermelho
+                        // dos outros (que reflete o resultado final).
+                        const especial = marco.tipo === 'especial'
+                        const anteriorEspecial = mi > 0 && marcos[mi - 1].tipo === 'especial'
+                        return (
                         <div key={mi} className="flex-1 flex flex-col items-center relative">
                           {mi > 0 && (
-                            <div className={`absolute top-[15px] right-1/2 w-full h-0.5 ${marco.feito && marcos[mi - 1].feito ? (graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400') : 'bg-gray-200'}`} />
+                            <div className={`absolute top-[15px] right-1/2 w-full h-0.5 ${
+                              !(marco.feito && marcos[mi - 1].feito) ? 'bg-gray-200' :
+                              (especial || anteriorEspecial) ? 'bg-purple-300' :
+                              graficoCor === 'vermelho' ? 'bg-red-400' : 'bg-green-400'
+                            }`} />
                           )}
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${
                             !marco.feito ? 'bg-gray-200' :
+                            especial ? 'bg-purple-500' :
                             graficoCor === 'vermelho' ? 'bg-red-500' : 'bg-green-500'
                           }`}>
                             {marco.feito && (
-                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
+                              especial ? (
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l2.5 2.5M20 12a8 8 0 11-16 0 8 8 0 0116 0z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )
                             )}
                           </div>
-                          <p className={`text-xs font-medium mt-1.5 text-center leading-tight px-1 ${marco.feito ? 'text-gray-700' : 'text-gray-400'}`}>{marco.label}</p>
+                          <p className={`text-xs font-medium mt-1.5 text-center leading-tight px-1 ${especial ? 'text-purple-700' : marco.feito ? 'text-gray-700' : 'text-gray-400'}`}>{marco.label}</p>
+                          {marco.nome && <p className="text-[10px] text-purple-500 text-center mt-0.5 leading-tight px-1">{marco.nome}</p>}
                           {marco.data && <p className="text-xs text-gray-400 mt-0.5">{fmtFluxoData(marco.data)}</p>}
                         </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
                 )}
