@@ -116,11 +116,6 @@ export default function SeggovPage() {
   const [menuRelatorios, setMenuRelatorios] = useState(false)
   const [modalRelatorio, setModalRelatorio] = useState(false)
   const [formatoRelatorio, setFormatoRelatorio] = useState<'excel' | 'pdf'>('pdf')
-  // Só vale pro PDF — nome completo da comissão em vez de sigla (o fluxo
-  // continua na mesma fileira única do PDF, sem o agrupamento por fase que a
-  // tela tem). Sem toggle possível num PDF (é estático), então a escolha é
-  // feita aqui, na hora de gerar.
-  const [relatorioDetalhado, setRelatorioDetalhado] = useState(false)
   const [colunasSel, setColunasSel] = useState<Set<ColunasKey>>(
     new Set(COLUNAS_RELATORIO.map(c => c.key))
   )
@@ -356,8 +351,11 @@ export default function SeggovPage() {
       if (cols.length === 0) return
       exportarSegovExcel(itensParaExportar, cols, 'segov.xlsx')
     } else {
-      // O PDF reproduz o cartão da tela inteiro — não depende da seleção de colunas.
-      exportarSegovPDF(itensParaExportar, undefined, 'segov.pdf', relatorioDetalhado)
+      // O PDF reproduz o cartão da tela inteiro (não depende da seleção de
+      // colunas) e segue o mesmo modo de fluxo ligado no botão da barra de
+      // filtros — sem escolha duplicada aqui, pra nunca sair diferente do
+      // que a tela está mostrando.
+      exportarSegovPDF(itensParaExportar, undefined, 'segov.pdf', flowDetalhado)
     }
     setModalRelatorio(false)
   }
@@ -896,25 +894,12 @@ export default function SeggovPage() {
 
               {formatoRelatorio === 'pdf' && (
                 <div>
-                  <p className="text-xs text-gray-500 mb-3">
+                  <p className="text-xs text-gray-500">
                     O PDF reproduz o mesmo cartão exibido na tela (número, status, ementa,
-                    autores e fluxo de tramitação), em retrato, com o Poder Executivo primeiro.
+                    autores e fluxo de tramitação — {flowDetalhado ? 'detalhado' : 'resumido'},
+                    igual ao botão ligado na barra de filtros), em retrato, com o Poder
+                    Executivo primeiro.
                   </p>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Fluxo de tramitação</p>
-                  <div className="flex gap-3">
-                    {([
-                      { valor: false, titulo: 'Resumido', desc: 'Sigla da comissão' },
-                      { valor: true, titulo: 'Detalhado', desc: 'Nome completo da comissão' },
-                    ] as const).map(op => (
-                      <button key={String(op.valor)} type="button" onClick={() => setRelatorioDetalhado(op.valor)}
-                        className={`flex-1 py-2 px-3 rounded-lg border text-left transition ${
-                          relatorioDetalhado === op.valor ? 'border-red-800 bg-red-50' : 'border-gray-200 hover:border-gray-300'
-                        }`}>
-                        <p className={`text-sm font-medium ${relatorioDetalhado === op.valor ? 'text-red-800' : 'text-gray-700'}`}>{op.titulo}</p>
-                        <p className="text-xs text-gray-400">{op.desc}</p>
-                      </button>
-                    ))}
-                  </div>
                 </div>
               )}
 
