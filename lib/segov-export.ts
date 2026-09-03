@@ -160,7 +160,12 @@ function statusChip(status: string): { bg: [number,number,number]; fg: [number,n
 export function exportarSegovPDF(
   itens: SegovItem[],
   _colunas?: ColunasKey[],
-  nomeArquivo = "segov.pdf"
+  nomeArquivo = "segov.pdf",
+  // Resumido (padrão) mostra só a sigla da comissão, igual já saía; detalhado
+  // mostra o nome completo — pedido do usuário pra quem não conhece o
+  // sistema não ficar perdido nas siglas. Não existe "clicar pra expandir"
+  // num PDF, por isso a escolha é feita na hora de gerar o relatório.
+  detalhado = false
 ) {
   const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
   const W = 595.28;
@@ -177,7 +182,10 @@ export function exportarSegovPDF(
   // 48 pra 42 — cabiam só 10 nós por fileira, e proposições com parecer
   // conjunto + pedido de vista/emenda já passam disso, fazendo o fluxo pular
   // pra uma segunda fileira solta. Com 42 cabem 12.
-  const stepW = 42;
+  // No modo detalhado (nome completo da comissão em vez de sigla) a coluna
+  // precisa de mais espaço — menos nós cabem por fileira, mas o nome não
+  // fica espremido.
+  const stepW = detalhado ? 64 : 42;
   const chipLH = 14;
   const alturaCabecalho = 40;
   const topoConteudo = alturaCabecalho + 10;
@@ -241,6 +249,24 @@ export function exportarSegovPDF(
     });
     if (atual.length) linhas.push(atual);
     return linhas;
+  }
+
+  /** Texto da etiqueta que aparece embaixo de um nó do fluxo (sigla ou nome
+   * completo da comissão, resultado, nome de quem pediu, ou autores da
+   * emenda) — usada tanto pra medir quantas linhas ela vai ocupar (e reservar
+   * altura certa na fileira) quanto pra desenhar de verdade, garantindo que
+   * as duas contas nunca fiquem fora de sincronia. */
+  function textoEtiqueta(sd: { data?: any } | undefined, stepKey: string): string {
+    if (sd?.data?.comissaoNome) {
+      return detalhado ? sd.data.comissaoNome : sd.data.comissaoNome.split(" — ")[0];
+    }
+    if (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(stepKey)) {
+      const autoresTxt = sd?.data?.autores?.length ? ` — ${sd.data.autores.join(" e ")}` : "";
+      return labelResultadoPdf(stepKey, sd.data.resultado) + autoresTxt;
+    }
+    if (sd?.data?.nome1) return sd.data.nome1;
+    if (sd?.data?.autores?.length) return sd.data.autores.join(" e ");
+    return "";
   }
 
   cabecalhoPagina();
@@ -346,12 +372,28 @@ export function exportarSegovPDF(
     doc.setFontSize(8);
     const passosReais = marcados.map(step => {
       const sd = fluxo[step.key];
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      const labelLinhas = doc.splitTextToSize(step.labelCurto, stepW - 4) as string[];
+      const textoEt = textoEtiqueta(sd, step.key);
+      // Etiqueta é desenhada em 7pt normal — mede no mesmo tamanho, senão a
+      // altura reservada não bate com o que realmente é desenhado.
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      // Restrita à largura da própria coluna (stepW), não mais — etiquetas
+      // largas em nós vizinhos (ex.: 3 comissões seguidas, cada uma com o
+      // nome completo no modo detalhado) colidiam umas com as outras quando
+      // podiam passar da largura da coluna.
+      const etiquetaLinhas = textoEt ? (doc.splitTextToSize(textoEt, stepW - 4) as string[]) : [];
       return {
         step,
         sd,
-        labelLinhas: doc.splitTextToSize(step.labelCurto, stepW - 4) as string[],
+        labelLinhas,
         temData: !!sd?.doneAt,
-        temEtiqueta: !!(sd?.data?.comissaoNome || sd?.data?.nome1 || sd?.data?.autores?.length || (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(step.key))),
+        temEtiqueta: !!textoEt,
+        // Só relevante no modo detalhado — no resumido a sigla nunca precisa
+        // de mais de 1 linha, mas o nome completo da comissão pode precisar.
+        etiquetaLinhas,
         agrupado: chavesAgrupadas.includes(step.key),
         fantasma: false,
       };
@@ -367,6 +409,7 @@ export function exportarSegovPDF(
           labelLinhas: doc.splitTextToSize(labelFantasmaTexto, stepW - 4) as string[],
           temData: false,
           temEtiqueta: false,
+          etiquetaLinhas: [] as string[],
           agrupado: false,
           fantasma: true,
         }]
@@ -374,13 +417,20 @@ export function exportarSegovPDF(
     type Passo = typeof passos[number];
     const fileiras: Passo[][] = [];
     for (let i = 0; i < passos.length; i += porLinha) fileiras.push(passos.slice(i, i + porLinha));
-    const alturaFileira = (f: Passo[]) =>
-      12 +                                                        // bolinha
-      Math.max(...f.map(p => p.labelLinhas.length)) * 8 +          // rótulo
-      (f.some(p => p.temData) ? 9 : 0) +                           // data
-      (f.some(p => p.temEtiqueta) ? 13 : 0) +                      // etiqueta
-      (f.some(p => p.agrupado) ? 11 : 0) +                         // título da moldura
-      4;
+    const alturaFileira = (f: Passo[]) => {
+      // Etiqueta de 1 linha cabe em 13pt; cada linha a mais soma +8pt — só o
+      // modo detalhado (nome completo da comissão) chega a precisar de mais
+      // de 1 linha na prática.
+      const maxEtiquetaLinhas = Math.max(0, ...f.map(p => p.etiquetaLinhas.length));
+      return (
+        12 +                                                        // bolinha
+        Math.max(...f.map(p => p.labelLinhas.length)) * 8 +          // rótulo
+        (f.some(p => p.temData) ? 9 : 0) +                           // data
+        (maxEtiquetaLinhas > 0 ? 13 + (maxEtiquetaLinhas - 1) * 8 : 0) + // etiqueta
+        (f.some(p => p.agrupado) ? 11 : 0) +                         // título da moldura
+        4
+      );
+    };
     const fluxoAltura = fileiras.reduce((s, f) => s + alturaFileira(f), 0);
 
     const cardH =
@@ -620,54 +670,34 @@ export function exportarSegovPDF(
           }
 
           const yEtiqueta = baseFileira + (fileira.some(q => q.temData) ? 9 : 0) + 3;
-          if (p.sd?.data?.comissaoNome) {
-            // No fluxo só a sigla — o nome completo (guardado junto em
-            // "SIGLA — Nome") fica só na tela de edição, onde tem espaço.
-            const sigla = p.sd.data.comissaoNome.split(" — ")[0];
+          // Usa as mesmas linhas já medidas em passosReais (etiquetaLinhas) —
+          // garante que a altura reservada pra fileira e o que é desenhado
+          // aqui nunca fiquem fora de sincronia (foi exatamente isso que
+          // quebrava o fluxo antes, com "Sanção/Veto" e nomes de comissão
+          // compridos).
+          const linhasEt = p.etiquetaLinhas;
+          if (linhasEt.length) {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7);
-            const bw = Math.min(stepW - 2, doc.getTextWidth(sigla) + 7);
-            doc.setFillColor(219, 234, 254);
-            doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
-            doc.setTextColor(29, 78, 216);
-            doc.text(sigla, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
-          } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
-            // Emenda pode ter resultado E autor(es) ao mesmo tempo — como só
-            // cabe uma etiqueta por nó no PDF (ao contrário das telas, que
-            // mostram as duas empilhadas), junta os dois num texto só.
-            const autoresTxt = p.sd?.data?.autores?.length ? ` — ${p.sd.data.autores.join(" e ")}` : "";
-            const rText = labelResultadoPdf(p.step.key, p.sd.data.resultado) + autoresTxt;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7);
-            const bw = Math.min(stepW * 2, doc.getTextWidth(rText) + 7);
-            if (!NEGATIVOS.has(p.sd.data.resultado)) {
-              doc.setFillColor(187, 247, 208); doc.setTextColor(22, 101, 52);
+            let corFundo: [number, number, number];
+            let corTexto: [number, number, number];
+            if (p.sd?.data?.comissaoNome) {
+              corFundo = [219, 234, 254]; corTexto = [29, 78, 216];
+            } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
+              const neg = NEGATIVOS.has(p.sd.data.resultado);
+              corFundo = neg ? [254, 202, 202] : [187, 247, 208];
+              corTexto = neg ? [185, 28, 28] : [22, 101, 52];
             } else {
-              doc.setFillColor(254, 202, 202); doc.setTextColor(185, 28, 28);
+              corFundo = [243, 244, 246]; corTexto = [75, 85, 99];
             }
-            doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
-            doc.text(rText, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
-          } else if (p.sd?.data?.nome1) {
-            // Nome de quem pediu (Retirado de Pauta, Dispensa de Parecer/
-            // Interstício, Pedido de Vista/Adiamento, Comissão Especial) —
-            // mesma etiqueta cinza usada nas telas.
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7);
-            const bw = Math.min(stepW - 2, doc.getTextWidth(p.sd.data.nome1) + 7);
-            doc.setFillColor(243, 244, 246);
-            doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
-            doc.setTextColor(75, 85, 99);
-            doc.text(p.sd.data.nome1, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
-          } else if (p.sd?.data?.autores?.length) {
-            // Emenda sem resultado ainda, mas com autor(es) já informado(s).
-            const texto = p.sd.data.autores.join(" e ");
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(7);
-            const bw = Math.min(stepW * 2, doc.getTextWidth(texto) + 7);
-            doc.setFillColor(243, 244, 246);
-            doc.rect(x - bw / 2, yEtiqueta, bw, 10, "F");
-            doc.setTextColor(75, 85, 99);
-            doc.text(texto, x, yEtiqueta + 7, { align: "center", maxWidth: bw - 2 });
+            const bw = Math.min(stepW - 2, Math.max(...linhasEt.map(l => doc.getTextWidth(l))) + 7);
+            const altura = 10 + (linhasEt.length - 1) * 8;
+            doc.setFillColor(corFundo[0], corFundo[1], corFundo[2]);
+            doc.rect(x - bw / 2, yEtiqueta, bw, altura, "F");
+            doc.setTextColor(corTexto[0], corTexto[1], corTexto[2]);
+            linhasEt.forEach((linha, li) => {
+              doc.text(linha, x, yEtiqueta + 7 + li * 8, { align: "center" });
+            });
           }
         });
 
