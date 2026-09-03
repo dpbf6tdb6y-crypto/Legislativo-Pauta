@@ -8,6 +8,7 @@ import { resolverAutores, situacaoAutores, ehPoderExecutivo } from '@/lib/veread
 import FiltroSituacaoAutor, { SituacaoAutor } from '@/app/components/FiltroSituacaoAutor'
 import FiltroVereadorSelect from '@/app/components/FiltroVereadorSelect'
 import FiltroPoder, { Poder } from '@/app/components/FiltroPoder'
+import PasswordInput from '@/app/components/PasswordInput'
 import { usePermissao } from '@/lib/usePermissao'
 
 const FLUXO_DEF = [
@@ -113,6 +114,13 @@ export default function SeggovPage() {
   const [loading, setLoading] = useState(true)
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set())
   const [excluindo, setExcluindo] = useState(false)
+  // Excluir em lote exige digitar a senha de login de novo (mesma tela de
+  // "área restrita" das Indicações, ver /api/auth/reautenticar) — proteção a
+  // mais além do botão em si, já que apaga proposições em lote sem volta.
+  const [modalExcluir, setModalExcluir] = useState(false)
+  const [senhaExcluir, setSenhaExcluir] = useState('')
+  const [erroSenhaExcluir, setErroSenhaExcluir] = useState('')
+  const [verificandoSenha, setVerificandoSenha] = useState(false)
   const [menuRelatorios, setMenuRelatorios] = useState(false)
   const [modalRelatorio, setModalRelatorio] = useState(false)
   const [formatoRelatorio, setFormatoRelatorio] = useState<'excel' | 'pdf'>('pdf')
@@ -213,8 +221,32 @@ export default function SeggovPage() {
     }
   }
 
+  // Confirma a senha no servidor (/api/auth/reautenticar — mesma checagem
+  // usada na área restrita de Indicações) antes de excluir de verdade.
+  async function confirmarExclusaoComSenha(e: React.FormEvent) {
+    e.preventDefault()
+    setErroSenhaExcluir('')
+    setVerificandoSenha(true)
+    try {
+      const res = await fetch('/api/auth/reautenticar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senha: senhaExcluir }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        setErroSenhaExcluir(d.error || 'Senha incorreta')
+        return
+      }
+      setModalExcluir(false)
+      setSenhaExcluir('')
+      await excluirSelecionados()
+    } finally {
+      setVerificandoSenha(false)
+    }
+  }
+
   async function excluirSelecionados() {
-    if (!confirm(`Excluir ${selecionados.size} item(s) selecionado(s)?`)) return
     setExcluindo(true)
     await Promise.all(Array.from(selecionados).map(id => fetch(`/api/segov/${id}`, { method: 'DELETE' })))
     setExcluindo(false)
@@ -293,6 +325,19 @@ export default function SeggovPage() {
           <span className="text-sm text-gray-700">Secretaria de Governo</span>
         </div>
         <div className="flex items-center gap-2">
+          {/* Antes do "+ Nova Proposição" de propósito — longe do
+              "Relatório" (que fica mais à direita), pra não ser clicado sem
+              querer no lugar de outro botão. Só aparece com seleção. */}
+          {podeExcluir && selecionados.size > 0 && (
+            <button onClick={() => setModalExcluir(true)} disabled={excluindo}
+              className={`${btn} text-white bg-red-400 hover:bg-red-500 disabled:opacity-60`}>
+              {excluindo
+                ? <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              }
+              Excluir {selecionados.size} selecionado{selecionados.size > 1 ? 's' : ''}
+            </button>
+          )}
           {podeCriar && (
             <Link href="/dashboard/segov/novo"
               className={`${btn} text-white`}
@@ -316,7 +361,7 @@ export default function SeggovPage() {
       </div>
     )
     return () => setLeftContent(null)
-  }, [itensExibidos, selecionados, podeCriar, podeImportar, podeExportar])
+  }, [itensExibidos, selecionados, podeCriar, podeImportar, podeExportar, podeExcluir, excluindo])
 
   // O botão Excluir ficava no topbar, colado no "Relatório" — fácil de
   // clicar sem querer indo pra outro botão. Saiu de lá: agora é só um ícone
@@ -415,18 +460,6 @@ export default function SeggovPage() {
             <button onClick={() => setSelecionados(new Set())}
               className="text-xs text-red-600 font-medium hover:underline">
               · {selecionados.size} selecionado(s) ✕
-            </button>
-          )}
-          {/* Longe do "Relatório" de propósito (ver comentário no useEffect
-              do topbar) — só some daqui se nada estiver selecionado. */}
-          {selecionados.size > 0 && podeExcluir && (
-            <button onClick={excluirSelecionados} disabled={excluindo} title="Excluir selecionados"
-              className="flex items-center gap-1 px-2 py-1 rounded text-xs text-red-500 hover:bg-red-50 hover:text-red-700 transition disabled:opacity-60">
-              {excluindo
-                ? <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
-                : <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              }
-              Excluir
             </button>
           )}
         </div>
@@ -918,6 +951,45 @@ export default function SeggovPage() {
                 Exportar {formatoRelatorio === 'excel' ? 'Excel' : 'PDF'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmação de exclusão em lote — pede a senha de login de novo,
+          mesma checagem de /api/auth/reautenticar usada na área restrita de
+          Indicações, antes de apagar de vez. */}
+      {modalExcluir && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-[420px]">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-800">Confirmar exclusão</h2>
+              <button onClick={() => { setModalExcluir(false); setSenhaExcluir(''); setErroSenhaExcluir('') }}
+                className="text-gray-400 hover:text-gray-600 transition">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={confirmarExclusaoComSenha} className="px-6 py-5 space-y-3">
+              <p className="text-sm text-gray-600">
+                Você vai excluir <strong>{selecionados.size}</strong> proposiç{selecionados.size > 1 ? 'ões' : 'ão'} — essa ação não pode ser desfeita.
+                Digite sua senha de login para confirmar.
+              </p>
+              <PasswordInput autoFocus required value={senhaExcluir} onChange={e => setSenhaExcluir(e.target.value)}
+                placeholder="Sua senha de login"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-800/30" />
+              {erroSenhaExcluir && <p className="text-xs text-red-600">{erroSenhaExcluir}</p>}
+              <div className="flex justify-end gap-3 pt-1">
+                <button type="button" onClick={() => { setModalExcluir(false); setSenhaExcluir(''); setErroSenhaExcluir('') }}
+                  className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={verificandoSenha}
+                  className="px-6 py-2 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition disabled:opacity-60">
+                  {verificandoSenha ? 'Verificando...' : `Excluir ${selecionados.size} selecionado${selecionados.size > 1 ? 's' : ''}`}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
