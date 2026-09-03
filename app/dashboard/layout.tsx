@@ -39,6 +39,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const { hideAtualizar } = useTopbar();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const perfilAtual = (session?.user as any)?.perfil;
   const isAdminOuMaster = perfilAtual === "admin" || perfilAtual === "master";
@@ -241,17 +242,22 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         <header className="bg-white shadow-sm px-5 py-2 flex items-center justify-between flex-shrink-0 sticky top-0 z-40 will-change-transform">
           <TopbarLeft />
           <TopbarRight />
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => window.location.reload()}
-              title="Atualizar sistema"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Atualizar
-            </button>
-          </div>
+          {/* Escondido quando a própria página já tem seu botão equivalente
+              (ex.: a barra fixa da edição de proposição do SEGOV) — evita
+              duplicar. */}
+          {!hideAtualizar && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => window.location.reload()}
+                title="Atualizar sistema"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Atualizar
+              </button>
+            </div>
+          )}
         </header>
 
         <main className="flex-1 px-5 pt-3 pb-0">
