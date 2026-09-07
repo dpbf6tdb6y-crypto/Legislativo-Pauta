@@ -184,10 +184,14 @@ export function exportarSegovPDF(
   const innerW = cw - pad * 2;
   const ementaLH = 13;
   const nodeR = 6;
-  // Passo das colunas do fluxo detalhado (nó a nó, com nome completo da
-  // comissão) — só usado quando detalhado=true; o resumido não desenha essa
-  // grade, ver marcos4 mais abaixo.
-  const stepW = 64;
+  // Passo MÁXIMO das colunas do fluxo detalhado (nó a nó, com nome completo
+  // da comissão) — só usado quando detalhado=true; o resumido não desenha
+  // essa grade, ver marcos4 mais abaixo. O fluxo nunca pode quebrar linha
+  // dentro do cartão (ficava com uma "sobra" solta, parecendo outro item) —
+  // cada proposição calcula o próprio passo, encolhendo esse máximo o
+  // quanto precisar pra caber todos os passos numa fileira só, sem nunca
+  // ultrapassar a largura do cartão.
+  const STEP_W_MAX = 64;
   const chipLH = 14;
   const alturaCabecalho = 40;
   const topoConteudo = alturaCabecalho + 10;
@@ -339,7 +343,6 @@ export function exportarSegovPDF(
       marcados.splice(posicao, 0, item);
     });
     const chavesAgrupadas = agrupar ? comissoesDoGrupo.map(d => d.key) : [];
-    const porLinha = Math.max(1, Math.floor(innerW / stepW));
 
     // Mesma regra das telas: reprovação em qualquer comissão (1/2/3 ou Especial)
     // já pinta tudo de vermelho; aprovação nas três sequenciais OU na Especial
@@ -369,6 +372,15 @@ export function exportarSegovPDF(
       !!fluxo["resultadoFinal"]?.done &&
       fluxo["resultadoFinal"]?.data?.resultado === "aprovado" &&
       (!!chaveSancaoIncompleta || (!fluxo["sancaoVeto"]?.done && !fluxo["promulgacao"]?.done));
+
+    // O fluxo nunca quebra em duas fileiras dentro do cartão (a "sobra"
+    // solta parecia outro item) — cada proposição encolhe o próprio passo
+    // (nunca alarga além do padrão STEP_W_MAX) o quanto precisar pra caber
+    // todos os nós numa fileira só, sem nunca ultrapassar a largura do
+    // cartão.
+    const totalPassos = marcados.length + (aguardandoSancao ? 1 : 0);
+    const stepW = totalPassos > 0 ? Math.min(STEP_W_MAX, innerW / totalPassos) : STEP_W_MAX;
+    const porLinha = Math.max(1, totalPassos);
 
     // A fonte precisa estar definida ANTES de medir/quebrar o texto.
     doc.setFont("helvetica", "normal");
