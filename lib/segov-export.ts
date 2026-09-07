@@ -517,15 +517,18 @@ export function exportarSegovPDF(
       // (Se não houver nenhuma do Executivo, a seção de vereadores é a
       // primeira e não força página em branco antes dela.)
       if (!primeiraSecao) y = novaPagina();
-      else if (y + 22 + 60 > H - 20) y = novaPagina();
+      else if (y + 26 + 60 > H - 20) y = novaPagina();
 
-      doc.setFillColor(238, 238, 238);
-      doc.rect(margin, y, cw, 18, "F");
+      // Mesmo azul do cabeçalho do relatório — faixa de seção precisa se
+      // destacar bem mais que um simples divisor cinza, já que é o que
+      // separa Executivo de Vereador numa lista com dezenas de itens.
+      doc.setFillColor(37, 99, 235);
+      doc.rect(margin, y, cw, 22, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(70, 70, 70);
-      doc.text(g === 0 ? "Poder Executivo - Proposições" : "Vereador - Proposições", margin + 7, y + 12.5);
-      y += 24;
+      doc.setFontSize(11);
+      doc.setTextColor(255, 255, 255);
+      doc.text((g === 0 ? "PODER EXECUTIVO — PROPOSIÇÕES" : "VEREADOR — PROPOSIÇÕES"), margin + 9, y + 14.5);
+      y += 28;
     }
 
     if (y + cardH > H - 20) y = novaPagina();
