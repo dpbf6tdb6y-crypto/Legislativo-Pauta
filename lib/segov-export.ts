@@ -465,8 +465,10 @@ export function exportarSegovPDF(
     // passo a passo — ver marcos.map em app/dashboard/segov/page.tsx, mesma
     // lógica replicada aqui.
     const marcoProtocolo = !!fluxo["protocolado"]?.done;
-    const marcoComissoes = todasComissoesAprovadas || algumaComissaoReprovada
-      || CHAVES_COMISSAO.some(k => fluxo[k]?.done) || !!fluxo["comissaoEspecial"]?.done;
+    // Só conta como "feito" quando a fase de comissões está de fato
+    // concluída (aprovado por todas as que precisam, ou reprovado por
+    // alguma) — mesmo corte da tela (ver page.tsx).
+    const marcoComissoes = todasComissoesAprovadas || algumaComissaoReprovada;
     const marcoVotacao = !!fluxo["resultadoFinal"]?.done;
     const marcoSancao = (fluxo["sancaoVeto"]?.done && !!fluxo["sancaoVeto"]?.data?.resultado)
       || (fluxo["promulgacao"]?.done && !!fluxo["promulgacao"]?.data?.resultado);

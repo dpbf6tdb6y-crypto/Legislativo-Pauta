@@ -617,8 +617,11 @@ export default function SeggovPage() {
             // encomenda) — calculado direto do fluxo, sem depender da ordem
             // dos segmentos.
             const marcoProtocolo = !!fluxo['protocolado']?.done
+            // Só conta como "feito" quando a fase de comissões está de fato
+            // concluída (aprovado por todas as que precisam, ou reprovado
+            // por alguma) — não basta a primeira comissão ter sido marcada,
+            // senão o marco acende verde com o processo ainda em andamento.
             const marcoComissoes = todasComissoesAprovadas || algumaComissaoReprovada
-              || CHAVES_COMISSAO.some(k => fluxo[k]?.done) || !!fluxo['comissaoEspecial']?.done
             const marcoVotacao = !!fluxo['resultadoFinal']?.done
             const marcoSancao = (fluxo['sancaoVeto']?.done && !!fluxo['sancaoVeto']?.data?.resultado)
               || (fluxo['promulgacao']?.done && !!fluxo['promulgacao']?.data?.resultado)
