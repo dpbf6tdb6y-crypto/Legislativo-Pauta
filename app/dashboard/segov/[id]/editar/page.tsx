@@ -43,6 +43,20 @@ const FLUXO_DEF: StepDef[] = [
   { key: 'protocolado',        label: 'Protocolado',                    labelCurto: 'Prot.',      tipo: 'simples' },
   { key: 'pautado',            label: 'Pautado',                        labelCurto: 'Pautado',    tipo: 'data' },
   { key: 'retiradoPauta',      label: 'Retirado de Pauta',              labelCurto: 'Retirado',   tipo: 'nome1' },
+  // Uma proposição pode ser pautada e retirada várias vezes seguidas — em
+  // vez de uma lista dinâmica (exigiria reescrever fileiras/reposição por
+  // data pra um "N" variável), 5 ciclos fixos, no mesmo padrão já usado
+  // pra 1ª/2ª Votação. A tela só revela o próximo ciclo depois que o
+  // anterior for marcado (ver quad2Grupos), então continua parecendo um
+  // único par de campos pra quem nunca precisou de mais de um.
+  { key: 'pautado2',           label: 'Pautado (2ª vez)',               labelCurto: 'Pautado 2ª', tipo: 'data' },
+  { key: 'retiradoPauta2',     label: 'Retirado de Pauta (2ª vez)',     labelCurto: 'Retirado 2ª',tipo: 'nome1' },
+  { key: 'pautado3',           label: 'Pautado (3ª vez)',               labelCurto: 'Pautado 3ª', tipo: 'data' },
+  { key: 'retiradoPauta3',     label: 'Retirado de Pauta (3ª vez)',     labelCurto: 'Retirado 3ª',tipo: 'nome1' },
+  { key: 'pautado4',           label: 'Pautado (4ª vez)',               labelCurto: 'Pautado 4ª', tipo: 'data' },
+  { key: 'retiradoPauta4',     label: 'Retirado de Pauta (4ª vez)',     labelCurto: 'Retirado 4ª',tipo: 'nome1' },
+  { key: 'pautado5',           label: 'Pautado (5ª vez)',               labelCurto: 'Pautado 5ª', tipo: 'data' },
+  { key: 'retiradoPauta5',     label: 'Retirado de Pauta (5ª vez)',     labelCurto: 'Retirado 5ª',tipo: 'nome1' },
   { key: 'comissao1',          label: 'Comissão 1',                     labelCurto: 'Com. 1',     tipo: 'comissao' },
   { key: 'comissao2',          label: 'Comissão 2',                     labelCurto: 'Com. 2',     tipo: 'comissao' },
   { key: 'comissao3',          label: 'Comissão 3',                     labelCurto: 'Com. 3',     tipo: 'comissao' },
@@ -87,7 +101,11 @@ const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
  * nem Votação/Emenda: a ordem dessas é regra do processo legislativo, não
  * coincidência de data, e mexer nelas quebraria o colchete do "Parecer
  * Conjunto" (que assume Com. 1/2/3 sempre juntas). */
-const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio', 'dispensaParecer', 'pedidoVista', 'pedidoAdiamento']
+const CHAVES_REPOSICIONAR_POR_DATA = [
+  'retiradoPauta', 'pautado2', 'retiradoPauta2', 'pautado3', 'retiradoPauta3',
+  'pautado4', 'retiradoPauta4', 'pautado5', 'retiradoPauta5',
+  'dispensaIntersticio', 'dispensaParecer', 'pedidoVista', 'pedidoAdiamento',
+]
 /** Etapas em que dá pra informar o(s) vereador(es) que propuseram — hoje só
  * Emenda(s), que pode ter um autor só ou vários. */
 const CHAVES_COM_AUTORES = new Set(['emenda'])
@@ -95,7 +113,7 @@ const CHAVES_COM_AUTORES = new Set(['emenda'])
  * Retirado de Pauta pode partir do prefeito/vice, não só de um vereador.
  * As demais (Comissão Conjunta, Dispensa de Interstício, Pedido de Vista/
  * Adiamento) continuam só com vereadores. */
-const CHAVES_NOME1_COM_EXECUTIVO = new Set(['retiradoPauta'])
+const CHAVES_NOME1_COM_EXECUTIVO = new Set(['retiradoPauta', 'retiradoPauta2', 'retiradoPauta3', 'retiradoPauta4', 'retiradoPauta5'])
 /** "SIGLA — Nome completo da comissão" quando ambos existem, pra não perder
  * a referência de qual comissão é quando só a sigla aparecia. */
 function nomeComissao(com: any): string | undefined {
@@ -502,7 +520,10 @@ export default function EditarSeggovPage() {
   // distorcia quando tudo era uma fileira única.
   const FASE_DA_CHAVE: Record<string, string> = {
     protocolado: 'Protocolo', pautado: 'Protocolo',
+    pautado2: 'Protocolo', pautado3: 'Protocolo', pautado4: 'Protocolo', pautado5: 'Protocolo',
     retiradoPauta: 'Retirado de pauta',
+    retiradoPauta2: 'Retirado de pauta', retiradoPauta3: 'Retirado de pauta',
+    retiradoPauta4: 'Retirado de pauta', retiradoPauta5: 'Retirado de pauta',
     comissao1: 'Comissões', comissao2: 'Comissões', comissao3: 'Comissões',
     comissaoEspecial: 'Comissões', comissaoConjunta: 'Comissões', dispensaParecer: 'Comissões',
     dispensaIntersticio: 'Situação especial', pedidoVista: 'Situação especial', pedidoAdiamento: 'Situação especial',
@@ -537,7 +558,7 @@ export default function EditarSeggovPage() {
     const negativoLocal = !!step.data?.resultado && NEGATIVOS.has(step.data.resultado)
     // Retirado de Pauta é sempre laranja, a mesma cor do status "Retirado" —
     // independe do resto do fluxo estar verde/vermelho/azul.
-    const isRetirado = step.key === 'retiradoPauta'
+    const isRetirado = step.key.startsWith('retiradoPauta')
     return (
       <div className="flex flex-col items-center" style={{ width: '84px' }}>
         <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
@@ -983,8 +1004,22 @@ export default function EditarSeggovPage() {
     { titulo: 'Início', keys: ['protocolado', 'pautado'] },
     { titulo: 'Comissões', keys: ['comissao1', 'comissao2', 'comissao3', 'comissaoEspecial', 'comissaoConjunta', 'dispensaParecer'] },
   ]
+  // Pautado 2ª/3ª/4ª/5ª vez e suas retiradas só aparecem na lista depois que
+  // o ciclo anterior for marcado — pra quem nunca precisou de mais de uma
+  // pauta/retirada, essa lista continua exatamente como antes.
   const quad2Grupos = [
-    { titulo: 'Situações especiais', keys: ['retiradoPauta', 'dispensaIntersticio', 'pedidoVista', 'pedidoAdiamento'] },
+    { titulo: 'Situações especiais', keys: [
+      'retiradoPauta',
+      ...(fluxo['retiradoPauta']?.done ? ['pautado2'] : []),
+      ...(fluxo['pautado2']?.done ? ['retiradoPauta2'] : []),
+      ...(fluxo['retiradoPauta2']?.done ? ['pautado3'] : []),
+      ...(fluxo['pautado3']?.done ? ['retiradoPauta3'] : []),
+      ...(fluxo['retiradoPauta3']?.done ? ['pautado4'] : []),
+      ...(fluxo['pautado4']?.done ? ['retiradoPauta4'] : []),
+      ...(fluxo['retiradoPauta4']?.done ? ['pautado5'] : []),
+      ...(fluxo['pautado5']?.done ? ['retiradoPauta5'] : []),
+      'dispensaIntersticio', 'pedidoVista', 'pedidoAdiamento',
+    ] },
   ]
   const quad3Grupos = [
     { titulo: 'Emendas', keys: ['emenda', 'emendaVotacao1', 'emendaVotacao2', 'emendaResultado'] },

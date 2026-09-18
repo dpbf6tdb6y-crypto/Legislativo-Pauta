@@ -15,6 +15,14 @@ const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
   { key: 'pautado',             labelCurto: 'Pautado'  },
   { key: 'retiradoPauta',       labelCurto: 'Retirado' },
+  { key: 'pautado2',            labelCurto: 'Pautado 2ª' },
+  { key: 'retiradoPauta2',      labelCurto: 'Retirado 2ª' },
+  { key: 'pautado3',            labelCurto: 'Pautado 3ª' },
+  { key: 'retiradoPauta3',      labelCurto: 'Retirado 3ª' },
+  { key: 'pautado4',            labelCurto: 'Pautado 4ª' },
+  { key: 'retiradoPauta4',      labelCurto: 'Retirado 4ª' },
+  { key: 'pautado5',            labelCurto: 'Pautado 5ª' },
+  { key: 'retiradoPauta5',      labelCurto: 'Retirado 5ª' },
   { key: 'comissao1',           labelCurto: 'Com. 1'   },
   { key: 'comissao2',           labelCurto: 'Com. 2'   },
   { key: 'comissao3',           labelCurto: 'Com. 3'   },
@@ -51,13 +59,20 @@ const OPCOES_POR_CHAVE: Record<string, { valores: [string, string]; labels: [str
 const CHAVES_SANCAO = ['sancaoVeto', 'promulgacao']
 // Etapas que podem acontecer a qualquer momento da tramitação — reposiciona
 // pela DATA real delas em vez da ordem fixa do array (ver editar/page.tsx).
-const CHAVES_REPOSICIONAR_POR_DATA = ['retiradoPauta', 'dispensaIntersticio', 'dispensaParecer', 'pedidoVista', 'pedidoAdiamento']
+const CHAVES_REPOSICIONAR_POR_DATA = [
+  'retiradoPauta', 'pautado2', 'retiradoPauta2', 'pautado3', 'retiradoPauta3',
+  'pautado4', 'retiradoPauta4', 'pautado5', 'retiradoPauta5',
+  'dispensaIntersticio', 'dispensaParecer', 'pedidoVista', 'pedidoAdiamento',
+]
 // Classificação de cada etapa numa fase do processo — usada pelo fluxo
 // "detalhado" (ver editar/page.tsx), que agrupa as etapas por fase com
 // legenda em texto completo, em vez de siglas soltas numa fileira só.
 const FASE_DA_CHAVE: Record<string, string> = {
   protocolado: 'Protocolo', pautado: 'Protocolo',
+  pautado2: 'Protocolo', pautado3: 'Protocolo', pautado4: 'Protocolo', pautado5: 'Protocolo',
   retiradoPauta: 'Retirado de pauta',
+  retiradoPauta2: 'Retirado de pauta', retiradoPauta3: 'Retirado de pauta',
+  retiradoPauta4: 'Retirado de pauta', retiradoPauta5: 'Retirado de pauta',
   comissao1: 'Comissões', comissao2: 'Comissões', comissao3: 'Comissões',
   comissaoEspecial: 'Comissões', comissaoConjunta: 'Comissões', dispensaParecer: 'Comissões',
   dispensaIntersticio: 'Situação especial', pedidoVista: 'Situação especial', pedidoAdiamento: 'Situação especial',
@@ -656,7 +671,7 @@ export default function SeggovPage() {
               const negativoLocal = !!step.data?.resultado && NEGATIVOS.has(step.data.resultado)
               // Retirado de Pauta é sempre laranja, a mesma cor do status
               // "Retirado" — independe do resto do fluxo estar verde/vermelho/azul.
-              const isRetirado = step.key === 'retiradoPauta'
+              const isRetirado = step.key.startsWith('retiradoPauta')
               return (
                 <div className="flex flex-col items-center" style={{ width: '84px' }}>
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
