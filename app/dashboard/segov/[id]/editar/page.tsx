@@ -49,14 +49,17 @@ const FLUXO_DEF: StepDef[] = [
   // pra 1ª/2ª Votação. A tela só revela o próximo ciclo depois que o
   // anterior for marcado (ver quad2Grupos), então continua parecendo um
   // único par de campos pra quem nunca precisou de mais de um.
-  { key: 'pautado2',           label: 'Pautado (2ª vez)',               labelCurto: 'Pautado 2ª', tipo: 'data' },
-  { key: 'retiradoPauta2',     label: 'Retirado de Pauta (2ª vez)',     labelCurto: 'Retirado 2ª',tipo: 'nome1' },
-  { key: 'pautado3',           label: 'Pautado (3ª vez)',               labelCurto: 'Pautado 3ª', tipo: 'data' },
-  { key: 'retiradoPauta3',     label: 'Retirado de Pauta (3ª vez)',     labelCurto: 'Retirado 3ª',tipo: 'nome1' },
-  { key: 'pautado4',           label: 'Pautado (4ª vez)',               labelCurto: 'Pautado 4ª', tipo: 'data' },
-  { key: 'retiradoPauta4',     label: 'Retirado de Pauta (4ª vez)',     labelCurto: 'Retirado 4ª',tipo: 'nome1' },
-  { key: 'pautado5',           label: 'Pautado (5ª vez)',               labelCurto: 'Pautado 5ª', tipo: 'data' },
-  { key: 'retiradoPauta5',     label: 'Retirado de Pauta (5ª vez)',     labelCurto: 'Retirado 5ª',tipo: 'nome1' },
+  // labelCurto sem o ordinal de propósito — no fluxo repete "Pautado"/
+  // "Retirado" igual ao 1º ciclo (o "(2ª vez)" só ajuda a achar o campo
+  // certo na lista de edição, ver label completo abaixo).
+  { key: 'pautado2',           label: 'Pautado (2ª vez)',               labelCurto: 'Pautado',    tipo: 'data' },
+  { key: 'retiradoPauta2',     label: 'Retirado de Pauta (2ª vez)',     labelCurto: 'Retirado',   tipo: 'nome1' },
+  { key: 'pautado3',           label: 'Pautado (3ª vez)',               labelCurto: 'Pautado',    tipo: 'data' },
+  { key: 'retiradoPauta3',     label: 'Retirado de Pauta (3ª vez)',     labelCurto: 'Retirado',   tipo: 'nome1' },
+  { key: 'pautado4',           label: 'Pautado (4ª vez)',               labelCurto: 'Pautado',    tipo: 'data' },
+  { key: 'retiradoPauta4',     label: 'Retirado de Pauta (4ª vez)',     labelCurto: 'Retirado',   tipo: 'nome1' },
+  { key: 'pautado5',           label: 'Pautado (5ª vez)',               labelCurto: 'Pautado',    tipo: 'data' },
+  { key: 'retiradoPauta5',     label: 'Retirado de Pauta (5ª vez)',     labelCurto: 'Retirado',   tipo: 'nome1' },
   { key: 'comissao1',          label: 'Comissão 1',                     labelCurto: 'Com. 1',     tipo: 'comissao' },
   { key: 'comissao2',          label: 'Comissão 2',                     labelCurto: 'Com. 2',     tipo: 'comissao' },
   { key: 'comissao3',          label: 'Comissão 3',                     labelCurto: 'Com. 3',     tipo: 'comissao' },
@@ -114,11 +117,6 @@ const CHAVES_COM_AUTORES = new Set(['emenda'])
  * As demais (Comissão Conjunta, Dispensa de Interstício, Pedido de Vista/
  * Adiamento) continuam só com vereadores. */
 const CHAVES_NOME1_COM_EXECUTIVO = new Set(['retiradoPauta', 'retiradoPauta2', 'retiradoPauta3', 'retiradoPauta4', 'retiradoPauta5'])
-// "Pautado" só interessa mostrar no fluxo na 1ª vez — a 2ª/3ª/4ª/5ª vez continua
-// preenchível (pra saber se a proposição já voltou a tramitar depois de uma
-// retirada, ver retiradaAindaValendo em lib/segov-status.ts), mas não vira
-// nó visível: "Retirado" já é o fato relevante pra quem olha o fluxo.
-const CHAVES_PAUTADO_OCULTAS_NO_FLUXO = new Set(['pautado2', 'pautado3', 'pautado4', 'pautado5'])
 /** "SIGLA — Nome completo da comissão" quando ambos existem, pra não perder
  * a referência de qual comissão é quando só a sigla aparecia. */
 function nomeComissao(com: any): string | undefined {
@@ -406,7 +404,7 @@ export default function EditarSeggovPage() {
       // Sanção/Veto e Promulgação marcados mas sem resultado ainda são só um
       // caminho reservado (igual comissão sem parecer) — não entram no fluxo
       // como nó normal, viram a bolinha fantasma abaixo até ter resultado.
-      .filter(d => fluxo[d.key]?.done && !(d.tipo === 'sancao' && !fluxo[d.key]?.data?.resultado) && !CHAVES_PAUTADO_OCULTAS_NO_FLUXO.has(d.key))
+      .filter(d => fluxo[d.key]?.done && !(d.tipo === 'sancao' && !fluxo[d.key]?.data?.resultado))
       .map(d => ({ ...d, ...(fluxo[d.key] || {}) }))
 
     // Reposiciona as etapas "livres" (ver CHAVES_REPOSICIONAR_POR_DATA) pela

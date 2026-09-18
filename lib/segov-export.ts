@@ -52,14 +52,16 @@ const FLUXO_DEF_EXPORT = [
   { key: 'protocolado',         labelCurto: 'Prot.'      },
   { key: 'pautado',             labelCurto: 'Pautado'    },
   { key: 'retiradoPauta',       labelCurto: 'Retirado'   },
-  { key: 'pautado2',            labelCurto: 'Pautado 2ª' },
-  { key: 'retiradoPauta2',      labelCurto: 'Retirado 2ª'},
-  { key: 'pautado3',            labelCurto: 'Pautado 3ª' },
-  { key: 'retiradoPauta3',      labelCurto: 'Retirado 3ª'},
-  { key: 'pautado4',            labelCurto: 'Pautado 4ª' },
-  { key: 'retiradoPauta4',      labelCurto: 'Retirado 4ª'},
-  { key: 'pautado5',            labelCurto: 'Pautado 5ª' },
-  { key: 'retiradoPauta5',      labelCurto: 'Retirado 5ª'},
+  // labelCurto sem o ordinal de propósito — no fluxo repete "Pautado"/
+  // "Retirado" igual ao 1º ciclo.
+  { key: 'pautado2',            labelCurto: 'Pautado'    },
+  { key: 'retiradoPauta2',      labelCurto: 'Retirado'   },
+  { key: 'pautado3',            labelCurto: 'Pautado'    },
+  { key: 'retiradoPauta3',      labelCurto: 'Retirado'   },
+  { key: 'pautado4',            labelCurto: 'Pautado'    },
+  { key: 'retiradoPauta4',      labelCurto: 'Retirado'   },
+  { key: 'pautado5',            labelCurto: 'Pautado'    },
+  { key: 'retiradoPauta5',      labelCurto: 'Retirado'   },
   { key: 'comissao1',           labelCurto: 'Com. 1'     },
   { key: 'comissao2',           labelCurto: 'Com. 2'     },
   { key: 'comissao3',           labelCurto: 'Com. 3'     },
@@ -94,11 +96,6 @@ const CHAVES_REPOSICIONAR_POR_DATA = [
   "pautado4", "retiradoPauta4", "pautado5", "retiradoPauta5",
   "dispensaIntersticio", "dispensaParecer", "pedidoVista", "pedidoAdiamento",
 ];
-// "Pautado" só interessa mostrar no fluxo na 1ª vez — a 2ª/3ª/4ª/5ª vez
-// continua guardada (pra saber se já voltou a tramitar depois de uma
-// retirada, ver retiradaAindaValendo em lib/segov-status.ts), mas não vira
-// nó visível no PDF: "Retirado" já é o fato relevante pra quem lê.
-const CHAVES_PAUTADO_OCULTAS_NO_FLUXO = new Set(["pautado2", "pautado3", "pautado4", "pautado5"]);
 const OPCOES_LABEL_PDF: Record<string, Record<string, string>> = {
   sancaoVeto: { sancionado: "Sancionado", vetado: "Vetado" },
   promulgacao: { promulgado: "Promulgado", vetado: "Vetado" },
@@ -338,7 +335,6 @@ export function exportarSegovPDF(
       // caminho reservado — não entram como nó normal, viram a bolinha
       // fantasma mais abaixo.
       if (CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado) return false;
-      if (CHAVES_PAUTADO_OCULTAS_NO_FLUXO.has(d.key)) return false;
       if (agrupar && d.key === "comissaoConjunta") return false;
       return true;
     });
