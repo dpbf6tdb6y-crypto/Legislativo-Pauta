@@ -52,6 +52,14 @@ const FLUXO_DEF_EXPORT = [
   { key: 'protocolado',         labelCurto: 'Prot.'      },
   { key: 'pautado',             labelCurto: 'Pautado'    },
   { key: 'retiradoPauta',       labelCurto: 'Retirado'   },
+  { key: 'pautado2',            labelCurto: 'Pautado 2ª' },
+  { key: 'retiradoPauta2',      labelCurto: 'Retirado 2ª'},
+  { key: 'pautado3',            labelCurto: 'Pautado 3ª' },
+  { key: 'retiradoPauta3',      labelCurto: 'Retirado 3ª'},
+  { key: 'pautado4',            labelCurto: 'Pautado 4ª' },
+  { key: 'retiradoPauta4',      labelCurto: 'Retirado 4ª'},
+  { key: 'pautado5',            labelCurto: 'Pautado 5ª' },
+  { key: 'retiradoPauta5',      labelCurto: 'Retirado 5ª'},
   { key: 'comissao1',           labelCurto: 'Com. 1'     },
   { key: 'comissao2',           labelCurto: 'Com. 2'     },
   { key: 'comissao3',           labelCurto: 'Com. 3'     },
@@ -81,7 +89,11 @@ const FLUXO_DEF_EXPORT = [
 const CHAVES_SANCAO = ["sancaoVeto", "promulgacao"];
 // Etapas que podem acontecer a qualquer momento da tramitação — reposiciona
 // pela DATA real delas em vez da ordem fixa do array (ver editar/page.tsx).
-const CHAVES_REPOSICIONAR_POR_DATA = ["retiradoPauta", "dispensaIntersticio", "dispensaParecer", "pedidoVista", "pedidoAdiamento"];
+const CHAVES_REPOSICIONAR_POR_DATA = [
+  "retiradoPauta", "pautado2", "retiradoPauta2", "pautado3", "retiradoPauta3",
+  "pautado4", "retiradoPauta4", "pautado5", "retiradoPauta5",
+  "dispensaIntersticio", "dispensaParecer", "pedidoVista", "pedidoAdiamento",
+];
 const OPCOES_LABEL_PDF: Record<string, Record<string, string>> = {
   sancaoVeto: { sancionado: "Sancionado", vetado: "Vetado" },
   promulgacao: { promulgado: "Promulgado", vetado: "Vetado" },
@@ -761,7 +773,7 @@ export function exportarSegovPDF(
           const negativoLocal = !!p.sd?.data?.resultado && NEGATIVOS.has(p.sd.data.resultado);
           // Retirado de Pauta é sempre laranja, a mesma cor do status
           // "Retirado" — independe do resto do fluxo.
-          const isRetirado = p.step.key === "retiradoPauta";
+          const isRetirado = p.step.key.startsWith("retiradoPauta");
 
           let nr = 22, ng = 163, nb = 74;
           if (isRetirado) { nr = 249; ng = 115; nb = 22; }
