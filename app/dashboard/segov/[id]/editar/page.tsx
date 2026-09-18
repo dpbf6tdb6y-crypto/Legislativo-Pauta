@@ -114,6 +114,11 @@ const CHAVES_COM_AUTORES = new Set(['emenda'])
  * As demais (Comissão Conjunta, Dispensa de Interstício, Pedido de Vista/
  * Adiamento) continuam só com vereadores. */
 const CHAVES_NOME1_COM_EXECUTIVO = new Set(['retiradoPauta', 'retiradoPauta2', 'retiradoPauta3', 'retiradoPauta4', 'retiradoPauta5'])
+// "Pautado" só interessa mostrar no fluxo na 1ª vez — a 2ª/3ª/4ª/5ª vez continua
+// preenchível (pra saber se a proposição já voltou a tramitar depois de uma
+// retirada, ver retiradaAindaValendo em lib/segov-status.ts), mas não vira
+// nó visível: "Retirado" já é o fato relevante pra quem olha o fluxo.
+const CHAVES_PAUTADO_OCULTAS_NO_FLUXO = new Set(['pautado2', 'pautado3', 'pautado4', 'pautado5'])
 /** "SIGLA — Nome completo da comissão" quando ambos existem, pra não perder
  * a referência de qual comissão é quando só a sigla aparecia. */
 function nomeComissao(com: any): string | undefined {
@@ -401,7 +406,7 @@ export default function EditarSeggovPage() {
       // Sanção/Veto e Promulgação marcados mas sem resultado ainda são só um
       // caminho reservado (igual comissão sem parecer) — não entram no fluxo
       // como nó normal, viram a bolinha fantasma abaixo até ter resultado.
-      .filter(d => fluxo[d.key]?.done && !(d.tipo === 'sancao' && !fluxo[d.key]?.data?.resultado))
+      .filter(d => fluxo[d.key]?.done && !(d.tipo === 'sancao' && !fluxo[d.key]?.data?.resultado) && !CHAVES_PAUTADO_OCULTAS_NO_FLUXO.has(d.key))
       .map(d => ({ ...d, ...(fluxo[d.key] || {}) }))
 
     // Reposiciona as etapas "livres" (ver CHAVES_REPOSICIONAR_POR_DATA) pela

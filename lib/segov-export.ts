@@ -94,6 +94,11 @@ const CHAVES_REPOSICIONAR_POR_DATA = [
   "pautado4", "retiradoPauta4", "pautado5", "retiradoPauta5",
   "dispensaIntersticio", "dispensaParecer", "pedidoVista", "pedidoAdiamento",
 ];
+// "Pautado" só interessa mostrar no fluxo na 1ª vez — a 2ª/3ª/4ª/5ª vez
+// continua guardada (pra saber se já voltou a tramitar depois de uma
+// retirada, ver retiradaAindaValendo em lib/segov-status.ts), mas não vira
+// nó visível no PDF: "Retirado" já é o fato relevante pra quem lê.
+const CHAVES_PAUTADO_OCULTAS_NO_FLUXO = new Set(["pautado2", "pautado3", "pautado4", "pautado5"]);
 const OPCOES_LABEL_PDF: Record<string, Record<string, string>> = {
   sancaoVeto: { sancionado: "Sancionado", vetado: "Vetado" },
   promulgacao: { promulgado: "Promulgado", vetado: "Vetado" },
@@ -196,14 +201,14 @@ export function exportarSegovPDF(
   const innerW = cw - pad * 2;
   const ementaLH = 13;
   const nodeR = 6;
-  // Passo MÁXIMO das colunas do fluxo detalhado (nó a nó, com nome completo
-  // da comissão) — só usado quando detalhado=true; o resumido não desenha
-  // essa grade, ver marcos4 mais abaixo. O fluxo nunca pode quebrar linha
-  // dentro do cartão (ficava com uma "sobra" solta, parecendo outro item) —
-  // cada proposição calcula o próprio passo, encolhendo esse máximo o
-  // quanto precisar pra caber todos os passos numa fileira só, sem nunca
-  // ultrapassar a largura do cartão.
+  // Passo das colunas do fluxo detalhado (nó a nó, com nome completo da
+  // comissão) — só usado quando detalhado=true; o resumido não desenha essa
+  // grade, ver marcos4 mais abaixo. Cada proposição encolhe o próprio passo
+  // (entre esses dois limites) pra tentar caber tudo numa fileira só;
+  // quando nem o mínimo resolve, quebra pra uma segunda fileira em vez de
+  // espremer os nós a ponto de virar ilegível.
   const STEP_W_MAX = 64;
+  const STEP_W_MIN = 34;
   const chipLH = 14;
   const alturaCabecalho = 40;
   const topoConteudo = alturaCabecalho + 10;
@@ -333,6 +338,7 @@ export function exportarSegovPDF(
       // caminho reservado — não entram como nó normal, viram a bolinha
       // fantasma mais abaixo.
       if (CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado) return false;
+      if (CHAVES_PAUTADO_OCULTAS_NO_FLUXO.has(d.key)) return false;
       if (agrupar && d.key === "comissaoConjunta") return false;
       return true;
     });
@@ -385,14 +391,13 @@ export function exportarSegovPDF(
       fluxo["resultadoFinal"]?.data?.resultado === "aprovado" &&
       (!!chaveSancaoIncompleta || (!fluxo["sancaoVeto"]?.done && !fluxo["promulgacao"]?.done));
 
-    // O fluxo nunca quebra em duas fileiras dentro do cartão (a "sobra"
-    // solta parecia outro item) — cada proposição encolhe o próprio passo
-    // (nunca alarga além do padrão STEP_W_MAX) o quanto precisar pra caber
-    // todos os nós numa fileira só, sem nunca ultrapassar a largura do
-    // cartão.
+    // Cada proposição encolhe o próprio passo (nunca alarga além do padrão
+    // STEP_W_MAX) pra tentar caber tudo numa fileira só — mas só até o
+    // limite de legibilidade STEP_W_MIN; passando disso, quebra pra uma
+    // segunda fileira em vez de espremer os nós a ponto de virar ilegível.
     const totalPassos = marcados.length + (aguardandoSancao ? 1 : 0);
-    const stepW = totalPassos > 0 ? Math.min(STEP_W_MAX, innerW / totalPassos) : STEP_W_MAX;
-    const porLinha = Math.max(1, totalPassos);
+    const stepW = totalPassos > 0 ? Math.max(STEP_W_MIN, Math.min(STEP_W_MAX, innerW / totalPassos)) : STEP_W_MAX;
+    const porLinha = Math.max(1, Math.floor(innerW / stepW));
 
     // A fonte precisa estar definida ANTES de medir/quebrar o texto.
     doc.setFont("helvetica", "normal");
