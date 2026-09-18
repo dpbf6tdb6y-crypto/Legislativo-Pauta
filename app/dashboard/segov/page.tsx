@@ -71,10 +71,14 @@ const CHAVES_REPOSICIONAR_POR_DATA = [
 // legenda em texto completo, em vez de siglas soltas numa fileira só.
 const FASE_DA_CHAVE: Record<string, string> = {
   protocolado: 'Protocolo', pautado: 'Protocolo',
-  pautado2: 'Protocolo', pautado3: 'Protocolo', pautado4: 'Protocolo', pautado5: 'Protocolo',
-  retiradoPauta: 'Retirado de pauta',
-  retiradoPauta2: 'Retirado de pauta', retiradoPauta3: 'Retirado de pauta',
-  retiradoPauta4: 'Retirado de pauta', retiradoPauta5: 'Retirado de pauta',
+  // Pautado 2ª/3ª/4ª/5ª vez entra na mesma fase de "Retirado de pauta" (não
+  // em "Protocolo") — sempre vem logo depois de uma retirada, então os dois
+  // ficam juntos num bloco só em vez de alternar blocos repetidos.
+  retiradoPauta: 'Retirado de pauta', pautado2: 'Retirado de pauta',
+  retiradoPauta2: 'Retirado de pauta', pautado3: 'Retirado de pauta',
+  retiradoPauta3: 'Retirado de pauta', pautado4: 'Retirado de pauta',
+  retiradoPauta4: 'Retirado de pauta', pautado5: 'Retirado de pauta',
+  retiradoPauta5: 'Retirado de pauta',
   comissao1: 'Comissões', comissao2: 'Comissões', comissao3: 'Comissões',
   comissaoEspecial: 'Comissões', comissaoConjunta: 'Comissões', dispensaParecer: 'Comissões',
   dispensaIntersticio: 'Situação especial', pedidoVista: 'Situação especial', pedidoAdiamento: 'Situação especial',
@@ -864,7 +868,7 @@ export default function SeggovPage() {
                     <div className="flex flex-wrap items-start" style={{ gap: '0 0', rowGap: '20px' }}>
                       {blocosFase.map((bloco, bi) => (
                         <div key={bi} className={`flex flex-col flex-shrink-0 ${bi > 0 ? 'pl-4 ml-4 border-l border-gray-200' : ''}`}>
-                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2 whitespace-nowrap">{bloco.fase}</p>
+                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2 whitespace-nowrap text-center">{bloco.fase}</p>
                           <div className="flex items-start pt-4" style={{ gap: '12px' }}>
                             {bloco.segs.map((seg, i) => (
                               <div key={i}>
