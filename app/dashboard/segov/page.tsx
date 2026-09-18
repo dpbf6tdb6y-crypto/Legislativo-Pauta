@@ -64,6 +64,11 @@ const CHAVES_REPOSICIONAR_POR_DATA = [
   'pautado4', 'retiradoPauta4', 'pautado5', 'retiradoPauta5',
   'dispensaIntersticio', 'dispensaParecer', 'pedidoVista', 'pedidoAdiamento',
 ]
+// "Pautado" só interessa mostrar no fluxo na 1ª vez — a 2ª/3ª/4ª/5ª vez
+// continua guardada (pra saber se já voltou a tramitar depois de uma
+// retirada, ver retiradaAindaValendo em lib/segov-status.ts), mas não vira
+// nó visível: "Retirado" já é o fato relevante pra quem olha o fluxo.
+const CHAVES_PAUTADO_OCULTAS_NO_FLUXO = new Set(['pautado2', 'pautado3', 'pautado4', 'pautado5'])
 // Classificação de cada etapa numa fase do processo — usada pelo fluxo
 // "detalhado" (ver editar/page.tsx), que agrupa as etapas por fase com
 // legenda em texto completo, em vez de siglas soltas numa fileira só.
@@ -533,7 +538,7 @@ export default function SeggovPage() {
               // Sanção/Veto e Promulgação marcadas mas sem resultado ainda são
               // só um caminho reservado — não entram como nó normal, viram a
               // bolinha fantasma mais abaixo.
-              .filter(d => fluxo[d.key]?.done && !(CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado))
+              .filter(d => fluxo[d.key]?.done && !(CHAVES_SANCAO.includes(d.key) && !fluxo[d.key]?.data?.resultado) && !CHAVES_PAUTADO_OCULTAS_NO_FLUXO.has(d.key))
               .map(d => ({ ...d, doneAt: fluxo[d.key]?.doneAt, data: fluxo[d.key]?.data }))
             // Reposiciona as etapas "livres" (ver CHAVES_REPOSICIONAR_POR_DATA)
             // pela data real, mesclando-as entre as fixas (que mantêm a ordem
