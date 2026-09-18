@@ -432,15 +432,28 @@ export default function SeggovPage() {
             Limpar
           </button>
         )}
-        {/* Anel azul indica visualmente qual filtro está com algo selecionado
-            — antes todos os campos pareciam sempre "vazios", mesmo com filtro
-            aplicado, e só dava pra saber pela contagem de itens. */}
-        <input value={colProposicao} onChange={e => setColProposicao(e.target.value)}
-          placeholder="Buscar nº..."
-          className={`border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 w-20 flex-shrink-0 ${colProposicao ? 'ring-2 ring-blue-400' : ''}`} />
-        <input value={colEmenta} onChange={e => setColEmenta(e.target.value)}
-          placeholder="Buscar palavra na ementa..."
-          className={`border border-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-800/30 flex-1 min-w-[120px] ${colEmenta ? 'ring-2 ring-blue-400' : ''}`} />
+        {/* Buscas mais usadas da tela (principalmente por número) — bem mais
+            destacadas que os outros filtros: campo maior, borda azul e ícone
+            de lupa, em vez de discretas iguais aos demais. Anel azul indica
+            visualmente qual filtro está com algo selecionado — antes todos
+            os campos pareciam sempre "vazios", mesmo com filtro aplicado, e
+            só dava pra saber pela contagem de itens. */}
+        <div className="relative flex-shrink-0">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+          </svg>
+          <input value={colProposicao} onChange={e => setColProposicao(e.target.value)}
+            placeholder="Buscar nº..."
+            className={`border-2 border-blue-200 rounded-lg pl-8 pr-3 py-2 text-sm font-medium focus:outline-none focus:border-blue-400 w-32 ${colProposicao ? 'ring-2 ring-blue-400' : ''}`} />
+        </div>
+        <div className="relative flex-1 min-w-[160px]">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+          </svg>
+          <input value={colEmenta} onChange={e => setColEmenta(e.target.value)}
+            placeholder="Buscar palavra na ementa..."
+            className={`border-2 border-blue-200 rounded-lg pl-8 pr-3 py-2 text-sm font-medium focus:outline-none focus:border-blue-400 w-full ${colEmenta ? 'ring-2 ring-blue-400' : ''}`} />
+        </div>
         <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} className="flex-shrink-0" />
         <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={colVereador} onChange={setColVereador}
           className={`w-32 flex-shrink-0 ${colVereador ? 'ring-2 ring-blue-400' : ''}`} />
@@ -473,23 +486,6 @@ export default function SeggovPage() {
         </div>
       </div>
 
-      {/* Fluxo detalhado saiu da fileira de filtros de cima (que já estava
-          estourando a largura e ficando com barra de rolagem horizontal) —
-          ganhou linha própria só pra ele. Desligado agora é cinza escuro
-          (não mais azul claro), pra ficar bem claro que é um "outro estado",
-          não uma versão fraca do mesmo azul. */}
-      <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center">
-        <button onClick={() => setFlowDetalhado(v => !v)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex-shrink-0 whitespace-nowrap ${
-            flowDetalhado ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-700 text-white hover:bg-gray-800'
-          }`}>
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-          </svg>
-          {flowDetalhado ? 'Fluxo detalhado' : 'Fluxo resumido'}
-        </button>
-      </div>
-
       {/* Cada status agora pode ser marcado junto com outros (ex.: "Em
           análise" + "Aprovado" ao mesmo tempo) — clique de novo pra
           desmarcar. "Todos" volta a mostrar tudo, limpando a seleção. Botões
@@ -513,6 +509,19 @@ export default function SeggovPage() {
             </button>
           )
         })}
+        {/* Bem no final da fileira de status, à direita — sem linha própria
+            (pedido do usuário). Desligado é cinza escuro (não mais azul
+            claro), pra ficar claro que é um "outro estado", não uma versão
+            fraca do mesmo azul. */}
+        <button onClick={() => setFlowDetalhado(v => !v)}
+          className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex-shrink-0 whitespace-nowrap ${
+            flowDetalhado ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-700 text-white hover:bg-gray-800'
+          }`}>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+          </svg>
+          {flowDetalhado ? 'Fluxo detalhado' : 'Fluxo resumido'}
+        </button>
       </div>
       </div>
 
