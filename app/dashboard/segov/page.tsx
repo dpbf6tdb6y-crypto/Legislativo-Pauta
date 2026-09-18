@@ -858,7 +858,10 @@ export default function SeggovPage() {
                 {marcados.length > 0 && flowDetalhado && (
                   <div className="border-t border-blue-100 px-4 pb-4 pt-4 overflow-x-auto cursor-pointer"
                     onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
-                    <div className="flex items-start" style={{ gap: 0 }}>
+                    {/* flex-wrap em vez de rolagem horizontal — fluxos com muitas
+                        fases (retirado de pauta mais de uma vez, emenda, etc.)
+                        quebram pra linha de baixo em vez de precisar arrastar. */}
+                    <div className="flex flex-wrap items-start" style={{ gap: '0 0', rowGap: '20px' }}>
                       {blocosFase.map((bloco, bi) => (
                         <div key={bi} className={`flex flex-col flex-shrink-0 ${bi > 0 ? 'pl-4 ml-4 border-l border-gray-200' : ''}`}>
                           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2 whitespace-nowrap">{bloco.fase}</p>
