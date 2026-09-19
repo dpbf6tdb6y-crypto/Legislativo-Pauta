@@ -115,6 +115,23 @@ def referencia_folha(df):
 RH_REF = referencia_folha(rh)
 print('referência da folha:', RH_REF or '(não identificada)')
 
+try:
+    _dp = json.load(open(os.path.join(BASE, 'dados_despesas.json'), encoding='utf-8'))
+    # linha por mês: [mês(1-12), empenho, liquidação, pagamento] — só do ano
+    # mais recente com dado coletado; "total por mês" é o que foi pedido,
+    # sem detalhar por secretaria.
+    _ano_desp = max(_dp.get('anos', {}), default=None)
+    DESPESAS = {
+        'ano': int(_ano_desp) if _ano_desp else None,
+        'meses': [[int(m), v['emp'], v['liq'], v['pag']]
+                  for m, v in sorted(_dp['anos'][_ano_desp].items(), key=lambda kv: int(kv[0]))]
+                 if _ano_desp else [],
+    }
+    DP_COLETA = _dp.get('coletado_em', '')
+except Exception:
+    DESPESAS, DP_COLETA = {'ano': None, 'meses': []}, ''
+print('despesas carregadas:', len(DESPESAS['meses']), 'meses de', DESPESAS['ano'])
+
 DATA = {
     'rc':  bloco('1'),
     'cap': bloco('2'),
@@ -125,6 +142,8 @@ DATA = {
     'contratos': CONTRATOS,
     'ct_coleta': CT_COLETA,
     'rh_ref': RH_REF,
+    'despesas': DESPESAS,
+    'dp_coleta': DP_COLETA,
     'rh':  [[txt(r['Nome']), txt(r['Cargo']), txt(r['Tipo']), txt(r['Situação']),
              txt(r['Secretaria']), num(r['Vencimentos']), num(r['Bruto']), num(r['Líquido'])]
             for _, r in rh.iterrows()],
@@ -333,6 +352,7 @@ HTML = r'''<!DOCTYPE html>
     <b data-p="ded">Deduções</b>
     <b data-p="ctr">Contratos</b>
     <b data-p="pes">Pessoal</b>
+    <b data-p="desp">Despesas</b>
   </nav>
 </div></header>
 
@@ -342,6 +362,7 @@ HTML = r'''<!DOCTYPE html>
   <div class="pg" id="pg-ded"></div>
   <div class="pg" id="pg-ctr"></div>
   <div class="pg" id="pg-pes"></div>
+  <div class="pg" id="pg-desp"></div>
 </div>
 
 <script>
@@ -938,9 +959,74 @@ function montaPessoal(){
   };
 }
 
+/* ---------------- página de despesas ---------------- */
+function montaDespesas(){
+  const host=document.getElementById('pg-desp');
+  host.innerHTML='';
+  const meses=(DATA.despesas&&DATA.despesas.meses)||[];
+  const ano=DATA.despesas&&DATA.despesas.ano;
+  const topopag=el('div','topopag'); host.appendChild(topopag);
+  const cab=el('div','cab');
+  cab.innerHTML='<div><h1>Despesas</h1><p>Empenho, liquidação e pagamento por mês'
+    +(ano?' · '+ano:'')+' · todas as secretarias</p></div>';
+  topopag.appendChild(cab);
+  const kpis=el('div','kpis'); host.appendChild(kpis);
+
+  if(!meses.length){
+    const d=el('div','vazio'); d.textContent='Sem dados de despesas coletados ainda.';
+    host.appendChild(d);
+    return function(){};
+  }
+
+  const sMes=bloco(host,'Pagamento mês a mês · R$');
+  const mesG=el('div'); sMes.appendChild(mesG);
+
+  const s2=bloco(host,'Detalhado por mês');
+  const rola=el('div','rolatab'); s2.appendChild(rola);
+  const nota=el('div','nota'); s2.appendChild(nota);
+
+  const totEmp=meses.reduce((s,m)=>s+m[1],0), totLiq=meses.reduce((s,m)=>s+m[2],0),
+        totPag=meses.reduce((s,m)=>s+m[3],0);
+
+  return function(){
+    kpis.innerHTML='';
+    [['Empenhado', brlx(totEmp), (ano||'')+' · todos os meses', totEmp],
+     ['Liquidado', brlx(totLiq), 'valores já verificados', totLiq],
+     ['Pago', brlx(totPag), 'valores efetivamente pagos', totPag],
+     ['Execução', totEmp?f1.format(totPag/totEmp*100)+'%':'—', 'pago sobre empenhado', null],
+    ].forEach(([r,v,s,x])=>{
+      const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x); kpis.appendChild(d);
+    });
+
+    const serie=meses.map(m=>({k:MESES[m[0]-1], v:m[3], mes:String(m[0])}));
+    colunasMes(mesG, serie, null, null);
+
+    rola.innerHTML='';
+    const t=el('table');
+    t.innerHTML='<thead><tr><th class="e" style="width:28%">Mês</th>'
+      +'<th>Empenhado (R$)</th><th>Liquidação (R$)</th><th>Pagamento (R$)</th></tr></thead>';
+    const tb=el('tbody');
+    meses.forEach(([m,emp,liq,pag])=>{
+      const tr=el('tr');
+      tr.innerHTML='<td class="e" style="text-transform:capitalize">'+esc(MESNOME[String(m)])+'</td>'
+        +'<td>'+exato(emp)+'</td><td>'+exato(liq)+'</td><td>'+exato(pag)+'</td>';
+      tb.appendChild(tr);
+    });
+    const trTot=el('tr');
+    trTot.style.fontWeight='600';
+    trTot.innerHTML='<td class="e">Total</td><td>'+exato(totEmp)+'</td><td>'+exato(totLiq)+'</td><td>'+exato(totPag)+'</td>';
+    tb.appendChild(trTot);
+    t.appendChild(tb); rola.appendChild(t);
+    nota.textContent='Valores por mês de competência (empenho/liquidação/pagamento do próprio mês, não acumulado). '
+      + (DATA.dp_coleta ? 'Coletado do Portal da Transparência em '
+          + DATA.dp_coleta.split('-').reverse().join('/') : '');
+  };
+}
+
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
-                ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal() };
+                ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
+                desp:montaDespesas() };
 function render(){
   document.querySelectorAll('#abas b').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
