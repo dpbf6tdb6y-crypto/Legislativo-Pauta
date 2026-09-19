@@ -84,26 +84,6 @@ const FLUXO_DEF_EXPORT = [
   { key: 'promulgacao',         labelCurto: 'Promul.'    },
 ]
 
-// Classificação de cada etapa numa fase do processo — mesmo agrupamento
-// usado no fluxo detalhado das telas (ver FASE_DA_CHAVE em
-// app/dashboard/segov/page.tsx e segov/[id]/editar/page.tsx), reproduzido
-// aqui pro PDF detalhado também agrupar por fase em vez de nó a nó solto.
-const FASE_DA_CHAVE_EXPORT: Record<string, string> = {
-  protocolado: "Protocolo", pautado: "Protocolo",
-  retiradoPauta: "Retirado de pauta", pautado2: "Retirado de pauta",
-  retiradoPauta2: "Retirado de pauta", pautado3: "Retirado de pauta",
-  retiradoPauta3: "Retirado de pauta", pautado4: "Retirado de pauta",
-  retiradoPauta4: "Retirado de pauta", pautado5: "Retirado de pauta",
-  retiradoPauta5: "Retirado de pauta",
-  comissao1: "Comissões", comissao2: "Comissões", comissao3: "Comissões",
-  comissaoEspecial: "Comissões", comissaoConjunta: "Comissões", dispensaParecer: "Comissões",
-  dispensaIntersticio: "Situação especial", pedidoVista: "Situação especial", pedidoAdiamento: "Situação especial",
-  emenda: "Emenda", emendaNumero: "Emenda", emendaVotacao1: "Emenda", emendaVotacao2: "Emenda", emendaResultado: "Emenda",
-  votacao1: "Votação em plenário", votacao2: "Votação em plenário", resultadoFinal: "Votação em plenário",
-  sancaoVeto: "Sanção", vetoManutencao: "Sanção",
-  promulgacao: "Promulgação",
-};
-
 // Sanção/Veto e Promulgação são escolhidas como caminho primeiro (igual
 // comissão) — o resultado só chega depois. Marcadas sem resultado ainda não
 // valem como nó normal do fluxo, viram a bolinha fantasma no relatório
@@ -218,14 +198,6 @@ export function exportarSegovPDF(
   const innerW = cw - pad * 2;
   const ementaLH = 13;
   const nodeR = 6;
-  // Passo das colunas do fluxo detalhado (nó a nó, com nome completo da
-  // comissão) — só usado quando detalhado=true; o resumido não desenha essa
-  // grade, ver marcos4 mais abaixo. Cada proposição encolhe o próprio passo
-  // (entre esses dois limites) pra tentar caber tudo numa fileira só;
-  // quando nem o mínimo resolve, quebra pra uma segunda fileira em vez de
-  // espremer os nós a ponto de virar ilegível.
-  const STEP_W_MAX = 64;
-  const STEP_W_MIN = 34;
   const chipLH = 14;
   const alturaCabecalho = 40;
   const topoConteudo = alturaCabecalho + 10;
@@ -413,107 +385,72 @@ export function exportarSegovPDF(
     const ementaLinhas = doc.splitTextToSize(item.ementa || "", innerW) as string[];
     const linhasAutores = nomes.length ? linhasDeChips(nomes, innerW) : [];
 
-    // Fluxo detalhado: agrupado por fase do processo, igual à tela (ver
-    // blocosFase em app/dashboard/segov/page.tsx e segov/[id]/editar/
-    // page.tsx) — cada fase vira um bloco com título próprio, sem seta entre
-    // nós (a tela também não desenha isso), separado do bloco seguinte por
-    // um traço vertical. Blocos quebram pra linha de baixo quando não cabem
-    // mais na largura do cartão, em vez de precisar rolar horizontalmente.
-    type PassoCru = {
-      step: { key: string; labelCurto: string };
-      sd?: { done: boolean; doneAt?: string; data?: any };
-      agrupado: boolean;
-      fantasma: boolean;
-    };
-    const passosCrus: PassoCru[] = marcados.map(step => ({
-      step, sd: fluxo[step.key], agrupado: chavesAgrupadas.includes(step.key), fantasma: false,
-    }));
-    // Bolinha tracejada azul indicando a próxima etapa esperada, ainda não
-    // marcada — mesmo indicativo visual das telas.
-    const labelFantasmaTexto = `Aguard. ${labelFantasmaSancao}`;
-    if (aguardandoSancao) {
-      passosCrus.push({ step: { key: "_fantasma", labelCurto: labelFantasmaTexto }, sd: undefined, agrupado: false, fantasma: true });
-    }
-    const ultimaChaveReal = marcados.length ? marcados[marcados.length - 1].key : null;
+    // Fluxo detalhado: uma fileira só de nós (sem título de fase), do
+    // jeito que já era antes do agrupamento por fase. 10 nós por fileira —
+    // só quebra pra uma segunda fileira quando passa disso, sem espremer o
+    // passo pra tentar caber mais que isso numa linha só.
+    const porLinha = 10;
+    const stepW = innerW / porLinha;
 
-    function faseDoPasso(p: PassoCru): string {
-      if (p.fantasma) return "Sanção";
-      if (p.agrupado) return "Comissões";
-      return FASE_DA_CHAVE_EXPORT[p.step.key] || "";
-    }
-    const blocosCrus: { fase: string; segs: PassoCru[] }[] = [];
-    passosCrus.forEach(p => {
-      const fase = faseDoPasso(p);
-      const ultimo = blocosCrus[blocosCrus.length - 1];
-      if (ultimo && ultimo.fase === fase) ultimo.segs.push(p);
-      else blocosCrus.push({ fase, segs: [p] });
-    });
-
-    // Cada bloco mede a própria largura de coluna (entre os mesmos limites
-    // STEP_W_MIN/MAX de antes) — um bloco com poucos nós fica com colunas
-    // largas (nome completo da comissão cabe numa linha), um com muitos
-    // (várias idas e vindas de pauta) encolhe até o mínimo legível.
-    type PassoMedido = PassoCru & { labelLinhas: string[]; etiquetaLinhas: string[]; temData: boolean };
-    type BlocoMedido = { fase: string; segs: PassoMedido[]; stepWBloco: number; larguraNos: number; offsetNos: number; largura: number; altura: number };
-    const ALTURA_TITULO_BLOCO = 12;
-    const blocosMedidos: BlocoMedido[] = blocosCrus.map(bloco => {
-      const stepWBloco = Math.max(STEP_W_MIN, Math.min(STEP_W_MAX, innerW / bloco.segs.length));
-      const segs: PassoMedido[] = bloco.segs.map(p => {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        // "Com. 1/2/3" some quando o nó já mostra o nome completo da comissão
-        // embaixo (etiqueta) — mesmo corte das telas.
-        const labelLinhas = p.sd?.data?.comissaoNome ? [] : (doc.splitTextToSize(p.step.labelCurto, stepWBloco - 4) as string[]);
-        const textoEt = p.fantasma ? "" : textoEtiqueta(p.sd, p.step.key);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        const etiquetaLinhas = textoEt ? (doc.splitTextToSize(textoEt, stepWBloco - 4) as string[]) : [];
-        return { ...p, labelLinhas, etiquetaLinhas, temData: !!p.sd?.doneAt };
-      });
-      const maxEtiquetaLinhas = Math.max(0, ...segs.map(p => p.etiquetaLinhas.length));
-      const alturaNos =
-        12 +                                                          // bolinha
-        Math.max(...segs.map(p => p.labelLinhas.length)) * 8 +        // rótulo
-        (segs.some(p => p.temData) ? 9 : 0) +                         // data
-        (maxEtiquetaLinhas > 0 ? 13 + (maxEtiquetaLinhas - 1) * 8 : 0) + // etiqueta
-        (segs.some(p => p.agrupado) ? 11 : 0) +                       // título da moldura
-        4;
-      const larguraNos = segs.length * stepWBloco;
-      // Um bloco com pouco nó (ex.: "Retirado de Pauta" sozinho) pode ter o
-      // título mais largo que os próprios nós — a largura do bloco (e onde
-      // o divisor com o próximo cai) precisa considerar isso, senão o
-      // título invade o bloco vizinho.
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    const passosReais = marcados.map(step => {
+      const sd = fluxo[step.key];
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
-      const larguraTitulo = doc.getTextWidth(bloco.fase.toUpperCase()) + 6;
-      const largura = Math.max(larguraNos, larguraTitulo);
-      return { fase: bloco.fase, segs, stepWBloco, larguraNos, offsetNos: (largura - larguraNos) / 2, largura, altura: ALTURA_TITULO_BLOCO + alturaNos };
+      // "Com. 1/2/3" some quando o nó já mostra o nome completo da comissão
+      // embaixo (etiqueta) — mesmo corte das telas, o número da coluna não
+      // identifica a comissão pra quem lê.
+      const labelLinhas = sd?.data?.comissaoNome ? [] : (doc.splitTextToSize(step.labelCurto, stepW - 4) as string[]);
+      const textoEt = textoEtiqueta(sd, step.key);
+      // Etiqueta é desenhada em 7pt normal — mede no mesmo tamanho, senão a
+      // altura reservada não bate com o que realmente é desenhado.
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      const etiquetaLinhas = textoEt ? (doc.splitTextToSize(textoEt, stepW - 4) as string[]) : [];
+      return {
+        step, sd, labelLinhas,
+        temData: !!sd?.doneAt,
+        temEtiqueta: !!textoEt,
+        etiquetaLinhas,
+        agrupado: chavesAgrupadas.includes(step.key),
+        fantasma: false,
+      };
     });
-
-    // Empacota os blocos em linhas — tenta caber o máximo por linha, quebra
-    // pra próxima quando o bloco seguinte não cabe mais (mesmo flex-wrap
-    // usado nas telas).
-    const GAP_BLOCOS = 20;
-    const ROW_GAP_BLOCOS = 18;
-    const linhasDeBlocos: BlocoMedido[][] = [];
-    {
-      let linhaAtual: BlocoMedido[] = [];
-      let xAtual = 0;
-      blocosMedidos.forEach(b => {
-        const comGap = linhaAtual.length ? b.largura + GAP_BLOCOS : b.largura;
-        if (linhaAtual.length && xAtual + comGap > innerW) {
-          linhasDeBlocos.push(linhaAtual);
-          linhaAtual = [];
-          xAtual = 0;
-        }
-        linhaAtual.push(b);
-        xAtual += (linhaAtual.length > 1 ? GAP_BLOCOS : 0) + b.largura;
-      });
-      if (linhaAtual.length) linhasDeBlocos.push(linhaAtual);
-    }
-    const fluxoAltura =
-      linhasDeBlocos.reduce((s, linha) => s + Math.max(...linha.map(b => b.altura)), 0) +
-      Math.max(0, linhasDeBlocos.length - 1) * ROW_GAP_BLOCOS;
+    // Bolinha tracejada azul indicando a próxima etapa esperada, ainda não
+    // marcada — mesmo indicativo visual das telas, sem seta colorida saindo
+    // dela (a espera ainda não é um fato).
+    const labelFantasmaTexto = `Aguard. ${labelFantasmaSancao}`;
+    const passos = aguardandoSancao
+      ? [...passosReais, {
+          step: { key: "_fantasma", labelCurto: labelFantasmaTexto },
+          sd: undefined,
+          labelLinhas: doc.splitTextToSize(labelFantasmaTexto, stepW - 4) as string[],
+          temData: false,
+          temEtiqueta: false,
+          etiquetaLinhas: [] as string[],
+          agrupado: false,
+          fantasma: true,
+        }]
+      : passosReais;
+    type Passo = typeof passos[number];
+    const fileiras: Passo[][] = [];
+    for (let i = 0; i < passos.length; i += porLinha) fileiras.push(passos.slice(i, i + porLinha));
+    const alturaFileira = (f: Passo[]) => {
+      // Etiqueta de 1 linha cabe em 13pt; cada linha a mais soma +8pt — só o
+      // modo detalhado (nome completo da comissão) chega a precisar de mais
+      // de 1 linha na prática.
+      const maxEtiquetaLinhas = Math.max(0, ...f.map(p => p.etiquetaLinhas.length));
+      return (
+        12 +                                                        // bolinha
+        Math.max(...f.map(p => p.labelLinhas.length)) * 8 +          // rótulo
+        (f.some(p => p.temData) ? 9 : 0) +                           // data
+        (maxEtiquetaLinhas > 0 ? 13 + (maxEtiquetaLinhas - 1) * 8 : 0) + // etiqueta
+        (f.some(p => p.agrupado) ? 11 : 0) +                         // título da moldura
+        4
+      );
+    };
+    const fluxoAltura = fileiras.reduce((s, f) => s + alturaFileira(f), 0);
 
     // Modo resumido do PDF: os mesmos marcos grandes da listagem (Protocolo
     // / Aprovado-ou-Reprovado pelas comissões / [situações especiais, se
@@ -563,7 +500,7 @@ export function exportarSegovPDF(
       8 +
       ementaLinhas.length * ementaLH +
       (linhasAutores.length ? 6 + linhasAutores.length * chipLH : 0) +
-      (passosCrus.length ? 8 + 1 + 8 + (detalhado ? fluxoAltura : alturaMarcos4) : 0) +
+      (fileiras.length ? 8 + 1 + 8 + (detalhado ? fluxoAltura : alturaMarcos4) : 0) +
       pad;
 
     // Faixa de seção ao trocar de grupo (Executivo -> Vereadores)
@@ -680,7 +617,7 @@ export function exportarSegovPDF(
     }
 
     // ── Fluxo de tramitação ──
-    if (passosCrus.length && !detalhado) {
+    if (fileiras.length && !detalhado) {
       // Resumido: os 4 marcos grandes, igual à listagem — 4 colunas iguais,
       // bolinha maior que a do fluxo detalhado, com linha conectora colorida
       // entre marcos concluídos consecutivos.
@@ -754,7 +691,7 @@ export function exportarSegovPDF(
           doc.text(fmtDDMM(marco.data), x, baseY + 2, { align: "center" });
         }
       });
-    } else if (passosCrus.length) {
+    } else if (fileiras.length) {
       cy += 8;
       doc.setDrawColor(220, 220, 220);
       doc.setLineWidth(0.5);
@@ -762,141 +699,145 @@ export function exportarSegovPDF(
       cy += 8;
 
       let fy = cy;
-      linhasDeBlocos.forEach(linha => {
-        const alturaLinha = Math.max(...linha.map(b => b.altura));
-        let fx = margin + pad;
+      fileiras.forEach((fileira, fi) => {
+        const labelLinhasFileira = Math.max(...fileira.map(p => p.labelLinhas.length));
+        const temGrupo = fileira.some(p => p.agrupado);
+        const desloc = temGrupo ? 11 : 0;   // espaço do título "PARECER CONJUNTO"
 
-        linha.forEach((bloco, bi) => {
-          // Traço vertical entre blocos — mesmo "border-l" da tela, no lugar
-          // de seta (o fluxo detalhado da tela não desenha setas entre nós).
-          if (bi > 0) {
-            doc.setDrawColor(229, 231, 235);
-            doc.setLineWidth(0.75);
-            doc.line(fx - GAP_BLOCOS / 2, fy, fx - GAP_BLOCOS / 2, fy + alturaLinha);
+        // Colchete lilás por cima das comissões do parecer conjunto — mesmo
+        // desenho da tela (sem caixa ao redor, só o traço + rótulo por cima).
+        if (temGrupo) {
+          const cols = fileira.map((p, i) => (p.agrupado ? i : -1)).filter(i => i >= 0);
+          const x0 = margin + pad + Math.min(...cols) * stepW - 2;
+          const x1 = margin + pad + Math.max(...cols) * stepW + stepW - 6;
+          const lineY = fy + 9;
+          doc.setDrawColor(168, 85, 247);
+          doc.setLineWidth(0.8);
+          doc.line(x0, lineY, x1, lineY);
+          doc.line(x0, lineY, x0, lineY + 2.5);
+          doc.line(x1, lineY, x1, lineY + 2.5);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(6.5);
+          doc.setTextColor(126, 34, 206);
+          const nomeConjunta = fluxo["comissaoConjunta"]?.data?.nome1;
+          doc.text(nomeConjunta ? `PARECER CONJUNTO — ${nomeConjunta}` : "PARECER CONJUNTO", (x0 + x1) / 2, fy + 6, { align: "center" });
+        }
+
+        fileira.forEach((p, col) => {
+          const indiceGeral = fi * porLinha + col;
+          const x = margin + pad + nodeR + col * stepW;
+          const nodeY = fy + desloc + nodeR;
+          const ultimoGeral = indiceGeral === passos.length - 1;
+          const ultimoDaFileira = col === fileira.length - 1;
+
+          if (p.fantasma) {
+            // Bolinha tracejada azul — próxima etapa esperada, ainda não
+            // marcada. Só indicativo, sem preenchimento nem "check".
+            doc.setDrawColor(96, 165, 250);
+            doc.setLineWidth(1);
+            doc.setLineDashPattern([1.5, 1.5], 0);
+            doc.circle(x, nodeY, nodeR, "S");
+            doc.setLineDashPattern([], 0);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(59, 130, 246);
+            p.labelLinhas.forEach((l, li) => {
+              doc.text(l, x, nodeY + nodeR + 9 + li * 8, { align: "center" });
+            });
+            return;
+          }
+
+          // Sanção/Veto e Promulgação têm veredito próprio (Sancionado/
+          // Vetado, Promulgado/Vetado) que não entra no cálculo geral do
+          // fluxo (graficoCor) — sem isso, um Veto marcado depois do
+          // Resultado Final aprovado apareceria verde do mesmo jeito.
+          const negativoLocal = !!p.sd?.data?.resultado && NEGATIVOS.has(p.sd.data.resultado);
+          // Retirado de Pauta é sempre laranja, a mesma cor do status
+          // "Retirado" — independe do resto do fluxo.
+          const isRetirado = p.step.key.startsWith("retiradoPauta");
+
+          let nr = 22, ng = 163, nb = 74;
+          if (isRetirado) { nr = 249; ng = 115; nb = 22; }
+          else if (negativoLocal || graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
+          else if (graficoCor === "normal" && ultimoGeral) { nr = 37; ng = 99; nb = 235; }
+
+          doc.setFillColor(nr, ng, nb);
+          doc.circle(x, nodeY, nodeR, "F");
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(1.1);
+          doc.line(x - 2.6, nodeY, x - 0.5, nodeY + 2.6);
+          doc.line(x - 0.5, nodeY + 2.6, x + 3.2, nodeY - 2.6);
+
+          // Sem seta entre comissões do mesmo parecer conjunto — foi um ato só.
+          const dentroDoGrupo = p.agrupado && !!fileira[col + 1]?.agrupado;
+          const proximoEhFantasma = !!fileira[col + 1]?.fantasma;
+          if (!ultimoGeral && !ultimoDaFileira && !dentroDoGrupo && proximoEhFantasma) {
+            // Seta tracejada azul até a bolinha fantasma — a espera ainda não
+            // é um fato, não pode ter a cor "concluído" do resto do fluxo.
+            doc.setDrawColor(96, 165, 250);
+            doc.setLineWidth(0.8);
+            doc.setLineDashPattern([1.5, 1.5], 0);
+            doc.line(x + nodeR + 1, nodeY, x + stepW - nodeR - 1, nodeY);
+            doc.setLineDashPattern([], 0);
+          } else if (!ultimoGeral && !ultimoDaFileira && !dentroDoGrupo) {
+            doc.setDrawColor(nr, ng, nb);
+            doc.setLineWidth(0.8);
+            const lx1 = x + nodeR + 1;
+            const lx2 = x + stepW - nodeR - 1;
+            doc.line(lx1, nodeY, lx2, nodeY);
+            doc.line(lx2, nodeY, lx2 - 3, nodeY - 2);
+            doc.line(lx2, nodeY, lx2 - 3, nodeY + 2);
           }
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8);
-          doc.setTextColor(107, 114, 128);
-          doc.text(bloco.fase.toUpperCase(), fx + bloco.largura / 2, fy + 7, { align: "center" });
-
-          const nodeTopo = fy + ALTURA_TITULO_BLOCO;
-          const temGrupo = bloco.segs.some(p => p.agrupado);
-          const desloc = temGrupo ? 11 : 0;   // espaço do título "PARECER CONJUNTO"
-
-          // Colchete lilás por cima das comissões do parecer conjunto — mesmo
-          // desenho da tela (sem caixa ao redor, só o traço + rótulo por cima).
-          if (temGrupo) {
-            const cols = bloco.segs.map((p, i) => (p.agrupado ? i : -1)).filter(i => i >= 0);
-            const x0 = fx + bloco.offsetNos + Math.min(...cols) * bloco.stepWBloco + 2;
-            const x1 = fx + bloco.offsetNos + (Math.max(...cols) + 1) * bloco.stepWBloco - 4;
-            const lineY = nodeTopo + 9;
-            doc.setDrawColor(168, 85, 247);
-            doc.setLineWidth(0.8);
-            doc.line(x0, lineY, x1, lineY);
-            doc.line(x0, lineY, x0, lineY + 2.5);
-            doc.line(x1, lineY, x1, lineY + 2.5);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(6.5);
-            doc.setTextColor(126, 34, 206);
-            const nomeConjunta = fluxo["comissaoConjunta"]?.data?.nome1;
-            doc.text(nomeConjunta ? `PARECER CONJUNTO — ${nomeConjunta}` : "PARECER CONJUNTO", (x0 + x1) / 2, nodeTopo + 6, { align: "center" });
-          }
-
-          const labelLinhasBloco = Math.max(...bloco.segs.map(q => q.labelLinhas.length));
-
-          bloco.segs.forEach((p, i) => {
-            const x = fx + bloco.offsetNos + i * bloco.stepWBloco + bloco.stepWBloco / 2;
-            const nodeY = nodeTopo + desloc + nodeR;
-
-            if (p.fantasma) {
-              // Bolinha tracejada azul — próxima etapa esperada, ainda não
-              // marcada. Só indicativo, sem preenchimento nem "check".
-              doc.setDrawColor(96, 165, 250);
-              doc.setLineWidth(1);
-              doc.setLineDashPattern([1.5, 1.5], 0);
-              doc.circle(x, nodeY, nodeR, "S");
-              doc.setLineDashPattern([], 0);
-              doc.setFont("helvetica", "bold");
-              doc.setFontSize(8);
-              doc.setTextColor(59, 130, 246);
-              p.labelLinhas.forEach((l, li) => {
-                doc.text(l, x, nodeY + nodeR + 9 + li * 8, { align: "center" });
-              });
-              return;
-            }
-
-            // Sanção/Veto e Promulgação têm veredito próprio (Sancionado/
-            // Vetado, Promulgado/Vetado) que não entra no cálculo geral do
-            // fluxo (graficoCor) — sem isso, um Veto marcado depois do
-            // Resultado Final aprovado apareceria verde do mesmo jeito.
-            const negativoLocal = !!p.sd?.data?.resultado && NEGATIVOS.has(p.sd.data.resultado);
-            // Retirado de Pauta é sempre laranja, a mesma cor do status
-            // "Retirado" — independe do resto do fluxo.
-            const isRetirado = p.step.key.startsWith("retiradoPauta");
-            const isLast = p.step.key === ultimaChaveReal;
-
-            let nr = 22, ng = 163, nb = 74;
-            if (isRetirado) { nr = 249; ng = 115; nb = 22; }
-            else if (negativoLocal || graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
-            else if (graficoCor === "normal" && isLast) { nr = 37; ng = 99; nb = 235; }
-
-            doc.setFillColor(nr, ng, nb);
-            doc.circle(x, nodeY, nodeR, "F");
-            doc.setDrawColor(255, 255, 255);
-            doc.setLineWidth(1.1);
-            doc.line(x - 2.6, nodeY, x - 0.5, nodeY + 2.6);
-            doc.line(x - 0.5, nodeY + 2.6, x + 3.2, nodeY - 2.6);
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(8);
-            doc.setTextColor(50, 50, 50);
-            p.labelLinhas.forEach((l, li) => {
-              doc.text(l, x, nodeY + nodeR + 9 + li * 8, { align: "center" });
-            });
-
-            // Data e etiqueta alinham pelo bloco (não pelo rótulo de cada
-            // nó), pra não ficarem em alturas diferentes lado a lado.
-            const baseBloco = nodeY + nodeR + 9 + (labelLinhasBloco - 1) * 8;
-
-            if (p.sd?.doneAt) {
-              doc.setFont("helvetica", "normal");
-              doc.setFontSize(7);
-              doc.setTextColor(140, 140, 140);
-              doc.text(fmtDDMM(p.sd.doneAt), x, baseBloco + 9, { align: "center" });
-            }
-
-            const yEtiqueta = baseBloco + (bloco.segs.some(q => q.temData) ? 9 : 0) + 3;
-            const linhasEt = p.etiquetaLinhas;
-            if (linhasEt.length) {
-              doc.setFont("helvetica", "normal");
-              doc.setFontSize(7);
-              let corFundo: [number, number, number];
-              let corTexto: [number, number, number];
-              if (p.sd?.data?.comissaoNome) {
-                corFundo = [219, 234, 254]; corTexto = [29, 78, 216];
-              } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
-                const neg = NEGATIVOS.has(p.sd.data.resultado);
-                corFundo = neg ? [254, 202, 202] : [187, 247, 208];
-                corTexto = neg ? [185, 28, 28] : [22, 101, 52];
-              } else {
-                corFundo = [243, 244, 246]; corTexto = [75, 85, 99];
-              }
-              const bw = Math.min(bloco.stepWBloco - 2, Math.max(...linhasEt.map(l => doc.getTextWidth(l))) + 7);
-              const altura = 10 + (linhasEt.length - 1) * 8;
-              doc.setFillColor(corFundo[0], corFundo[1], corFundo[2]);
-              doc.rect(x - bw / 2, yEtiqueta, bw, altura, "F");
-              doc.setTextColor(corTexto[0], corTexto[1], corTexto[2]);
-              linhasEt.forEach((linhaEt, li) => {
-                doc.text(linhaEt, x, yEtiqueta + 7 + li * 8, { align: "center" });
-              });
-            }
+          doc.setTextColor(50, 50, 50);
+          p.labelLinhas.forEach((l, li) => {
+            doc.text(l, x, nodeY + nodeR + 9 + li * 8, { align: "center" });
           });
 
-          fx += bloco.largura + GAP_BLOCOS;
+          // Data e etiqueta alinham pela fileira (não pelo rótulo de cada nó),
+          // pra não ficarem em alturas diferentes lado a lado.
+          const baseFileira = nodeY + nodeR + 9 + (labelLinhasFileira - 1) * 8;
+
+          if (p.sd?.doneAt) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            doc.setTextColor(140, 140, 140);
+            doc.text(fmtDDMM(p.sd.doneAt), x, baseFileira + 9, { align: "center" });
+          }
+
+          const yEtiqueta = baseFileira + (fileira.some(q => q.temData) ? 9 : 0) + 3;
+          // Usa as mesmas linhas já medidas em passosReais (etiquetaLinhas) —
+          // garante que a altura reservada pra fileira e o que é desenhado
+          // aqui nunca fiquem fora de sincronia.
+          const linhasEt = p.etiquetaLinhas;
+          if (linhasEt.length) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            let corFundo: [number, number, number];
+            let corTexto: [number, number, number];
+            if (p.sd?.data?.comissaoNome) {
+              corFundo = [219, 234, 254]; corTexto = [29, 78, 216];
+            } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
+              const neg = NEGATIVOS.has(p.sd.data.resultado);
+              corFundo = neg ? [254, 202, 202] : [187, 247, 208];
+              corTexto = neg ? [185, 28, 28] : [22, 101, 52];
+            } else {
+              corFundo = [243, 244, 246]; corTexto = [75, 85, 99];
+            }
+            const bw = Math.min(stepW - 2, Math.max(...linhasEt.map(l => doc.getTextWidth(l))) + 7);
+            const altura = 10 + (linhasEt.length - 1) * 8;
+            doc.setFillColor(corFundo[0], corFundo[1], corFundo[2]);
+            doc.rect(x - bw / 2, yEtiqueta, bw, altura, "F");
+            doc.setTextColor(corTexto[0], corTexto[1], corTexto[2]);
+            linhasEt.forEach((linha, li) => {
+              doc.text(linha, x, yEtiqueta + 7 + li * 8, { align: "center" });
+            });
+          }
         });
 
-        fy += alturaLinha + ROW_GAP_BLOCOS;
+        fy += alturaFileira(fileira);
       });
     }
 
