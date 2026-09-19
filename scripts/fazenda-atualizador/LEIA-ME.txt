@@ -1,0 +1,43 @@
+PAINEL - PREFEITURA DE NOVA LIMA
+
+COMO ATUALIZAR
+   Duplo clique em atualizar.bat   (1 a 3 minutos)
+   Depois abra o Painel_Receita_Despesas.html na pasta de cima.
+
+O QUE CADA SCRIPT FAZ
+   coletor.py            Receita: baixa do portal o relatorio de cada ano e de cada mes,
+                         le so as linhas analiticas e CONFERE a soma contra o totalizador
+                         oficial. Se alguma conta nao fechar, avisa na tela.
+   coletor_contratos.py  Contratos: baixa a relacao completa e classifica vigente/encerrado
+                         pelas datas de inicio e fim.
+   coletor_folha.py      Folha: procura no portal o arquivo de servidores mais recente
+                         ja publicado e guarda em ..\..\RH\<mes>_<ano>.xls
+   gerar_painel.py       Monta o painel HTML com tudo isso.
+
+DE ONDE VEM CADA DADO
+   Receita    servlet/appmontaarquivopdfreceita?<ano>,<mes>     (mes 0 = ano inteiro)
+   Contratos  servlet/appmontaarquivopdfcontratos
+   Folha      PublicTempStorage/xls/PESSOAL<dia>_<mes>_<ano>.xls
+
+SOBRE A FOLHA - LEIA ISTO
+   O portal nao tem link direto para o arquivo de servidores. Ele so gera o arquivo
+   quando alguem clica no icone do Excel na tela de Servidores - e ai o arquivo FICA
+   publicado e pode ser baixado por URL.
+   O coletor_folha.py procura os arquivos ja publicados nos ultimos 45 dias e pega o
+   mais recente. Se nao achar nenhum, ele te diz o que fazer:
+      1) abra  https://mgnl.abaco.com.br/transparencia/servlet/wmservidores?0
+      2) escolha o mes desejado
+      3) clique no icone do Excel (uma vez so)
+      4) rode o atualizar.bat de novo
+   O painel sempre usa o arquivo mais recente da pasta RH.
+
+ARQUIVOS DE APOIO
+   dados_receita.json    resultado da coleta de receita
+   dados_contratos.json  resultado da coleta de contratos
+   nomes_curtos.json     apelidos das receitas (ISSQN, Cfem...). PODE EDITAR.
+   _cache\               PDFs ja baixados. Anos fechados nao sao baixados de novo.
+
+O QUE AINDA NAO E AUTOMATICO
+   Pagamentos por contrato. O portal mostra o valor CONTRATADO, nao o pago, e a area
+   de Despesas nao tem arquivo direto como as outras. Os valores da aba Contratos sao
+   de contrato, nao de execucao.
