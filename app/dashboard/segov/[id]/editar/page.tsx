@@ -417,6 +417,10 @@ export default function EditarSeggovPage() {
     // primeiro no array). Em caso de empate (mesma data), a livre entra
     // ANTES da fixa/livre vizinha — ex.: dispensa de interstício no mesmo
     // dia da 2ª votação normalmente foi concedida antes dela acontecer.
+    // Exceção: "Retirado de Pauta" no empate entra DEPOIS da vizinha — sem
+    // isso, um retirado no mesmo dia do próprio "Pautado" (comum: pauta e
+    // retirada no mesmo dia) aparecia antes dele, como se tivesse sido
+    // retirado antes de ter sido pautado.
     const fixas = base.filter(m => !CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
     const livres = base
       .filter(m => CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
@@ -424,7 +428,8 @@ export default function EditarSeggovPage() {
 
     const resultado = [...fixas]
     livres.forEach(item => {
-      let posicao = resultado.findIndex(m => (m.doneAt || '') >= (item.doneAt || ''))
+      const ehRetirada = item.key.startsWith('retiradoPauta')
+      let posicao = resultado.findIndex(m => ehRetirada ? (m.doneAt || '') > (item.doneAt || '') : (m.doneAt || '') >= (item.doneAt || ''))
       if (posicao === -1) posicao = resultado.length
       resultado.splice(posicao, 0, item)
     })

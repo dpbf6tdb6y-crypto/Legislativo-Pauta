@@ -560,14 +560,17 @@ export default function SeggovPage() {
             // mesclar — mesclar direto na ordem do array, comparando com a
             // data antiga de livres ainda não tratadas, jogava a etapa lá pro
             // final ou de volta pro lugar de origem. Empate → livre entra
-            // antes da vizinha (ver editar/page.tsx).
+            // antes da vizinha (ver editar/page.tsx) — exceto "Retirado de
+            // Pauta", que no empate entra DEPOIS: sem isso, um retirado no
+            // mesmo dia do próprio "Pautado" aparecia antes dele.
             const fixas = marcadosBase.filter(m => !CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
             const livres = marcadosBase
               .filter(m => CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
               .sort((a, b) => (a.doneAt || '').localeCompare(b.doneAt || ''))
             const marcados = [...fixas]
             livres.forEach(item => {
-              let posicao = marcados.findIndex(m => (m.doneAt || '') >= (item.doneAt || ''))
+              const ehRetirada = item.key.startsWith('retiradoPauta')
+              let posicao = marcados.findIndex(m => ehRetirada ? (m.doneAt || '') > (item.doneAt || '') : (m.doneAt || '') >= (item.doneAt || ''))
               if (posicao === -1) posicao = marcados.length
               marcados.splice(posicao, 0, item)
             })
