@@ -25,6 +25,11 @@ const configItems = [
 
 const auditoriaItem = { href: "/dashboard/auditoria", label: "Auditoria", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" };
 const indicacoesItem = { href: "/dashboard/indicacoes", label: "Ind.", icon: "M12 15a3 3 0 100-6 3 3 0 000 6z M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" };
+const fazendaItem = { href: "/dashboard/fazenda", label: "Fazenda", icon: "M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1c1.657 0 3 .672 3 1.5M12 15v1m0-1c-1.657 0-3-.672-3-1.5M3 12a9 9 0 1018 0 9 9 0 00-18 0z" };
+// Verde-esmeralda pra destacar Fazenda das outras seções — pedido do
+// usuário pra ficar "de outra cor", sempre (não só quando ativa).
+const FAZENDA_COLOR = "#10b981";
+const FAZENDA_GRADIENT = "linear-gradient(135deg, #059669 0%, #10b981 100%)";
 const backupItem = { href: "/dashboard/backup", label: "Backup", icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 8h16M4 8a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2v-8a2 2 0 00-2-2M4 8V6a2 2 0 012-2h8l2 2h2a2 2 0 012 2v2" };
 const usuariosItem = { href: "/dashboard/usuarios", label: "Usuários", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zM3 7a3 3 0 116 0 3 3 0 01-6 0z" };
 
@@ -152,6 +157,23 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
                 {sidebarOpen && <span>{indicacoesItem.label}</span>}
               </Link>
             )
+          })()}
+          {(() => {
+            const active = pathname.startsWith(fazendaItem.href);
+            return (
+              <Link href={fazendaItem.href}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all"
+                style={active
+                  ? { background: FAZENDA_GRADIENT, color: "#fff", fontWeight: 600 }
+                  : { color: FAZENDA_COLOR }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.background = NAV_HOVER_BG; }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}>
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={fazendaItem.icon} />
+                </svg>
+                {sidebarOpen && <span>{fazendaItem.label}</span>}
+              </Link>
+            );
           })()}
         </nav>
 
