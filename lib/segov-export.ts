@@ -84,26 +84,6 @@ const FLUXO_DEF_EXPORT = [
   { key: 'promulgacao',         labelCurto: 'Promul.'    },
 ]
 
-// Classificação de cada etapa numa fase do processo — mesmo agrupamento
-// usado no fluxo detalhado das telas (ver FASE_DA_CHAVE em
-// app/dashboard/segov/page.tsx e segov/[id]/editar/page.tsx), reproduzido
-// aqui pro PDF detalhado também agrupar por fase em vez de nó a nó solto.
-const FASE_DA_CHAVE_EXPORT: Record<string, string> = {
-  protocolado: "Protocolo", pautado: "Protocolo",
-  retiradoPauta: "Retirado de pauta", pautado2: "Retirado de pauta",
-  retiradoPauta2: "Retirado de pauta", pautado3: "Retirado de pauta",
-  retiradoPauta3: "Retirado de pauta", pautado4: "Retirado de pauta",
-  retiradoPauta4: "Retirado de pauta", pautado5: "Retirado de pauta",
-  retiradoPauta5: "Retirado de pauta",
-  comissao1: "Comissões", comissao2: "Comissões", comissao3: "Comissões",
-  comissaoEspecial: "Comissões", comissaoConjunta: "Comissões", dispensaParecer: "Comissões",
-  dispensaIntersticio: "Situação especial", pedidoVista: "Situação especial", pedidoAdiamento: "Situação especial",
-  emenda: "Emenda", emendaNumero: "Emenda", emendaVotacao1: "Emenda", emendaVotacao2: "Emenda", emendaResultado: "Emenda",
-  votacao1: "Votação em plenário", votacao2: "Votação em plenário", resultadoFinal: "Votação em plenário",
-  sancaoVeto: "Sanção", vetoManutencao: "Sanção",
-  promulgacao: "Promulgação",
-};
-
 // Sanção/Veto e Promulgação são escolhidas como caminho primeiro (igual
 // comissão) — o resultado só chega depois. Marcadas sem resultado ainda não
 // valem como nó normal do fluxo, viram a bolinha fantasma no relatório
@@ -408,131 +388,72 @@ export function exportarSegovPDF(
     const ementaLinhas = doc.splitTextToSize(item.ementa || "", innerW) as string[];
     const linhasAutores = nomes.length ? linhasDeChips(nomes, innerW) : [];
 
-    // Fluxo detalhado: agrupado por fase do processo, igual à tela (ver
-    // blocosFase em app/dashboard/segov/page.tsx e segov/[id]/editar/
-    // page.tsx) — cada fase vira um bloco com título próprio, sem seta
-    // entre nós (a tela também não desenha isso), separado do bloco
-    // seguinte por um traço vertical. Passo dos nós fixo em STEP_W_MAX (não
-    // encolhe) — um bloco com mais nós do que cabe numa linha só (várias
-    // idas e vindas de pauta, por exemplo) quebra em fileiras dentro do
-    // próprio bloco; blocos inteiros quebram pra linha de baixo quando não
-    // cabem mais na largura do cartão.
-    const STEP_W_MAX = 64;
-    const ultimaChaveReal = marcados.length ? marcados[marcados.length - 1].key : null;
+    // Fluxo detalhado: uma fileira só de nós (sem título de fase), igual ao
+    // relatório de referência do usuário — 12 nós cabem por fileira nesse
+    // passo; só quebra pra uma segunda fileira quando passa disso, sem
+    // espremer o passo pra tentar caber mais que isso numa linha só.
+    const porLinha = 12;
+    const stepW = innerW / porLinha;
 
-    type PassoCru = {
-      step: { key: string; labelCurto: string };
-      sd?: { done: boolean; doneAt?: string; data?: any };
-      agrupado: boolean;
-      fantasma: boolean;
-    };
-    const passosCrus: PassoCru[] = marcados.map(step => ({
-      step, sd: fluxo[step.key], agrupado: chavesAgrupadas.includes(step.key), fantasma: false,
-    }));
-    // Bolinha tracejada azul indicando a próxima etapa esperada, ainda não
-    // marcada — mesmo indicativo visual das telas.
-    const labelFantasmaTexto = `Aguard. ${labelFantasmaSancao}`;
-    if (aguardandoSancao) {
-      passosCrus.push({ step: { key: "_fantasma", labelCurto: labelFantasmaTexto }, sd: undefined, agrupado: false, fantasma: true });
-    }
-
-    function faseDoPasso(p: PassoCru): string {
-      if (p.fantasma) return "Sanção";
-      if (p.agrupado) return "Comissões";
-      return FASE_DA_CHAVE_EXPORT[p.step.key] || "";
-    }
-    const blocosCrus: { fase: string; segs: PassoCru[] }[] = [];
-    passosCrus.forEach(p => {
-      const fase = faseDoPasso(p);
-      const ultimo = blocosCrus[blocosCrus.length - 1];
-      if (ultimo && ultimo.fase === fase) ultimo.segs.push(p);
-      else blocosCrus.push({ fase, segs: [p] });
-    });
-
-    type PassoMedido = PassoCru & { labelLinhas: string[]; etiquetaLinhas: string[]; temData: boolean };
-    type SubFileira = { segs: PassoMedido[]; altura: number };
-    type BlocoMedido = { fase: string; subFileiras: SubFileira[]; larguraNos: number; offsetNos: number; largura: number; altura: number };
-    const ALTURA_TITULO_BLOCO = 12;
-    const ESPACO_ENTRE_SUBFILEIRAS = 10;
-    // Quantos nós cabem numa fileira de um bloco, no passo fixo — mesma
-    // conta de antes do agrupamento por fase.
-    const porLinhaBloco = Math.max(1, Math.floor(innerW / STEP_W_MAX));
-
-    function alturaSubFileira(f: PassoMedido[]): number {
-      const maxEtiquetaLinhas = Math.max(0, ...f.map(p => p.etiquetaLinhas.length));
-      return (
-        12 +                                                          // bolinha
-        Math.max(...f.map(p => p.labelLinhas.length)) * 8 +            // rótulo
-        (f.some(p => p.temData) ? 9 : 0) +                             // data
-        (maxEtiquetaLinhas > 0 ? 13 + (maxEtiquetaLinhas - 1) * 8 : 0) + // etiqueta
-        (f.some(p => p.agrupado) ? 11 : 0) +                           // título da moldura
-        4
-      );
-    }
-
-    const blocosMedidos: BlocoMedido[] = blocosCrus.map(bloco => {
-      const segsMedidos: PassoMedido[] = bloco.segs.map(p => {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        // "Com. 1/2/3" some quando o nó já mostra o nome completo da comissão
-        // embaixo (etiqueta) — mesmo corte das telas.
-        const labelLinhas = p.sd?.data?.comissaoNome ? [] : (doc.splitTextToSize(p.step.labelCurto, STEP_W_MAX - 4) as string[]);
-        const textoEt = p.fantasma ? "" : textoEtiqueta(p.sd, p.step.key);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7);
-        const etiquetaLinhas = textoEt ? (doc.splitTextToSize(textoEt, STEP_W_MAX - 4) as string[]) : [];
-        return { ...p, labelLinhas, etiquetaLinhas, temData: !!p.sd?.doneAt };
-      });
-
-      const subFileiras: SubFileira[] = [];
-      for (let i = 0; i < segsMedidos.length; i += porLinhaBloco) {
-        const segs = segsMedidos.slice(i, i + porLinhaBloco);
-        subFileiras.push({ segs, altura: alturaSubFileira(segs) });
-      }
-      const alturaNos = subFileiras.reduce((s, f) => s + f.altura, 0)
-        + Math.max(0, subFileiras.length - 1) * ESPACO_ENTRE_SUBFILEIRAS;
-
-      const larguraNos = Math.min(segsMedidos.length, porLinhaBloco) * STEP_W_MAX;
-      // Um bloco com poucos nós (ex.: "Retirado de Pauta" sozinho) pode ter
-      // o título mais largo que os próprios nós — a largura do bloco (e
-      // onde o divisor com o próximo cai) precisa considerar isso, senão o
-      // título invade o bloco vizinho.
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    const passosReais = marcados.map(step => {
+      const sd = fluxo[step.key];
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
-      const larguraTitulo = doc.getTextWidth(bloco.fase.toUpperCase()) + 6;
-      const largura = Math.max(larguraNos, larguraTitulo);
-
+      // "Com. 1/2/3" some quando o nó já mostra o nome completo da comissão
+      // embaixo (etiqueta) — mesmo corte das telas, o número da coluna não
+      // identifica a comissão pra quem lê.
+      const labelLinhas = sd?.data?.comissaoNome ? [] : (doc.splitTextToSize(step.labelCurto, stepW - 4) as string[]);
+      const textoEt = textoEtiqueta(sd, step.key);
+      // Etiqueta é desenhada em 7pt normal — mede no mesmo tamanho, senão a
+      // altura reservada não bate com o que realmente é desenhado.
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      const etiquetaLinhas = textoEt ? (doc.splitTextToSize(textoEt, stepW - 4) as string[]) : [];
       return {
-        fase: bloco.fase, subFileiras, larguraNos,
-        offsetNos: (largura - larguraNos) / 2, largura,
-        altura: ALTURA_TITULO_BLOCO + alturaNos,
+        step, sd, labelLinhas,
+        temData: !!sd?.doneAt,
+        temEtiqueta: !!textoEt,
+        etiquetaLinhas,
+        agrupado: chavesAgrupadas.includes(step.key),
+        fantasma: false,
       };
     });
-
-    // Empacota os blocos em linhas — tenta caber o máximo por linha, quebra
-    // pra próxima quando o bloco seguinte não cabe mais (mesmo flex-wrap
-    // usado nas telas).
-    const GAP_BLOCOS = 20;
-    const ROW_GAP_BLOCOS = 18;
-    const linhasDeBlocos: BlocoMedido[][] = [];
-    {
-      let linhaAtual: BlocoMedido[] = [];
-      let xAtual = 0;
-      blocosMedidos.forEach(b => {
-        const comGap = linhaAtual.length ? b.largura + GAP_BLOCOS : b.largura;
-        if (linhaAtual.length && xAtual + comGap > innerW) {
-          linhasDeBlocos.push(linhaAtual);
-          linhaAtual = [];
-          xAtual = 0;
-        }
-        linhaAtual.push(b);
-        xAtual += (linhaAtual.length > 1 ? GAP_BLOCOS : 0) + b.largura;
-      });
-      if (linhaAtual.length) linhasDeBlocos.push(linhaAtual);
-    }
-    const fluxoAltura =
-      linhasDeBlocos.reduce((s, linha) => s + Math.max(...linha.map(b => b.altura)), 0) +
-      Math.max(0, linhasDeBlocos.length - 1) * ROW_GAP_BLOCOS;
+    // Bolinha tracejada azul indicando a próxima etapa esperada, ainda não
+    // marcada — mesmo indicativo visual das telas, sem seta colorida saindo
+    // dela (a espera ainda não é um fato).
+    const labelFantasmaTexto = `Aguard. ${labelFantasmaSancao}`;
+    const passos = aguardandoSancao
+      ? [...passosReais, {
+          step: { key: "_fantasma", labelCurto: labelFantasmaTexto },
+          sd: undefined,
+          labelLinhas: doc.splitTextToSize(labelFantasmaTexto, stepW - 4) as string[],
+          temData: false,
+          temEtiqueta: false,
+          etiquetaLinhas: [] as string[],
+          agrupado: false,
+          fantasma: true,
+        }]
+      : passosReais;
+    type Passo = typeof passos[number];
+    const fileiras: Passo[][] = [];
+    for (let i = 0; i < passos.length; i += porLinha) fileiras.push(passos.slice(i, i + porLinha));
+    const alturaFileira = (f: Passo[]) => {
+      // Etiqueta de 1 linha cabe em 13pt; cada linha a mais soma +8pt — só o
+      // modo detalhado (nome completo da comissão) chega a precisar de mais
+      // de 1 linha na prática.
+      const maxEtiquetaLinhas = Math.max(0, ...f.map(p => p.etiquetaLinhas.length));
+      return (
+        12 +                                                        // bolinha
+        Math.max(...f.map(p => p.labelLinhas.length)) * 8 +          // rótulo
+        (f.some(p => p.temData) ? 9 : 0) +                           // data
+        (maxEtiquetaLinhas > 0 ? 13 + (maxEtiquetaLinhas - 1) * 8 : 0) + // etiqueta
+        (f.some(p => p.agrupado) ? 11 : 0) +                         // título da moldura
+        4
+      );
+    };
+    const fluxoAltura = fileiras.reduce((s, f) => s + alturaFileira(f), 0);
 
     // Modo resumido do PDF: os mesmos marcos grandes da listagem (Protocolo
     // / Aprovado-ou-Reprovado pelas comissões / [situações especiais, se
@@ -585,7 +506,7 @@ export function exportarSegovPDF(
       // +6 de respiro extra no fim do fluxo — sem isso a última fileira
       // (principalmente com 2+ fileiras) quase encostava na borda azul do
       // cartão.
-      (passosCrus.length ? 8 + 1 + 8 + (detalhado ? fluxoAltura : alturaMarcos4) + 6 : 0) +
+      (fileiras.length ? 8 + 1 + 8 + (detalhado ? fluxoAltura : alturaMarcos4) + 6 : 0) +
       pad;
 
     // Faixa de seção ao trocar de grupo (Executivo -> Vereadores)
@@ -702,7 +623,7 @@ export function exportarSegovPDF(
     }
 
     // ── Fluxo de tramitação ──
-    if (passosCrus.length && !detalhado) {
+    if (fileiras.length && !detalhado) {
       // Resumido: os 4 marcos grandes, igual à listagem — 4 colunas iguais,
       // bolinha maior que a do fluxo detalhado, com linha conectora colorida
       // entre marcos concluídos consecutivos.
@@ -776,7 +697,7 @@ export function exportarSegovPDF(
           doc.text(fmtDDMM(marco.data), x, baseY + 2, { align: "center" });
         }
       });
-    } else if (passosCrus.length) {
+    } else if (fileiras.length) {
       cy += 8;
       doc.setDrawColor(220, 220, 220);
       doc.setLineWidth(0.5);
@@ -784,154 +705,145 @@ export function exportarSegovPDF(
       cy += 8;
 
       let fy = cy;
-      linhasDeBlocos.forEach((linha, li) => {
-        let fx = margin + pad;
-        const alturaLinha = Math.max(...linha.map(b => b.altura));
+      fileiras.forEach((fileira, fi) => {
+        const labelLinhasFileira = Math.max(...fileira.map(p => p.labelLinhas.length));
+        const temGrupo = fileira.some(p => p.agrupado);
+        const desloc = temGrupo ? 11 : 0;   // espaço do título "PARECER CONJUNTO"
 
-        linha.forEach((bloco, bi) => {
-          // Traço vertical separando blocos da mesma linha — mesmo
-          // agrupamento por fase das telas, sem seta entre nós (a tela
-          // também não desenha isso).
-          if (bi > 0) {
-            const divX = fx - GAP_BLOCOS / 2;
-            doc.setDrawColor(226, 232, 240);
+        // Colchete lilás por cima das comissões do parecer conjunto — mesmo
+        // desenho da tela (sem caixa ao redor, só o traço + rótulo por cima).
+        if (temGrupo) {
+          const cols = fileira.map((p, i) => (p.agrupado ? i : -1)).filter(i => i >= 0);
+          const x0 = margin + pad + Math.min(...cols) * stepW - 2;
+          const x1 = margin + pad + Math.max(...cols) * stepW + stepW - 6;
+          const lineY = fy + 9;
+          doc.setDrawColor(168, 85, 247);
+          doc.setLineWidth(0.8);
+          doc.line(x0, lineY, x1, lineY);
+          doc.line(x0, lineY, x0, lineY + 2.5);
+          doc.line(x1, lineY, x1, lineY + 2.5);
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(6.5);
+          doc.setTextColor(126, 34, 206);
+          const nomeConjunta = fluxo["comissaoConjunta"]?.data?.nome1;
+          doc.text(nomeConjunta ? `PARECER CONJUNTO — ${nomeConjunta}` : "PARECER CONJUNTO", (x0 + x1) / 2, fy + 6, { align: "center" });
+        }
+
+        fileira.forEach((p, col) => {
+          const indiceGeral = fi * porLinha + col;
+          const x = margin + pad + nodeR + col * stepW;
+          const nodeY = fy + desloc + nodeR;
+          const ultimoGeral = indiceGeral === passos.length - 1;
+          const ultimoDaFileira = col === fileira.length - 1;
+
+          if (p.fantasma) {
+            // Bolinha tracejada azul — próxima etapa esperada, ainda não
+            // marcada. Só indicativo, sem preenchimento nem "check".
+            doc.setDrawColor(96, 165, 250);
+            doc.setLineWidth(1);
+            doc.setLineDashPattern([1.5, 1.5], 0);
+            doc.circle(x, nodeY, nodeR, "S");
+            doc.setLineDashPattern([], 0);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(59, 130, 246);
+            p.labelLinhas.forEach((l, li) => {
+              doc.text(l, x, nodeY + nodeR + 9 + li * 8, { align: "center" });
+            });
+            return;
+          }
+
+          // Sanção/Veto e Promulgação têm veredito próprio (Sancionado/
+          // Vetado, Promulgado/Vetado) que não entra no cálculo geral do
+          // fluxo (graficoCor) — sem isso, um Veto marcado depois do
+          // Resultado Final aprovado apareceria verde do mesmo jeito.
+          const negativoLocal = !!p.sd?.data?.resultado && NEGATIVOS.has(p.sd.data.resultado);
+          // Retirado de Pauta é sempre laranja, a mesma cor do status
+          // "Retirado" — independe do resto do fluxo.
+          const isRetirado = p.step.key.startsWith("retiradoPauta");
+
+          let nr = 22, ng = 163, nb = 74;
+          if (isRetirado) { nr = 249; ng = 115; nb = 22; }
+          else if (negativoLocal || graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
+          else if (graficoCor === "normal" && ultimoGeral) { nr = 37; ng = 99; nb = 235; }
+
+          doc.setFillColor(nr, ng, nb);
+          doc.circle(x, nodeY, nodeR, "F");
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(1.1);
+          doc.line(x - 2.6, nodeY, x - 0.5, nodeY + 2.6);
+          doc.line(x - 0.5, nodeY + 2.6, x + 3.2, nodeY - 2.6);
+
+          // Sem seta entre comissões do mesmo parecer conjunto — foi um ato só.
+          const dentroDoGrupo = p.agrupado && !!fileira[col + 1]?.agrupado;
+          const proximoEhFantasma = !!fileira[col + 1]?.fantasma;
+          if (!ultimoGeral && !ultimoDaFileira && !dentroDoGrupo && proximoEhFantasma) {
+            // Seta tracejada azul até a bolinha fantasma — a espera ainda não
+            // é um fato, não pode ter a cor "concluído" do resto do fluxo.
+            doc.setDrawColor(96, 165, 250);
             doc.setLineWidth(0.8);
-            doc.line(divX, fy, divX, fy + alturaLinha);
+            doc.setLineDashPattern([1.5, 1.5], 0);
+            doc.line(x + nodeR + 1, nodeY, x + stepW - nodeR - 1, nodeY);
+            doc.setLineDashPattern([], 0);
+          } else if (!ultimoGeral && !ultimoDaFileira && !dentroDoGrupo) {
+            doc.setDrawColor(nr, ng, nb);
+            doc.setLineWidth(0.8);
+            const lx1 = x + nodeR + 1;
+            const lx2 = x + stepW - nodeR - 1;
+            doc.line(lx1, nodeY, lx2, nodeY);
+            doc.line(lx2, nodeY, lx2 - 3, nodeY - 2);
+            doc.line(lx2, nodeY, lx2 - 3, nodeY + 2);
           }
 
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8);
-          doc.setTextColor(100, 116, 139);
-          doc.text(bloco.fase.toUpperCase(), fx + bloco.largura / 2, fy + 8, { align: "center" });
-
-          let subY = fy + ALTURA_TITULO_BLOCO;
-          bloco.subFileiras.forEach((sub, si) => {
-            const temGrupo = sub.segs.some(p => p.agrupado);
-            const desloc = temGrupo ? 11 : 0;   // espaço do título "PARECER CONJUNTO"
-
-            // Colchete lilás por cima das comissões do parecer conjunto —
-            // mesmo desenho da tela (sem caixa ao redor, só o traço + rótulo
-            // por cima).
-            if (temGrupo) {
-              const cols = sub.segs.map((p, i) => (p.agrupado ? i : -1)).filter(i => i >= 0);
-              const x0 = fx + bloco.offsetNos + Math.min(...cols) * STEP_W_MAX + 4;
-              const x1 = fx + bloco.offsetNos + (Math.max(...cols) + 1) * STEP_W_MAX - 4;
-              const lineY = subY + 9;
-              doc.setDrawColor(168, 85, 247);
-              doc.setLineWidth(0.8);
-              doc.line(x0, lineY, x1, lineY);
-              doc.line(x0, lineY, x0, lineY + 2.5);
-              doc.line(x1, lineY, x1, lineY + 2.5);
-              doc.setFont("helvetica", "bold");
-              doc.setFontSize(6.5);
-              doc.setTextColor(126, 34, 206);
-              const nomeConjunta = fluxo["comissaoConjunta"]?.data?.nome1;
-              doc.text(nomeConjunta ? `PARECER CONJUNTO — ${nomeConjunta}` : "PARECER CONJUNTO", (x0 + x1) / 2, subY + 6, { align: "center" });
-            }
-
-            const labelLinhasSub = Math.max(...sub.segs.map(p => p.labelLinhas.length));
-
-            sub.segs.forEach((p, col) => {
-              // Nó centralizado na coluna — colado à esquerda, o rótulo do
-              // primeiro nó ("Retirado") vazava metade da largura e
-              // encostava na borda azul do card.
-              const x = fx + bloco.offsetNos + STEP_W_MAX / 2 + col * STEP_W_MAX;
-              const nodeY = subY + desloc + nodeR;
-              // Só o último nó real (não fantasma) de toda a proposição
-              // recebe o azul "situação atual" — comparado pela chave, já
-              // que a posição no bloco não corresponde mais à ordem geral.
-              const ultimoGeral = p.step.key === ultimaChaveReal;
-
-              if (p.fantasma) {
-                // Bolinha tracejada azul — próxima etapa esperada, ainda não
-                // marcada. Só indicativo, sem preenchimento nem "check".
-                doc.setDrawColor(96, 165, 250);
-                doc.setLineWidth(1);
-                doc.setLineDashPattern([1.5, 1.5], 0);
-                doc.circle(x, nodeY, nodeR, "S");
-                doc.setLineDashPattern([], 0);
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(8);
-                doc.setTextColor(59, 130, 246);
-                p.labelLinhas.forEach((l, lidx) => {
-                  doc.text(l, x, nodeY + nodeR + 9 + lidx * 8, { align: "center" });
-                });
-                return;
-              }
-
-              // Sanção/Veto e Promulgação têm veredito próprio (Sancionado/
-              // Vetado, Promulgado/Vetado) que não entra no cálculo geral do
-              // fluxo (graficoCor) — sem isso, um Veto marcado depois do
-              // Resultado Final aprovado apareceria verde do mesmo jeito.
-              const negativoLocal = !!p.sd?.data?.resultado && NEGATIVOS.has(p.sd.data.resultado);
-              // Retirado de Pauta é sempre laranja, a mesma cor do status
-              // "Retirado" — independe do resto do fluxo.
-              const isRetirado = p.step.key.startsWith("retiradoPauta");
-
-              let nr = 22, ng = 163, nb = 74;
-              if (isRetirado) { nr = 249; ng = 115; nb = 22; }
-              else if (negativoLocal || graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
-              else if (graficoCor === "normal" && ultimoGeral) { nr = 37; ng = 99; nb = 235; }
-
-              doc.setFillColor(nr, ng, nb);
-              doc.circle(x, nodeY, nodeR, "F");
-              doc.setDrawColor(255, 255, 255);
-              doc.setLineWidth(1.1);
-              doc.line(x - 2.6, nodeY, x - 0.5, nodeY + 2.6);
-              doc.line(x - 0.5, nodeY + 2.6, x + 3.2, nodeY - 2.6);
-
-              doc.setFont("helvetica", "bold");
-              doc.setFontSize(8);
-              doc.setTextColor(50, 50, 50);
-              p.labelLinhas.forEach((l, lidx) => {
-                doc.text(l, x, nodeY + nodeR + 9 + lidx * 8, { align: "center" });
-              });
-
-              // Data e etiqueta alinham pela sub-fileira (não pelo rótulo de
-              // cada nó), pra não ficarem em alturas diferentes lado a lado.
-              const baseFileira = nodeY + nodeR + 9 + (labelLinhasSub - 1) * 8;
-
-              if (p.sd?.doneAt) {
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(7);
-                doc.setTextColor(140, 140, 140);
-                doc.text(fmtDDMM(p.sd.doneAt), x, baseFileira + 9, { align: "center" });
-              }
-
-              const yEtiqueta = baseFileira + (sub.segs.some(q => q.temData) ? 9 : 0) + 3;
-              const linhasEt = p.etiquetaLinhas;
-              if (linhasEt.length) {
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(7);
-                let corFundo: [number, number, number];
-                let corTexto: [number, number, number];
-                if (p.sd?.data?.comissaoNome) {
-                  corFundo = [219, 234, 254]; corTexto = [29, 78, 216];
-                } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
-                  const neg = NEGATIVOS.has(p.sd.data.resultado);
-                  corFundo = neg ? [254, 202, 202] : [187, 247, 208];
-                  corTexto = neg ? [185, 28, 28] : [22, 101, 52];
-                } else {
-                  corFundo = [243, 244, 246]; corTexto = [75, 85, 99];
-                }
-                const bw = Math.min(STEP_W_MAX - 2, Math.max(...linhasEt.map(l => doc.getTextWidth(l))) + 7);
-                const altura = 10 + (linhasEt.length - 1) * 8;
-                doc.setFillColor(corFundo[0], corFundo[1], corFundo[2]);
-                doc.rect(x - bw / 2, yEtiqueta, bw, altura, "F");
-                doc.setTextColor(corTexto[0], corTexto[1], corTexto[2]);
-                linhasEt.forEach((linha2, lidx) => {
-                  doc.text(linha2, x, yEtiqueta + 7 + lidx * 8, { align: "center" });
-                });
-              }
-            });
-
-            subY += sub.altura + (si < bloco.subFileiras.length - 1 ? ESPACO_ENTRE_SUBFILEIRAS : 0);
+          doc.setTextColor(50, 50, 50);
+          p.labelLinhas.forEach((l, li) => {
+            doc.text(l, x, nodeY + nodeR + 9 + li * 8, { align: "center" });
           });
 
-          fx += bloco.largura + GAP_BLOCOS;
+          // Data e etiqueta alinham pela fileira (não pelo rótulo de cada nó),
+          // pra não ficarem em alturas diferentes lado a lado.
+          const baseFileira = nodeY + nodeR + 9 + (labelLinhasFileira - 1) * 8;
+
+          if (p.sd?.doneAt) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            doc.setTextColor(140, 140, 140);
+            doc.text(fmtDDMM(p.sd.doneAt), x, baseFileira + 9, { align: "center" });
+          }
+
+          const yEtiqueta = baseFileira + (fileira.some(q => q.temData) ? 9 : 0) + 3;
+          // Usa as mesmas linhas já medidas em passosReais (etiquetaLinhas) —
+          // garante que a altura reservada pra fileira e o que é desenhado
+          // aqui nunca fiquem fora de sincronia.
+          const linhasEt = p.etiquetaLinhas;
+          if (linhasEt.length) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            let corFundo: [number, number, number];
+            let corTexto: [number, number, number];
+            if (p.sd?.data?.comissaoNome) {
+              corFundo = [219, 234, 254]; corTexto = [29, 78, 216];
+            } else if (p.sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(p.step.key)) {
+              const neg = NEGATIVOS.has(p.sd.data.resultado);
+              corFundo = neg ? [254, 202, 202] : [187, 247, 208];
+              corTexto = neg ? [185, 28, 28] : [22, 101, 52];
+            } else {
+              corFundo = [243, 244, 246]; corTexto = [75, 85, 99];
+            }
+            const bw = Math.min(stepW - 2, Math.max(...linhasEt.map(l => doc.getTextWidth(l))) + 7);
+            const altura = 10 + (linhasEt.length - 1) * 8;
+            doc.setFillColor(corFundo[0], corFundo[1], corFundo[2]);
+            doc.rect(x - bw / 2, yEtiqueta, bw, altura, "F");
+            doc.setTextColor(corTexto[0], corTexto[1], corTexto[2]);
+            linhasEt.forEach((linha, li) => {
+              doc.text(linha, x, yEtiqueta + 7 + li * 8, { align: "center" });
+            });
+          }
         });
 
-        fy += alturaLinha + (li < linhasDeBlocos.length - 1 ? ROW_GAP_BLOCOS : 0);
+        fy += alturaFileira(fileira);
       });
     }
 
