@@ -336,7 +336,9 @@ export function exportarSegovPDF(
     // mesclar direto na ordem do array, comparando com a data antiga de
     // livres ainda não tratadas, jogava a etapa lá pro final ou de volta pro
     // lugar de origem. Empate → livre entra antes da vizinha (ver
-    // editar/page.tsx).
+    // editar/page.tsx) — exceto "Retirado de Pauta", que no empate entra
+    // DEPOIS: sem isso, um retirado no mesmo dia do próprio "Pautado"
+    // aparecia antes dele.
     const fixasOrdenadas = marcadosBase.filter(d => !CHAVES_REPOSICIONAR_POR_DATA.includes(d.key));
     const livresOrdenadas = marcadosBase
       .filter(d => CHAVES_REPOSICIONAR_POR_DATA.includes(d.key))
@@ -344,7 +346,8 @@ export function exportarSegovPDF(
     const marcados = [...fixasOrdenadas];
     livresOrdenadas.forEach(item => {
       const dataItem = fluxo[item.key]?.doneAt || "";
-      let posicao = marcados.findIndex(d => (fluxo[d.key]?.doneAt || "") >= dataItem);
+      const ehRetirada = item.key.startsWith("retiradoPauta");
+      let posicao = marcados.findIndex(d => ehRetirada ? (fluxo[d.key]?.doneAt || "") > dataItem : (fluxo[d.key]?.doneAt || "") >= dataItem);
       if (posicao === -1) posicao = marcados.length;
       marcados.splice(posicao, 0, item);
     });
