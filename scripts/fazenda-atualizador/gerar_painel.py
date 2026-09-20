@@ -136,6 +136,21 @@ except Exception:
     DESPESAS, DP_COLETA = {'ano': None, 'meses': []}, ''
 print('despesas carregadas:', len(DESPESAS['meses']), 'meses de', DESPESAS['ano'])
 
+# Receita x Despesas — só o ano de 2026 (o mesmo ano coletado em Despesas),
+# mês a mês: Receita líquida (Corrente + Capital − Deduções) contra o que
+# foi Empenhado e o que foi de fato Pago, pra enxergar o equilíbrio
+# financeiro do município.
+ANO_EQUILIBRIO = str(DESPESAS['ano']) if DESPESAS.get('ano') else '2026'
+def _receita_liquida_mes(mes):
+    def soma(chave):
+        return sum(MENSAL.get(chave, {}).get(ANO_EQUILIBRIO, {}).get(str(mes), {}).values())
+    return soma('rc') + soma('cap') - soma('ded')
+EQUILIBRIO = {
+    'ano': int(ANO_EQUILIBRIO),
+    'meses': [[m, round(_receita_liquida_mes(m), 2), emp, pag]
+              for m, emp, liq, pag in DESPESAS['meses']],
+}
+
 DATA = {
     'rc':  bloco('1'),
     'cap': bloco('2'),
@@ -147,6 +162,7 @@ DATA = {
     'ct_coleta': CT_COLETA,
     'rh_ref': RH_REF,
     'despesas': DESPESAS,
+    'equilibrio': EQUILIBRIO,
     'dp_coleta': DP_COLETA,
     'rh':  [[txt(r['Nome']), txt(r['Cargo']), txt(r['Tipo']), txt(r['Situação']),
              txt(r['Secretaria']), num(r['Vencimentos']), num(r['Bruto']), num(r['Líquido'])]
@@ -367,6 +383,8 @@ HTML = r'''<!DOCTYPE html>
     <b data-p="pes">Pessoal</b>
     <b data-p="desp">Órgãos</b>
     <b data-p="ctr">Contratos</b>
+    <span class="espaco"></span>
+    <b data-p="eq">__ANO_EQ__ · Receita x Despesas</b>
   </nav>
   <div id="btnAtualizar">↻ Atualizar</div>
 </div></header>
@@ -378,6 +396,7 @@ HTML = r'''<!DOCTYPE html>
   <div class="pg" id="pg-ctr"></div>
   <div class="pg" id="pg-pes"></div>
   <div class="pg" id="pg-desp"></div>
+  <div class="pg" id="pg-eq"></div>
 </div>
 
 <script>
@@ -545,6 +564,35 @@ function colunasMes(host,dados,sel,onClick,multi){
     tc.textContent=d.k;
     if(onClick) tc.style.cursor='pointer';
     if(onClick) tc.addEventListener('click',function(){ onClick(d.mes); });
+    svg.appendChild(tc);
+  });
+}
+
+/* colunas triplas (mês a mês, 3 séries) — Receita x Empenhado x Pago, sem
+   seleção nem clique, só a comparação visual + tooltip com os 3 valores. */
+function colunasMesTrio(host,dados,series){
+  host.innerHTML='';
+  const W=host.clientWidth||900, H=220, base=H-30, topo=26;
+  const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
+  const max=Math.max(...dados.flatMap(d=>series.map(s=>d[s.chave])),0)||1;
+  const slot=W/dados.length, grupoW=Math.min(78,slot*0.72), bw=grupoW/series.length-4;
+  dados.forEach((d,i)=>{
+    const cx=i*slot+slot/2, x0=cx-grupoW/2;
+    series.forEach((s,j)=>{
+      const v=d[s.chave], h=v>0?Math.max(2,(v/max)*(base-topo)):0, y=base-h;
+      const bx=x0+j*(bw+4);
+      if(h>0){
+        const r=Math.min(4,bw/2,h);
+        const p=S('path',{d:'M'+bx+','+base+' L'+bx+','+(y+r)
+          +' Q'+bx+','+y+' '+(bx+r)+','+y
+          +' L'+(bx+bw-r)+','+y+' Q'+(bx+bw)+','+y+' '+(bx+bw)+','+(y+r)
+          +' L'+(bx+bw)+','+base+' Z', fill:s.cor});
+        dica(p, d.k+' · '+s.nome, '<em>'+exato(v)+'</em>');
+        svg.appendChild(p);
+      }
+    });
+    const tc=S('text',{x:cx,y:base+18,'text-anchor':'middle',class:'cc'});
+    tc.textContent=d.k;
     svg.appendChild(tc);
   });
 }
@@ -1121,10 +1169,64 @@ function montaDespesas(){
   };
 }
 
+/* ---------------- página de equilíbrio (Receita x Despesas) ---------------- */
+function montaEquilibrio(){
+  const host=document.getElementById('pg-eq');
+  host.innerHTML='';
+  const eq=DATA.equilibrio||{ano:null,meses:[]};
+  const meses=eq.meses||[];
+  const topopag=el('div','topopag'); host.appendChild(topopag);
+  const cab=el('div','cab');
+  cab.innerHTML='<div><h1>'+(eq.ano||'')+' · Receita x Despesas</h1>'
+    +'<p>Receita líquida (Corrente + Capital − Deduções) contra o que foi empenhado e '
+    +'efetivamente pago no mesmo mês, pra ver o equilíbrio financeiro do município</p></div>';
+  topopag.appendChild(cab);
+  const kpis=el('div','kpis'); host.appendChild(kpis);
+
+  if(!meses.length){
+    const d=el('div','vazio'); d.textContent='Sem dados suficientes ainda pra montar essa comparação.';
+    host.appendChild(d);
+    return function(){};
+  }
+
+  const sMes=bloco(host,'Mês a mês · R$');
+  const leg=el('div'); leg.style.cssText='display:flex;gap:20px;margin:-6px 0 14px;flex-wrap:wrap';
+  const SERIES=[
+    {chave:'receita', nome:'Receita', cor:'var(--acento)'},
+    {chave:'emp',     nome:'Empenhado', cor:'var(--parcial)'},
+    {chave:'pag',     nome:'Pago', cor:'var(--alta)'},
+  ];
+  SERIES.forEach(s=>{
+    const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)';
+    it.innerHTML='<span style="width:10px;height:10px;border-radius:3px;background:'+s.cor+';display:inline-block"></span>'+s.nome;
+    leg.appendChild(it);
+  });
+  sMes.appendChild(leg);
+  const mesG=el('div'); sMes.appendChild(mesG);
+
+  const totReceita=meses.reduce((s,m)=>s+m[1],0), totEmp=meses.reduce((s,m)=>s+m[2],0),
+        totPag=meses.reduce((s,m)=>s+m[3],0);
+  const saldo=totReceita-totPag;
+
+  return function(){
+    kpis.innerHTML='';
+    [['Receita', brlx(totReceita), (eq.ano||'')+' · líquida, todos os meses', totReceita],
+     ['Empenhado', brlx(totEmp), 'comprometido no período', totEmp],
+     ['Pago', brlx(totPag), 'efetivamente desembolsado', totPag],
+     ['Saldo', brlx(saldo), saldo>=0?'receita cobriu o pago':'pago passou da receita', saldo],
+    ].forEach(([r,v,s,x])=>{
+      const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x); kpis.appendChild(d);
+    });
+
+    const dados=meses.map(([m,receita,emp,pag])=>({k:MESES[m-1], receita, emp, pag}));
+    colunasMesTrio(mesG, dados, SERIES);
+  };
+}
+
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
-                desp:montaDespesas() };
+                desp:montaDespesas(), eq:montaEquilibrio() };
 function render(){
   document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
@@ -1140,6 +1242,7 @@ render();
 '''
 
 out = HTML.replace('__DATA__', json.dumps(DATA, ensure_ascii=False, separators=(',', ':')))
+out = out.replace('__ANO_EQ__', str(EQUILIBRIO['ano']))
 
 dest = os.path.abspath(os.path.join(BASE, '..', 'Painel_Receita_Despesas.html'))
 with open(dest, 'w', encoding='utf-8') as f:
