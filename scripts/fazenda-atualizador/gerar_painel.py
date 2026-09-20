@@ -1211,8 +1211,7 @@ function montaEquilibrio(){
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
   cab.innerHTML='<div><h1>'+(eq.ano||'')+' · Receita x Despesas</h1>'
-    +'<p>Receita líquida (Corrente + Capital − Deduções) contra o que foi empenhado e '
-    +'efetivamente pago no mesmo mês, pra ver o equilíbrio financeiro do município</p></div>';
+    +'<p>Receita Orçamentária Líquida Total (Receita Corrente + Receita de Capital − Deduções)</p></div>';
   topopag.appendChild(cab);
   const kpis=el('div','kpis'); host.appendChild(kpis);
 
