@@ -1193,8 +1193,8 @@ function montaEquilibrio(){
   const leg=el('div'); leg.style.cssText='display:flex;gap:20px;margin:-6px 0 14px;flex-wrap:wrap';
   const SERIES=[
     {chave:'receita', nome:'Receita', cor:'var(--acento)'},
-    {chave:'emp',     nome:'Empenhado', cor:'var(--parcial)'},
-    {chave:'pag',     nome:'Pago', cor:'var(--alta)'},
+    {chave:'emp',     nome:'Empenhado', cor:'#5B6472'},
+    {chave:'pag',     nome:'Pago', cor:'#B8860B'},
   ];
   SERIES.forEach(s=>{
     const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)';
