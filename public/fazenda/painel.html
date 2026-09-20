@@ -345,25 +345,30 @@ function colunas(host,dados,sel,onClick){
 const MESES=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 const MESNOME={'1':'janeiro','2':'fevereiro','3':'março','4':'abril','5':'maio','6':'junho',
                '7':'julho','8':'agosto','9':'setembro','10':'outubro','11':'novembro','12':'dezembro'};
-function colunasMes(host,dados,sel,onClick){
+function colunasMes(host,dados,sel,onClick,multi){
   host.innerHTML='';
   const W=host.clientWidth||900, H=190, base=H-28, topo=24;
   const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
   const max=Math.max(...dados.map(d=>d.v),0)||1;
   const soma=dados.reduce((a,d)=>a+d.v,0);
   const slot=W/12, bw=Math.min(58,slot*0.5);
+  // sel pode ser uma string (seleção única, como no mês-a-mês da Receita) ou
+  // um Set (seleção múltipla, como em Despesas) — nenhumSel cobre os dois.
+  const ehSet = sel instanceof Set;
+  const nenhumSel = ehSet ? sel.size===0 : !sel;
+  const estaMarcado = m => ehSet ? sel.has(m) : sel===m;
   dados.forEach((d,i)=>{
     const cx=i*slot+slot/2, h=d.v>0?Math.max(2,(d.v/max)*(base-topo)):0, y=base-h;
-    const marcado = sel && sel===d.mes;
+    const marcado = estaMarcado(d.mes);
     if(h>0){
       const r=Math.min(6,bw/2,h);
       const p=S('path',{d:'M'+(cx-bw/2)+','+base+' L'+(cx-bw/2)+','+(y+r)
         +' Q'+(cx-bw/2)+','+y+' '+(cx-bw/2+r)+','+y
         +' L'+(cx+bw/2-r)+','+y+' Q'+(cx+bw/2)+','+y+' '+(cx+bw/2)+','+(y+r)
-        +' L'+(cx+bw/2)+','+base+' Z', class:'cb'+((!sel||marcado)?' on':'')});
+        +' L'+(cx+bw/2)+','+base+' Z', class:'cb'+((nenhumSel||marcado)?' on':'')});
       if(onClick) p.addEventListener('click',function(){ onClick(d.mes); });
       dica(p, d.k, '<em>'+exato(d.v)+'</em><br>'+(soma?f1.format(d.v/soma*100)+'% do período':'')
-           +(onClick?'<br><span style="opacity:.6">clique para ver só este mês</span>':''));
+           +(onClick?'<br><span style="opacity:.6">clique para '+(multi?'adicionar/remover':'ver só este mês')+'</span>':''));
       svg.appendChild(p);
       const tv=S('text',{x:cx,y:y-8,'text-anchor':'middle',class:'cv'});
       tv.textContent=extenso(d.v);
@@ -815,7 +820,7 @@ function montaDespesas(){
   const meses=(DATA.despesas&&DATA.despesas.meses)||[];
   const ano=DATA.despesas&&DATA.despesas.ano;
   const orgaosPorMes=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{};
-  const st={ mes:null };
+  const st={ meses:new Set() };
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
   cab.innerHTML='<div><h1>Despesas</h1><p>Empenho, liquidação e pagamento por mês'
@@ -842,20 +847,40 @@ function montaDespesas(){
   const totEmp=meses.reduce((s,m)=>s+m[1],0), totLiq=meses.reduce((s,m)=>s+m[2],0),
         totPag=meses.reduce((s,m)=>s+m[3],0);
 
+  // Agrega o detalhamento por órgão dos meses pedidos, somando quando mais
+  // de um mês está selecionado. Sem seleção nenhuma, soma TODOS os meses já
+  // coletados (visão do período inteiro) — a tabela nunca fica vazia.
+  function orgAgregado(mesesPedidos){
+    const usar = mesesPedidos.length ? mesesPedidos : Object.keys(orgaosPorMes);
+    const mapa = new Map();
+    usar.forEach(m=>{
+      (orgaosPorMes[m]||[]).forEach(([nome,ini,atual,emp,liq,pag])=>{
+        const cur = mapa.get(nome) || [0,0,0];
+        cur[0]+=emp; cur[1]+=liq; cur[2]+=pag;
+        mapa.set(nome, cur);
+      });
+    });
+    return [...mapa.entries()].map(([nome,v])=>[nome,...v]);
+  }
+
   function montaOrg(){
     const rot=sOrg.querySelector('.rot');
-    const linhas=st.mes && orgaosPorMes[st.mes];
-    if(!st.mes){
-      rot.textContent='Por secretaria · clique num mês no gráfico acima';
-      rolaOrg.innerHTML='';
-      return;
+    const selecionados=[...st.meses].sort((a,b)=>+a-+b);
+    const linhas=orgAgregado(selecionados);
+    const semDetalhe=selecionados.filter(m=>!orgaosPorMes[m]);
+
+    if(!selecionados.length){
+      rot.textContent='Por secretaria · todos os meses coletados';
+    } else {
+      rot.innerHTML='Por secretaria · <b style="color:var(--t1)">'
+        +selecionados.map(m=>MESNOME[m].charAt(0).toUpperCase()+MESNOME[m].slice(1)).join(', ')
+        +'</b> <span style="color:var(--t3);font-weight:400;cursor:pointer" id="limparOrg">✕ limpar</span>';
+      rot.querySelector('#limparOrg').onclick=()=>{ st.meses.clear(); colunasMes(mesG, serie, st.meses, onClickMes, true); montaOrg(); };
     }
-    rot.innerHTML='Por secretaria · <b style="color:var(--t1);text-transform:capitalize">'
-      +esc(MESNOME[st.mes])+'</b> <span style="color:var(--t3);font-weight:400;cursor:pointer" id="fecharOrg">✕ fechar</span>';
-    rot.querySelector('#fecharOrg').onclick=()=>{ st.mes=null; montaOrg(); colunasMes(mesG, serie, st.mes, onClickMes); };
+
     rolaOrg.innerHTML='';
-    if(!linhas || !linhas.length){
-      const d=el('div','vazio'); d.textContent='Sem detalhamento por secretaria coletado pra esse mês ainda.';
+    if(!linhas.length){
+      const d=el('div','vazio'); d.textContent='Sem detalhamento por secretaria coletado ainda.';
       rolaOrg.appendChild(d);
       return;
     }
@@ -863,19 +888,25 @@ function montaDespesas(){
     t.innerHTML='<thead><tr><th class="e" style="width:34%">Secretaria/Órgão</th>'
       +'<th>Empenhado (R$)</th><th>Liquidação (R$)</th><th>Pagamento (R$)</th></tr></thead>';
     const tb=el('tbody');
-    linhas.slice().sort((a,b)=>b[4]-a[4]).forEach(([nome,ini,atual,emp,liq,pag])=>{
+    linhas.slice().sort((a,b)=>b[3]-a[3]).forEach(([nome,emp,liq,pag])=>{
       const tr=el('tr');
       tr.innerHTML='<td class="e">'+esc(nome.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''))+'</td>'
         +'<td>'+exato(emp)+'</td><td>'+exato(liq)+'</td><td>'+exato(pag)+'</td>';
       tb.appendChild(tr);
     });
     t.appendChild(tb); rolaOrg.appendChild(t);
+    if(semDetalhe.length){
+      const av=el('div','nota');
+      av.textContent='Sem detalhamento por secretaria ainda pra: '
+        +semDetalhe.map(m=>MESNOME[m]).join(', ')+' (só o total entra na conta acima).';
+      rolaOrg.appendChild(av);
+    }
   }
 
   const serie=meses.map(m=>({k:MESES[m[0]-1], v:m[3], mes:String(m[0])}));
   function onClickMes(m){
-    st.mes=(st.mes===m ? null : m);
-    colunasMes(mesG, serie, st.mes, onClickMes);
+    st.meses.has(m) ? st.meses.delete(m) : st.meses.add(m);
+    colunasMes(mesG, serie, st.meses, onClickMes, true);
     montaOrg();
   }
 
@@ -889,7 +920,7 @@ function montaDespesas(){
       const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x); kpis.appendChild(d);
     });
 
-    colunasMes(mesG, serie, st.mes, onClickMes);
+    colunasMes(mesG, serie, st.meses, onClickMes, true);
     montaOrg();
 
     rola.innerHTML='';
