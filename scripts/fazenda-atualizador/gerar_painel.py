@@ -195,6 +195,16 @@ HTML = r'''<!DOCTYPE html>
   nav b:hover{ color:var(--t2); }
   nav b.on{ color:var(--t1); font-weight:600; border-bottom-color:var(--acento); }
 
+  /* ---------------- grupos (Receitas do Município / Despesas do Município) */
+  .topo.grupos{ height:auto; padding-top:14px; padding-bottom:0; gap:10px; }
+  #grupos{ gap:8px; }
+  #grupos b{ font-size:12.5px; font-weight:600; color:var(--t2); cursor:pointer;
+             user-select:none; padding:7px 16px; border:1px solid var(--linha);
+             border-radius:100px; background:var(--sup); transition:.12s;
+             white-space:nowrap; }
+  #grupos b:hover{ border-color:#B9BFC9; }
+  #grupos b.on{ background:var(--acento); border-color:var(--acento); color:#fff; }
+
   /* ---------------- título da página ---------------- */
   .topopag{ display:flex; align-items:flex-end; justify-content:space-between;
             gap:28px; padding:32px 0 0; flex-wrap:wrap; }
@@ -348,17 +358,25 @@ HTML = r'''<!DOCTYPE html>
   .nota{ color:var(--t3); font-size:11.5px; padding-top:26px; }
 </style>
 
-<header><div class="topo">
-  <div class="marca">Receita do Município<em>Nova Lima</em></div>
-  <nav id="abas">
-    <b data-p="rc" class="on">Receitas Correntes</b>
-    <b data-p="cap">Receita de Capital</b>
-    <b data-p="ded">Deduções</b>
-    <b data-p="ctr">Contratos</b>
-    <b data-p="pes">Pessoal</b>
-    <b data-p="desp">Despesas</b>
-  </nav>
-</div></header>
+<header>
+  <div class="topo grupos">
+    <div class="marca">Receita do Município<em>Nova Lima</em></div>
+    <nav id="grupos">
+      <b data-g="rec" class="on">Receitas do Município</b>
+      <b data-g="desp">Despesas do Município</b>
+    </nav>
+  </div>
+  <div class="topo">
+    <nav id="abas">
+      <b data-p="rc" data-g="rec" class="on">Receitas Correntes</b>
+      <b data-p="cap" data-g="rec">Receita de Capital</b>
+      <b data-p="ded" data-g="rec">Deduções</b>
+      <b data-p="ctr" data-g="desp">Contratos</b>
+      <b data-p="pes" data-g="desp">Pessoal</b>
+      <b data-p="desp" data-g="desp">Despesas</b>
+    </nav>
+  </div>
+</header>
 
 <div class="env">
   <div class="pg on" id="pg-rc"></div>
@@ -1114,11 +1132,26 @@ function montaDespesas(){
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
                 desp:montaDespesas() };
+const GRUPO_DA_PAGINA={ rc:'rec', cap:'rec', ded:'rec', ctr:'desp', pes:'desp', desp:'desp' };
 function render(){
-  document.querySelectorAll('#abas b').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina));
+  const grupo=GRUPO_DA_PAGINA[pagina];
+  document.querySelectorAll('#grupos b').forEach(b=>b.classList.toggle('on',b.dataset.g===grupo));
+  document.querySelectorAll('#abas b').forEach(b=>{
+    b.classList.toggle('on',b.dataset.p===pagina);
+    b.style.display=(b.dataset.g===grupo?'':'none');
+  });
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
   desenha[pagina]();
 }
+// Lembra qual aba estava aberta em cada grupo, pra voltar pra ela ao trocar
+// de grupo e voltar, em vez de sempre cair na primeira.
+const ULTIMA_DO_GRUPO={ rec:'rc', desp:'ctr' };
+document.querySelectorAll('#grupos b').forEach(b=>b.onclick=()=>{
+  const g=b.dataset.g;
+  ULTIMA_DO_GRUPO[GRUPO_DA_PAGINA[pagina]]=pagina;
+  pagina=ULTIMA_DO_GRUPO[g];
+  render(); scrollTo({top:0,behavior:'smooth'});
+});
 document.querySelectorAll('#abas b').forEach(b=>b.onclick=()=>{
   pagina=b.dataset.p; render(); scrollTo({top:0,behavior:'smooth'}); });
 let t=null;
