@@ -472,8 +472,9 @@ function dica(alvo,titulo,corpo){
 
 /* ---------------- peças ---------------- */
 /* indicador: rótulo, valor grande, valor exato (opcional, em R$) e legenda */
-function kpiHtml(rot, valor, legenda, exatoNum){
-  return '<div class="rot">'+rot+'</div><div class="v">'+valor+'</div>'
+function kpiHtml(rot, valor, legenda, exatoNum, corValor, rotDestaque){
+  return '<div class="rot"'+(rotDestaque?' style="font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--t1)"':'')+'>'+rot+'</div>'
+    + '<div class="v"'+(corValor?' style="color:'+corValor+'"':'')+'>'+valor+'</div>'
     + (exatoNum!==undefined && exatoNum!==null ? '<div class="x">'+exato(exatoNum)+'</div>' : '')
     + '<div class="s">'+(legenda||'')+'</div>';
 }
@@ -592,6 +593,38 @@ function colunasMesTrio(host,dados,series){
       }
     });
     const tc=S('text',{x:cx,y:base+18,'text-anchor':'middle',class:'cc'});
+    tc.textContent=d.k;
+    svg.appendChild(tc);
+  });
+}
+
+/* linhas (mês a mês, várias séries) — mesma comparação da colunasMesTrio,
+   só que em linha, pra enxergar a tendência sem o mês mais alto "esmagar"
+   visualmente os outros como acontece nas colunas. */
+function linhasMes(host,dados,series){
+  host.innerHTML='';
+  const W=host.clientWidth||900, H=220, base=H-30, topo=26;
+  const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
+  const max=Math.max(...dados.flatMap(d=>series.map(s=>d[s.chave])),0)||1;
+  const slot=W/dados.length;
+  const pontoX=i=>i*slot+slot/2;
+  const pontoY=v=>base-(v/max)*(base-topo);
+
+  series.forEach(s=>{
+    const pts=dados.map((d,i)=>[pontoX(i),pontoY(d[s.chave])]);
+    const linha=S('path',{
+      d:pts.map((p,i)=>(i===0?'M':'L')+p[0]+','+p[1]).join(' '),
+      fill:'none', stroke:s.cor, 'stroke-width':2.5, 'stroke-linejoin':'round', 'stroke-linecap':'round'
+    });
+    svg.appendChild(linha);
+    dados.forEach((d,i)=>{
+      const c=S('circle',{cx:pts[i][0],cy:pts[i][1],r:4,fill:s.cor,stroke:'var(--bg)','stroke-width':2});
+      dica(c, d.k+' · '+s.nome, '<em>'+exato(d[s.chave])+'</em>');
+      svg.appendChild(c);
+    });
+  });
+  dados.forEach((d,i)=>{
+    const tc=S('text',{x:pontoX(i),y:base+18,'text-anchor':'middle',class:'cc'});
     tc.textContent=d.k;
     svg.appendChild(tc);
   });
@@ -1204,22 +1237,34 @@ function montaEquilibrio(){
   sMes.appendChild(leg);
   const mesG=el('div'); sMes.appendChild(mesG);
 
+  const sLinha=bloco(host,'Mês a mês · em linha · R$');
+  const legL=el('div'); legL.style.cssText='display:flex;gap:20px;margin:-6px 0 14px;flex-wrap:wrap';
+  SERIES.forEach(s=>{
+    const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)';
+    it.innerHTML='<span style="width:10px;height:10px;border-radius:3px;background:'+s.cor+';display:inline-block"></span>'+s.nome;
+    legL.appendChild(it);
+  });
+  sLinha.appendChild(legL);
+  const linhaG=el('div'); sLinha.appendChild(linhaG);
+
   const totReceita=meses.reduce((s,m)=>s+m[1],0), totEmp=meses.reduce((s,m)=>s+m[2],0),
         totPag=meses.reduce((s,m)=>s+m[3],0);
   const saldo=totReceita-totPag;
 
   return function(){
     kpis.innerHTML='';
-    [['Receita', brlx(totReceita), (eq.ano||'')+' · líquida, todos os meses', totReceita],
-     ['Empenhado', brlx(totEmp), 'comprometido no período', totEmp],
-     ['Pago', brlx(totPag), 'efetivamente desembolsado', totPag],
-     ['Saldo', brlx(saldo), saldo>=0?'receita cobriu o pago':'pago passou da receita', saldo],
-    ].forEach(([r,v,s,x])=>{
-      const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x); kpis.appendChild(d);
+    [['Receita', brlx(totReceita), (eq.ano||'')+' · líquida, todos os meses', totReceita, null],
+     ['Empenhado', brlx(totEmp), 'comprometido no período', totEmp, null],
+     ['Pago', brlx(totPag), 'efetivamente desembolsado', totPag, null],
+     ['Saldo', brlx(saldo), saldo>=0?'receita cobriu o pago':'pago passou da receita', saldo,
+       saldo>=0?'var(--alta)':'var(--baixa)'],
+    ].forEach(([r,v,s,x,cor])=>{
+      const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x,cor,true); kpis.appendChild(d);
     });
 
     const dados=meses.map(([m,receita,emp,pag])=>({k:MESES[m-1], receita, emp, pag}));
     colunasMesTrio(mesG, dados, SERIES);
+    linhasMes(linhaG, dados, SERIES);
   };
 }
 
