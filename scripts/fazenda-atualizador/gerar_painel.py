@@ -126,6 +126,10 @@ try:
         'meses': [[int(m), v['emp'], v['liq'], v['pag']]
                   for m, v in sorted(_dp['anos'][_ano_desp].items(), key=lambda kv: int(kv[0]))]
                  if _ano_desp else [],
+        # por órgão, só nos meses em que o coletor trouxe o detalhamento —
+        # usado na tabela que aparece ao clicar num mês no gráfico.
+        'orgaos_por_mes': {m: v['orgaos'] for m, v in _dp['anos'][_ano_desp].items() if v.get('orgaos')}
+                          if _ano_desp else {},
     }
     DP_COLETA = _dp.get('coletado_em', '')
 except Exception:
@@ -965,6 +969,8 @@ function montaDespesas(){
   host.innerHTML='';
   const meses=(DATA.despesas&&DATA.despesas.meses)||[];
   const ano=DATA.despesas&&DATA.despesas.ano;
+  const orgaosPorMes=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{};
+  const st={ mes:null };
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
   cab.innerHTML='<div><h1>Despesas</h1><p>Empenho, liquidação e pagamento por mês'
@@ -981,12 +987,52 @@ function montaDespesas(){
   const sMes=bloco(host,'Pagamento mês a mês · R$');
   const mesG=el('div'); sMes.appendChild(mesG);
 
+  const sOrg=bloco(host,'Por secretaria');
+  const rolaOrg=el('div','rolatab'); sOrg.appendChild(rolaOrg);
+
   const s2=bloco(host,'Detalhado por mês');
   const rola=el('div','rolatab'); s2.appendChild(rola);
   const nota=el('div','nota'); s2.appendChild(nota);
 
   const totEmp=meses.reduce((s,m)=>s+m[1],0), totLiq=meses.reduce((s,m)=>s+m[2],0),
         totPag=meses.reduce((s,m)=>s+m[3],0);
+
+  function montaOrg(){
+    const rot=sOrg.querySelector('.rot');
+    const linhas=st.mes && orgaosPorMes[st.mes];
+    if(!st.mes){
+      rot.textContent='Por secretaria · clique num mês no gráfico acima';
+      rolaOrg.innerHTML='';
+      return;
+    }
+    rot.innerHTML='Por secretaria · <b style="color:var(--t1);text-transform:capitalize">'
+      +esc(MESNOME[st.mes])+'</b> <span style="color:var(--t3);font-weight:400;cursor:pointer" id="fecharOrg">✕ fechar</span>';
+    rot.querySelector('#fecharOrg').onclick=()=>{ st.mes=null; montaOrg(); colunasMes(mesG, serie, st.mes, onClickMes); };
+    rolaOrg.innerHTML='';
+    if(!linhas || !linhas.length){
+      const d=el('div','vazio'); d.textContent='Sem detalhamento por secretaria coletado pra esse mês ainda.';
+      rolaOrg.appendChild(d);
+      return;
+    }
+    const t=el('table');
+    t.innerHTML='<thead><tr><th class="e" style="width:34%">Secretaria/Órgão</th>'
+      +'<th>Empenhado (R$)</th><th>Liquidação (R$)</th><th>Pagamento (R$)</th></tr></thead>';
+    const tb=el('tbody');
+    linhas.slice().sort((a,b)=>b[4]-a[4]).forEach(([nome,ini,atual,emp,liq,pag])=>{
+      const tr=el('tr');
+      tr.innerHTML='<td class="e">'+esc(nome.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''))+'</td>'
+        +'<td>'+exato(emp)+'</td><td>'+exato(liq)+'</td><td>'+exato(pag)+'</td>';
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb); rolaOrg.appendChild(t);
+  }
+
+  const serie=meses.map(m=>({k:MESES[m[0]-1], v:m[3], mes:String(m[0])}));
+  function onClickMes(m){
+    st.mes=(st.mes===m ? null : m);
+    colunasMes(mesG, serie, st.mes, onClickMes);
+    montaOrg();
+  }
 
   return function(){
     kpis.innerHTML='';
@@ -998,8 +1044,8 @@ function montaDespesas(){
       const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x); kpis.appendChild(d);
     });
 
-    const serie=meses.map(m=>({k:MESES[m[0]-1], v:m[3], mes:String(m[0])}));
-    colunasMes(mesG, serie, null, null);
+    colunasMes(mesG, serie, st.mes, onClickMes);
+    montaOrg();
 
     rola.innerHTML='';
     const t=el('table');

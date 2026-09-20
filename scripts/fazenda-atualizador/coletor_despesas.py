@@ -71,7 +71,18 @@ def le(conteudo):
     if linha_total is None:
         return None
     tot = pd.to_numeric(bruto.iloc[linha_total, 1:6], errors='coerce')
-    n_orgaos = bruto.iloc[6:linha_total, 0].notna().sum()
+
+    # Linhas entre o cabeçalho (6) e o "TOTAL:" são os órgãos, um por linha —
+    # guarda o detalhamento pra tabela "por órgão" no clique do mês.
+    orgaos = []
+    for i in range(6, linha_total):
+        nome = str(bruto.iat[i, 0]).strip()
+        if not nome or nome.lower() == 'nan':
+            continue
+        vals = pd.to_numeric(bruto.iloc[i, 1:6], errors='coerce')
+        if vals.isna().any():
+            continue
+        orgaos.append([nome] + [round(float(v), 2) for v in vals])
 
     return ano, mes, {
         'ini':   round(float(tot.iloc[0]), 2),
@@ -79,7 +90,8 @@ def le(conteudo):
         'emp':   round(float(tot.iloc[2]), 2),
         'liq':   round(float(tot.iloc[3]), 2),
         'pag':   round(float(tot.iloc[4]), 2),
-        'n_orgaos': int(n_orgaos),
+        'orgaos': orgaos,
+        'n_orgaos': len(orgaos),
     }
 
 
