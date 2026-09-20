@@ -76,6 +76,7 @@
   .kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:30px;
          padding:26px 0 4px; }
   @media (max-width:900px){ .kpis{ grid-template-columns:repeat(2,1fr); gap:22px; } }
+  .kpi .rot{ font-size:12.5px; font-weight:700; letter-spacing:.04em; color:var(--t1); }
   .kpi .v{ font-size:30px; font-weight:300; letter-spacing:-.02em; margin-top:8px;
            line-height:1.1; }
   .kpi .x{ font-size:13px; color:var(--t2); margin-top:6px; font-weight:600;
@@ -301,8 +302,8 @@ function dica(alvo,titulo,corpo){
 
 /* ---------------- peças ---------------- */
 /* indicador: rótulo, valor grande, valor exato (opcional, em R$) e legenda */
-function kpiHtml(rot, valor, legenda, exatoNum, corValor, rotDestaque){
-  return '<div class="rot"'+(rotDestaque?' style="font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--t1)"':'')+'>'+rot+'</div>'
+function kpiHtml(rot, valor, legenda, exatoNum, corValor){
+  return '<div class="rot">'+rot+'</div>'
     + '<div class="v"'+(corValor?' style="color:'+corValor+'"':'')+'>'+valor+'</div>'
     + (exatoNum!==undefined && exatoNum!==null ? '<div class="x">'+exato(exatoNum)+'</div>' : '')
     + '<div class="s">'+(legenda||'')+'</div>';
@@ -1084,7 +1085,7 @@ function montaEquilibrio(){
      ['Saldo', brlx(saldo), saldo>=0?'receita cobriu o pago':'pago passou da receita', saldo,
        saldo>=0?'var(--alta)':'var(--baixa)'],
     ].forEach(([r,v,s,x,cor])=>{
-      const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x,cor,true); kpis.appendChild(d);
+      const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x,cor); kpis.appendChild(d);
     });
 
     const dados=meses.map(([m,receita,emp,pag])=>({k:MESES[m-1], receita, emp, pag}));
