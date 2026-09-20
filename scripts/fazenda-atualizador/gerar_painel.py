@@ -981,6 +981,10 @@ function montaDespesas(){
   cab.innerHTML='<div><h1>Despesas</h1><p>Empenho, liquidação e pagamento por mês'
     +(ano?' · '+ano:'')+' · todas as secretarias</p></div>';
   topopag.appendChild(cab);
+
+  const filtros=el('div','filtros'); topopag.appendChild(filtros);
+  const btnLimpar=el('div','ano'); btnLimpar.textContent='🗑️ Limpar'; btnLimpar.title='Limpar seleção de meses';
+  filtros.appendChild(btnLimpar);
   const kpis=el('div','kpis'); host.appendChild(kpis);
 
   if(!meses.length){
@@ -1030,7 +1034,7 @@ function montaDespesas(){
       rot.innerHTML='Por secretaria · <b style="color:var(--t1)">'
         +selecionados.map(m=>MESNOME[m].charAt(0).toUpperCase()+MESNOME[m].slice(1)).join(', ')
         +'</b> <span style="color:var(--t3);font-weight:400;cursor:pointer" id="limparOrg">✕ limpar</span>';
-      rot.querySelector('#limparOrg').onclick=()=>{ st.meses.clear(); colunasMes(mesG, serie, st.meses, onClickMes, true); montaOrg(); };
+      rot.querySelector('#limparOrg').onclick=limparMeses;
     }
 
     rolaOrg.innerHTML='';
@@ -1064,6 +1068,12 @@ function montaDespesas(){
     colunasMes(mesG, serie, st.meses, onClickMes, true);
     montaOrg();
   }
+  function limparMeses(){
+    st.meses.clear();
+    colunasMes(mesG, serie, st.meses, onClickMes, true);
+    montaOrg();
+  }
+  btnLimpar.onclick=limparMeses;
 
   return function(){
     kpis.innerHTML='';
