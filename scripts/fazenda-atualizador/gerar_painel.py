@@ -151,6 +151,55 @@ EQUILIBRIO = {
               for m, emp, liq, pag in DESPESAS['meses']],
 }
 
+# ---------------------------------------------------------------- Art. 29-A
+# Teto constitucional de repasse à Câmara (CF, art. 29-A): 6% (faixa de
+# 100.001 a 300.000 habitantes) sobre a Receita Tributária própria + as
+# transferências dos arts. 153 §5º, 158 e 159 da CF, EFETIVAMENTE REALIZADAS
+# no exercício ANTERIOR (2025) — nunca a RCL, nunca orçado, nunca o ano
+# atual. Valores brutos (antes da dedução do FUNDEB) — ponto que varia de
+# orientação entre Tribunais de Contas; validar com a contabilidade do
+# município se precisar bater com o RGF oficial.
+CODIGOS_ART29A = [
+    # Receita Tributária própria (Impostos + Taxas)
+    '1112500100', '1112500200', '1112500300', '1112500400',        # IPTU
+    '1112530100', '1112530300', '1112530400',                      # ITBI
+    '1113031100', '1113034100',                                    # IRRF retido na fonte (art.158,I)
+    '1114511100', '1114511200', '1114511300', '1114511400',        # ISSQN
+    '1121010100', '1121010300', '1121010400',                      # Taxas de fiscalização
+    '1121022300', '1121022400', '1121040100', '1121500100',        # Taxas de fiscalização (outras)
+    '1122010101', '1122010102', '1122010110', '1122010300',        # Taxas de serviços
+    '1122530100', '1122530300', '1122530400',                      # Taxas de serviços (limpeza)
+    # Transferências constitucionais (art. 158 e 159)
+    '1711511100', '1711512100',                                    # Cota-parte FPM
+    '1711520100',                                                  # Cota-parte ITR
+    '1721500100',                                                  # Cota-parte ICMS
+    '1721510100',                                                  # Cota-parte IPVA
+    '1721520100',                                                  # Cota-parte IPI-Municípios
+    '1721530100',                                                  # Cota-parte CIDE
+]
+_receita_2025 = D.get('anos', {}).get('2025', {})
+BASE_ART29A_2025 = sum(_receita_2025.get(c, {}).get('ate_per', 0) for c in CODIGOS_ART29A)
+TETO_CAMARA_2026 = BASE_ART29A_2025 * 0.06
+
+_orgpm = DESPESAS.get('orgaos_por_mes', {})
+_CAM_RE = __import__('re').compile(r'^C.MARA')
+_emp_camara = sum(o[3] for m in _orgpm.values() for o in m if _CAM_RE.match(o[0]))
+_pag_camara = sum(o[5] for m in _orgpm.values() for o in m if _CAM_RE.match(o[0]))
+# Valor Inicial (LOA) da Câmara — mesmo pra qualquer mês (é o orçado no ano),
+# só como referência ao lado do teto constitucional calculado; não muda a
+# conta do teto em si.
+_loa_camara = next((o[1] for m in _orgpm.values() for o in m if _CAM_RE.match(o[0])), 0)
+ART29A = {
+    'base_2025': round(BASE_ART29A_2025, 2),
+    'teto_2026': round(TETO_CAMARA_2026, 2),
+    'emp_camara_2026': round(_emp_camara, 2),
+    'pag_camara_2026': round(_pag_camara, 2),
+    'loa_camara_2026': round(_loa_camara, 2),
+    'meses_coletados': len(_orgpm),
+}
+print('Art. 29-A — base 2025: %.2f | teto 2026 (6%%): %.2f | Câmara empenhado: %.2f | Câmara pago: %.2f | LOA Câmara: %.2f'
+      % (BASE_ART29A_2025, TETO_CAMARA_2026, _emp_camara, _pag_camara, _loa_camara))
+
 DATA = {
     'rc':  bloco('1'),
     'cap': bloco('2'),
@@ -163,6 +212,7 @@ DATA = {
     'rh_ref': RH_REF,
     'despesas': DESPESAS,
     'equilibrio': EQUILIBRIO,
+    'art29a': ART29A,
     'dp_coleta': DP_COLETA,
     'rh':  [[txt(r['Nome']), txt(r['Cargo']), txt(r['Tipo']), txt(r['Situação']),
              txt(r['Secretaria']), num(r['Vencimentos']), num(r['Bruto']), num(r['Líquido'])]
@@ -593,38 +643,6 @@ function colunasMesTrio(host,dados,series){
       }
     });
     const tc=S('text',{x:cx,y:base+18,'text-anchor':'middle',class:'cc'});
-    tc.textContent=d.k;
-    svg.appendChild(tc);
-  });
-}
-
-/* linhas (mês a mês, várias séries) — mesma comparação da colunasMesTrio,
-   só que em linha, pra enxergar a tendência sem o mês mais alto "esmagar"
-   visualmente os outros como acontece nas colunas. */
-function linhasMes(host,dados,series){
-  host.innerHTML='';
-  const W=host.clientWidth||900, H=220, base=H-30, topo=26;
-  const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
-  const max=Math.max(...dados.flatMap(d=>series.map(s=>d[s.chave])),0)||1;
-  const slot=W/dados.length;
-  const pontoX=i=>i*slot+slot/2;
-  const pontoY=v=>base-(v/max)*(base-topo);
-
-  series.forEach(s=>{
-    const pts=dados.map((d,i)=>[pontoX(i),pontoY(d[s.chave])]);
-    const linha=S('path',{
-      d:pts.map((p,i)=>(i===0?'M':'L')+p[0]+','+p[1]).join(' '),
-      fill:'none', stroke:s.cor, 'stroke-width':2.5, 'stroke-linejoin':'round', 'stroke-linecap':'round'
-    });
-    svg.appendChild(linha);
-    dados.forEach((d,i)=>{
-      const c=S('circle',{cx:pts[i][0],cy:pts[i][1],r:4,fill:s.cor,stroke:'var(--bg)','stroke-width':2});
-      dica(c, d.k+' · '+s.nome, '<em>'+exato(d[s.chave])+'</em>');
-      svg.appendChild(c);
-    });
-  });
-  dados.forEach((d,i)=>{
-    const tc=S('text',{x:pontoX(i),y:base+18,'text-anchor':'middle',class:'cc'});
     tc.textContent=d.k;
     svg.appendChild(tc);
   });
@@ -1236,19 +1254,48 @@ function montaEquilibrio(){
   sMes.appendChild(leg);
   const mesG=el('div'); sMes.appendChild(mesG);
 
-  const sLinha=bloco(host,'Mês a mês · em linha · R$');
-  const legL=el('div'); legL.style.cssText='display:flex;gap:20px;margin:-6px 0 14px;flex-wrap:wrap';
-  SERIES.forEach(s=>{
-    const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)';
-    it.innerHTML='<span style="width:10px;height:10px;border-radius:3px;background:'+s.cor+';display:inline-block"></span>'+s.nome;
-    legL.appendChild(it);
-  });
-  sLinha.appendChild(legL);
-  const linhaG=el('div'); sLinha.appendChild(linhaG);
+  const sInd=el('div','secao'); const dInd=el('div','duplo');
+  dInd.style.gridTemplateColumns='1fr 1fr 1fr';
+  sInd.appendChild(dInd); host.appendChild(sInd);
+  const cPes=el('div'), cOrc=el('div'), cCaixa=el('div');
+  cPes.innerHTML='<div class="rot" style="margin-bottom:16px">% Gasto com Pessoal</div>';
+  cOrc.innerHTML='<div class="rot" style="margin-bottom:16px">Teto da Câmara · Visão Orçamentária</div>';
+  cCaixa.innerHTML='<div class="rot" style="margin-bottom:16px">Teto da Câmara · Visão de Caixa</div>';
+  dInd.appendChild(cPes); dInd.appendChild(cOrc); dInd.appendChild(cCaixa);
+  const medPes=el('div'), medOrc=el('div'), medCaixa=el('div');
+  cPes.appendChild(medPes); cOrc.appendChild(medOrc); cCaixa.appendChild(medCaixa);
 
   const totReceita=meses.reduce((s,m)=>s+m[1],0), totEmp=meses.reduce((s,m)=>s+m[2],0),
         totPag=meses.reduce((s,m)=>s+m[3],0);
   const saldo=totReceita-totPag;
+
+  // Folha do mês de referência (aba Pessoal), anualizada (×12) pra comparar
+  // com a Receita do ano inteiro — aproximação gerencial da Despesa Total
+  // com Pessoal da LRF (o ideal seria empenhado com encargos patronais em
+  // janela móvel de 12 meses, que não temos coletado).
+  const folhaBruta=(DATA.rh||[]).reduce((s,r)=>s+r[6],0);
+  const folhaAnual=folhaBruta*12;
+
+  const art29a=DATA.art29a||{};
+
+  function medidorHtml(pct,limite,cor,corLimiteTexto,marcadorExtra){
+    const dentro=pct<=limite;
+    const corTxt=corLimiteTexto||(dentro?'var(--alta)':'var(--baixa)');
+    return '<div style="font-size:34px;font-weight:700;color:'+corTxt+';line-height:1">'
+        +f1.format(pct)+'%</div>'
+      +'<div style="font-size:12px;color:var(--t3);margin:4px 0 14px">'
+        +(dentro?'dentro do limite de '+limite+'%':'acima do limite de '+limite+'%')+'</div>'
+      +'<div style="position:relative;height:10px;background:var(--trilho);border-radius:6px;margin-bottom:4px">'
+        +'<div style="position:absolute;left:0;top:0;height:100%;width:'+Math.max(0,Math.min(100,pct))+'%;'
+          +'background:'+cor+';border-radius:6px"></div>'
+        +'<div title="limite legal: '+limite+'%" style="position:absolute;left:'+limite+'%;top:-3px;height:16px;'
+          +'width:2px;background:var(--t2)"></div>'
+        +(marcadorExtra?('<div title="'+marcadorExtra.label+'" style="position:absolute;left:'
+          +Math.max(0,Math.min(100,marcadorExtra.pos))+'%;top:-3px;height:16px;width:2px;border-left:2px dashed '
+          +marcadorExtra.cor+';background:transparent"></div>'):'')
+      +'</div>'
+      +(marcadorExtra?('<div style="font-size:11px;color:'+marcadorExtra.cor+';margin-bottom:8px">▲ '+marcadorExtra.label+'</div>'):'');
+  }
 
   return function(){
     kpis.innerHTML='';
@@ -1263,7 +1310,30 @@ function montaEquilibrio(){
 
     const dados=meses.map(([m,receita,emp,pag])=>({k:MESES[m-1], receita, emp, pag}));
     colunasMesTrio(mesG, dados, SERIES);
-    linhasMes(linhaG, dados, SERIES);
+
+    const pctPes=totReceita?folhaAnual/totReceita*100:0;
+    medPes.innerHTML=medidorHtml(pctPes,60,'var(--acento)')
+      +'<div class="s" style="font-size:11.5px;color:var(--t3);line-height:1.5">'
+      +'% Gasto com Pessoal = Gasto com Pessoal ÷ RCL × 100 (limite total 60% da LRF)<br>'
+      +'Folha ('+(DATA.rh_ref||'referência')+') anualizada: '+exato(folhaAnual)+' ÷ RCL '+exato(totReceita)+'</div>';
+
+    const pctLoa=art29a.teto_2026?art29a.loa_camara_2026/art29a.teto_2026*100:0;
+    const marcadorLoa={ pos:pctLoa, cor:'#7C3AED',
+      label:'LOA 2026: '+exato(art29a.loa_camara_2026||0)+' ('+f1.format(pctLoa)+'% do teto)' };
+
+    const pctOrc=art29a.teto_2026?art29a.emp_camara_2026/art29a.teto_2026*100:0;
+    medOrc.innerHTML=medidorHtml(pctOrc,100,'var(--acento)',null,marcadorLoa)
+      +'<div class="s" style="font-size:11.5px;color:var(--t3);line-height:1.5">'
+      +'% Consumo (Empenhado) = Despesa Empenhada da Câmara ÷ Teto do Art. 29-A × 100<br>'
+      +'Empenhado '+exato(art29a.emp_camara_2026||0)+' ÷ Teto '+exato(art29a.teto_2026||0)
+      +' (6% de '+exato(art29a.base_2025||0)+' arrecadado em 2025)</div>';
+
+    const pctCaixa=art29a.teto_2026?art29a.pag_camara_2026/art29a.teto_2026*100:0;
+    medCaixa.innerHTML=medidorHtml(pctCaixa,100,'#B8860B',null,marcadorLoa)
+      +'<div class="s" style="font-size:11.5px;color:var(--t3);line-height:1.5">'
+      +'% Consumo (Pago) = Despesa Paga da Câmara ÷ Teto do Art. 29-A × 100<br>'
+      +'Pago '+exato(art29a.pag_camara_2026||0)+' ÷ Teto '+exato(art29a.teto_2026||0)
+      +' · acumulado em '+(art29a.meses_coletados||0)+' meses de 2026</div>';
   };
 }
 
