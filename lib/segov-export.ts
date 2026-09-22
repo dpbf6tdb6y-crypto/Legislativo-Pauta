@@ -278,15 +278,16 @@ export function exportarSegovPDF(
         ? sd.data.comissaoNome.split(" — ").slice(1).join(" — ")
         : sd.data.comissaoNome;
     }
+    const todosAutores = [...(sd?.data?.autores || []), ...(sd?.data?.autoresComissoes || [])];
     if (sd?.data?.resultado && !PILL_RESULTADO_OCULTA.has(stepKey)) {
-      const autoresTxt = sd?.data?.autores?.length ? ` — ${sd.data.autores.join(" e ")}` : "";
+      const autoresTxt = todosAutores.length ? ` — ${todosAutores.join(" e ")}` : "";
       return labelResultadoPdf(stepKey, sd.data.resultado) + autoresTxt;
     }
     // Comissão Especial não mostra nome de membro aqui — mostrar só nome1
     // seria parcial (a comissão pode ter até 3 membros) e não identifica a
     // comissão toda, mesmo corte das telas.
     if (sd?.data?.nome1 && stepKey !== "comissaoEspecial") return sd.data.nome1;
-    if (sd?.data?.autores?.length) return sd.data.autores.join(" e ");
+    if (todosAutores.length) return todosAutores.join(" e ");
     return "";
   }
 
@@ -343,11 +344,18 @@ export function exportarSegovPDF(
     const livresOrdenadas = marcadosBase
       .filter(d => CHAVES_REPOSICIONAR_POR_DATA.includes(d.key))
       .sort((a, b) => (fluxo[a.key]?.doneAt || "").localeCompare(fluxo[b.key]?.doneAt || ""));
+    // Desempate por data igual: usa a ordem original do FLUXO_DEF_EXPORT em
+    // vez de sempre saltar pro início do array (ver editar/page.tsx).
+    const idxDef = (key: string) => FLUXO_DEF_EXPORT.findIndex(d => d.key === key);
     const marcados = [...fixasOrdenadas];
     livresOrdenadas.forEach(item => {
       const dataItem = fluxo[item.key]?.doneAt || "";
       const ehRetirada = item.key.startsWith("retiradoPauta");
-      let posicao = marcados.findIndex(d => ehRetirada ? (fluxo[d.key]?.doneAt || "") > dataItem : (fluxo[d.key]?.doneAt || "") >= dataItem);
+      let posicao = marcados.findIndex(d => {
+        const dD = fluxo[d.key]?.doneAt || "";
+        if (dD !== dataItem) return ehRetirada ? dD > dataItem : dD >= dataItem;
+        return ehRetirada ? idxDef(d.key) > idxDef(item.key) : idxDef(d.key) >= idxDef(item.key);
+      });
       if (posicao === -1) posicao = marcados.length;
       marcados.splice(posicao, 0, item);
     });

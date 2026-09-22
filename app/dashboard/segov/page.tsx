@@ -567,10 +567,17 @@ export default function SeggovPage() {
             const livres = marcadosBase
               .filter(m => CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
               .sort((a, b) => (a.doneAt || '').localeCompare(b.doneAt || ''))
+            // Desempate por data igual: usa a ordem original do FLUXO_DEF em
+            // vez de sempre saltar pro início do array (ver editar/page.tsx).
+            const idxDef = (key: string) => FLUXO_DEF.findIndex(d => d.key === key)
             const marcados = [...fixas]
             livres.forEach(item => {
               const ehRetirada = item.key.startsWith('retiradoPauta')
-              let posicao = marcados.findIndex(m => ehRetirada ? (m.doneAt || '') > (item.doneAt || '') : (m.doneAt || '') >= (item.doneAt || ''))
+              let posicao = marcados.findIndex(m => {
+                const dM = m.doneAt || '', dItem = item.doneAt || ''
+                if (dM !== dItem) return ehRetirada ? dM > dItem : dM >= dItem
+                return ehRetirada ? idxDef(m.key) > idxDef(item.key) : idxDef(m.key) >= idxDef(item.key)
+              })
               if (posicao === -1) posicao = marcados.length
               marcados.splice(posicao, 0, item)
             })
@@ -748,8 +755,10 @@ export default function SeggovPage() {
                   {step.data?.nome1 && !step.data?.comissaoNome && !step.data?.numero && step.key !== 'comissaoEspecial' && (
                     <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
                   )}
-                  {step.data?.autores && step.data.autores.length > 0 && (
-                    <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.autores.join(' e ')}</span>
+                  {((step.data?.autores?.length || 0) + (step.data?.autoresComissoes?.length || 0)) > 0 && (
+                    <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">
+                      {[...(step.data?.autores || []), ...(step.data?.autoresComissoes || [])].join(' e ')}
+                    </span>
                   )}
                 </div>
               )
