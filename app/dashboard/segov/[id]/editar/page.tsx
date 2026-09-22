@@ -31,6 +31,7 @@ type StepData = {
   nome2?: string
   nome3?: string
   autores?: string[]
+  autoresComissoes?: string[]
   data?: string
   resultado?: string
 }
@@ -283,6 +284,25 @@ export default function EditarSeggovPage() {
     })
   }
 
+  /** Mesma coisa que os dois acima, só que pra comissões proponentes de
+   * emenda — campo separado (autoresComissoes) de vereadores (autores),
+   * porque uma emenda pode ter vindo de uma comissão em vez de um vereador. */
+  function togglePendingAutorComissao(key: string, nomeComissao: string) {
+    setPendingState(prev => {
+      const atual = prev[key]?.autoresComissoes || []
+      const novo = atual.includes(nomeComissao) ? atual.filter(n => n !== nomeComissao) : [...atual, nomeComissao]
+      return { ...prev, [key]: { ...(prev[key] || {}), autoresComissoes: novo } }
+    })
+  }
+  function alterarAutoresComissao(key: string, nomeComissao: string) {
+    setFluxo(prev => {
+      if (!prev[key]) return prev
+      const atual = prev[key].data?.autoresComissoes || []
+      const novo = atual.includes(nomeComissao) ? atual.filter(n => n !== nomeComissao) : [...atual, nomeComissao]
+      return { ...prev, [key]: { ...prev[key], data: { ...(prev[key].data || {}), autoresComissoes: novo } } }
+    })
+  }
+
   function marcar(key: string) {
     const def = FLUXO_DEF.find(d => d.key === key)!
     const p = pending[key] || {}
@@ -314,7 +334,7 @@ export default function EditarSeggovPage() {
       // momento de marcar (a votação aconteceu naquele dia) — por isso não
       // pode ter um valor padrão silencioso, tem que ser escolhido.
       if (!p.resultado) { toast.error(`Escolha ${getOpcoes(def.key).labels.join(' ou ')} antes de marcar.`); return }
-      data = { resultado: p.resultado, ...(p.autores?.length ? { autores: p.autores } : {}) }
+      data = { resultado: p.resultado, ...(p.autores?.length ? { autores: p.autores } : {}), ...(p.autoresComissoes?.length ? { autoresComissoes: p.autoresComissoes } : {}) }
     } else if (def.tipo === 'data') {
       if (!p.data) { toast.error('Selecione a data antes de marcar.'); return }
     }
@@ -364,7 +384,7 @@ export default function EditarSeggovPage() {
       // Nunca assume Aprovado/Reprovado sozinho — sem escolha explícita,
       // a etapa continua pendente (não marca, não perde o que já tinha).
       if (!p.resultado) return null
-      data = { resultado: p.resultado, ...(p.autores?.length ? { autores: p.autores } : {}) }
+      data = { resultado: p.resultado, ...(p.autores?.length ? { autores: p.autores } : {}), ...(p.autoresComissoes?.length ? { autoresComissoes: p.autoresComissoes } : {}) }
     } else if (def.tipo === 'data') {
       if (!p.data) return null
     } else {
@@ -426,10 +446,21 @@ export default function EditarSeggovPage() {
       .filter(m => CHAVES_REPOSICIONAR_POR_DATA.includes(m.key))
       .sort((a, b) => (a.doneAt || '').localeCompare(b.doneAt || ''))
 
+    // Índice de cada chave no FLUXO_DEF original — usado como desempate
+    // quando duas etapas caem na mesma data (ex.: tudo marcado no mesmo dia
+    // de uma vez). Sem isso, uma livre empatada com Protocolo/Pautado saltava
+    // pra ANTES deles (o findIndex batia logo no primeiro item do array,
+    // que por acaso é o mais antigo), em vez de cair depois, no lugar que
+    // faz sentido dentro da sequência normal do processo.
+    const idxDef = (key: string) => FLUXO_DEF.findIndex(d => d.key === key)
     const resultado = [...fixas]
     livres.forEach(item => {
       const ehRetirada = item.key.startsWith('retiradoPauta')
-      let posicao = resultado.findIndex(m => ehRetirada ? (m.doneAt || '') > (item.doneAt || '') : (m.doneAt || '') >= (item.doneAt || ''))
+      let posicao = resultado.findIndex(m => {
+        const dM = m.doneAt || '', dItem = item.doneAt || ''
+        if (dM !== dItem) return ehRetirada ? dM > dItem : dM >= dItem
+        return ehRetirada ? idxDef(m.key) > idxDef(item.key) : idxDef(m.key) >= idxDef(item.key)
+      })
       if (posicao === -1) posicao = resultado.length
       resultado.splice(posicao, 0, item)
     })
@@ -623,8 +654,10 @@ export default function EditarSeggovPage() {
         {step.data?.nome1 && !step.data?.comissaoNome && step.key !== 'comissaoEspecial' && (
           <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.nome1}</span>
         )}
-        {step.data?.autores && step.data.autores.length > 0 && (
-          <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">{step.data.autores.join(' e ')}</span>
+        {((step.data?.autores?.length || 0) + (step.data?.autoresComissoes?.length || 0)) > 0 && (
+          <span className="mt-1 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-center leading-snug break-words">
+            {[...(step.data?.autores || []), ...(step.data?.autoresComissoes || [])].join(' e ')}
+          </span>
         )}
       </div>
     )
@@ -925,6 +958,35 @@ export default function EditarSeggovPage() {
                     className="text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-green-400/60">
                     <option value="">— Adicionar vereador —</option>
                     {disponiveis.map((v: any) => <option key={v.id} value={primeiroNome(v.nome)}>{primeiroNome(v.nome)}{!v.ativo && ' (inativo)'}</option>)}
+                  </select>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Emenda proposta por uma comissão em vez de (ou além de) um
+              vereador — campo separado dos vereadores, usando as comissões
+              já cadastradas no sistema. */}
+          {CHAVES_COM_AUTORES.has(def.key) && (() => {
+            const listaAtual = (done ? state?.data?.autoresComissoes : p.autoresComissoes) || []
+            const disponiveis = comissoes.filter((c: any) => !listaAtual.includes(nomeComissao(c) || ''))
+            return (
+              <div className="w-full mt-3">
+                <label className="block text-xs text-gray-500 mb-1">Comissão(ões) que propuseram (opcional)</label>
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  {listaAtual.map((nome: string) => (
+                    <span key={nome} className="inline-flex items-center gap-1 text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded">
+                      {nome}
+                      <button type="button"
+                        onClick={() => done ? alterarAutoresComissao(def.key, nome) : togglePendingAutorComissao(def.key, nome)}
+                        className="text-purple-400 hover:text-red-500 transition">×</button>
+                    </span>
+                  ))}
+                  <select value=""
+                    onChange={e => { if (e.target.value) { done ? alterarAutoresComissao(def.key, e.target.value) : togglePendingAutorComissao(def.key, e.target.value) } }}
+                    className="text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-1 focus:ring-purple-400/60">
+                    <option value="">— Adicionar comissão —</option>
+                    {disponiveis.map((c: any) => <option key={c.id} value={nomeComissao(c) || ''}>{nomeComissao(c)}</option>)}
                   </select>
                 </div>
               </div>
