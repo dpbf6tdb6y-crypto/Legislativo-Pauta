@@ -44,3 +44,10 @@ prisma/dev.db
 
 # backups locais de dados (dumps de produção, não versionar)
 /backups
+
+# Fazenda: planilha de folha de pagamento (nomes + salários de servidores)
+# nunca vai pro repositório (é público, mas não é pra ficar no histórico do
+# GitHub) — no VPS ela fica só no disco, fora do git. Ambiente virtual dos
+# coletores Python também fica de fora.
+scripts/fazenda-atualizador/RH_*.xls
+scripts/fazenda-atualizador/.venv/
