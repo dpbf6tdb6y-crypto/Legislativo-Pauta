@@ -305,7 +305,10 @@ HTML = r'''<!DOCTYPE html>
             gap:28px; padding:32px 0 0; flex-wrap:wrap; }
   .cab{ display:flex; align-items:flex-end; gap:32px; flex-wrap:wrap; }
   h1{ font-size:24px; font-weight:600; letter-spacing:-.02em; line-height:1.15; }
-  .cab p{ color:var(--t3); font-size:12.5px; margin-top:6px; }
+  /* Título e subtítulo na mesma linha (ganha altura); se o subtítulo for
+     comprido demais pra caber ao lado, ele quebra pra baixo sozinho. */
+  .cab > div{ display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 16px; }
+  .cab p{ color:var(--t3); font-size:12.5px; margin-top:0; }
   .topopag .filtros{ padding:0; justify-content:flex-end; }
   .topopag .filtros .resumo{ margin-left:10px; }
 
@@ -330,7 +333,12 @@ HTML = r'''<!DOCTYPE html>
          padding:26px 0 4px; }
   @media (max-width:900px){ .kpis{ grid-template-columns:repeat(2,1fr); gap:22px; } }
   .kpi .rot{ font-size:12.5px; font-weight:700; letter-spacing:.04em; color:var(--t1); }
-  .kpi .hist{ margin-top:10px; padding-top:6px; max-width:250px; border-top:1px solid var(--linha); }
+  /* Cartão em coluna e o histórico empurrado pro fim: cartões de alturas
+     diferentes (Servidores não tem a linha do valor exato) ficam com os
+     meses anteriores alinhados na mesma linha. */
+  .kpi{ display:flex; flex-direction:column; }
+  .kpi .s{ margin-bottom:10px; }
+  .kpi .hist{ margin-top:auto; padding-top:6px; max-width:250px; border-top:1px solid var(--linha); }
   .kpi .hist div{ display:flex; justify-content:space-between; gap:12px; font-size:11.5px;
                   color:var(--t3); line-height:1.75; }
   .kpi .hist b{ font-weight:500; color:var(--t2); font-variant-numeric:tabular-nums; }
