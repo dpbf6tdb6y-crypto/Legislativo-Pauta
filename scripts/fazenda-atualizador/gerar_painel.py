@@ -2,6 +2,7 @@
 """Dashboard de Receita — layout claro, leve e responsivo (substitui a lâmina 1280x720)."""
 import json, math, os, re
 import pandas as pd
+from vinculacao import classifica
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
@@ -41,7 +42,9 @@ def bloco(pre):
     for ano, reg in D['anos'].items():
         for cod, v in reg.items():
             if cod.startswith(pre):
-                out.append([int(ano), D['tipos'].get(cod, ''), nome(cod), v['ate_per']])
+                # [ano, tipo, nome, valor, % vinculada por lei (100/0/null), lei]
+                pct, lei = classifica(cod, D['tipos'].get(cod, ''), D['nomes'].get(cod, ''))
+                out.append([int(ano), D['tipos'].get(cod, ''), nome(cod), v['ate_per'], pct, lei])
     return out
 
 # mensal por bloco / ano / mês / código, para o clique no mês filtrar as listas
@@ -59,7 +62,8 @@ for pre, chave in [('1','rc'), ('2','cap'), ('9','ded')]:
     MENSAL[chave] = porAno
 
 # nome e tipo de cada código, para remontar as linhas a partir do mensal
-META = {cod: [nome(cod), D['tipos'].get(cod, '')] for cod in D['nomes']}
+META = {cod: [nome(cod), D['tipos'].get(cod, '')] + list(classifica(cod, D['tipos'].get(cod, ''), D['nomes'].get(cod, '')))
+        for cod in D['nomes']}
 
 try:
     _ct = json.load(open(os.path.join(BASE, 'dados_contratos.json'), encoding='utf-8'))
@@ -396,9 +400,24 @@ HTML = r'''<!DOCTYPE html>
   .lin .p{ font-size:12.5px; text-align:right; color:var(--t3);
            font-variant-numeric:tabular-nums; }
   .lin.esm{ opacity:.38; }
+  /* tabela de fontes com as 3 colunas de vinculação legal (%, valor, lei) */
+  .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(170px,1.2fr) minmax(50px,.4fr) 150px 52px 62px 150px minmax(150px,1fr); }
+  .lin .vp, .lin .vv, .lin .vl{ font-size:12.5px; color:var(--t3); }
+  .lin .vp, .lin .vv{ text-align:right; font-variant-numeric:tabular-nums; }
+  .lin .vl{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lin .r{ color:var(--baixa); font-weight:600; }
+  .lin .ac{ color:var(--parcial); }
+  .lin .vl.ac{ font-size:11.5px; font-style:italic; }
+  .cabl.vinc span:nth-child(5),.cabl.vinc span:nth-child(6){ text-align:right; }
+  @media (max-width:1100px){
+    .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(150px,1fr) 140px 52px 62px 140px; }
+    .lin.vinc .b, .cabl.vinc span:nth-child(2), .lin.vinc .vl, .cabl.vinc span:nth-child(7){ display:none; }
+  }
   @media (max-width:620px){
     .lin{ grid-template-columns:1fr 140px; gap:8px; }
     .lin .b, .lin .p{ display:none; }
+    .lin.vinc, .cabl.vinc{ grid-template-columns:1fr 140px; }
+    .lin.vinc .vp, .lin.vinc .vv, .cabl.vinc span:nth-child(5), .cabl.vinc span:nth-child(6){ display:none; }
   }
   .cabl{ display:grid; grid-template-columns:minmax(140px,1fr) minmax(100px,1.3fr) 158px 58px;
          gap:14px; padding-bottom:9px; border-bottom:1px solid var(--linha); }
@@ -501,11 +520,11 @@ const PARCIAL = Math.max(...ANOS);              /* exercício ainda em andamento
 
 const PAGS = {
   rc:  {t:'Receitas Correntes', sub:'Arrecadação corrente do município, por ano e por fonte',
-        tipos:true,  rot:'Fontes de receita'},
+        tipos:true,  rot:'Fontes de receita', vinc:true},
   cap: {t:'Receita de Capital', sub:'Operações de crédito, alienação de bens e transferências de capital',
-        tipos:false, rot:'Itens'},
+        tipos:false, rot:'Itens', vinc:true},
   ded: {t:'Deduções da Receita', sub:'FUNDEB, restituições e deduções sobre a arrecadação',
-        tipos:false, rot:'Itens'},
+        tipos:false, rot:'Itens', vinc:false},
 };
 
 let pagina='rc';
@@ -585,13 +604,25 @@ function linha(nome,valor,frac,pct,opt){
   const d=el('div','lin'+(opt.click?' clic':'')+(opt.sel?' sel':'')+(opt.esm?' esm':''));
   d.innerHTML='<span class="n">'+esc(nome)+'</span>'
     +'<span class="b"><i style="width:'+(Math.max(0,Math.min(1,frac))*100).toFixed(1)+'%"></i></span>'
-    +'<span class="v">'+valor+'</span><span class="p">'+(pct||'')+'</span>';
+    +'<span class="v">'+valor+'</span><span class="p">'+(pct||'')+'</span>'
+    +(opt.vinc ? vincHtml(opt.vinc) : '');
+  if(opt.vinc) d.classList.add('vinc');
   if(opt.click) d.onclick=opt.click;
   return d;
 }
-function cabecaLista(a,b,c,d){
-  const h=el('div','cabl');
-  h.innerHTML='<span>'+a+'</span><span>'+(b||'')+'</span><span>'+c+'</span><span>'+(d||'')+'</span>';
+/* três colunas de vinculação legal: % vinculada · valor vinculado · lei.
+   Vermelho = vinculada por lei; cinza = sem vinculação legal; âmbar = nenhuma
+   das regras cobre a linha (a classificar — nada é estimado). */
+function vincHtml(v){
+  if(v.pct===null) return '<span class="vp ac">—</span><span class="vv ac">—</span><span class="vl ac">a classificar</span>';
+  if(v.pct===0)    return '<span class="vp">0%</span><span class="vv">—</span><span class="vl">—</span>';
+  return '<span class="vp r">'+f0.format(v.pct)+'%</span><span class="vv r">'+exato(v.valor)+'</span>'
+    +'<span class="vl r">'+esc(v.lei||'')+'</span>';
+}
+function cabecaLista(a,b,c,d,vinc){
+  const h=el('div','cabl'+(vinc?' vinc':''));
+  h.innerHTML='<span>'+a+'</span><span>'+(b||'')+'</span><span>'+c+'</span><span>'+(d||'')+'</span>'
+    +(vinc?'<span>% Vinc.</span><span>Valor vinculado (R$)</span><span>Lei</span>':'');
   return h;
 }
 
@@ -727,8 +758,10 @@ function montaReceita(id){
   }
   const caixaDet=bloco(host,cfg.rot);
   const listaDet=el('div','lista rola');
-  caixaDet.appendChild(cabecaLista('Descrição','', 'Valor (R$)','%'));
+  caixaDet.appendChild(cabecaLista('Descrição','', 'Valor (R$)','%', cfg.vinc));
   caixaDet.appendChild(listaDet);
+  const resumoVinc=el('div','nota'); resumoVinc.style.paddingTop='14px';
+  if(cfg.vinc) caixaDet.appendChild(resumoVinc);
 
   const nota=el('div','nota');
   nota.textContent=PARCIAL+' é exercício em andamento — os valores vão até o período apurado.'
@@ -745,7 +778,7 @@ function montaReceita(id){
         const m=(fonte[a]||{})[st.mes]; if(!m) return;
         for(const cod in m){
           const mt=(DATA.meta||{})[cod]||[cod,''];
-          out.push([+a, mt[1], mt[0], m[cod]]);
+          out.push([+a, mt[1], mt[0], m[cod], mt[2]===undefined?null:mt[2], mt[3]||'']);
         }
       });
       return out;
@@ -763,6 +796,21 @@ function montaReceita(id){
     const m=new Map();
     for(const r of rows){ m.set(r[i],(m.get(r[i])||0)+r[3]); }
     return [...m].map(([k,v])=>({k,v}));
+  }
+  /* agrupa por nome somando também o que é vinculado por lei (100%), o que
+     não é (0%) e o que nenhuma regra cobre (null) — sem rateio: cada linha
+     de origem entra inteira numa das três. */
+  function agrupaDet(rows){
+    const m=new Map();
+    for(const r of rows){
+      const g=m.get(r[2])||{k:r[2], v:0, vv:0, v0:0, vn:0, c100:0, c0:0, lei:''};
+      g.v+=r[3];
+      if(r[4]===100){ g.vv+=r[3]; g.c100++; if(!g.lei) g.lei=r[5]||''; }
+      else if(r[4]===0){ g.v0+=r[3]; g.c0++; }
+      else g.vn+=r[3];
+      m.set(r[2],g);
+    }
+    return [...m.values()];
   }
 
   return function(){
@@ -785,7 +833,7 @@ function montaReceita(id){
     /* --- dados --- */
     const linhas=filtrado(), total=linhas.reduce((s,r)=>s+r[3],0);
     const nAnos=st.anos.size||ANOS.length;
-    const det=agrupa(linhas,2).sort((a,b)=>b.v-a.v);
+    const det=agrupaDet(linhas).sort((a,b)=>b.v-a.v);
     const maior=det[0];
 
     const sel=[...st.anos].sort((a,b)=>a-b);
@@ -859,14 +907,33 @@ function montaReceita(id){
     caixaDet.firstChild.textContent = cfg.rot
       + (st.mes ? ' · ' + MESNOME[st.mes] + (sel.length?' de '+sel.join(', '):' (todos os anos)') : '');
     listaDet.innerHTML='';
+    resumoVinc.innerHTML='';
     if(!det.length){ const v=el('div','vazio'); v.textContent='Sem dados para o filtro.';
                      listaDet.appendChild(v); return; }
     const mx=det[0].v;
     det.forEach(d=>{
-      const l=linha(d.k, exato(d.v), d.v/mx, f1.format(d.v/total*100)+'%');
-      dica(l, d.k, '<em>'+exato(d.v)+'</em><br>'+f2.format(d.v/total*100)+'% do total');
+      let vinc=null;
+      if(cfg.vinc){
+        const cls=d.c100+d.c0;
+        let pct=null;
+        if(cls) pct=(d.vv+d.v0)>0 ? d.vv/(d.vv+d.v0)*100 : (d.c100>0?100:0);
+        vinc={pct, valor:d.vv, lei:d.lei};
+      }
+      const l=linha(d.k, exato(d.v), d.v/mx, f1.format(d.v/total*100)+'%', {vinc});
+      dica(l, d.k, '<em>'+exato(d.v)+'</em><br>'+f2.format(d.v/total*100)+'% do total'
+        +(vinc&&vinc.pct!==null&&vinc.pct>0 ? '<br>vinculada por lei: '+exato(vinc.valor)+' · '+esc(vinc.lei||'') : ''));
       listaDet.appendChild(l);
     });
+    if(cfg.vinc){
+      const tv=det.reduce((s,d)=>s+d.vv,0), t0=det.reduce((s,d)=>s+d.v0,0), tn=det.reduce((s,d)=>s+d.vn,0);
+      const pc=x=>f1.format(total?x/total*100:0)+'%';
+      resumoVinc.innerHTML='<b style="color:var(--baixa)">Vinculado por lei: '+exato(tv)+' ('+pc(tv)+' do total)</b>'
+        +' · sem vinculação legal: '+exato(t0)+' ('+pc(t0)+')'
+        +(tn>0.005 ? ' · <span style="color:var(--parcial)">a classificar: '+exato(tn)+' ('+pc(tn)
+            +') — nenhuma das regras de vinculação cobre essas linhas</span>' : '')
+        +'<br>Classificação só pelas regras legais definidas, sem rateio nem estimativa. Os 25% em educação e 15% '
+        +'em saúde são vinculação da despesa, não da receita.';
+    }
   };
 }
 
