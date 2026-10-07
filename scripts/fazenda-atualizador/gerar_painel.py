@@ -2,7 +2,7 @@
 """Dashboard de Receita — layout claro, leve e responsivo (substitui a lâmina 1280x720)."""
 import json, math, os, re
 import pandas as pd
-from vinculacao import classifica
+from vinculacao import classifica, area as area_vinc
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
@@ -44,7 +44,8 @@ def bloco(pre):
             if cod.startswith(pre):
                 # [ano, tipo, nome, valor, % vinculada por lei (100/0/null), lei]
                 pct, lei = classifica(cod, D['tipos'].get(cod, ''), D['nomes'].get(cod, ''))
-                out.append([int(ano), D['tipos'].get(cod, ''), nome(cod), v['ate_per'], pct, lei])
+                out.append([int(ano), D['tipos'].get(cod, ''), nome(cod), v['ate_per'], pct, lei,
+                            area_vinc(cod, D['tipos'].get(cod, ''), D['nomes'].get(cod, ''))])
     return out
 
 # mensal por bloco / ano / mês / código, para o clique no mês filtrar as listas
@@ -63,6 +64,7 @@ for pre, chave in [('1','rc'), ('2','cap'), ('9','ded')]:
 
 # nome e tipo de cada código, para remontar as linhas a partir do mensal
 META = {cod: [nome(cod), D['tipos'].get(cod, '')] + list(classifica(cod, D['tipos'].get(cod, ''), D['nomes'].get(cod, '')))
+        + [area_vinc(cod, D['tipos'].get(cod, ''), D['nomes'].get(cod, ''))]
         for cod in D['nomes']}
 
 try:
@@ -401,17 +403,17 @@ HTML = r'''<!DOCTYPE html>
            font-variant-numeric:tabular-nums; }
   .lin.esm{ opacity:.38; }
   /* tabela de fontes com as 3 colunas de vinculação legal (%, valor, lei) */
-  .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(170px,1.2fr) minmax(50px,.4fr) 150px 52px 62px 150px minmax(150px,1fr); }
-  .lin .vp, .lin .vv, .lin .vl{ font-size:12.5px; color:var(--t3); }
+  .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(170px,1.2fr) minmax(50px,.4fr) 150px 52px 62px 150px 150px minmax(150px,1fr); }
+  .lin .vp, .lin .vv, .lin .vl, .lin .va{ font-size:12.5px; color:var(--t3); }
   .lin .vp, .lin .vv{ text-align:right; font-variant-numeric:tabular-nums; }
-  .lin .vl{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lin .vl, .lin .va{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .lin .r{ color:var(--baixa); font-weight:600; }
   .lin .ac{ color:var(--parcial); }
-  .lin .vl.ac{ font-size:11.5px; font-style:italic; }
+  .lin .va.ac, .lin .vl.ac{ font-size:11.5px; font-style:italic; }
   .cabl.vinc span:nth-child(5),.cabl.vinc span:nth-child(6){ text-align:right; }
   @media (max-width:1100px){
     .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(150px,1fr) 140px 52px 62px 140px; }
-    .lin.vinc .b, .cabl.vinc span:nth-child(2), .lin.vinc .vl, .cabl.vinc span:nth-child(7){ display:none; }
+    .lin.vinc .b, .cabl.vinc span:nth-child(2), .lin.vinc .vl, .lin.vinc .va, .cabl.vinc span:nth-child(7), .cabl.vinc span:nth-child(8){ display:none; }
   }
   @media (max-width:620px){
     .lin{ grid-template-columns:1fr 140px; gap:8px; }
@@ -614,15 +616,15 @@ function linha(nome,valor,frac,pct,opt){
    Vermelho = vinculada por lei; cinza = sem vinculação legal; âmbar = nenhuma
    das regras cobre a linha (a classificar — nada é estimado). */
 function vincHtml(v){
-  if(v.pct===null) return '<span class="vp ac">—</span><span class="vv ac">—</span><span class="vl ac">a classificar</span>';
-  if(v.pct===0)    return '<span class="vp">0%</span><span class="vv">—</span><span class="vl">—</span>';
+  if(v.pct===null) return '<span class="vp ac">—</span><span class="vv ac">—</span><span class="va ac">—</span><span class="vl ac">a classificar</span>';
+  if(v.pct===0)    return '<span class="vp">0%</span><span class="vv">—</span><span class="va">—</span><span class="vl">—</span>';
   return '<span class="vp r">'+f0.format(v.pct)+'%</span><span class="vv r">'+exato(v.valor)+'</span>'
-    +'<span class="vl r">'+esc(v.lei||'')+'</span>';
+    +'<span class="va r">'+esc(v.area||'')+'</span><span class="vl r">'+esc(v.lei||'')+'</span>';
 }
 function cabecaLista(a,b,c,d,vinc){
   const h=el('div','cabl'+(vinc?' vinc':''));
   h.innerHTML='<span>'+a+'</span><span>'+(b||'')+'</span><span>'+c+'</span><span>'+(d||'')+'</span>'
-    +(vinc?'<span>% Vinc.</span><span>Valor vinculado (R$)</span><span>Lei</span>':'');
+    +(vinc?'<span>% Vinc.</span><span>Valor vinculado (R$)</span><span>Destinação</span><span>Lei</span>':'');
   return h;
 }
 
@@ -778,7 +780,7 @@ function montaReceita(id){
         const m=(fonte[a]||{})[st.mes]; if(!m) return;
         for(const cod in m){
           const mt=(DATA.meta||{})[cod]||[cod,''];
-          out.push([+a, mt[1], mt[0], m[cod], mt[2]===undefined?null:mt[2], mt[3]||'']);
+          out.push([+a, mt[1], mt[0], m[cod], mt[2]===undefined?null:mt[2], mt[3]||'', mt[4]||'']);
         }
       });
       return out;
@@ -803,9 +805,9 @@ function montaReceita(id){
   function agrupaDet(rows){
     const m=new Map();
     for(const r of rows){
-      const g=m.get(r[2])||{k:r[2], v:0, vv:0, v0:0, vn:0, c100:0, c0:0, lei:''};
+      const g=m.get(r[2])||{k:r[2], v:0, vv:0, v0:0, vn:0, c100:0, c0:0, lei:'', area:''};
       g.v+=r[3];
-      if(r[4]===100){ g.vv+=r[3]; g.c100++; if(!g.lei) g.lei=r[5]||''; }
+      if(r[4]===100){ g.vv+=r[3]; g.c100++; if(!g.lei) g.lei=r[5]||''; if(!g.area) g.area=r[6]||''; }
       else if(r[4]===0){ g.v0+=r[3]; g.c0++; }
       else g.vn+=r[3];
       m.set(r[2],g);
@@ -917,11 +919,11 @@ function montaReceita(id){
         const cls=d.c100+d.c0;
         let pct=null;
         if(cls) pct=(d.vv+d.v0)>0 ? d.vv/(d.vv+d.v0)*100 : (d.c100>0?100:0);
-        vinc={pct, valor:d.vv, lei:d.lei};
+        vinc={pct, valor:d.vv, lei:d.lei, area:d.area};
       }
       const l=linha(d.k, exato(d.v), d.v/mx, f1.format(d.v/total*100)+'%', {vinc});
       dica(l, d.k, '<em>'+exato(d.v)+'</em><br>'+f2.format(d.v/total*100)+'% do total'
-        +(vinc&&vinc.pct!==null&&vinc.pct>0 ? '<br>vinculada por lei: '+exato(vinc.valor)+' · '+esc(vinc.lei||'') : ''));
+        +(vinc&&vinc.pct!==null&&vinc.pct>0 ? '<br>vinculada por lei: '+exato(vinc.valor)+' · '+esc(vinc.area||'')+' · '+esc(vinc.lei||'') : ''));
       listaDet.appendChild(l);
     });
     if(cfg.vinc){
