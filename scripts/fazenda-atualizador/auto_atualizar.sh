@@ -25,7 +25,8 @@ cd scripts/fazenda-atualizador
 .venv/bin/python3 coletor_contratos.py >> "$LOG" 2>&1
 .venv/bin/python3 coletor_pessoal.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Pessoal falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 gerar_painel.py >> "$LOG" 2>&1
-cp ../Painel_Receita_Despesas.html ../../public/fazenda/painel.html
+mkdir -p ../../private/fazenda
+cp ../Painel_Receita_Despesas.html ../../private/fazenda/painel.html
 
 cd /app-segov
 docker compose build app >> "$LOG" 2>&1
@@ -38,7 +39,6 @@ curl -s -o /dev/null -w 'health check: HTTP %{http_code}\n' http://localhost:300
 # construído com a versão nova, isso é só pra manter o "git status" limpo.
 git checkout -- scripts/fazenda-atualizador/dados_receita.json \
                 scripts/fazenda-atualizador/dados_contratos.json \
-                scripts/fazenda-atualizador/dados_pessoal.json \
-                public/fazenda/painel.html >> "$LOG" 2>&1
+                scripts/fazenda-atualizador/dados_pessoal.json >> "$LOG" 2>&1
 
 echo "concluído" >> "$LOG"

@@ -41,6 +41,9 @@ COPY --from=build --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
+# Painel Fazenda (HTML gerado, com nomes/salários) — fora de public/ pra só
+# ser entregue pela rota autenticada /api/fazenda/painel.
+COPY --from=build --chown=nextjs:nodejs /app/private ./private
 
 USER nextjs
 EXPOSE 3000

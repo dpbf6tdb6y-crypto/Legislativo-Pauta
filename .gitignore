@@ -51,6 +51,12 @@ prisma/dev.db
 # coletores Python também fica de fora.
 scripts/fazenda-atualizador/RH_*.xls
 scripts/fazenda-atualizador/.venv/
+# HTML do painel Fazenda gerado (embute nome e salário de cada servidor):
+# fica só em private/fazenda/ no servidor, nunca no git. A pasta existe no
+# repositório (via .gitkeep) pra o COPY do Dockerfile não falhar.
+private/fazenda/*
+!private/fazenda/.gitkeep
+public/fazenda/painel.html
 scripts/fazenda-atualizador/auto_atualizar.log
 scripts/fazenda-atualizador/_cache/
 scripts/Painel_Receita_Despesas.html
