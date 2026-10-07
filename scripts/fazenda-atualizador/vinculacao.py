@@ -43,8 +43,33 @@ def _norm(s):
     return ''.join(c for c in s if not unicodedata.combining(c)).upper()
 
 
+AREA_POR_LEI = {
+    LEI_FUNDEB: 'Educação',
+    LEI_SAUDE: 'Saúde',
+    LEI_CFEM: 'Mineração (restrita)',
+    LEI_TAXAS: 'Serviço da taxa',
+    LEI_MELHORIA: 'Obra pública',
+    LEI_TRANSITO: 'Trânsito',
+    LEI_CONVENIO: 'Objeto do convênio',
+    'CF art. 212, §5º': 'Educação',
+    'Leis do FNDE (PNAE/PNATE)': 'Educação',
+    'Lei 8.742/1993': 'Assistência social',
+    'CF art. 149-A': 'Iluminação pública',
+}
+
+
 def classifica(cod, tipo, nome):
     """Devolve (pct, lei): pct = 100, 0 ou None (sem regra); lei = '' quando não há."""
+    return _regra(cod, tipo, nome)
+
+
+def area(cod, tipo, nome):
+    """Área em que a receita vinculada deve ser gasta ('' quando não há)."""
+    pct, lei = _regra(cod, tipo, nome)
+    return AREA_POR_LEI.get(lei, '') if pct == 100 else ''
+
+
+def _regra(cod, tipo, nome):
     n = _norm(nome)
     cod = str(cod)
 
@@ -68,6 +93,16 @@ def classifica(cod, tipo, nome):
         return 100, LEI_TRANSITO
     if 'CONVENIO' in n:
         return 100, LEI_CONVENIO
+    if 'TRANSFERENCIAS DO SALARIO' in n:
+        return 100, 'CF art. 212, §5º'
+    if 'PNAE' in n or 'PNATE' in n or 'DINHEIRO DIRETO NA ESCOLA' in n:
+        return 100, 'Leis do FNDE (PNAE/PNATE)'
+    if 'ASSISTENCIA SOCIAL' in n or 'FNAS' in n:
+        return 100, 'Lei 8.742/1993'
+    if 'SERVICO DE ILUMINACAO PUBLICA' in n:
+        return 100, 'CF art. 149-A'
+    if 'PROGRAMAS DE SAUDE' in n:
+        return 100, LEI_SAUDE
 
     # ---- 0% (sem vinculação legal) ----
     if tipo == 'Impostos':
