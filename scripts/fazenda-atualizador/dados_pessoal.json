@@ -1,0 +1,37 @@
+{
+  "coletado_em": "2026-10-07",
+  "meses": {
+    "2026-06": {
+      "ano": 2026,
+      "bruto": 27611765.01,
+      "media": 3698.51,
+      "mes": 6,
+      "servidores": 5233,
+      "vencimentos": 19354312.91
+    },
+    "2026-07": {
+      "ano": 2026,
+      "bruto": 26465047.66,
+      "media": 3728.62,
+      "mes": 7,
+      "servidores": 5224,
+      "vencimentos": 19478293.93
+    },
+    "2026-08": {
+      "ano": 2026,
+      "bruto": 27945789.86,
+      "media": 3848.46,
+      "mes": 8,
+      "servidores": 5267,
+      "vencimentos": 20269863.98
+    },
+    "2026-09": {
+      "ano": 2026,
+      "bruto": 28760778.95,
+      "media": 3887.22,
+      "mes": 9,
+      "servidores": 5225,
+      "vencimentos": 20310732.96
+    }
+  }
+}

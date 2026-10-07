@@ -72,11 +72,9 @@ except Exception:
 print('contratos carregados:', len(CONTRATOS))
 
 import glob
-_rh = sorted(glob.glob(os.path.join(BASE, '..', '..', 'RH', '*.xls'))) \
-      or sorted(glob.glob(os.path.join(BASE, 'RH_*.xls')))
+_rh = glob.glob(os.path.join(BASE, '..', '..', 'RH', '*.xls')) + glob.glob(os.path.join(BASE, 'RH_*.xls'))
 if not _rh:
-    raise SystemExit('Nao encontrei a planilha de RH em ../../RH/*.xls')
-print('folha de pessoal:', os.path.basename(_rh[-1]))
+    raise SystemExit('Nao encontrei a planilha de RH (../../RH/*.xls ou RH_*.xls)')
 def le_folha(caminho):
     """Acha a linha de cabecalho (a que tem Nome e Cargo) e le a partir dela."""
     bruto = pd.read_excel(caminho, header=None, nrows=15)
@@ -92,7 +90,23 @@ def le_folha(caminho):
         df = df[df[col_nome].notna()]
     return df.reset_index(drop=True)
 
-rh = le_folha(_rh[-1])
+def ref_tupla(df):
+    """(ano, mes) da coluna Ano/Mes (ex.: '2026/8'), ou (0, 0)."""
+    col = next((c for c in df.columns if str(c).strip().lower().startswith('ano')), None)
+    vals = [str(v) for v in df[col].dropna().unique() if '/' in str(v)] if col is not None else []
+    if not vals:
+        return (0, 0)
+    return max((int(v.split('/')[0]), int(v.split('/')[1])) for v in vals)
+
+# Entre as planilhas disponiveis vale a de referencia mais recente — pelo
+# conteudo, nao pelo nome (nomes como 10_2026 ordenavam antes de 3_2026).
+_cands = []
+for _f in _rh:
+    _d = le_folha(_f)
+    _cands.append((ref_tupla(_d), _f, _d))
+_cands.sort(key=lambda c: c[0])
+RH_TUPLA, _arq_rh, rh = _cands[-1]
+print('folha de pessoal:', os.path.basename(_arq_rh), RH_TUPLA)
 rh['Secretaria'] = rh['Lotação'].astype(str).str.split(' - ').str[0].str.strip()
 
 MESES_PT = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -113,6 +127,23 @@ def referencia_folha(df):
     return 'referência %s/%d' % (MESES_PT[mes - 1], ano)
 
 RH_REF = referencia_folha(rh)
+
+def _mes_anterior(a, m):
+    return (a - 1, 12) if m == 1 else (a, m - 1)
+try:
+    _pj = json.load(open(os.path.join(BASE, 'dados_pessoal.json'), encoding='utf-8')).get('meses', {})
+except Exception:
+    _pj = {}
+PESSOAL_HIST = []
+_a, _m = RH_TUPLA
+for _ in range(3):
+    _a, _m = _mes_anterior(_a, _m)
+    _r = _pj.get('%d-%02d' % (_a, _m))
+    if _r:
+        PESSOAL_HIST.append({'ano': _a, 'mes': _m, 'servidores': _r['servidores'],
+                             'vencimentos': _r['vencimentos'], 'bruto': _r['bruto'],
+                             'media': _r['media']})
+print('historico de pessoal (meses anteriores):', [(h['ano'], h['mes']) for h in PESSOAL_HIST])
 print('referência da folha:', RH_REF or '(não identificada)')
 
 try:
@@ -210,6 +241,7 @@ DATA = {
     'contratos': CONTRATOS,
     'ct_coleta': CT_COLETA,
     'rh_ref': RH_REF,
+    'pessoal_hist': PESSOAL_HIST,
     'despesas': DESPESAS,
     'equilibrio': EQUILIBRIO,
     'art29a': ART29A,
@@ -298,6 +330,10 @@ HTML = r'''<!DOCTYPE html>
          padding:26px 0 4px; }
   @media (max-width:900px){ .kpis{ grid-template-columns:repeat(2,1fr); gap:22px; } }
   .kpi .rot{ font-size:12.5px; font-weight:700; letter-spacing:.04em; color:var(--t1); }
+  .kpi .hist{ margin-top:10px; padding-top:6px; max-width:250px; border-top:1px solid var(--linha); }
+  .kpi .hist div{ display:flex; justify-content:space-between; gap:12px; font-size:11.5px;
+                  color:var(--t3); line-height:1.75; }
+  .kpi .hist b{ font-weight:500; color:var(--t2); font-variant-numeric:tabular-nums; }
   .kpi .v{ font-size:30px; font-weight:300; letter-spacing:-.02em; margin-top:8px;
            line-height:1.1; }
   .kpi .x{ font-size:13px; color:var(--t2); margin-top:6px; font-weight:600;
@@ -523,11 +559,14 @@ function dica(alvo,titulo,corpo){
 
 /* ---------------- peças ---------------- */
 /* indicador: rótulo, valor grande, valor exato (opcional, em R$) e legenda */
-function kpiHtml(rot, valor, legenda, exatoNum, corValor){
+function kpiHtml(rot, valor, legenda, exatoNum, corValor, historico){
   return '<div class="rot">'+rot+'</div>'
     + '<div class="v"'+(corValor?' style="color:'+corValor+'"':'')+'>'+valor+'</div>'
     + (exatoNum!==undefined && exatoNum!==null ? '<div class="x">'+exato(exatoNum)+'</div>' : '')
-    + '<div class="s">'+(legenda||'')+'</div>';
+    + '<div class="s">'+(legenda||'')+'</div>'
+    + (historico && historico.length
+        ? '<div class="hist">'+historico.map(h=>'<div><span>'+h[0]+'</span><b>'+h[1]+'</b></div>').join('')+'</div>'
+        : '');
 }
 function bloco(pai,rotulo){
   const s=el('div','secao'); const r=el('div','rot'); r.textContent=rotulo;
@@ -1022,14 +1061,20 @@ function montaPessoal(){
     const folha=b.reduce((s,r)=>s+r[5],0);
     const bruto=b.reduce((s,r)=>s+r[6],0);
     kpis.innerHTML='';
+    // Os 3 meses anteriores (só totais) aparecem pequenos embaixo de cada
+    // cartão — mas só sem filtro/busca ativo, senão compararia um recorte
+    // do mês atual com o total dos meses passados.
+    const semFiltro=!st.busca && !st.corte;
+    const nomeMes=h=>{ const n=MESNOME[String(h.mes)]; return n.charAt(0).toUpperCase()+n.slice(1); };
+    const hist=(campo,fmt)=> semFiltro ? (DATA.pessoal_hist||[]).map(h=>[nomeMes(h), fmt(h[campo])]) : null;
     [['Servidores', f0.format(b.length),
-       st.corte? 'vínculo '+esc(st.corte) : (DATA.rh_ref||'').replace('referência','folha de'), null],
-     ['Vencimentos', brlx(folha), 'base da folha', folha],
-     ['Bruto', brlx(bruto), 'com vantagens e adicionais', bruto],
-     ['Vencimento médio', brlx(b.length?folha/b.length:0), 'por servidor', b.length?folha/b.length:null]
-    ].forEach(([r,v,s,x])=>{
+       st.corte? 'vínculo '+esc(st.corte) : (DATA.rh_ref||'').replace('referência','folha de'), null, hist('servidores', f0.format)],
+     ['Vencimentos', brlx(folha), 'base da folha', folha, hist('vencimentos', exato)],
+     ['Bruto', brlx(bruto), 'com vantagens e adicionais', bruto, hist('bruto', exato)],
+     ['Vencimento médio', brlx(b.length?folha/b.length:0), 'por servidor', b.length?folha/b.length:null, hist('media', exato)]
+    ].forEach(([r,v,s,x,hs])=>{
       const d=el('div','kpi');
-      d.innerHTML=kpiHtml(r,v,s,x);
+      d.innerHTML=kpiHtml(r,v,s,x,null,hs);
       kpis.appendChild(d);
     });
 
