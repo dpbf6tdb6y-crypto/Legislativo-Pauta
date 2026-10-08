@@ -169,6 +169,23 @@ try:
         'orgaos_por_mes': {m: v['orgaos'] for m, v in _dp['anos'][_ano_desp].items() if v.get('orgaos')}
                           if _ano_desp else {},
     }
+    # Dotação atual do ano: no portal, o "Valor Atual" de cada mês é o inicial mais as
+    # alterações DAQUELE mês; a visão do ano inteiro é o inicial + a soma das alterações
+    # de todos os meses (conferido com o portal: Educação, Administração, Procuradoria).
+    _dot_o, _dot_t = {}, [0.0, 0.0]
+    for _m in sorted(_dp['anos'][_ano_desp], key=int) if _ano_desp else []:
+        _v = _dp['anos'][_ano_desp][_m]
+        if not _v.get('orgaos'):
+            continue
+        if not _dot_t[0]:
+            _dot_t[0] = _dot_t[1] = _v['ini']
+        else:
+            _dot_t[1] += _v['atual'] - _v['ini']
+        for _o in _v['orgaos']:
+            _d = _dot_o.setdefault(_o[0], [_o[1], _o[1]])
+            _d[1] += _o[2] - _o[1]
+    DESPESAS['dot_orgaos'] = {k: [round(a, 2), round(b, 2)] for k, (a, b) in _dot_o.items()}
+    DESPESAS['dot_total'] = [round(_dot_t[0], 2), round(_dot_t[1], 2)]
     DP_COLETA = _dp.get('coletado_em', '')
 except Exception:
     DESPESAS, DP_COLETA = {'ano': None, 'meses': []}, ''
@@ -191,8 +208,19 @@ try:
                     _a[_i] += _l[_i + 1]
                 if _k not in _nm or sum(ord(c) > 127 for c in _l[0]) > sum(ord(c) > 127 for c in _nm[_k]):
                     _nm[_k] = _l[0]
-            NATUREZA['por_mes'][_m] = [[_nm[_k]] + [round(x, 2) for x in _a] + list(classifica_desp(_nm[_k]))
+            NATUREZA['por_mes'][_m] = [[_nm[_k]] + [round(x, 2) for x in _a] + list(classifica_desp(_nm[_k])) + [_k]
                                        for _k, _a in _ac.items()]
+        # dotação atual por natureza: inicial + soma das alterações mensais (mesma regra do órgão)
+        _dot = {}
+        for _m in sorted(_dn['anos'][_ano_nat], key=int):
+            _mm = {}
+            for _l in _dn['anos'][_ano_nat][_m]['linhas']:
+                _x = _mm.setdefault(_norm_desp(_l[0]), [0.0, 0.0])
+                _x[0] += _l[1]; _x[1] += _l[2]
+            for _k, (_i, _a) in _mm.items():
+                _d = _dot.setdefault(_k, [_i, _i])
+                _d[1] += _a - _i
+        NATUREZA['dot'] = {k: [round(v[0], 2), round(v[1], 2)] for k, v in _dot.items()}
 except Exception as _e:
     print('natureza não carregada:', _e)
 
@@ -303,9 +331,11 @@ print('Art. 29-A — base 2025: %.2f | teto 2026 (6%%): %.2f | Câmara empenhado
 # por função de governo.
 PREFEITO = {'dot_ini': 0, 'dot_atual': 0, 'comp': None, 'funcoes': []}
 try:
+    if DESPESAS.get('dot_total') and DESPESAS['dot_total'][1]:
+        PREFEITO['dot_ini'], PREFEITO['dot_atual'] = DESPESAS['dot_total']
     _anos_dp = _dp['anos'][_ano_desp]
     _ult = max((int(m) for m, v in _anos_dp.items() if v.get('emp')), default=None)
-    if _ult:
+    if _ult and not PREFEITO['dot_atual']:
         # o mês corrente ainda está em andamento (a dotação "atual" dele pode não
         # refletir os remanejamentos) — vale o último mês fechado
         _hoje = __import__('datetime').date.today()
@@ -1394,7 +1424,9 @@ function montaDespesas(){
         mapa.set(nome, cur);
       });
     });
-    return [...mapa.entries()].map(([nome,v])=>[nome,...v]);
+    /* Valor Inicial/Atual: dotação do ANO (visão do ano inteiro do portal) quando coletada */
+    const dotOrg=(DATA.despesas&&DATA.despesas.dot_orgaos)||{};
+    return [...mapa.entries()].map(([nome,v])=>{ const d=dotOrg[nome]; if(d){ v[3]=d[0]; v[4]=d[1]; } return [nome,...v]; });
   }
 
   function montaOrg(){
@@ -1420,7 +1452,8 @@ function montaDespesas(){
     }
     const t=el('table');
     t.innerHTML='<thead><tr><th class="e" style="width:34%">Secretaria/Órgão</th>'
-      +'<th title="Dotação atualizada do último mês selecionado. Azul ▲ = subiu, vermelho ▼ = desceu em relação ao valor inicial da LOA">Valor Atual (R$)</th>'
+      +'<th title="Valor aprovado na LOA">Valor Inicial (R$)</th>'
+      +'<th title="Dotação atual do ano (Portal, visão do ano inteiro). Azul ▲ = subiu, vermelho ▼ = desceu em relação ao valor inicial da LOA">Valor Atual (R$)</th>'
       +'<th>Empenhado (R$)</th><th>Liquidação (R$)</th><th>Pagamento (R$)</th></tr></thead>';
     const tb=el('tbody');
     linhas.slice().sort((a,b)=>b[3]-a[3]).forEach(([nome,emp,liq,pag,ini,atual])=>{
@@ -1429,6 +1462,7 @@ function montaDespesas(){
       const seta=!alt?'':(dif>0?'<span style="font-size:.75em">▲</span> ':'<span style="font-size:.75em">▼</span> ');
       const corAlt=dif>0?'var(--acento)':'var(--baixa)';
       tr.innerHTML='<td class="e">'+esc(nome.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''))+'</td>'
+        +'<td>'+exato(ini)+'</td>'
         +'<td'+(alt?' style="color:'+corAlt+';font-weight:600" title="'+(dif>0?'Subiu':'Desceu')+' '+exato(Math.abs(dif))+' em relação ao valor inicial ('+exato(ini)+')"':'')+'>'+seta+exato(atual)+'</td>'
         +'<td>'+exato(emp)+'</td><td>'+exato(liq)+'</td><td>'+exato(pag)+'</td>';
       tb.appendChild(tr);
@@ -1453,12 +1487,14 @@ function montaDespesas(){
       ? sel.map(m=>MESNOME[m]).join(', ') : 'todos os meses coletados');
     const mapa=new Map();
     usar.forEach(m=>{
-      (naturezaPorMes[m]||[]).forEach(([nome,ini,atual,emp,liq,pag,tipo,grupo,lei])=>{
-        const c=mapa.get(nome)||{nome,ini:0,atual:0,emp:0,liq:0,pag:0,tipo,grupo,lei};
+      (naturezaPorMes[m]||[]).forEach(([nome,ini,atual,emp,liq,pag,tipo,grupo,lei,l9])=>{
+        const c=mapa.get(nome)||{nome,ini:0,atual:0,emp:0,liq:0,pag:0,tipo,grupo,lei,key:l9};
         c.emp+=emp; c.liq+=liq; c.pag+=pag; c.ini=ini; c.atual=atual;
         mapa.set(nome,c);
       });
     });
+    const dotNat=(DATA.natureza&&DATA.natureza.dot)||{};
+    mapa.forEach(c=>{ const d=dotNat[c.key]; if(d){ c.ini=d[0]; c.atual=d[1]; } });
     const linhas=[...mapa.values()].sort((a,b)=>b.emp-a.emp);
     rolaNat.innerHTML=''; resNat.innerHTML='';
     if(!linhas.length){
@@ -1476,7 +1512,8 @@ function montaDespesas(){
       +'<br>Classificação só pelas regras definidas, pelo nome da natureza; o que nenhuma regra cobre fica em "a classificar".';
     const t=el('table');
     t.innerHTML='<thead><tr><th class="e" style="width:30%">Natureza</th><th class="e">Tipo</th>'
-      +'<th title="Dotação atualizada do último mês selecionado. Azul ▲ = subiu, vermelho ▼ = desceu em relação ao valor inicial da LOA">Valor Atual (R$)</th>'
+      +'<th title="Valor aprovado na LOA">Valor Inicial (R$)</th>'
+      +'<th title="Dotação atual do ano (Portal, visão do ano inteiro). Azul ▲ = subiu, vermelho ▼ = desceu em relação ao valor inicial da LOA">Valor Atual (R$)</th>'
       +'<th>Empenhado (R$)</th><th>Liquidação (R$)</th><th>Pagamento (R$)</th><th class="e">Base legal</th></tr></thead>';
     const tb=el('tbody');
     linhas.forEach(l=>{
@@ -1488,6 +1525,7 @@ function montaDespesas(){
         : l.tipo ? '<td class="e">Discricionária · '+esc(l.grupo)+'</td>'
         : '<td class="e" style="color:var(--parcial);font-style:italic">a classificar</td>';
       tr.innerHTML='<td class="e">'+esc(l.nome.charAt(0)+l.nome.slice(1).toLowerCase())+'</td>'+tipoTd
+        +'<td>'+exato(l.ini)+'</td>'
         +'<td'+(alt?' style="color:'+corAlt+';font-weight:600" title="'+(dif>0?'Subiu':'Desceu')+' '+exato(Math.abs(dif))+' em relação ao valor inicial ('+exato(l.ini)+')"':'')+'>'+seta+exato(l.atual)+'</td>'
         +'<td>'+exato(l.emp)+'</td><td>'+exato(l.liq)+'</td><td>'+exato(l.pag)+'</td>'
         +'<td class="e" style="color:var(--t3)">'+esc(l.lei||'')+'</td>';
