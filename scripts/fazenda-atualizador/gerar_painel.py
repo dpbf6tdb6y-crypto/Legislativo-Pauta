@@ -592,8 +592,8 @@ const PAGS = {
 };
 
 let pagina='rc';
-const estado={ rc:{anos:new Set(),tipo:null,mes:null}, cap:{anos:new Set(),tipo:null,mes:null},
-               ded:{anos:new Set(),tipo:null,mes:null}, pes:{busca:'',corte:null},
+const estado={ rc:{anos:new Set([PARCIAL]),tipo:null,mes:null}, cap:{anos:new Set([PARCIAL]),tipo:null,mes:null},
+               ded:{anos:new Set([PARCIAL]),tipo:null,mes:null}, pes:{busca:'',corte:null},
                ctr:{sit:'vigente', tipo:null, busca:''} };
 
 const nf=(a,b)=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:a,maximumFractionDigits:b});
@@ -890,7 +890,8 @@ function montaReceita(id){
       filtros.appendChild(b);
     });
     const btnLimpar=el('div','ano'); btnLimpar.textContent='🗑️ Limpar'; btnLimpar.title='Limpar todos os filtros';
-    btnLimpar.onclick=()=>{ st.anos.clear(); st.mes=null; st.tipo=null; render(); };
+    /* Limpar volta ao padrão de abertura: só o exercício em andamento (2026) */
+    btnLimpar.onclick=()=>{ st.anos.clear(); st.anos.add(PARCIAL); st.mes=null; st.tipo=null; render(); };
     filtros.appendChild(btnLimpar);
     const res=el('div','resumo'); filtros.appendChild(res);
 
