@@ -3,6 +3,7 @@
 import json, math, os, re
 import pandas as pd
 from vinculacao import classifica, area as area_vinc
+from despesa_obrigatoria import classifica as classifica_desp, _norm as _norm_desp
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
@@ -171,6 +172,29 @@ try:
     DP_COLETA = _dp.get('coletado_em', '')
 except Exception:
     DESPESAS, DP_COLETA = {'ano': None, 'meses': []}, ''
+
+# Despesa por natureza (obrigatória x discricionária): por mês, mesma natureza
+# repetida em categorias econômicas diferentes é somada e classificada pelo nome.
+NATUREZA = {'ano': None, 'por_mes': {}}
+try:
+    _dn = json.load(open(os.path.join(BASE, 'dados_natureza.json'), encoding='utf-8'))
+    _ano_nat = max(_dn.get('anos', {}), default=None)
+    if _ano_nat:
+        NATUREZA['ano'] = int(_ano_nat)
+        for _m, _v in _dn['anos'][_ano_nat].items():
+            # o portal escreve a mesma natureza ora com acento, ora sem — junta pelo nome normalizado
+            _ac, _nm = {}, {}
+            for _l in _v['linhas']:
+                _k = _norm_desp(_l[0])
+                _a = _ac.setdefault(_k, [0.0] * 5)
+                for _i in range(5):
+                    _a[_i] += _l[_i + 1]
+                if _k not in _nm or sum(ord(c) > 127 for c in _l[0]) > sum(ord(c) > 127 for c in _nm[_k]):
+                    _nm[_k] = _l[0]
+            NATUREZA['por_mes'][_m] = [[_nm[_k]] + [round(x, 2) for x in _a] + list(classifica_desp(_nm[_k]))
+                                       for _k, _a in _ac.items()]
+except Exception as _e:
+    print('natureza não carregada:', _e)
 print('despesas carregadas:', len(DESPESAS['meses']), 'meses de', DESPESAS['ano'])
 
 # Receita x Despesas — só o ano de 2026 (o mesmo ano coletado em Despesas),
@@ -249,6 +273,7 @@ DATA = {
     'rh_ref': RH_REF,
     'pessoal_hist': PESSOAL_HIST,
     'despesas': DESPESAS,
+    'natureza': NATUREZA,
     'equilibrio': EQUILIBRIO,
     'art29a': ART29A,
     'dp_coleta': DP_COLETA,
@@ -1232,6 +1257,11 @@ function montaDespesas(){
   const sOrg=bloco(host,'Por secretaria');
   const rolaOrg=el('div','rolatab'); sOrg.appendChild(rolaOrg);
 
+  const sNat=bloco(host,'Por natureza da despesa');
+  const resNat=el('div','nota'); resNat.style.paddingTop='0'; resNat.style.paddingBottom='10px'; sNat.appendChild(resNat);
+  const rolaNat=el('div','rolatab'); sNat.appendChild(rolaNat);
+  const naturezaPorMes=(DATA.natureza&&DATA.natureza.por_mes)||{};
+
   const s2=bloco(host,'Detalhado por mês');
   const rola=el('div','rolatab'); s2.appendChild(rola);
   const nota=el('div','nota'); s2.appendChild(nota);
@@ -1304,16 +1334,70 @@ function montaDespesas(){
     }
   }
 
+  /* Despesa por natureza: obrigatória x discricionária. Mesma regra de meses
+     da tabela por secretaria (soma o empenhado/liquidado/pago dos meses
+     pedidos; Valor Atual é o do último mês, não se soma). */
+  function montaNat(){
+    const sel=[...st.meses].sort((a,b)=>+a-+b);
+    const usar=sel.length?sel:Object.keys(naturezaPorMes).sort((a,b)=>+a-+b);
+    const rot=sNat.querySelector('.rot');
+    rot.textContent='Por natureza da despesa · '+(sel.length
+      ? sel.map(m=>MESNOME[m]).join(', ') : 'todos os meses coletados');
+    const mapa=new Map();
+    usar.forEach(m=>{
+      (naturezaPorMes[m]||[]).forEach(([nome,ini,atual,emp,liq,pag,tipo,grupo,lei])=>{
+        const c=mapa.get(nome)||{nome,ini:0,atual:0,emp:0,liq:0,pag:0,tipo,grupo,lei};
+        c.emp+=emp; c.liq+=liq; c.pag+=pag; c.ini=ini; c.atual=atual;
+        mapa.set(nome,c);
+      });
+    });
+    const linhas=[...mapa.values()].sort((a,b)=>b.emp-a.emp);
+    rolaNat.innerHTML=''; resNat.innerHTML='';
+    if(!linhas.length){
+      const d=el('div','vazio'); d.textContent='Sem despesa por natureza coletada ainda.'; rolaNat.appendChild(d); return;
+    }
+    const tot=linhas.reduce((s,l)=>s+l.emp,0);
+    const soma=f=>linhas.filter(f).reduce((s,l)=>s+l.emp,0);
+    const pc=x=>f1.format(tot?x/tot*100:0)+'%';
+    const ob=soma(l=>l.tipo==='Obrigatória'), di=soma(l=>l.tipo==='Discricionária'), nc=soma(l=>!l.tipo);
+    const grupos={}; linhas.filter(l=>l.tipo==='Obrigatória').forEach(l=>{ grupos[l.grupo]=(grupos[l.grupo]||0)+l.emp; });
+    resNat.innerHTML='<b style="color:var(--baixa)">Obrigatórias: '+exato(ob)+' ('+pc(ob)+' do empenhado)</b>'
+      +' · Discricionárias: '+exato(di)+' ('+pc(di)+')'
+      +(nc>0.005?' · <span style="color:var(--parcial)">a classificar: '+exato(nc)+' ('+pc(nc)+')</span>':'')
+      +'<br>'+Object.entries(grupos).map(([g,v])=>esc(g)+': '+exato(v)+' ('+pc(v)+')').join(' · ')
+      +'<br>Classificação só pelas regras definidas, pelo nome da natureza; o que nenhuma regra cobre fica em "a classificar".';
+    const t=el('table');
+    t.innerHTML='<thead><tr><th class="e" style="width:30%">Natureza</th><th class="e">Tipo</th>'
+      +'<th title="Dotação atualizada do último mês selecionado. Azul ▲ = subiu, vermelho ▼ = desceu em relação ao valor inicial da LOA">Valor Atual (R$)</th>'
+      +'<th>Empenhado (R$)</th><th>Liquidação (R$)</th><th>Pagamento (R$)</th><th class="e">Base legal</th></tr></thead>';
+    const tb=el('tbody');
+    linhas.forEach(l=>{
+      const tr=el('tr');
+      const dif=l.atual-l.ini, alt=Math.abs(dif)>0.005;
+      const seta=!alt?'':(dif>0?'<span style="font-size:.75em">▲</span> ':'<span style="font-size:.75em">▼</span> ');
+      const corAlt=dif>0?'var(--acento)':'var(--baixa)';
+      const tipoTd=l.tipo==='Obrigatória' ? '<td class="e" style="color:var(--baixa);font-weight:600">Obrigatória · '+esc(l.grupo)+'</td>'
+        : l.tipo ? '<td class="e">Discricionária · '+esc(l.grupo)+'</td>'
+        : '<td class="e" style="color:var(--parcial);font-style:italic">a classificar</td>';
+      tr.innerHTML='<td class="e">'+esc(l.nome.charAt(0)+l.nome.slice(1).toLowerCase())+'</td>'+tipoTd
+        +'<td'+(alt?' style="color:'+corAlt+';font-weight:600" title="'+(dif>0?'Subiu':'Desceu')+' '+exato(Math.abs(dif))+' em relação ao valor inicial ('+exato(l.ini)+')"':'')+'>'+seta+exato(l.atual)+'</td>'
+        +'<td>'+exato(l.emp)+'</td><td>'+exato(l.liq)+'</td><td>'+exato(l.pag)+'</td>'
+        +'<td class="e" style="color:var(--t3)">'+esc(l.lei||'')+'</td>';
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb); rolaNat.appendChild(t);
+  }
+
   const serie=meses.map(m=>({k:MESES[m[0]-1], v:m[3], mes:String(m[0])}));
   function onClickMes(m){
     st.meses.has(m) ? st.meses.delete(m) : st.meses.add(m);
     colunasMes(mesG, serie, st.meses, onClickMes, true);
-    montaOrg();
+    montaOrg(); montaNat();
   }
   function limparMeses(){
     st.meses.clear();
     colunasMes(mesG, serie, st.meses, onClickMes, true);
-    montaOrg();
+    montaOrg(); montaNat();
   }
   btnLimpar.onclick=limparMeses;
 
@@ -1328,7 +1412,7 @@ function montaDespesas(){
     });
 
     colunasMes(mesG, serie, st.meses, onClickMes, true);
-    montaOrg();
+    montaOrg(); montaNat();
 
     rola.innerHTML='';
     const t=el('table');

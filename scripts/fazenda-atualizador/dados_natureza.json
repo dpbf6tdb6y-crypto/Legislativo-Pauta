@@ -1,0 +1,4277 @@
+{
+ "anos": {
+  "2026": {
+   "1": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      59000.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      1600000.0,
+      236623.68,
+      236623.68
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      300000.0,
+      45587.41,
+      45587.41
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      70089640.0,
+      56274527.0,
+      5442998.81,
+      4713626.12
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      317262266.0,
+      206526744.0,
+      24901896.55,
+      24892090.86
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      60867047.0,
+      29672500.0,
+      3815234.09,
+      0.0
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      1677181.73,
+      1662872.71,
+      1642698.94
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      42545.4,
+      11762.12,
+      2989.9,
+      2989.9
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2864021.0,
+      1470648.61,
+      97010.64,
+      26065.4
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      396000.0,
+      82368.29,
+      82368.29
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      396000.0,
+      37065.74,
+      37065.74
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      9750.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      55064118.0,
+      8808135.67,
+      1579539.75,
+      31120.19
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      19719311.0,
+      5147095.84,
+      385394.81,
+      363298.95
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2806160.0,
+      571500.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      31259500.0,
+      10000000.0,
+      3493772.1,
+      0.0
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      28398858.0,
+      8266771.53,
+      0.0,
+      0.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1096580.0,
+      34036.12,
+      34036.12,
+      34036.12
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      48269811.64,
+      2457953.11,
+      17756.56,
+      590.5
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1633150.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      39152374.0,
+      2133416.09,
+      105336.13,
+      0.0
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1444148.06,
+      33466.61,
+      0.0,
+      0.0
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      50204519.0,
+      24862487.39,
+      839719.96,
+      780746.05
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      10919980.0,
+      2055590.96,
+      0.0,
+      0.0
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      10068195.28,
+      3072666.65,
+      530625.44,
+      460692.1
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3705844.0,
+      635268.04,
+      19983.54,
+      19983.54
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      462021805.95,
+      175059868.0,
+      8232918.06,
+      5619951.43
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      53335505.1,
+      13441074.16,
+      1576.5,
+      0.0
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86745440.0,
+      86745440.0,
+      6459396.0,
+      6459396.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      3482496.0,
+      2910860.0,
+      324481.66,
+      255703.9
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      576864.0,
+      129489.73,
+      3534.84
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8948882.0,
+      2063046.5,
+      357335.18,
+      357335.18
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      400000.0,
+      50312.36,
+      50312.36,
+      31069.05
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      172144.95,
+      169667.33,
+      101478.03,
+      98578.03
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      1756163.95,
+      1380416.45,
+      1374658.45,
+      1374658.45
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      29250.0,
+      0.0,
+      0.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      1948269.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      198485.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      144540758.42,
+      70365782.18,
+      170450.12,
+      170450.12
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      11599207.07,
+      751223.8,
+      0.0,
+      0.0
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      1400000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      12714785.0,
+      2000000.0,
+      0.0,
+      0.0
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      950000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      4299000.0,
+      357651.16,
+      357651.16
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1581079022.82,
+     726513791.25,
+     60890559.48,
+     48097911.95
+    ]
+   },
+   "10": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      0.0,
+      2625.0,
+      0.0
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      69415500.0,
+      0.0,
+      22493.47,
+      17333.49
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      317945748.0,
+      5000.0,
+      37822.71,
+      19663.76
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      60917247.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      0.0,
+      1566937.88,
+      157908.45
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2854679.0,
+      18769.9,
+      75352.76,
+      62867.42
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      -9750.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      55182118.0,
+      675490.0,
+      435317.21,
+      2623620.74
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      19719311.0,
+      0.0,
+      0.0,
+      336887.52
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2806160.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      31259500.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      28398858.0,
+      0.0,
+      6283362.21,
+      6283362.21
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1096580.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      48298756.0,
+      83978.08,
+      1025215.13,
+      533339.8
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1633150.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      39223254.0,
+      275062.04,
+      560788.19,
+      293846.02
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1446479.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      50204519.0,
+      21682.66,
+      2145779.02,
+      1000290.38
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      10871380.0,
+      0.0,
+      38320.0,
+      692213.04
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      10045835.0,
+      605.16,
+      159013.22,
+      285223.87
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3765844.0,
+      0.0,
+      78047.33,
+      0.0
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      463309498.0,
+      4937928.58,
+      25135402.96,
+      8983740.26
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      53631102.0,
+      -0.03,
+      376877.72,
+      1613068.69
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86745440.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      3280636.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      0.0,
+      5549.36,
+      25650.0
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8938882.0,
+      -567.31,
+      149736.64,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      400000.0,
+      0.0,
+      1989.55,
+      1568.07
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      1000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      147860.0,
+      0.0,
+      0.0,
+      371.03
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      -29250.0,
+      0.0,
+      0.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      1948269.0,
+      0.0,
+      266258.0,
+      0.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      140368070.0,
+      -635215.3,
+      3260825.49,
+      2743462.47
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      11699043.0,
+      0.0,
+      6616.0,
+      64604.15
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      1400000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      12714785.0,
+      0.0,
+      695567.83,
+      695567.83
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      950000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1576815000.0,
+     5343734.78,
+     42329897.68,
+     26434589.2
+    ]
+   },
+   "2": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824437.66,
+      51649.05,
+      13084.91,
+      13084.91
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      0.0,
+      236623.68,
+      236623.68
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      0.0,
+      45587.41,
+      45587.41
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      69415500.0,
+      303727.0,
+      5616378.49,
+      5609691.6
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      317925136.0,
+      262942.0,
+      23304583.69,
+      23313440.11
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      60917247.0,
+      0.0,
+      4147638.53,
+      4356563.76
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      3844727.05,
+      590422.0,
+      541876.55
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      0.0,
+      19829.8,
+      27279.81,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2875291.0,
+      34812.04,
+      116662.61,
+      186032.46
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      0.0,
+      81250.41,
+      81250.41
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      36562.69,
+      36562.69
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      0.0,
+      6500.0,
+      3250.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      55182118.0,
+      6612459.19,
+      4390743.69,
+      4842197.43
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      19719311.0,
+      93667.23,
+      779965.61,
+      802061.47
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2234660.0,
+      -571500.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      31259500.0,
+      0.0,
+      3683082.75,
+      4176854.85
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      24283540.0,
+      175207.52,
+      2973613.53,
+      2798406.01
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811613.34,
+      56194.34,
+      8665.09,
+      8665.09
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1096580.0,
+      40798.02,
+      26558.02,
+      10405.02
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      48248896.84,
+      1895910.29,
+      1006320.77,
+      777156.53
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1633150.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      39184940.55,
+      665316.61,
+      574340.25,
+      523032.11
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1496479.0,
+      89221.34,
+      31661.5,
+      16647.07
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      50204519.0,
+      -325572.17,
+      3672723.8,
+      3659971.58
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      11028580.0,
+      175100.0,
+      467979.64,
+      404649.6
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      10139596.35,
+      683301.11,
+      896199.59,
+      817737.5
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3765844.0,
+      28000.0,
+      152022.63,
+      151663.21
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      463448541.39,
+      22042969.67,
+      33234151.08,
+      31642911.54
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      53558278.32,
+      924596.28,
+      2554676.36,
+      2428891.28
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86745440.0,
+      0.0,
+      7863238.0,
+      7863238.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      4380636.0,
+      1100000.0,
+      1150655.79,
+      1157432.99
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      96071.42,
+      140132.65,
+      177644.38
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8938882.0,
+      9033.38,
+      822474.86,
+      822474.86
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      400000.0,
+      35565.31,
+      30553.47,
+      49796.78
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      361371.33,
+      79064.86,
+      91353.65,
+      89912.05
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      156961.0,
+      236251.5,
+      0.0,
+      0.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      0.0,
+      19500.0,
+      9750.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      1948269.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      247.8,
+      0.0,
+      0.0
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      0.0,
+      186000.0,
+      186000.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      140643199.98,
+      1254589.82,
+      16383851.28,
+      16255246.65
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      11674666.68,
+      147810.86,
+      0.0,
+      0.0
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      1400000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      16830103.0,
+      4115317.98,
+      0.0,
+      0.0
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      950000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      253136.59,
+      253136.59
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1578242734.44,
+     44177309.3,
+     115616174.83,
+     114349846.17
+    ]
+   },
+   "3": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      0.0,
+      29362.67,
+      29362.67
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      0.0,
+      229838.05,
+      229838.05
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      0.0,
+      45587.41,
+      45587.41
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      71078690.83,
+      2625915.83,
+      6016198.83,
+      5962035.54
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      321105909.79,
+      5181479.79,
+      24575405.08,
+      24575798.93
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      61426002.09,
+      517957.09,
+      4252130.73,
+      4105674.32
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      6294676.82,
+      663781.39,
+      732500.61
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      5895.33,
+      6595.03,
+      2422.5,
+      29702.31
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2864807.0,
+      10129.96,
+      100886.73,
+      102462.12
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      0.0,
+      80081.27,
+      80081.27
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      36036.56,
+      36036.56
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      0.0,
+      0.0,
+      3250.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      55880106.17,
+      5700893.65,
+      6423892.64,
+      5903406.24
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      22819311.0,
+      104902.24,
+      3904414.64,
+      619666.76
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2806160.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      31259500.0,
+      10000000.0,
+      3731735.63,
+      3731735.63
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      28398858.0,
+      282711.02,
+      2808355.88,
+      2983563.4
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      0.0,
+      18376.79,
+      18376.79
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1193628.0,
+      61383.62,
+      34969.54,
+      51122.54
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      48761012.85,
+      2555291.44,
+      1946736.09,
+      1651465.81
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1753150.0,
+      51435.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      39219842.0,
+      2369958.05,
+      1864268.98,
+      1206672.1
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1446479.0,
+      77153.16,
+      134244.08,
+      101907.65
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      50204519.0,
+      50001.0,
+      5380163.66,
+      5368764.17
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      10881050.0,
+      112570.0,
+      364935.28,
+      358302.35
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      11003205.58,
+      598313.05,
+      734733.32,
+      739060.63
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3765844.0,
+      304518.35,
+      124822.51,
+      112217.12
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      463654155.04,
+      19446454.36,
+      51842931.42,
+      53498571.8
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      52796201.97,
+      1817385.53,
+      4523945.92,
+      3460035.68
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86745440.0,
+      0.0,
+      6957512.0,
+      6957512.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      4433233.48,
+      1266597.48,
+      1486726.46,
+      1450851.6
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      8000.0,
+      150683.94,
+      151488.78
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8938882.0,
+      1157153.82,
+      428196.49,
+      275030.9
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      400000.0,
+      311647.21,
+      17004.59,
+      10050.62
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      26529.51,
+      284219.34,
+      340119.85,
+      343181.94
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      221544.2,
+      73684.2,
+      309935.7,
+      309935.7
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      0.0,
+      0.0,
+      9750.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      1948269.0,
+      4200.0,
+      0.0,
+      0.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      0.0,
+      82.6,
+      82.6
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      0.0,
+      12485.0,
+      12485.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      146086971.02,
+      4123865.05,
+      14602504.85,
+      12156796.6
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      12166374.2,
+      797247.58,
+      429967.5,
+      409007.0
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      10314900.0,
+      7658900.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      12714785.0,
+      9345624.31,
+      4481601.49,
+      4481601.49
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      520000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      469181.05,
+      469181.05
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1603036753.06,
+     83200863.98,
+     149556259.12,
+     142774153.74
+    ]
+   },
+   "4": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      28500.0,
+      12768.77,
+      2625.0
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      0.0,
+      229586.72,
+      229586.72
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      0.0,
+      45587.41,
+      45587.41
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      69895929.39,
+      1203056.26,
+      6137151.29,
+      6097982.18
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      317418679.81,
+      1244046.0,
+      24211794.12,
+      24211794.12
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      60917247.0,
+      131848.0,
+      4361570.37,
+      4308309.56
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      26761630.0,
+      2476527.65,
+      6982754.87,
+      6723640.91
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      26813.45,
+      9423.84,
+      12094.58,
+      12094.58
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2863132.37,
+      11952.4,
+      77160.65,
+      77160.65
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      0.0,
+      78944.45,
+      78944.45
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      35525.01,
+      35525.01
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      29250.0,
+      6500.0,
+      3250.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      55415690.91,
+      498193.51,
+      2435318.16,
+      3366032.16
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      15779207.85,
+      875002.0,
+      208333.33,
+      3493081.21
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2806160.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      31259500.0,
+      14000.0,
+      3892625.32,
+      6892625.32
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      28398858.0,
+      8859432.42,
+      2808355.88,
+      2808355.88
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      21000.0,
+      6356.23,
+      0.0
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1096580.0,
+      27436.0,
+      60574.08,
+      55422.08
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      47369195.3,
+      2947384.21,
+      2139826.73,
+      2073318.92
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1623150.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      39208908.21,
+      3190122.76,
+      623335.74,
+      1338361.44
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1451050.82,
+      96986.6,
+      67602.2,
+      109933.19
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      50747112.3,
+      10862689.59,
+      5404697.89,
+      5356280.71
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      10423114.08,
+      1309521.96,
+      371748.76,
+      441407.33
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      10092865.0,
+      1198038.02,
+      971776.28,
+      943187.15
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3765844.0,
+      331000.0,
+      223596.09,
+      150282.0
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      469364113.18,
+      67669870.04,
+      49594454.29,
+      49830319.65
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      54782814.08,
+      13069735.84,
+      4070762.43,
+      4724969.39
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86745440.0,
+      0.0,
+      7494675.0,
+      7494675.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      5306636.0,
+      224200.0,
+      1229067.49,
+      1235036.65
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      147577.64,
+      130444.82,
+      128778.0
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8938882.0,
+      558404.35,
+      487051.88,
+      640217.47
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      750000.0,
+      30173.15,
+      315094.22,
+      306608.43
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      51928.7,
+      75178.7,
+      75178.7,
+      76458.21
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      147860.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      87750.0,
+      19500.0,
+      9750.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      1956669.0,
+      108400.0,
+      102800.0,
+      102800.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      146594717.58,
+      22920555.5,
+      18250240.18,
+      20824553.06
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      11992004.0,
+      285125.85,
+      508294.0,
+      475665.5
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      1882267.7,
+      1738267.7,
+      9397167.7,
+      9397167.7
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      31873.72,
+      31873.72,
+      31873.72,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      16927087.0,
+      5343867.69,
+      8523957.74,
+      8523957.74
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      3401000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      364723.81,
+      364723.81
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1605127828.45,
+     147656391.4,
+     162000870.91,
+     172990468.59
+    ]
+   },
+   "5": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      0.0,
+      13811.58,
+      23955.35
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      0.0,
+      229586.72,
+      229586.72
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      0.0,
+      45587.41,
+      45587.41
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      69512072.76,
+      2301852.67,
+      6373138.3,
+      6345801.67
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      317967248.16,
+      15338441.39,
+      24313986.61,
+      24313006.67
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      60917247.0,
+      1585156.0,
+      4382877.15,
+      4348888.28
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      3404726.25,
+      2655665.51,
+      2914779.47
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      6977.28,
+      17479.7,
+      20213.61,
+      20213.61
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2923124.84,
+      86363.18,
+      170394.17,
+      161058.92
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      254403.3,
+      84083.55,
+      84083.55
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      28715.89,
+      28715.89
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      0.0,
+      0.0,
+      3250.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      55946370.29,
+      3489047.74,
+      5697095.74,
+      4565465.78
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      19719311.0,
+      2303010.47,
+      1474126.32,
+      525892.57
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2806160.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      31259500.0,
+      10000000.0,
+      3959500.43,
+      3959500.43
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      28398858.0,
+      0.0,
+      2823404.2,
+      2823404.2
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      0.0,
+      5313.42,
+      11669.65
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1102731.21,
+      70314.71,
+      65129.23,
+      69862.23
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      48235686.02,
+      2492614.26,
+      2165778.86,
+      2079428.2
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1633150.0,
+      0.0,
+      51435.0,
+      51435.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      39240776.13,
+      838896.34,
+      1085798.22,
+      954427.64
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1448114.47,
+      119369.13,
+      114691.08,
+      97107.82
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      55206913.63,
+      9323418.96,
+      6741398.78,
+      6591717.93
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      10871380.0,
+      3342270.0,
+      1042365.01,
+      970378.79
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      10068685.0,
+      565789.63,
+      883322.57,
+      883589.81
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3762192.79,
+      0.0,
+      189883.63,
+      276162.53
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      469934365.55,
+      37698759.43,
+      54755451.5,
+      53859057.16
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      53533324.0,
+      -138012.53,
+      5673212.18,
+      4820610.01
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86745440.0,
+      0.0,
+      7455025.0,
+      7455025.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      3287547.0,
+      948911.0,
+      1250371.15,
+      1245839.51
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      8414.52,
+      137213.55,
+      140489.34
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8938882.0,
+      165000.0,
+      747042.01,
+      747042.01
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      400000.0,
+      30504.53,
+      24007.92,
+      39447.68
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      3243.66,
+      2243.66,
+      2243.66,
+      313.6
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      242438.0,
+      94578.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      0.0,
+      0.0,
+      9750.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      1948269.0,
+      -4200.0,
+      1400.0,
+      1400.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      157344731.83,
+      30513801.56,
+      29062569.04,
+      28833908.18
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      11958471.63,
+      440491.11,
+      413604.43,
+      417993.43
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      1400000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      31873.72
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      16414785.0,
+      3710000.0,
+      4969433.66,
+      0.0
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      3450000.0,
+      2500000.0,
+      2500000.0,
+      2500000.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      367114.93,
+      367114.93
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1612823493.25,
+     131503645.01,
+     171975992.02,
+     162848834.69
+    ]
+   },
+   "6": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      0.0,
+      5516.68,
+      5516.68
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      300000.0,
+      229586.72,
+      229586.72
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      0.0,
+      45587.41,
+      45587.41
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      71426043.57,
+      4703253.88,
+      6415185.78,
+      6405365.66
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      316342862.64,
+      20933228.6,
+      24882085.55,
+      24879155.51
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      60741995.0,
+      3364523.0,
+      4457470.96,
+      4371769.88
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      165369.63,
+      48360.98,
+      0.0,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      -715129.77,
+      2840315.72,
+      2764331.22
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      19961.34,
+      32686.37,
+      29799.2,
+      24534.17
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2869565.0,
+      22400.3,
+      152971.01,
+      152971.01
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      0.0,
+      76631.06,
+      76631.06
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      34483.98,
+      34483.98
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      0.0,
+      3250.0,
+      3250.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      56092975.11,
+      8785807.33,
+      6863476.72,
+      6880562.21
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      18664246.0,
+      624998.99,
+      208333.34,
+      1156567.09
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2806160.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      31259500.0,
+      14000.0,
+      971282.99,
+      957282.99
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      29372811.22,
+      4701306.52,
+      2820913.33,
+      2820913.33
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      0.0,
+      13608.32,
+      13608.32
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1116353.98,
+      47545.46,
+      54718.94,
+      55137.94
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      279543.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      46485331.76,
+      4019095.61,
+      2271638.0,
+      2656477.37
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1633150.0,
+      84898.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      38922271.93,
+      1756619.66,
+      1051995.63,
+      954068.17
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1472750.0,
+      37657.25,
+      55997.88,
+      58885.41
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      55543641.58,
+      4679292.33,
+      6800676.4,
+      7008900.42
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      10681130.0,
+      333716.91,
+      1545701.25,
+      1602991.87
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      10294800.21,
+      609035.3,
+      934882.47,
+      937618.08
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3473804.02,
+      90000.0,
+      126985.96,
+      126985.96
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      467690959.49,
+      33506983.09,
+      53179748.96,
+      53497521.92
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      53569726.0,
+      -85998.56,
+      4757637.14,
+      4685797.38
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86745440.0,
+      0.0,
+      7175212.0,
+      7175212.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      4848067.45,
+      1328634.56,
+      1215296.1,
+      1217128.38
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      7747.4,
+      111067.48,
+      120164.19
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8938882.0,
+      868667.1,
+      609741.89,
+      609741.89
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      400000.0,
+      133421.06,
+      148854.71,
+      148854.71
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      5282.13,
+      0.0,
+      0.0,
+      1930.06
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      256336.0,
+      31526.0,
+      94578.0,
+      94578.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      0.0,
+      9750.0,
+      9750.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      2618560.66,
+      599000.0,
+      600400.0,
+      1400.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      136021070.85,
+      10734561.02,
+      26242455.35,
+      26106207.95
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      11130493.0,
+      511869.43,
+      283886.28,
+      284316.06
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      1400000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      19254241.38,
+      6767051.38,
+      0.0,
+      4969433.66
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      873050.0,
+      2801000.0,
+      2801000.0,
+      2801000.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      369507.15,
+      369507.15
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1589311871.95,
+     111677759.2,
+     160492230.36,
+     166315725.81
+    ]
+   },
+   "7": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      16500.0,
+      34263.09,
+      19841.35
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      1148000.0,
+      344379.93,
+      344379.93
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      228000.0,
+      68381.1,
+      68381.1
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      70345235.99,
+      1734777.66,
+      8146804.5,
+      8143228.26
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      319775158.25,
+      34738961.43,
+      32968375.76,
+      32965456.11
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      61620585.33,
+      7273314.8,
+      4305550.96,
+      4456532.5
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      0.0,
+      0.0,
+      48360.98,
+      48360.98
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      3865463.35,
+      2848801.55,
+      2807392.86
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      52178.23,
+      49438.23,
+      49438.23,
+      49438.23
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2915966.79,
+      64266.42,
+      69118.25,
+      58807.07
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      0.0,
+      75460.45,
+      75460.45
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      33957.21,
+      33957.21
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      0.0,
+      6500.0,
+      3250.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      55643899.55,
+      2791937.39,
+      2206777.69,
+      3566427.81
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      19757529.45,
+      416666.66,
+      1979775.72,
+      989887.86
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2218637.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      30473500.0,
+      0.0,
+      7092627.24,
+      4106627.24
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      30014184.38,
+      771433.96,
+      3590754.03,
+      3590754.03
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      16500.0,
+      13476.37,
+      11398.11
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1100641.5,
+      40401.7,
+      37033.7,
+      26686.2
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      38937386.71,
+      3444111.49,
+      2124021.13,
+      1201788.06
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1633150.0,
+      80070.0,
+      83708.0,
+      83708.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      41408527.53,
+      1648570.75,
+      2286485.48,
+      1607869.95
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1450854.0,
+      56041.96,
+      55000.78,
+      55338.75
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      50376908.53,
+      7852462.38,
+      7590693.3,
+      6072310.37
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      11049630.0,
+      252361.74,
+      247418.32,
+      127420.35
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      9674776.0,
+      1153569.57,
+      857335.88,
+      733696.49
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3714694.5,
+      87165.73,
+      153214.85,
+      65305.62
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      476809995.28,
+      37357647.18,
+      58989837.72,
+      52689632.34
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      53177716.0,
+      7513211.93,
+      4664460.99,
+      3672147.2
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86781420.0,
+      35980.0,
+      7738137.0,
+      7738137.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      3679049.0,
+      1500009.89,
+      1740760.07,
+      1748402.19
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2325420.0,
+      260958.1,
+      146838.0,
+      125954.96
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8936142.0,
+      -262287.7,
+      536484.73,
+      499648.01
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      400000.0,
+      70641.06,
+      76437.41,
+      71509.42
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      22246.99,
+      19550.06,
+      19550.06,
+      19550.06
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      208284.72,
+      60424.72,
+      37284.0,
+      37284.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      117000.0,
+      0.0,
+      19500.0,
+      9750.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      1948269.0,
+      0.0,
+      1400.0,
+      600400.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      0.0,
+      82.6,
+      82.6
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1660000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      132655253.73,
+      -1355088.16,
+      16986241.8,
+      10027795.56
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      17601030.15,
+      6100430.25,
+      274402.96,
+      233924.88
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      820000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      14996247.82,
+      378836.97,
+      11033655.82,
+      11033655.82
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      950000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      371947.73,
+      371947.73
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1587156375.43,
+     119410329.52,
+     179954735.39,
+     160193526.66
+    ]
+   },
+   "8": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      8000.0,
+      13625.84,
+      17046.74
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      0.0,
+      240835.23,
+      240835.23
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      0.0,
+      45587.41,
+      45587.41
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      71658722.46,
+      3559147.4,
+      7083470.49,
+      6984067.8
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      317062213.54,
+      -889518.2,
+      24810770.87,
+      24801081.4
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      59471321.0,
+      523946.53,
+      4480971.89,
+      4320882.52
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      520698.26,
+      173365.38,
+      0.0,
+      0.0
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      2179369.44,
+      3174053.71,
+      3118097.19
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2878565.0,
+      73780.26,
+      212642.98,
+      137897.64
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      0.0,
+      74280.58,
+      74280.58
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      33426.25,
+      33426.25
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      0.0,
+      3250.0,
+      3250.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      59754960.95,
+      4391327.23,
+      7082059.73,
+      6183756.14
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      20666113.73,
+      208333.33,
+      416666.66,
+      1406554.52
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2806160.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      33675366.41,
+      2415866.41,
+      1266239.95,
+      3000000.0
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      29482711.46,
+      1083853.39,
+      2915995.5,
+      2915995.5
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      0.0,
+      5499.16,
+      2078.26
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      966711.44,
+      23109.03,
+      32005.03,
+      42352.53
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      45772030.07,
+      3043656.49,
+      3475683.74,
+      2739701.15
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1437869.44,
+      156000.0,
+      81260.0,
+      81260.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      34994187.73,
+      2234263.79,
+      1724986.77,
+      2074528.59
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1323617.46,
+      19095.41,
+      43791.11,
+      51902.24
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      56595204.97,
+      7982095.57,
+      7386370.52,
+      7522872.29
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      10888884.0,
+      109334.35,
+      172419.39,
+      147608.97
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      9489496.72,
+      261890.88,
+      560504.57,
+      669872.18
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3709580.0,
+      104095.21,
+      197621.99,
+      217469.04
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      459206229.99,
+      18438554.28,
+      52432870.44,
+      45148448.47
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      53188985.92,
+      3677264.35,
+      2652533.01,
+      4375365.75
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86792032.0,
+      46592.0,
+      7592505.0,
+      7592505.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      4198376.04,
+      1231920.28,
+      1310461.38,
+      1353027.12
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      99760.96,
+      104160.0,
+      146069.36
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8696117.75,
+      477463.23,
+      405045.73,
+      441882.45
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      2805622.11,
+      2291645.75,
+      2282966.52,
+      38210.65
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      1000.0,
+      5979.06,
+      5979.06,
+      5979.06
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      133962.0,
+      63052.0,
+      60424.72,
+      60424.72
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      0.0,
+      9750.0,
+      9750.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      1338402.8,
+      244411.0,
+      244411.0,
+      1400.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      137231398.78,
+      817261.27,
+      8822073.66,
+      9275911.87
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      10546116.71,
+      127419.53,
+      6180067.75,
+      6143894.2
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      1400000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      3377.4,
+      3377.4,
+      3377.4,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      18249875.3,
+      6436853.02,
+      2234695.02,
+      2135327.37
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      870000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      263378.58,
+      263378.58
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1584011408.44,
+     61622566.03,
+     150138718.64,
+     143823978.77
+    ]
+   },
+   "9": {
+    "linhas": [
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      824752.0,
+      824752.0,
+      0.0,
+      19841.35,
+      13625.84
+     ],
+     [
+      "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+      3146035.0,
+      3146035.0,
+      0.0,
+      274013.61,
+      274013.61
+     ],
+     [
+      "PENSÕES DO RPPS E DO MILITAR",
+      605085.0,
+      605085.0,
+      0.0,
+      61142.05,
+      61142.05
+     ],
+     [
+      "CONTRATAÇÃO POR TEMPO DETERMINADO",
+      69415500.0,
+      70640867.35,
+      2853404.94,
+      5969369.13,
+      6930804.48
+     ],
+     [
+      "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+      317945748.0,
+      318343987.26,
+      6635145.29,
+      22561003.44,
+      22108772.81
+     ],
+     [
+      "OBRIGAÇÕES PATRONAIS",
+      60917247.0,
+      59562660.31,
+      0.0,
+      7946.76,
+      3934823.86
+     ],
+     [
+      "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+      0.0,
+      0.0,
+      20076.57,
+      193441.95,
+      193441.95
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      16761630.0,
+      16761630.0,
+      2223357.36,
+      2021279.5,
+      2194629.21
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+      2854679.0,
+      2858055.0,
+      22556.01,
+      60382.22,
+      112571.55
+     ],
+     [
+      "JUROS SOBRE A DIVIDA POR CONTRATO",
+      885830.0,
+      885830.0,
+      152696.76,
+      73087.22,
+      73087.22
+     ],
+     [
+      "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+      396920.0,
+      396920.0,
+      0.0,
+      32889.25,
+      32889.25
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      39000.0,
+      39000.0,
+      0.0,
+      3250.0,
+      3250.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      55182118.0,
+      52963311.11,
+      5447274.92,
+      8975651.28,
+      7278374.77
+     ],
+     [
+      "AUXÍLIOS",
+      500000.0,
+      500000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENÇÕES SOCIAIS",
+      19719311.0,
+      19719311.0,
+      781554.86,
+      1198221.19,
+      416666.33
+     ],
+     [
+      "CONTRIBUICOES",
+      2806160.0,
+      2439872.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SUBVENCOES ECONOMICAS",
+      31259500.0,
+      34794500.0,
+      3130000.0,
+      4156682.86,
+      5422922.81
+     ],
+     [
+      "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+      28398858.0,
+      32503590.36,
+      5957104.45,
+      2983696.65,
+      2983696.65
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      811299.0,
+      811299.0,
+      4000.0,
+      11398.12,
+      5499.16
+     ],
+     [
+      "DIÁRIAS – PESSOAL CIVIL",
+      1096580.0,
+      1084073.0,
+      10122.5,
+      10122.5,
+      10122.5
+     ],
+     [
+      "AUXÍLIO-FARDAMENTO",
+      300000.0,
+      254664.51,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "MATERIAL DE CONSUMO",
+      48298756.0,
+      48369267.38,
+      562682.36,
+      2258970.06,
+      3174488.45
+     ],
+     [
+      "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+      1633150.0,
+      1588205.06,
+      42100.0,
+      156000.0,
+      156000.0
+     ],
+     [
+      "MATERIAL DE DISTRIBUICAO GRATUITA",
+      39223254.0,
+      39159918.56,
+      1113415.29,
+      2080644.99,
+      2166068.72
+     ],
+     [
+      "PASSAGENS E DESPESAS COM LOCOMOCAO",
+      1446479.0,
+      1393786.0,
+      7537.33,
+      31708.09,
+      33870.35
+     ],
+     [
+      "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+      50204519.0,
+      50853350.58,
+      -1442141.36,
+      7898167.52,
+      7163107.03
+     ],
+     [
+      "SERVICOS DE CONSULTORIA",
+      10871380.0,
+      10381648.08,
+      32750.0,
+      1074596.25,
+      338252.67
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+      10045835.0,
+      10042335.94,
+      57126.92,
+      602925.53,
+      587422.45
+     ],
+     [
+      "LOCACAO DE MAO-DE-OBRA",
+      3765844.0,
+      3794217.52,
+      182549.34,
+      242863.21,
+      181378.7
+     ],
+     [
+      "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+      463309498.0,
+      473389950.63,
+      32802437.11,
+      35715647.46,
+      37524244.79
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      53631102.0,
+      53587811.0,
+      3061961.6,
+      7047519.17,
+      3155994.46
+     ],
+     [
+      "AUXILIO-ALIMENTACAO",
+      86745440.0,
+      86931440.0,
+      186000.0,
+      7028973.0,
+      9975578.0
+     ],
+     [
+      "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+      3280636.0,
+      3280636.0,
+      21348.22,
+      280002.48,
+      280002.48
+     ],
+     [
+      "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+      2303640.0,
+      2303640.0,
+      91498.88,
+      172503.84,
+      109400.96
+     ],
+     [
+      "AUXILIO-TRANSPORTE",
+      8938882.0,
+      8938882.0,
+      551083.14,
+      695283.44,
+      776412.48
+     ],
+     [
+      "SENTENCAS JUDICIAIS",
+      400000.0,
+      400000.0,
+      102730.74,
+      102125.6,
+      2346059.85
+     ],
+     [
+      "DESPESAS DE EXERCÍCIOS ANTERIORES",
+      1000.0,
+      1000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "INDENIZAÇÕES E RESTITUIÇÕES",
+      147860.0,
+      147860.0,
+      371.03,
+      63423.03,
+      0.0
+     ],
+     [
+      "CONTRIBUIÇÕES",
+      127000.0,
+      127000.0,
+      0.0,
+      9750.0,
+      9750.0
+     ],
+     [
+      "AUXÍLIOS",
+      1948269.0,
+      2059064.44,
+      940147.24,
+      1400.0,
+      244411.0
+     ],
+     [
+      "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+      128886.0,
+      128886.0,
+      0.0,
+      82.6,
+      0.0
+     ],
+     [
+      "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+      1860000.0,
+      1860000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "OBRAS E INSTALACOES",
+      140368070.0,
+      143155364.35,
+      3158376.65,
+      3712167.09,
+      7084651.82
+     ],
+     [
+      "EQUIPAMENTOS E MATERIAL PERMANENTE",
+      11699043.0,
+      9776106.32,
+      -5996.0,
+      358387.01,
+      397200.75
+     ],
+     [
+      "AQUISICAO DE IMOVEIS",
+      1400000.0,
+      998748.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPESAS DE EXERCICIOS ANTERIORES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      3377.4
+     ],
+     [
+      "INDENIZACOES E RESTITUICOES",
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+      12714785.0,
+      12714785.0,
+      695567.83,
+      6854207.62,
+      338400.92
+     ],
+     [
+      "AQUISIÇÃO DE IMÓVEIS",
+      950000.0,
+      950000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+      4354190.0,
+      4354190.0,
+      0.0,
+      265143.6,
+      265143.6
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1592974765.76,
+     69398839.98,
+     125265910.67,
+     128361550.93
+    ]
+   }
+  }
+ },
+ "coletado_em": "2026-10-08"
+}
