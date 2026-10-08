@@ -1245,10 +1245,14 @@ function montaDespesas(){
   function orgAgregado(mesesPedidos){
     const usar = mesesPedidos.length ? mesesPedidos : Object.keys(orgaosPorMes);
     const mapa = new Map();
-    usar.forEach(m=>{
+    /* Valor Inicial/Atual são da dotação do ano, não se somam entre meses:
+       vale o do último mês (com detalhe) entre os pedidos. */
+    const ordem = usar.slice().sort((a,b)=>+a-+b);
+    ordem.forEach(m=>{
       (orgaosPorMes[m]||[]).forEach(([nome,ini,atual,emp,liq,pag])=>{
-        const cur = mapa.get(nome) || [0,0,0];
+        const cur = mapa.get(nome) || [0,0,0,0,0];
         cur[0]+=emp; cur[1]+=liq; cur[2]+=pag;
+        cur[3]=ini; cur[4]=atual;
         mapa.set(nome, cur);
       });
     });
@@ -1278,11 +1282,16 @@ function montaDespesas(){
     }
     const t=el('table');
     t.innerHTML='<thead><tr><th class="e" style="width:34%">Secretaria/Órgão</th>'
+      +'<th title="Dotação atualizada do último mês selecionado. Azul ▲ = subiu, vermelho ▼ = desceu em relação ao valor inicial da LOA">Valor Atual (R$)</th>'
       +'<th>Empenhado (R$)</th><th>Liquidação (R$)</th><th>Pagamento (R$)</th></tr></thead>';
     const tb=el('tbody');
-    linhas.slice().sort((a,b)=>b[3]-a[3]).forEach(([nome,emp,liq,pag])=>{
+    linhas.slice().sort((a,b)=>b[3]-a[3]).forEach(([nome,emp,liq,pag,ini,atual])=>{
       const tr=el('tr');
+      const dif=atual-ini, alt=Math.abs(dif)>0.005;
+      const seta=!alt?'':(dif>0?'<span style="font-size:.75em">▲</span> ':'<span style="font-size:.75em">▼</span> ');
+      const corAlt=dif>0?'var(--acento)':'var(--baixa)';
       tr.innerHTML='<td class="e">'+esc(nome.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''))+'</td>'
+        +'<td'+(alt?' style="color:'+corAlt+';font-weight:600" title="'+(dif>0?'Subiu':'Desceu')+' '+exato(Math.abs(dif))+' em relação ao valor inicial ('+exato(ini)+')"':'')+'>'+seta+exato(atual)+'</td>'
         +'<td>'+exato(emp)+'</td><td>'+exato(liq)+'</td><td>'+exato(pag)+'</td>';
       tb.appendChild(tr);
     });
