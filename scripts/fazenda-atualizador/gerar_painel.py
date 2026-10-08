@@ -297,6 +297,47 @@ ART29A = {
 print('Art. 29-A — base 2025: %.2f | teto 2026 (6%%): %.2f | Câmara empenhado: %.2f | Câmara pago: %.2f | LOA Câmara: %.2f'
       % (BASE_ART29A_2025, TETO_CAMARA_2026, _emp_camara, _pag_camara, _loa_camara))
 
+# ------------------------------------------------------- Visão do Prefeito
+# Números que só existem pra essa tela: dotação (LOA atualizada), arrecadação
+# comparada ao mesmo período do ano anterior (só meses FECHADOS) e o gasto
+# por função de governo.
+PREFEITO = {'dot_ini': 0, 'dot_atual': 0, 'comp': None, 'funcoes': []}
+try:
+    _anos_dp = _dp['anos'][_ano_desp]
+    _ult = max((int(m) for m, v in _anos_dp.items() if v.get('emp')), default=None)
+    if _ult:
+        # o mês corrente ainda está em andamento (a dotação "atual" dele pode não
+        # refletir os remanejamentos) — vale o último mês fechado
+        _hoje = __import__('datetime').date.today()
+        if int(_ano_desp) == _hoje.year and _ult == _hoje.month and _ult > 1:
+            _ult -= 1
+        PREFEITO['dot_ini'] = _anos_dp[str(_ult)]['ini']
+        PREFEITO['dot_atual'] = _anos_dp[str(_ult)]['atual']
+except Exception as _e:
+    print('dotação não carregada:', _e)
+try:
+    _a, _ap = ANO_EQUILIBRIO, str(int(ANO_EQUILIBRIO) - 1)
+    _M = max(int(m) for m in MENSAL['rc'][_a])
+    def _liq(ano, ate):
+        t = 0.0
+        for _m in range(1, ate + 1):
+            for chave, sinal in (('rc', 1), ('cap', 1), ('ded', -1)):
+                t += sinal * sum(MENSAL.get(chave, {}).get(ano, {}).get(str(_m), {}).values())
+        return t
+    if _M >= 2:
+        PREFEITO['comp'] = {'ate': _M - 1, 'atual': round(_liq(_a, _M - 1), 2),
+                            'anterior': round(_liq(_ap, _M - 1), 2), 'ano': int(_a)}
+except Exception as _e:
+    print('comparativo de arrecadação não calculado:', _e)
+try:
+    _fx = {}
+    for _m, _v in _df['anos'][_ano_f].items():
+        for _l in _v['linhas']:
+            _fx[_l[0]] = _fx.get(_l[0], 0.0) + _l[4]
+    PREFEITO['funcoes'] = [[k, round(v, 2)] for k, v in sorted(_fx.items(), key=lambda kv: -kv[1]) if v > 0][:9]
+except Exception as _e:
+    print('gasto por função não carregado:', _e)
+
 DATA = {
     'rc':  bloco('1'),
     'cap': bloco('2'),
@@ -311,6 +352,7 @@ DATA = {
     'despesas': DESPESAS,
     'natureza': NATUREZA,
     'lei': LEI,
+    'prefeito': PREFEITO,
     'equilibrio': EQUILIBRIO,
     'art29a': ART29A,
     'dp_coleta': DP_COLETA,
@@ -491,6 +533,31 @@ HTML = r'''<!DOCTYPE html>
   @media (max-width:620px){ .cabl{ grid-template-columns:1fr 140px; }
                             .cabl span:nth-child(2),.cabl span:nth-child(3){ display:none; } }
 
+  /* ---------------- Visão do Prefeito ---------------- */
+  .pfrase{ border:1px solid var(--cs); border-left:6px solid var(--cs); border-radius:var(--r);
+           background:var(--sup); padding:16px 20px; font-size:16px; line-height:1.55;
+           color:var(--t1); margin:4px 0 18px; }
+  .pfrase b{ color:var(--cs); }
+  .pgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:14px; margin:4px 0 6px; }
+  .pcard{ border:1px solid var(--linha); border-left:5px solid var(--cs); border-radius:var(--r);
+          padding:14px 18px 15px; background:var(--bg); cursor:pointer; transition:box-shadow .15s; }
+  .pcard:hover{ box-shadow:0 3px 14px rgba(20,22,26,.10); }
+  .pcard .pt{ font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--t3);
+              display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .pcard .tag{ font-size:10px; font-weight:700; letter-spacing:.04em; padding:2px 8px; border-radius:10px;
+               color:#fff; background:var(--cs); white-space:nowrap; }
+  .pcard .pb{ font-size:30px; font-weight:700; line-height:1.1; margin:9px 0 3px; color:var(--cs);
+              font-variant-numeric:tabular-nums; }
+  .pcard .ps{ font-size:13px; color:var(--t1); line-height:1.45; }
+  .pcard .pl{ font-size:11.5px; color:var(--t3); margin-top:7px; line-height:1.45; }
+  .pcard .pm{ position:relative; height:8px; background:var(--trilho); border-radius:5px; margin:10px 0 2px; }
+  .pcard .pm i{ position:absolute; left:0; top:0; height:100%; background:var(--cs); border-radius:5px; }
+  .pcard .pm u{ position:absolute; top:-3px; height:14px; width:2px; background:var(--t2); }
+  .palerta{ display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--linha);
+            font-size:13.5px; line-height:1.5; color:var(--t1); cursor:pointer; }
+  .palerta:last-child{ border-bottom:0; }
+  .palerta:hover{ color:var(--acento); }
+  .palerta i{ flex:none; width:10px; height:10px; border-radius:50%; background:var(--cs); margin-top:6px; }
   /* ---------------- busca e tabela ---------------- */
   .busca{ border:1px solid var(--linha); border-radius:100px; background:var(--bg);
           padding:9px 16px; font-size:13.5px; font-family:inherit; color:var(--t1);
@@ -552,8 +619,10 @@ HTML = r'''<!DOCTYPE html>
 <header><div class="topo">
   <div class="marca">Nova Lima</div>
   <nav id="abas">
+    <b data-p="pre" class="on">Visão do Prefeito</b>
+    <span class="espaco"></span>
     <b class="grupoLabel">Receita</b>
-    <b data-p="rc" class="on">Receita Corrente</b>
+    <b data-p="rc">Receita Corrente</b>
     <b data-p="cap">Receita de Capital</b>
     <b data-p="ded">Deduções</b>
     <span class="espaco"></span>
@@ -568,7 +637,8 @@ HTML = r'''<!DOCTYPE html>
 </div></header>
 
 <div class="env">
-  <div class="pg on" id="pg-rc"></div>
+  <div class="pg on" id="pg-pre"></div>
+  <div class="pg" id="pg-rc"></div>
   <div class="pg" id="pg-cap"></div>
   <div class="pg" id="pg-ded"></div>
   <div class="pg" id="pg-ctr"></div>
@@ -591,7 +661,7 @@ const PAGS = {
         tipos:false, rot:'Itens', vinc:false},
 };
 
-let pagina='rc';
+let pagina='pre';
 const estado={ rc:{anos:new Set([PARCIAL]),tipo:null,mes:null}, cap:{anos:new Set([PARCIAL]),tipo:null,mes:null},
                ded:{anos:new Set([PARCIAL]),tipo:null,mes:null}, pes:{busca:'',corte:null},
                ctr:{sit:'vigente', tipo:null, busca:''} };
@@ -1634,10 +1704,174 @@ function montaEquilibrio(){
   };
 }
 
+
+/* ---------------- Visão do Prefeito ---------------- */
+const COR_ST={ ok:'var(--alta)', at:'var(--parcial)', ruim:'var(--baixa)', info:'var(--acento)' };
+const TAG_LEI={ ok:'DENTRO DO LIMITE', at:'ATENÇÃO', ruim:'FORA DO LIMITE' };
+const TAG_ST={ ok:'OK', at:'ATENÇÃO', ruim:'ALERTA', info:'INFORMATIVO' };
+function irPara(p){ pagina=p; render(); scrollTo({top:0,behavior:'smooth'}); }
+
+/* mesmas fórmulas da tabela "Limites legais" (aproximação pelo empenhado) */
+function calcLegais(){
+  const lm=(DATA.lei&&DATA.lei.meses)||{}, npm=(DATA.natureza&&DATA.natureza.por_mes)||{}, a29=DATA.art29a||{};
+  const ms=Object.keys(lm);
+  if(!ms.length) return null;
+  const S=k=>ms.reduce((s,m)=>s+(lm[m][k]||0),0);
+  const rit=S('rit'), rcl=S('rcl');
+  const pessoal=ms.reduce((s,m)=>s+(npm[m]||[]).filter(l=>l[7]==='Pessoal e encargos').reduce((a,l)=>a+l[3],0),0);
+  const edu=S('edu')-S('edu_fed'), saude=S('saude')-S('saude_fed');
+  return { rit, rcl, pessoal, edu, saude, a29,
+    pEdu:rit?edu/rit*100:0, pSaude:rit?saude/rit*100:0, pPes:rcl?pessoal/rcl*100:0,
+    pCam:a29.teto_2026?(a29.emp_camara_2026||0)/a29.teto_2026*100:0,
+    ate:MESNOME[ms.sort((a,b)=>+a-+b)[ms.length-1]] };
+}
+
+function montaPrefeito(){
+  const host=document.getElementById('pg-pre');
+  host.innerHTML='';
+  const eq=DATA.equilibrio||{ano:null,meses:[]};
+  const L=calcLegais(), pf=DATA.prefeito||{};
+  const topopag=el('div','topopag'); host.appendChild(topopag);
+  const cab=el('div','cab');
+  cab.innerHTML='<div><h1>Visão do Prefeito</h1><p>Como está a gestão em '+(eq.ano||'')
+    +' · indicadores gerenciais calculados pelo empenhado, não substituem o RREO/RGF · clique num cartão para ver o detalhe</p></div>';
+  topopag.appendChild(cab);
+  if(!L||!(eq.meses||[]).length){
+    const d=el('div','vazio'); d.textContent='Sem dados suficientes ainda pra montar o painel.'; host.appendChild(d);
+    return function(){};
+  }
+
+  const totRec=eq.meses.reduce((s,m)=>s+m[1],0), totEmp=eq.meses.reduce((s,m)=>s+m[2],0),
+        totPag=eq.meses.reduce((s,m)=>s+m[3],0);
+  const saldo=totRec-totPag;
+  const cards=[];   // {id, tit, st, valor, sub, leg, barra:{pct,lim}, ir, alerta}
+
+  // 1) contas no azul
+  {
+    const rel=totRec?saldo/totRec:0;
+    const st=saldo>=0?'ok':(rel>-0.03?'at':'ruim');
+    cards.push({tit:'Contas no azul?', st, valor:(saldo>=0?'+':'−')+brlx(Math.abs(saldo)),
+      sub:saldo>=0?'A receita cobriu tudo o que foi pago.':'Foi pago mais do que o município arrecadou.',
+      leg:'Recebido '+brlx(totRec)+' · pago '+brlx(totPag)+' (o pago inclui restos a pagar de anos anteriores)', ir:'eq',
+      alerta:'Foram pagos '+brlx(Math.abs(saldo))+' a mais do que a receita líquida arrecadada no ano.'});
+  }
+  // 2) folha de pagamento (limite 60%, alerta 54%, prudencial 57%)
+  {
+    const st=L.pPes>=57?'ruim':(L.pPes>=54?'at':'ok');
+    cards.push({tit:'Folha de pagamento', st, valor:f1.format(L.pPes)+'%',
+      sub:'da receita corrente líquida vai para pessoal e encargos.',
+      leg:'Limite da LRF: 60% · alerta a partir de 54% · prudencial em 57%', barra:{pct:L.pPes,lim:60}, ir:'eq', legal:true,
+      alerta:'A folha está em '+f1.format(L.pPes)+'% da receita; o limite legal é 60% e o alerta começa em 54%.'});
+  }
+  // 3) educação / 4) saúde (mínimos)
+  [['Educação',L.pEdu,25,L.edu,'CF art. 212'],['Saúde',L.pSaude,15,L.saude,'LC 141/2012']].forEach(([n,pct,min,apl,lei])=>{
+    const st=pct>=min?'ok':(pct>=min-2?'at':'ruim');
+    cards.push({tit:n, st, valor:f1.format(pct)+'%',
+      sub:pct>=min?'da receita de impostos aplicados — acima do mínimo.':'da receita de impostos aplicados — abaixo do mínimo.',
+      leg:'Mínimo obrigatório: '+min+'% ('+lei+')', barra:{pct,lim:min,min:true}, ir:'eq', legal:true,
+      alerta:n+' está em '+f1.format(pct)+'%, abaixo do mínimo de '+min+'% (faltam cerca de '+brlx(Math.max(0,L.rit*min/100-apl))+').'});
+  });
+  // 5) câmara
+  {
+    const st=L.pCam>100?'ruim':(L.pCam>=90?'at':'ok'), a=L.a29;
+    cards.push({tit:'Repasse à Câmara', st, valor:f1.format(L.pCam)+'%',
+      sub:'do teto constitucional já foi empenhado.',
+      leg:'Empenhado '+brlx(a.emp_camara_2026||0)+' · teto de 6% (CF art. 29-A): '+brlx(a.teto_2026||0), barra:{pct:L.pCam,lim:100}, ir:'eq', legal:true,
+      alerta:'O repasse à Câmara já usou '+f1.format(L.pCam)+'% do teto de 6% (art. 29-A).'});
+  }
+  // 6) arrecadação x ano anterior
+  if(pf.comp&&pf.comp.anterior>0){
+    const v=(pf.comp.atual/pf.comp.anterior-1)*100, st=v>=0?'ok':(v>-5?'at':'ruim');
+    cards.push({tit:'Arrecadação', st, valor:(v>=0?'+':'−')+f1.format(Math.abs(v))+'%',
+      sub:v>=0?'a mais que no mesmo período do ano passado.':'a menos que no mesmo período do ano passado.',
+      leg:'Janeiro a '+MESNOME[String(pf.comp.ate)]+' (meses fechados): '+brlx(pf.comp.atual)+' em '+pf.comp.ano+' contra '+brlx(pf.comp.anterior)+' em '+(pf.comp.ano-1), ir:'rc',
+      alerta:'A arrecadação caiu '+f1.format(Math.abs(v))+'% frente ao mesmo período de '+(pf.comp.ano-1)+'.'});
+  }
+  // 7) orçamento executado
+  if(pf.dot_atual>0){
+    const pe=totEmp/pf.dot_atual*100, anoPct=(eq.meses.filter(m=>m[2]||m[3]).length/12)*100;
+    const st=pe>100?'ruim':'info';
+    cards.push({tit:'Orçamento executado', st, valor:f1.format(pe)+'%',
+      sub:'do orçamento atualizado já foi empenhado.',
+      leg:'Empenhado '+brlx(totEmp)+' de '+brlx(pf.dot_atual)+' previstos · pago '+brlx(totPag)+' ('+f1.format(totPag/pf.dot_atual*100)+'%) · já passaram ~'+f1.format(anoPct)+'% do ano',
+      barra:{pct:pe,lim:100}, ir:'desp',
+      alerta:'O empenhado já passou da dotação atualizada.'});
+  }
+  // 8) contratos a vencer
+  {
+    const c=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0);
+    const c30=c.filter(r=>r[8]<=30), c90=c.filter(r=>r[8]<=90);
+    const st=c30.length===0?'ok':(c30.length<=20?'at':'ruim');
+    const v30=c30.reduce((s,r)=>s+r[6],0);
+    cards.push({tit:'Contratos vencendo', st, valor:String(c30.length),
+      sub:c30.length?'contrato(s) vencem nos próximos 30 dias ('+brlx(v30)+').':'Nenhum contrato vence nos próximos 30 dias.',
+      leg:c90.length+' vencem em até 90 dias · '+c.length+' contratos vigentes', ir:'ctr',
+      alerta:c30.length+' contrato(s) vencem em até 30 dias, somando '+brlx(v30)+'.'});
+  }
+
+  // frase de situação
+  const ruins=cards.filter(c=>c.st==='ruim'), ats=cards.filter(c=>c.st==='at');
+  const pior=ruins.length?'ruim':(ats.length?'at':'ok');
+  const fr=el('div','pfrase'); fr.style.setProperty('--cs',COR_ST[pior]);
+  const nomes=l=>l.map(c=>c.tit.toLowerCase()).join(', ');
+  fr.innerHTML=(pior==='ruim'?'<b>Atenção:</b> '+ruins.length+' indicador(es) em alerta — '+nomes(ruins)+'.'
+      +(ats.length?' Em observação: '+nomes(ats)+'.':'')
+    :pior==='at'?'<b>Ponto de atenção:</b> '+nomes(ats)+'. Os demais indicadores estão dentro dos limites.'
+    :'<b>Tudo dentro dos limites</b> até '+L.ate+'.')
+    +' Receita líquida de '+brlx(totRec)+', pago '+brlx(totPag)+'.';
+  host.appendChild(fr);
+
+  // cartões
+  const grade=el('div','pgrid'); host.appendChild(grade);
+  cards.forEach(c=>{
+    const d=el('div','pcard'); d.style.setProperty('--cs',COR_ST[c.st]);
+    let barra='';
+    if(c.barra){
+      const esc_=Math.max(c.barra.pct,c.barra.lim)*1.2||1;
+      barra='<div class="pm"><i style="width:'+Math.min(100,c.barra.pct/esc_*100).toFixed(1)+'%"></i>'
+        +'<u style="left:'+(c.barra.lim/esc_*100).toFixed(1)+'%" title="limite legal"></u></div>';
+    }
+    d.innerHTML='<div class="pt"><span>'+esc(c.tit)+'</span><span class="tag">'+((c.legal&&TAG_LEI[c.st])||TAG_ST[c.st])+'</span></div>'
+      +'<div class="pb">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div>'+barra
+      +'<div class="pl">'+esc(c.leg)+'</div>';
+    d.onclick=()=>irPara(c.ir);
+    grade.appendChild(d);
+  });
+
+  // o que merece atenção
+  const sAt=bloco(host,'O que merece atenção');
+  const lista=cards.filter(c=>c.st==='ruim'||c.st==='at');
+  if(!lista.length){ const d=el('div','nota'); d.style.color='var(--alta)'; d.textContent='Nenhum alerta no momento.'; sAt.appendChild(d); }
+  lista.sort((a,b)=>(b.st==='ruim')-(a.st==='ruim')).forEach(c=>{
+    const d=el('div','palerta'); d.style.setProperty('--cs',COR_ST[c.st]);
+    d.innerHTML='<i></i><span>'+esc(c.alerta)+'</span>'; d.onclick=()=>irPara(c.ir); sAt.appendChild(d);
+  });
+  const prox=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0&&r[8]<=90).sort((a,b)=>a[8]-b[8]).slice(0,5);
+  prox.forEach(r=>{
+    const d=el('div','palerta'); d.style.setProperty('--cs',r[8]<=30?COR_ST.at:COR_ST.info);
+    d.innerHTML='<i></i><span>Contrato '+esc(r[0])+' · '+esc(r[3])+' · '+brlx(r[6])+' — vence em '+r[8]+' dia(s).</span>';
+    d.onclick=()=>irPara('ctr'); sAt.appendChild(d);
+  });
+
+  // para onde vai o dinheiro
+  const sOnde=bloco(host,'Para onde vai o dinheiro · empenhado no ano, por área');
+  const fun=pf.funcoes||[];
+  if(fun.length){
+    const tot=fun.reduce((s,f)=>s+f[1],0), mx=fun[0][1];
+    fun.forEach(([n,v])=>{
+      const l=linha(n.charAt(0)+n.slice(1).toLowerCase(), exato(v), v/mx, f1.format(v/totEmp*100)+'%', {click:()=>irPara('desp')});
+      sOnde.appendChild(l);
+    });
+  }
+  const sObr=bloco(host,'O que a lei obriga x o que o prefeito decide');
+  const hostObr=el('div'); sObr.appendChild(hostObr); barraObrigatorias(hostObr);
+  return function(){};
+}
+
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
-                desp:montaDespesas(), eq:montaEquilibrio() };
+                desp:montaDespesas(), eq:montaEquilibrio(), pre:montaPrefeito() };
 function render(){
   document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
