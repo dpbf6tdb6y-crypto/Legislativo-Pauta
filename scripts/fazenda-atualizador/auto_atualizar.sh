@@ -25,6 +25,7 @@ cd scripts/fazenda-atualizador
 .venv/bin/python3 coletor_contratos.py >> "$LOG" 2>&1
 .venv/bin/python3 coletor_pessoal.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Pessoal falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_natureza.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Natureza falhou — mantendo os dados anteriores" >> "$LOG"
+.venv/bin/python3 coletor_natureza.py funcao >> "$LOG" 2>&1 || echo "AVISO: coleta de Função falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 gerar_painel.py >> "$LOG" 2>&1
 mkdir -p ../../private/fazenda
 cp ../Painel_Receita_Despesas.html ../../private/fazenda/painel.html
@@ -41,6 +42,7 @@ curl -s -o /dev/null -w 'health check: HTTP %{http_code}\n' http://localhost:300
 git checkout -- scripts/fazenda-atualizador/dados_receita.json \
                 scripts/fazenda-atualizador/dados_contratos.json \
                 scripts/fazenda-atualizador/dados_pessoal.json \
-                scripts/fazenda-atualizador/dados_natureza.json >> "$LOG" 2>&1
+                scripts/fazenda-atualizador/dados_natureza.json \
+                scripts/fazenda-atualizador/dados_funcao.json >> "$LOG" 2>&1
 
 echo "concluído" >> "$LOG"

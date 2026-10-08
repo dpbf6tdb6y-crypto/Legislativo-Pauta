@@ -195,6 +195,42 @@ try:
                                        for _k, _a in _ac.items()]
 except Exception as _e:
     print('natureza não carregada:', _e)
+
+# ---------------------------------------------------- gastos exigidos por lei
+# Mínimos/tetos que a lei impõe ao gasto (educação 25%, saúde 15%, pessoal 60%
+# da RCL, Câmara 6%). Por mês: base de cálculo da receita (impostos e
+# transferências constitucionais), RCL aproximada, repasses que NÃO são
+# imposto (descontados do gasto em educação/saúde) e o empenhado por função.
+# Aproximação gerencial — não substitui SIOPE/SIOPS/RREO.
+_TRANSF_IMPOSTOS = {'1711511100', '1711512100', '1711520100', '1721500100', '1721510100', '1721520100'}
+_LEIS_EDU_FED = {'CF art. 212, §5º', 'Leis do FNDE (PNAE/PNATE)'}
+LEI = {'ano': None, 'meses': {}}
+try:
+    _df = json.load(open(os.path.join(BASE, 'dados_funcao.json'), encoding='utf-8'))
+    _ano_f = max(_df.get('anos', {}), default=None)
+    if _ano_f:
+        LEI['ano'] = int(_ano_f)
+        for _m, _v in _df['anos'][_ano_f].items():
+            _rc = MENSAL.get('rc', {}).get(_ano_f, {}).get(_m)
+            if not _rc:
+                continue   # sem receita do mês ainda — não há base de cálculo
+            _ded = sum(MENSAL.get('ded', {}).get(_ano_f, {}).get(_m, {}).values())
+            _f = {}
+            for _l in _v['linhas']:
+                _f[_l[0]] = _f.get(_l[0], 0.0) + _l[4]       # empenho por função
+            LEI['meses'][_m] = {
+                'rit': round(sum(x for c, x in _rc.items()
+                                 if D['tipos'].get(c) == 'Impostos' or c in _TRANSF_IMPOSTOS), 2),
+                'rcl': round(sum(_rc.values()) - _ded, 2),
+                'edu_fed': round(sum(x for c, x in _rc.items()
+                                     if classifica(c, D['tipos'].get(c, ''), D['nomes'].get(c, ''))[1] in _LEIS_EDU_FED), 2),
+                'saude_fed': round(sum(x for c, x in _rc.items()
+                                       if classifica(c, D['tipos'].get(c, ''), D['nomes'].get(c, ''))[1] == 'LC 141/2012'), 2),
+                'edu': round(_f.get('EDUCAÇÃO', 0.0), 2),
+                'saude': round(_f.get('SAÚDE', 0.0), 2),
+            }
+except Exception as _e:
+    print('gastos por lei não carregados:', _e)
 print('despesas carregadas:', len(DESPESAS['meses']), 'meses de', DESPESAS['ano'])
 
 # Receita x Despesas — só o ano de 2026 (o mesmo ano coletado em Despesas),
@@ -274,6 +310,7 @@ DATA = {
     'pessoal_hist': PESSOAL_HIST,
     'despesas': DESPESAS,
     'natureza': NATUREZA,
+    'lei': LEI,
     'equilibrio': EQUILIBRIO,
     'art29a': ART29A,
     'dp_coleta': DP_COLETA,
@@ -1257,6 +1294,12 @@ function montaDespesas(){
   const sOrg=bloco(host,'Por secretaria');
   const rolaOrg=el('div','rolatab'); sOrg.appendChild(rolaOrg);
 
+  const sLei=bloco(host,'Gastos exigidos por lei');
+  const rolaLei=el('div','rolatab'); sLei.appendChild(rolaLei);
+  const notaLei=el('div','nota'); sLei.appendChild(notaLei);
+  const leiMeses=(DATA.lei&&DATA.lei.meses)||{};
+  const art29=DATA.art29a||{};
+
   const sNat=bloco(host,'Por natureza da despesa');
   const resNat=el('div','nota'); resNat.style.paddingTop='0'; resNat.style.paddingBottom='10px'; sNat.appendChild(resNat);
   const rolaNat=el('div','rolatab'); sNat.appendChild(rolaNat);
@@ -1334,6 +1377,61 @@ function montaDespesas(){
     }
   }
 
+  /* Gastos exigidos por lei: tabela com o mínimo (educação, saúde) ou teto
+     (pessoal, Câmara), quanto foi aplicado e uma barra com a marca do limite.
+     Aproximação gerencial pelo empenhado — não substitui SIOPE/SIOPS/RREO. */
+  function montaLei(){
+    const sel=[...st.meses].sort((a,b)=>+a-+b).filter(m=>leiMeses[m]);
+    const usar=sel.length?sel:Object.keys(leiMeses).sort((a,b)=>+a-+b);
+    const rot=sLei.querySelector('.rot');
+    rot.textContent='Gastos exigidos por lei · '+(usar.length
+      ? (st.meses.size?usar.map(m=>MESNOME[m]).join(', '):MESNOME[usar[0]]+' a '+MESNOME[usar[usar.length-1]]) : 'sem dados');
+    rolaLei.innerHTML=''; notaLei.innerHTML='';
+    if(!usar.length){ const d=el('div','vazio'); d.textContent='Sem dados de função/receita coletados ainda.'; rolaLei.appendChild(d); return; }
+    const S=k=>usar.reduce((s,m)=>s+(leiMeses[m][k]||0),0);
+    const rit=S('rit'), rcl=S('rcl');
+    const pessoal=usar.reduce((s,m)=>s+(naturezaPorMes[m]||[]).filter(l=>l[7]==='Pessoal e encargos').reduce((a,l)=>a+l[3],0),0);
+    const linhas=[
+      {n:'Educação (MDE)', regra:'mínimo 25% · CF art. 212', tipo:'min', lim:25, base:rit, ref:rit*0.25,
+       apl:S('edu')-S('edu_fed'), bn:'receita de impostos e transferências'},
+      {n:'Saúde (ASPS)', regra:'mínimo 15% · LC 141/2012', tipo:'min', lim:15, base:rit, ref:rit*0.15,
+       apl:S('saude')-S('saude_fed'), bn:'receita de impostos e transferências'},
+      {n:'Despesa com pessoal', regra:'máximo 60% · LRF art. 19', tipo:'max', lim:60, base:rcl, ref:rcl*0.60,
+       apl:pessoal, bn:'receita corrente líquida (aprox.)'},
+      {n:'Repasse à Câmara', regra:'teto 6% · CF art. 29-A', tipo:'max', lim:6, base:art29.base_2025||0, ref:art29.teto_2026||0,
+       apl:art29.emp_camara_2026||0, bn:'receita tributária e transferências de 2025', anual:true},
+    ];
+    const t=el('table');
+    t.innerHTML='<thead><tr><th class="e" style="width:18%">Exigência</th><th class="e">Regra</th>'
+      +'<th>Base de cálculo (R$)</th><th>Mínimo / teto (R$)</th><th>Aplicado (R$)</th><th>%</th>'
+      +'<th class="e" style="width:24%">Gráfico</th></tr></thead>';
+    const tb=el('tbody');
+    linhas.forEach(l=>{
+      const pct=l.base>0?l.apl/l.base*100:0;
+      const ok=l.tipo==='min'?pct>=l.lim:pct<=l.lim;
+      const cor=ok?'var(--alta)':(l.tipo==='min'?'var(--parcial)':'var(--baixa)');
+      const esc_=Math.max(pct,l.lim)*1.25||1;
+      const barra='<div style="position:relative;height:10px;background:var(--trilho);border-radius:6px;min-width:120px">'
+        +'<div style="position:absolute;left:0;top:0;height:100%;width:'+Math.max(0,Math.min(100,pct/esc_*100)).toFixed(1)+'%;background:'+cor+';border-radius:6px"></div>'
+        +'<div title="'+(l.tipo==='min'?'mínimo ':'teto ')+l.lim+'%" style="position:absolute;left:'+(l.lim/esc_*100).toFixed(1)+'%;top:-3px;height:16px;width:2px;background:var(--t2)"></div></div>';
+      const tr=el('tr');
+      tr.innerHTML='<td class="e" style="font-weight:600">'+esc(l.n)+'</td>'
+        +'<td class="e" style="color:var(--t3)">'+esc(l.regra)+'</td>'
+        +'<td title="'+esc(l.bn)+(l.anual?'':' no período')+'">'+exato(l.base)+'</td>'
+        +'<td>'+exato(l.ref)+'</td><td>'+exato(l.apl)+'</td>'
+        +'<td style="color:'+cor+';font-weight:700">'+f1.format(pct)+'%</td>'
+        +'<td class="e">'+barra+'</td>';
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb); rolaLei.appendChild(t);
+    notaLei.innerHTML='Barra: preenchimento = % aplicado; traço = limite legal. Verde = dentro da regra; âmbar = abaixo do mínimo no período; vermelho = acima do teto.<br>'
+      +'<b>Aproximação gerencial</b> pelo empenhado do período, sem substituir SIOPE/SIOPS/RREO. '
+      +'Educação e Saúde: empenhado da função, menos salário-educação/PNAE/PNATE (educação) e repasses do SUS e do Estado (saúde); '
+      +'base = IPTU, ISS, ITBI, IRRF, FPM, ITR, cota-parte de ICMS, IPVA e IPI, sem dívida ativa nem multas e juros. '
+      +'Pessoal: "pessoal e encargos" empenhado (natureza) ÷ receita corrente líquida (corrente − deduções), sem terceirização (a classificar). '
+      +'Câmara: ano todo. FUNDEB (70% em remuneração) não é calculável: o portal não separa a despesa por fonte.';
+  }
+
   /* Despesa por natureza: obrigatória x discricionária. Mesma regra de meses
      da tabela por secretaria (soma o empenhado/liquidado/pago dos meses
      pedidos; Valor Atual é o do último mês, não se soma). */
@@ -1392,12 +1490,12 @@ function montaDespesas(){
   function onClickMes(m){
     st.meses.has(m) ? st.meses.delete(m) : st.meses.add(m);
     colunasMes(mesG, serie, st.meses, onClickMes, true);
-    montaOrg(); montaNat();
+    montaOrg(); montaNat(); montaLei();
   }
   function limparMeses(){
     st.meses.clear();
     colunasMes(mesG, serie, st.meses, onClickMes, true);
-    montaOrg(); montaNat();
+    montaOrg(); montaNat(); montaLei();
   }
   btnLimpar.onclick=limparMeses;
 
@@ -1412,7 +1510,7 @@ function montaDespesas(){
     });
 
     colunasMes(mesG, serie, st.meses, onClickMes, true);
-    montaOrg(); montaNat();
+    montaOrg(); montaNat(); montaLei();
 
     rola.innerHTML='';
     const t=el('table');
