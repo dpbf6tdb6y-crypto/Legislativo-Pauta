@@ -410,7 +410,7 @@ HTML = r'''<!DOCTYPE html>
                                         background-clip:content-box; }
   .lista.rola::-webkit-scrollbar-thumb:hover{ background:#AAB1BD;
                                               background-clip:content-box; }
-  .lin{ display:grid; grid-template-columns:minmax(140px,1fr) minmax(100px,1.3fr) 158px 58px;
+  .lin{ display:grid; grid-template-columns:minmax(140px,1fr) minmax(100px,1.3fr) 58px 158px;
         align-items:center; gap:14px; padding:9px 0;
         border-bottom:1px solid var(--linha); }
   .lin:last-child{ border-bottom:0; }
@@ -428,7 +428,7 @@ HTML = r'''<!DOCTYPE html>
            font-variant-numeric:tabular-nums; }
   .lin.esm{ opacity:.38; }
   /* tabela de fontes com as 3 colunas de vinculação legal (%, valor, lei) */
-  .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(170px,1.2fr) minmax(50px,.4fr) 150px 52px 62px 150px 150px minmax(150px,1fr); }
+  .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(170px,1.2fr) minmax(50px,.4fr) 52px 150px 62px 150px 150px minmax(150px,1fr); }
   .lin .vp, .lin .vv, .lin .vl, .lin .va{ font-size:12.5px; color:var(--t3); }
   .lin .vp, .lin .vv{ text-align:right; font-variant-numeric:tabular-nums; }
   .lin .vl, .lin .va{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -437,7 +437,7 @@ HTML = r'''<!DOCTYPE html>
   .lin .va.ac, .lin .vl.ac{ font-size:11.5px; font-style:italic; }
   .cabl.vinc span:nth-child(5),.cabl.vinc span:nth-child(6){ text-align:right; }
   @media (max-width:1100px){
-    .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(150px,1fr) 140px 52px 62px 140px; }
+    .lin.vinc, .cabl.vinc{ grid-template-columns:minmax(150px,1fr) 52px 140px 62px 140px; }
     .lin.vinc .b, .cabl.vinc span:nth-child(2), .lin.vinc .vl, .lin.vinc .va, .cabl.vinc span:nth-child(7), .cabl.vinc span:nth-child(8){ display:none; }
   }
   @media (max-width:620px){
@@ -446,13 +446,13 @@ HTML = r'''<!DOCTYPE html>
     .lin.vinc, .cabl.vinc{ grid-template-columns:1fr 140px; }
     .lin.vinc .vp, .lin.vinc .vv, .cabl.vinc span:nth-child(5), .cabl.vinc span:nth-child(6){ display:none; }
   }
-  .cabl{ display:grid; grid-template-columns:minmax(140px,1fr) minmax(100px,1.3fr) 158px 58px;
+  .cabl{ display:grid; grid-template-columns:minmax(140px,1fr) minmax(100px,1.3fr) 58px 158px;
          gap:14px; padding-bottom:9px; border-bottom:1px solid var(--linha); }
   .cabl span{ font-size:10.5px; letter-spacing:.07em; text-transform:uppercase;
               color:var(--t3); }
   .cabl span:nth-child(3),.cabl span:nth-child(4){ text-align:right; }
   @media (max-width:620px){ .cabl{ grid-template-columns:1fr 140px; }
-                            .cabl span:nth-child(2),.cabl span:nth-child(4){ display:none; } }
+                            .cabl span:nth-child(2),.cabl span:nth-child(3){ display:none; } }
 
   /* ---------------- busca e tabela ---------------- */
   .busca{ border:1px solid var(--linha); border-radius:100px; background:var(--bg);
@@ -631,7 +631,7 @@ function linha(nome,valor,frac,pct,opt){
   const d=el('div','lin'+(opt.click?' clic':'')+(opt.sel?' sel':'')+(opt.esm?' esm':''));
   d.innerHTML='<span class="n">'+esc(nome)+'</span>'
     +'<span class="b"><i style="width:'+(Math.max(0,Math.min(1,frac))*100).toFixed(1)+'%"></i></span>'
-    +'<span class="v">'+valor+'</span><span class="p">'+(pct||'')+'</span>'
+    +'<span class="p">'+(pct||'')+'</span><span class="v">'+valor+'</span>'
     +(opt.vinc ? vincHtml(opt.vinc) : '');
   if(opt.vinc) d.classList.add('vinc');
   if(opt.click) d.onclick=opt.click;
@@ -648,7 +648,7 @@ function vincHtml(v){
 }
 function cabecaLista(a,b,c,d,vinc){
   const h=el('div','cabl'+(vinc?' vinc':''));
-  h.innerHTML='<span>'+a+'</span><span>'+(b||'')+'</span><span>'+c+'</span><span>'+(d||'')+'</span>'
+  h.innerHTML='<span>'+a+'</span><span>'+(b||'')+'</span><span>'+(d||'')+'</span><span>'+c+'</span>'
     +(vinc?'<span>% Vinc.</span><span>Valor vinculado (R$)</span><span>Destinação</span><span>Lei</span>':'');
   return h;
 }
