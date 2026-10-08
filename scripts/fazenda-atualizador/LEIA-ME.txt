@@ -41,3 +41,9 @@ O QUE AINDA NAO E AUTOMATICO
    Pagamentos por contrato. O portal mostra o valor CONTRATADO, nao o pago, e a area
    de Despesas nao tem arquivo direto como as outras. Os valores da aba Contratos sao
    de contrato, nao de execucao.
+
+ATUALIZACAO AUTOMATICA NO SERVIDOR (todo dia 05:30, via auto_atualizar.sh)
+   coletor.py, coletor_contratos.py, coletor_pessoal.py   Receita, Contratos, Pessoal
+   coletor_despesas_auto.py   Despesas por orgao (total e por secretaria, mes a mes)
+   coletor_natureza.py        Despesa por natureza (e "funcao" com o argumento funcao)
+   coletor_despesas.py (modo vigia) so e necessario se o coletor automatico falhar.
