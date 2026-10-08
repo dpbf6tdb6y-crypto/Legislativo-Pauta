@@ -1613,10 +1613,11 @@ function montaEquilibrio(){
   const totReceita=meses.reduce((s,m)=>s+m[1],0), totEmp=meses.reduce((s,m)=>s+m[2],0),
         totPag=meses.reduce((s,m)=>s+m[3],0);
   const saldo=totReceita-totPag;
+  const rclTotal=Object.values((DATA.lei&&DATA.lei.meses)||{}).reduce((s,m)=>s+(m.rcl||0),0);
 
   return function(){
     kpis.innerHTML='';
-    [['Receita', brlx(totReceita), (eq.ano||'')+' · líquida, todos os meses', totReceita, null],
+    [['Receita líquida total', brlx(totReceita), 'Corrente + Capital − Deduções · RCL (sem capital): '+exato(rclTotal), totReceita, null],
      ['Empenhado', brlx(totEmp), 'comprometido no período', totEmp, null],
      ['Pago', brlx(totPag), 'efetivamente desembolsado', totPag, null],
      ['Saldo', brlx(saldo), saldo>=0?'receita cobriu o pago':'pago passou da receita', saldo,
