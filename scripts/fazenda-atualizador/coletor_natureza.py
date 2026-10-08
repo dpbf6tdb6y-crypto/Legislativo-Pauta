@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Coleta automática da Despesa por NATUREZA do Portal da Transparência.
+"""Coleta automática da Despesa por NATUREZA (ou por FUNÇÃO) do Portal da Transparência.
+
+Uso:  python coletor_natureza.py            → natureza (dados_natureza.json)
+      python coletor_natureza.py funcao     → função/subfunção (dados_funcao.json)
+
 
 Mesma tela das Despesas por órgão (wmdespesas), só que na visão "Natureza"
 (wmdespesas?17,0): um navegador automático (Playwright, sem janela) escolhe o
@@ -21,10 +25,14 @@ import pandas as pd
 from playwright.sync_api import sync_playwright
 
 BASE  = os.path.dirname(os.path.abspath(__file__))
-DEST  = os.path.join(BASE, 'dados_natureza.json')
 DESP  = os.path.join(BASE, 'dados_despesas.json')
 CACHE = os.path.join(BASE, '_cache')
-URL   = 'https://mgnl.abaco.com.br/transparencia/servlet/wmdespesas?17,0'
+RAIZ  = 'https://mgnl.abaco.com.br/transparencia/servlet/wmdespesas?%s,0'
+# visão → (código na URL, cabeçalho da 1ª coluna, nº de colunas de rótulo, arquivo)
+VISOES = {
+    'natureza': ('17', 'natureza', 1, 'dados_natureza.json'),
+    'funcao':   ('15', 'função',   2, 'dados_funcao.json'),
+}
 MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
          'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 TOL = 1.0   # R$ de tolerância nas conferências
@@ -34,7 +42,7 @@ def log(msg):
     print(msg, flush=True)
 
 
-def le_xls(caminho):
+def le_xls(caminho, cab='natureza', nlab=1):
     """Devolve (ano, mes, linhas, total) do .xls exportado, ou None."""
     try:
         bruto = pd.read_excel(caminho, header=None)
@@ -50,23 +58,23 @@ def le_xls(caminho):
     if mestxt not in nomes_mes:
         return None
     mes = nomes_mes.index(mestxt) + 1
-    if str(bruto.iat[5, 0]).strip().lower() != 'natureza':
-        log('   layout inesperado (cabeçalho não é "Natureza")')
+    if str(bruto.iat[5, 0]).strip().lower() != cab:
+        log('   layout inesperado (cabeçalho não é "%s")' % cab)
         return None
     linha_total = next((i for i in range(len(bruto))
                         if str(bruto.iat[i, 0]).strip().upper().rstrip(':') == 'TOTAL'), None)
     if linha_total is None:
         return None
-    tot = [round(float(v), 2) for v in pd.to_numeric(bruto.iloc[linha_total, 1:6], errors='coerce')]
+    tot = [round(float(v), 2) for v in pd.to_numeric(bruto.iloc[linha_total, nlab:nlab + 5], errors='coerce')]
     linhas = []
     for i in range(6, linha_total):
-        nome = str(bruto.iat[i, 0]).strip()
-        if not nome or nome.lower() == 'nan':
+        rot = [str(bruto.iat[i, k]).strip() for k in range(nlab)]
+        if not rot[0] or rot[0].lower() == 'nan':
             continue
-        vals = pd.to_numeric(bruto.iloc[i, 1:6], errors='coerce')
+        vals = pd.to_numeric(bruto.iloc[i, nlab:nlab + 5], errors='coerce')
         if vals.isna().any():
             continue
-        linhas.append([nome] + [round(float(v), 2) for v in vals])
+        linhas.append(rot + [round(float(v), 2) for v in vals])
     return ano, mes, linhas, tot
 
 
@@ -90,7 +98,10 @@ def total_orgaos(ano, mes):
         return None
 
 
-def main():
+def main(visao='natureza'):
+    cod, cab, nlab, arq_dest = VISOES[visao]
+    URL = RAIZ % cod
+    DEST = os.path.join(BASE, arq_dest)
     os.makedirs(CACHE, exist_ok=True)
     dados = json.load(open(DEST, encoding='utf-8')) if os.path.exists(DEST) else {'coletado_em': '', 'anos': {}}
     hoje = datetime.date.today()
@@ -105,13 +116,13 @@ def main():
         page.goto(URL, wait_until='networkidle')
         for mes in range(1, hoje.month + 1):
             rotulo = '%s/%d' % (MESES[mes - 1], ano)
-            arq = os.path.join(CACHE, 'natureza_%d_%02d.xls' % (ano, mes))
+            arq = os.path.join(CACHE, '%s_%d_%02d.xls' % (visao, ano, mes))
             try:
                 exporta(page, ano, mes, arq)
             except Exception as e:
                 log('  %s: falhou ao exportar (%s)' % (rotulo, str(e).splitlines()[0]))
                 continue
-            info = le_xls(arq)
+            info = le_xls(arq, cab, nlab)
             if not info:
                 log('  %s: arquivo ilegível, ignorado' % rotulo)
                 continue
@@ -122,7 +133,7 @@ def main():
             if abs(tot[2] + tot[3] + tot[4]) < TOL:
                 log('  %s: sem execução ainda, ignorado' % rotulo)
                 continue
-            soma = [round(sum(l[i] for l in linhas), 2) for i in range(1, 6)]
+            soma = [round(sum(l[nlab + i] for l in linhas), 2) for i in range(5)]
             if any(abs(soma[i] - tot[i]) > TOL for i in range(5)):
                 log('  %s: soma das linhas não bate com o TOTAL do arquivo, ignorado' % rotulo)
                 continue
@@ -133,7 +144,7 @@ def main():
                 log('  AVISO %s: empenho/pagamento (%.2f / %.2f) diferem do total por órgão já coletado (%.2f / %.2f)'
                     % (rotulo, tot[2], tot[4], ref[0], ref[1]))
             novos[str(mes)] = {'linhas': linhas, 'total': tot}
-            log('  %s: %d naturezas | empenho R$ %s' % (rotulo, len(linhas), format(tot[2], ',.2f')))
+            log('  %s: %d linhas | empenho R$ %s' % (rotulo, len(linhas), format(tot[2], ',.2f')))
             time.sleep(3)
         nav.close()
 
@@ -148,4 +159,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(main(sys.argv[1] if len(sys.argv) > 1 else 'natureza'))

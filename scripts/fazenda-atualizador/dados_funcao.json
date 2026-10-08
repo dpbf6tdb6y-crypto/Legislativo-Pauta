@@ -1,0 +1,5877 @@
+{
+ "anos": {
+  "2026": {
+   "1": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      843149.04,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      317265893.97,
+      180606439.66,
+      16306093.52,
+      12596003.49
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      675441.83,
+      105336.13,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      7315460.0,
+      6032235.77,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6637492.93,
+      1755734.71,
+      10383.36,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      22893640.0,
+      5584952.24,
+      278818.6,
+      70664.17
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      8580000.0,
+      6853269.59,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5715755.0,
+      1479901.36,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4824520.0,
+      1142385.84,
+      80699.11,
+      69505.81
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7607560.0,
+      1457573.78,
+      2460.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      10250550.0,
+      1650000.0,
+      455870.25,
+      455870.25
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      22531830.0,
+      10105788.3,
+      1410929.27,
+      682460.9
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16760600.0,
+      3330116.15,
+      0.0,
+      0.0
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      4988330.0,
+      96755.98,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      23853740.0,
+      6369460.69,
+      749070.59,
+      540713.93
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      1981700.0,
+      6950.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      6055860.92,
+      2297195.92,
+      8724.65,
+      8724.65
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      14014835.0,
+      111220.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      645000.0,
+      57900.0,
+      40000.0,
+      0.0
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      99188.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      415634.86,
+      397709.1,
+      1076.24
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      1855470.0,
+      660598.27,
+      65149.98,
+      51609.71
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2237530.0,
+      152042.64,
+      8899.36,
+      3534.84
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      109359808.0,
+      56803320.19,
+      3626238.38,
+      3490729.19
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1593222.0,
+      622979.91,
+      71207.88,
+      61386.1
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9335784.0,
+      3656299.31,
+      303733.8,
+      261839.48
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      84714799.0,
+      35124700.61,
+      3978519.04,
+      3427178.86
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      143273882.0,
+      51083109.46,
+      5648692.42,
+      4724469.25
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      2803000.0,
+      2803000.0,
+      298690.26,
+      254292.5
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      1260000.0,
+      106205.94,
+      106205.94
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      3831000.0,
+      370879.25,
+      370879.25
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1900000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      17161630.0,
+      1727494.09,
+      1713185.07,
+      1673767.99
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      875000.0,
+      124589.05,
+      0.0,
+      0.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      51871.71,
+      0.0,
+      0.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      51440000.0,
+      37092474.55,
+      0.0,
+      0.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      16800.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      13567820.0,
+      488095.92,
+      78130.37,
+      0.0
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      27970715.64,
+      3720852.42,
+      3270400.49
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6261890.0,
+      3129000.0,
+      309900.09,
+      1411.4
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      37237460.0,
+      7026937.16,
+      170450.12,
+      170450.12
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      35139628.0,
+      26251944.62,
+      2099902.88,
+      2043113.02
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      117621.94,
+      0.0,
+      0.0
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      145960932.0,
+      61868669.82,
+      8025830.01,
+      7675070.32
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      76996333.63,
+      42000981.56,
+      4159238.02,
+      3589973.56
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      36224334.87,
+      21679461.26,
+      1662215.27,
+      1531158.67
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2507348.5,
+      312310.24,
+      0.0,
+      0.0
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      13190727.0,
+      6510386.41,
+      810084.31,
+      686431.34
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3268757.0,
+      1725000.0,
+      316806.54,
+      273109.09
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      1020253.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1405760.0,
+      450051.54,
+      1820.0,
+      1820.0
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3670130.0,
+      1270586.46,
+      0.0,
+      0.0
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      9646510.0,
+      1457620.79,
+      0.0,
+      0.0
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7042100.0,
+      3932263.09,
+      2509.29,
+      2509.29
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      30000000.0,
+      10000000.0,
+      3493772.1,
+      0.0
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      147622000.0,
+      83320318.29,
+      1552.1,
+      1552.1
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1581079022.82,
+     726513791.25,
+     60890559.48,
+     48097911.95
+    ]
+   },
+   "10": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      0.0,
+      129534.95,
+      188367.22
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      313170150.0,
+      12764.0,
+      6259727.64,
+      2760902.85
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      0.0,
+      0.0,
+      3629.04
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      7315460.0,
+      0.0,
+      0.0,
+      143356.38
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      0.0,
+      320820.41,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6639160.0,
+      0.0,
+      53357.46,
+      214826.21
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      22893640.0,
+      625490.0,
+      281773.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      8580000.0,
+      0.0,
+      1886670.84,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5715755.0,
+      0.0,
+      0.0,
+      134101.75
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4824520.0,
+      0.0,
+      86.66,
+      52545.47
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7607560.0,
+      0.0,
+      0.0,
+      210130.05
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      10250550.0,
+      0.0,
+      0.0,
+      300000.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      22531830.0,
+      0.0,
+      2231.62,
+      417862.44
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16760600.0,
+      0.0,
+      19909.84,
+      975582.02
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      4939730.0,
+      0.0,
+      0.0,
+      14827.33
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      23797880.0,
+      0.0,
+      145602.25,
+      106595.77
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      2052580.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      6047495.0,
+      -87806.63,
+      3471.85,
+      672763.52
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      14014835.0,
+      50000.0,
+      26100.0,
+      104976.75
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      -567.31,
+      882.34,
+      24700.0
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      0.0,
+      14736.0,
+      17716.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      0.0,
+      6200.83,
+      514.5
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      1855470.0,
+      1252.05,
+      4317.11,
+      13663.67
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2237530.0,
+      0.0,
+      19397.15,
+      4094.91
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      109359808.0,
+      1553.85,
+      946155.57,
+      661723.83
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1593222.0,
+      -199.8,
+      3794.09,
+      0.0
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9335784.0,
+      -399.72,
+      218756.43,
+      205639.14
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      84714799.0,
+      -675.88,
+      2543721.47,
+      2342125.3
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      143273882.0,
+      -2714.6,
+      4413291.86,
+      4832598.47
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      2685000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1900000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      17161630.0,
+      0.0,
+      1568927.43,
+      159476.52
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      875000.0,
+      0.0,
+      0.0,
+      64000.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      51440000.0,
+      0.0,
+      115617.99,
+      4043045.12
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      13567820.0,
+      0.0,
+      1148484.84,
+      950.0
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      37237460.0,
+      0.0,
+      1569293.31,
+      617143.93
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      35139628.0,
+      1.0,
+      9036.32,
+      63742.81
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      51625.8,
+      580.8,
+      0.0
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      148409127.0,
+      4742591.87,
+      5673544.81,
+      4301111.68
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      74287056.0,
+      -434383.6,
+      1046588.3,
+      361980.63
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      36257530.0,
+      418734.56,
+      818807.39,
+      226347.9
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2735236.0,
+      -0.03,
+      12579.74,
+      28750.0
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      13190727.0,
+      5469.22,
+      38016.94,
+      23830.89
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3268757.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      0.0,
+      29286.7,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1405760.0,
+      -39000.0,
+      0.0,
+      56154.09
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3670130.0,
+      0.0,
+      0.0,
+      10069.0
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      9646510.0,
+      0.0,
+      0.0,
+      218630.29
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7042100.0,
+      0.0,
+      111015.87,
+      544808.22
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      30000000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      147650000.0,
+      0.0,
+      12887577.87,
+      1311305.5
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1576815000.0,
+     5343734.78,
+     42329897.68,
+     26434589.2
+    ]
+   },
+   "2": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      62882.77,
+      252634.92,
+      232507.33
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      313481654.43,
+      2175303.72,
+      26739453.43,
+      28460579.15
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      1245.29,
+      3542.81,
+      108878.94
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      7315460.0,
+      50305.6,
+      51484.0,
+      51484.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6639160.0,
+      0.0,
+      466948.96,
+      477332.32
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      22893640.0,
+      0.0,
+      1273819.89,
+      1207731.54
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      8549060.0,
+      0.0,
+      2276442.52,
+      2276442.52
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5715755.0,
+      95000.0,
+      298681.1,
+      231102.95
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4824520.0,
+      13335.6,
+      121524.79,
+      104162.32
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7607560.0,
+      124273.15,
+      812099.98,
+      786541.53
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      10250550.0,
+      0.0,
+      496373.96,
+      496373.96
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      22519909.0,
+      2181652.76,
+      880994.87,
+      1486946.21
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16760600.0,
+      0.0,
+      36883.8,
+      36883.8
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      4939730.0,
+      4623.82,
+      273.0,
+      273.0
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      23811740.0,
+      1495316.98,
+      3497356.23,
+      1621195.42
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      2014266.55,
+      720.0,
+      129.11,
+      129.11
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      6047495.0,
+      332400.0,
+      170268.64,
+      141935.31
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      14014835.0,
+      220075.6,
+      10790.0,
+      0.0
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      85400.0,
+      50600.0,
+      88900.0
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      0.0,
+      29614.0,
+      11756.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      513227.14,
+      1860.6,
+      398093.96
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      1855470.0,
+      1400.0,
+      77082.7,
+      81466.32
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2237530.0,
+      6750.28,
+      23131.55,
+      21213.27
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      108859808.0,
+      2666136.96,
+      7863660.86,
+      6966384.5
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1593222.0,
+      137311.58,
+      4876.49,
+      13863.49
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9220466.0,
+      328798.04,
+      553955.36,
+      589909.29
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      87341721.46,
+      5616936.25,
+      4879935.35,
+      4890567.71
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      141314882.0,
+      4694920.24,
+      7149822.35,
+      7317327.42
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      3785000.0,
+      1100000.0,
+      1131469.55,
+      1131469.55
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      0.0,
+      370949.69,
+      370949.69
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1900000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      17161630.0,
+      3880292.36,
+      620975.47,
+      591673.33
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      875000.0,
+      72000.0,
+      45720.45,
+      45720.45
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      0.0,
+      17290.57,
+      17290.57
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      51470940.0,
+      -1352063.14,
+      3727033.99,
+      3727033.99
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      253500.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      13567820.0,
+      3921.42,
+      79358.13,
+      80919.86
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      1294466.83,
+      3922666.39,
+      4333539.9
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      0.0,
+      296674.32,
+      310072.13
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      37237460.0,
+      4558907.92,
+      1491322.51,
+      976396.43
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      35134628.0,
+      55196.13,
+      2659697.79,
+      2602247.06
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      0.0,
+      114508.66,
+      112325.33
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      148409127.0,
+      3688145.99,
+      12040273.29,
+      11370007.54
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      74292056.0,
+      767202.96,
+      5206695.16,
+      4888623.06
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      36257530.0,
+      -69741.0,
+      2100410.01,
+      1992765.14
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2735236.0,
+      423193.6,
+      19521.53,
+      19521.53
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      13190727.0,
+      234717.44,
+      897795.31,
+      888468.79
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3268757.0,
+      0.0,
+      311618.38,
+      312383.56
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      0.0,
+      212967.5,
+      212967.5
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1405760.0,
+      331500.0,
+      195453.71,
+      129439.68
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3670130.0,
+      -569148.8,
+      49143.82,
+      9922.5
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      9646510.0,
+      0.0,
+      195665.94,
+      376.5
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7042100.0,
+      1249771.92,
+      242486.82,
+      236497.63
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      30000000.0,
+      0.0,
+      3683082.75,
+      4176854.85
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      147650000.0,
+      7447429.89,
+      17959151.82,
+      17712398.23
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1578242734.44,
+     44177309.3,
+     115616174.83,
+     114349846.17
+    ]
+   },
+   "3": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      171000.0,
+      226275.99,
+      164044.65
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      316841542.18,
+      17984410.52,
+      30020700.85,
+      26841565.81
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      48600.0,
+      353256.02,
+      157168.94
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      7294460.0,
+      19334.25,
+      562446.05,
+      449375.75
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      245784.43,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6639160.0,
+      86715.0,
+      400350.12,
+      398978.29
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      21808740.0,
+      914896.0,
+      1331184.32,
+      1323015.76
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      8580000.0,
+      0.0,
+      2094113.43,
+      2094113.43
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5715755.0,
+      125282.8,
+      392228.85,
+      364712.92
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4824520.0,
+      37307.75,
+      125144.65,
+      136166.96
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7607560.0,
+      758547.52,
+      788333.15,
+      577866.4
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      10250550.0,
+      0.0,
+      487893.22,
+      487893.22
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      22531430.0,
+      907014.99,
+      2866992.93,
+      1828086.46
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16100600.0,
+      53000.0,
+      998929.45,
+      56788.16
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      4939730.0,
+      2012431.75,
+      1915907.14,
+      1885665.48
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      24618820.17,
+      347549.07,
+      2296017.65,
+      4272817.3
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      2050968.0,
+      61800.0,
+      1065.38,
+      130.81
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      6117825.0,
+      746285.84,
+      1182637.73,
+      1169171.29
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      14114835.0,
+      365658.91,
+      364509.8,
+      92927.6
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      0.0,
+      45140.32,
+      45840.32
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      96116.0,
+      122300.0,
+      125885.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      6750.0,
+      513372.04,
+      403927.26
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      1855870.0,
+      2800.78,
+      77384.28,
+      77301.1
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2237530.0,
+      5112.17,
+      34181.04,
+      39505.09
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      109359808.0,
+      6840156.49,
+      9976400.12,
+      10794041.46
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1593222.0,
+      16198.08,
+      44256.39,
+      40458.19
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9335784.0,
+      37379.54,
+      403035.25,
+      391925.49
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      84700483.96,
+      4019662.51,
+      9636818.35,
+      9494592.77
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      148915626.51,
+      13937974.0,
+      9529769.6,
+      8794536.03
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      3807837.82,
+      1122837.82,
+      1431573.51,
+      1431573.51
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      214471.72,
+      214471.72
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      0.0,
+      370827.16,
+      370827.16
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      10384900.0,
+      7658900.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      17161630.0,
+      6606324.03,
+      680785.98,
+      742551.23
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      1205000.0,
+      330000.0,
+      351720.45,
+      351720.45
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204001.0,
+      1.0,
+      17290.57,
+      17290.57
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      51440000.0,
+      2419858.55,
+      4438185.64,
+      4438185.64
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      -300.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      66.3,
+      66.3,
+      66.3
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      13567820.0,
+      132.6,
+      88409.42,
+      81499.74
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      2684631.19,
+      5561176.76,
+      4966224.68
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      0.0,
+      310506.49,
+      296766.17
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      37237460.0,
+      0.0,
+      5365483.56,
+      5808798.57
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      35369856.47,
+      221935.16,
+      2566150.79,
+      2545379.71
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      53007.05,
+      9597.24,
+      2183.33
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      149572438.38,
+      1084520.27,
+      11170421.46,
+      11167329.47
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      78848759.24,
+      -385819.16,
+      6259640.78,
+      6377997.75
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      36260907.4,
+      -6102179.34,
+      2690390.29,
+      2538312.33
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2542236.0,
+      189078.57,
+      18487.56,
+      18487.56
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      13686540.93,
+      936700.25,
+      1056415.55,
+      1040420.03
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3268757.0,
+      9713.6,
+      373167.58,
+      364628.46
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      0.0,
+      356711.83,
+      356711.83
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1405760.0,
+      0.0,
+      47444.35,
+      111369.79
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3670130.0,
+      46435.8,
+      283937.32,
+      321653.84
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      9646510.0,
+      224123.64,
+      817967.94,
+      631775.87
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7042100.0,
+      39500.0,
+      116795.73,
+      118052.18
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      30000000.0,
+      10000000.0,
+      3731735.63,
+      3731735.63
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      149150000.0,
+      6213628.25,
+      24436253.39,
+      22219638.28
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1603036753.06,
+     83200863.98,
+     149556259.12,
+     142774153.74
+    ]
+   },
+   "4": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      236120.97,
+      208980.67,
+      291339.6
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      314119855.0,
+      20421675.62,
+      28469549.88,
+      31210590.37
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      660887.12,
+      175852.37,
+      363254.41
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      7315460.0,
+      17232.17,
+      1422547.83,
+      828887.05
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      1400000.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      4564950.1,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6587130.0,
+      1223859.98,
+      592970.72,
+      592970.72
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      22893640.0,
+      3050001.0,
+      1207312.68,
+      1279265.57
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      9080000.0,
+      1632885.72,
+      2047297.97,
+      2047297.97
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5715755.0,
+      1409622.26,
+      362603.12,
+      197198.13
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4816066.63,
+      68307.46,
+      147887.75,
+      152062.55
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7607560.0,
+      576073.0,
+      277006.89,
+      507937.94
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      10250550.0,
+      1500000.0,
+      524143.99,
+      524143.99
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      22539883.07,
+      525667.27,
+      942732.87,
+      1786409.52
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16760600.0,
+      3890119.15,
+      1153590.63,
+      2082358.87
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      5085530.0,
+      783592.58,
+      639069.41,
+      616386.32
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      23797880.0,
+      746227.27,
+      702520.64,
+      622550.61
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      2052580.0,
+      0.0,
+      62164.82,
+      62164.82
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      6347495.0,
+      1353085.15,
+      385791.19,
+      425124.3
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      14014835.0,
+      587100.7,
+      67417.71,
+      325371.56
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      124960.32,
+      40000.0,
+      40000.0
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      422701.25,
+      89330.0,
+      85847.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2647287.5,
+      7066.5,
+      6751.01,
+      116595.29
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      2638138.0,
+      789654.54,
+      815996.01,
+      811049.65
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2235532.5,
+      30483.39,
+      21427.44,
+      20204.91
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      109454545.89,
+      6297722.97,
+      8310640.96,
+      8390516.52
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1593222.0,
+      160071.19,
+      73312.04,
+      75644.93
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9274752.0,
+      1093139.86,
+      431396.5,
+      432855.17
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      84997621.73,
+      5850134.72,
+      8158310.39,
+      8071336.56
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      147169655.38,
+      15005129.52,
+      16518814.12,
+      16541213.06
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      4685000.0,
+      203200.0,
+      1179979.41,
+      1179979.41
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      108296.8,
+      108296.8
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      0.0,
+      370896.47,
+      370896.47
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1550000.0,
+      1256000.0,
+      8914900.0,
+      8914900.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      27511630.0,
+      2506700.8,
+      7297849.09,
+      7030249.34
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      875000.0,
+      0.0,
+      69720.45,
+      69720.45
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      51871.71,
+      0.0,
+      0.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      51440000.0,
+      -7257.88,
+      4511743.04,
+      4511743.04
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      0.0,
+      150000.0,
+      150000.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      13672820.0,
+      888.92,
+      80502.9,
+      82240.92
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      1050491.38,
+      4516563.36,
+      4860015.71
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      0.0,
+      309452.26,
+      310410.78
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      37237460.0,
+      5238403.0,
+      2688295.54,
+      2747787.69
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      33133396.85,
+      1042186.14,
+      2915263.41,
+      3001829.65
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      140597.65,
+      15230.88,
+      24828.12
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      149551390.97,
+      9256709.15,
+      10868244.4,
+      11160024.49
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      75600626.78,
+      6644159.18,
+      5786774.43,
+      5793700.25
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      36398790.21,
+      4459644.64,
+      2775110.74,
+      2775745.32
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2955006.74,
+      675709.53,
+      206195.65,
+      206195.65
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      13366912.2,
+      552724.63,
+      777676.12,
+      805727.95
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3268757.0,
+      858046.0,
+      462196.69,
+      448605.18
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      112000.0,
+      346069.31,
+      346069.31
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1457790.0,
+      255280.54,
+      100242.68,
+      87242.68
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3670130.0,
+      211690.86,
+      214983.66,
+      179325.46
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      9977444.0,
+      1171053.63,
+      350873.64,
+      729423.15
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7042100.0,
+      302887.78,
+      832766.07,
+      835940.38
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      30000000.0,
+      0.0,
+      3892625.32,
+      6892625.32
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      155650000.0,
+      37244931.96,
+      28402998.98,
+      30866367.68
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1605127828.45,
+     147656391.4,
+     162000870.91,
+     172990468.59
+    ]
+   },
+   "5": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      0.0,
+      220360.97,
+      220360.97
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      313506471.47,
+      20957596.18,
+      28986252.51,
+      28744496.49
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      115.0,
+      9239.29,
+      8831.29
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      10315460.0,
+      3149753.73,
+      1366892.98,
+      2068232.06
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      0.0,
+      1400000.0,
+      1400000.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6639160.0,
+      160999.3,
+      460584.35,
+      460584.35
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      22893640.0,
+      84996.6,
+      1379108.99,
+      1334458.46
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      10680000.0,
+      2119719.01,
+      2073905.25,
+      2040257.14
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5621177.0,
+      35720.74,
+      643437.02,
+      612427.97
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4824520.0,
+      1932.5,
+      139016.02,
+      136557.04
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7607560.0,
+      803006.34,
+      687723.3,
+      459662.6
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      10250550.0,
+      300000.0,
+      821090.26,
+      521090.26
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      22490922.0,
+      1912763.06,
+      2726766.65,
+      1902618.78
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16670600.0,
+      1.0,
+      2180281.55,
+      1151046.02
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      4939730.0,
+      1747832.9,
+      1375343.26,
+      1252344.35
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      23974591.0,
+      1192603.02,
+      957848.14,
+      903355.73
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      1878369.0,
+      46950.0,
+      720.74,
+      720.74
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      7997495.0,
+      -122855.42,
+      768331.97,
+      742153.1
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      14014835.0,
+      1487459.5,
+      288847.4,
+      312436.75
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      5000.0,
+      44840.32,
+      44840.32
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      -12120.25,
+      124451.0,
+      118889.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      922015.91,
+      80105.76,
+      7208.86
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      1855470.0,
+      187.43,
+      89651.93,
+      83738.95
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2259194.53,
+      127872.71,
+      52370.94,
+      49159.72
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      109363473.93,
+      133443.46,
+      8445815.46,
+      8298141.09
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1593222.0,
+      8719.74,
+      56563.45,
+      57153.86
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9335784.0,
+      51758.1,
+      670077.77,
+      645105.02
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      87080833.67,
+      3816784.23,
+      6641326.84,
+      6073285.82
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      144604181.4,
+      10462201.12,
+      14130260.88,
+      9848372.03
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      2685000.0,
+      937000.0,
+      1195668.84,
+      1195668.84
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      108973.08,
+      108973.08
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      254403.3,
+      370941.29,
+      370941.29
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1900000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      17161630.0,
+      3435230.78,
+      2679673.43,
+      2954227.15
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      875000.0,
+      80013.2,
+      45720.45,
+      21720.45
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      0.0,
+      17290.57,
+      17290.57
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      51440000.0,
+      524520.57,
+      4263584.7,
+      4263584.7
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      65000.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      13567820.0,
+      23.22,
+      83814.19,
+      82279.98
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      8234887.98,
+      5510198.1,
+      5192363.8
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      0.0,
+      314716.45,
+      310534.85
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      39325460.0,
+      7262052.73,
+      5142514.97,
+      5141181.47
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      35137697.94,
+      112332.72,
+      2361090.25,
+      2355473.08
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      72502.66,
+      156815.27,
+      116594.73
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      146165129.64,
+      8881932.45,
+      16692741.94,
+      15866506.36
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      76411245.3,
+      3260514.98,
+      6848428.12,
+      6287079.53
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      36975481.66,
+      2178326.0,
+      2943692.42,
+      3000536.53
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2735236.0,
+      0.0,
+      472374.18,
+      454762.54
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      13562715.76,
+      566575.43,
+      806887.28,
+      812483.73
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3268757.0,
+      100487.0,
+      475689.87,
+      473939.56
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      0.0,
+      119550.3,
+      119550.3
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1405760.0,
+      52374.75,
+      118790.79,
+      131790.79
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3670130.0,
+      216017.56,
+      141338.89,
+      170687.05
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      9646510.0,
+      111807.8,
+      519144.16,
+      229176.79
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7042100.0,
+      684.0,
+      776456.79,
+      720580.06
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      30000000.0,
+      10000000.0,
+      3945500.43,
+      3945500.43
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      169717290.95,
+      35762501.97,
+      39043180.26,
+      39007878.26
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1612823493.25,
+     131503645.01,
+     171975992.02,
+     162848834.69
+    ]
+   },
+   "6": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      420878.36,
+      252951.24,
+      252951.24
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      310178713.57,
+      10943248.8,
+      32012657.15,
+      31817846.6
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      11002.12,
+      185264.48,
+      190613.48
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      10715460.0,
+      3265644.16,
+      3414734.26,
+      3419346.97
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      0.0,
+      212051.16,
+      212051.16
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6639160.0,
+      54793.0,
+      512912.21,
+      514284.04
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      22893640.0,
+      148195.75,
+      1060991.5,
+      1316100.48
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      10680722.0,
+      2082337.68,
+      2086419.5,
+      2119719.01
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5673952.48,
+      207711.08,
+      417477.93,
+      496666.58
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4824520.0,
+      682141.87,
+      429131.84,
+      428522.37
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7707560.0,
+      962050.87,
+      374711.44,
+      436207.5
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      10250550.0,
+      1526320.34,
+      540948.66,
+      840948.66
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      22577086.38,
+      584910.0,
+      923351.11,
+      1870543.02
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16760600.0,
+      1.0,
+      1136509.41,
+      1154223.83
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      4939730.0,
+      158500.0,
+      612945.56,
+      745977.48
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      23941655.0,
+      6129895.55,
+      1557902.18,
+      885160.66
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      1910905.0,
+      23355.0,
+      716.23,
+      1650.8
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      6047495.0,
+      1639999.04,
+      790427.45,
+      819072.98
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      14014835.0,
+      781338.8,
+      941489.2,
+      940680.6
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      2200.0,
+      38560.48,
+      35960.48
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      25506.25,
+      121548.0,
+      144866.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      2590.0,
+      8455.66,
+      80039.06
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      1855470.0,
+      66980.04,
+      95286.58,
+      95938.82
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2237530.0,
+      29199.68,
+      93378.14,
+      78790.54
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      110022058.46,
+      7194402.63,
+      9040808.92,
+      8943312.6
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1593666.1,
+      -6375.59,
+      151598.31,
+      140064.57
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9472053.43,
+      254687.83,
+      665182.35,
+      671506.73
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      89473310.87,
+      10826392.09,
+      6058775.48,
+      6752446.68
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      144255862.52,
+      14491113.04,
+      11600999.72,
+      14271976.68
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      3960366.95,
+      1036570.06,
+      1162192.3,
+      1162192.3
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      109636.94,
+      109636.94
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      0.0,
+      370985.25,
+      370985.25
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1823050.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      17161630.0,
+      -581708.71,
+      2989170.43,
+      2913185.93
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      875000.0,
+      240000.0,
+      45720.45,
+      45720.45
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      0.0,
+      34581.14,
+      34581.14
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      41582000.0,
+      -3386934.46,
+      4254149.86,
+      4254149.86
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      701380.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      15005820.0,
+      1725759.49,
+      64496.18,
+      82882.57
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      5235573.24,
+      4558271.04,
+      4915900.02
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      0.0,
+      321183.7,
+      314950.22
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      32217460.0,
+      1412525.2,
+      3529338.51,
+      3514594.33
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      34730803.44,
+      663078.41,
+      2601887.47,
+      2518165.5
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      248044.22,
+      76994.75,
+      117215.29
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      146619030.9,
+      10635392.51,
+      14300877.87,
+      14689897.43
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      76174260.14,
+      11137334.76,
+      6951192.19,
+      7504678.4
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      37361769.52,
+      2213524.96,
+      3381549.42,
+      3313748.47
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2339512.0,
+      -5774.82,
+      271836.67,
+      289448.31
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      13676496.34,
+      559714.11,
+      859631.23,
+      844769.56
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3268757.0,
+      0.0,
+      492189.35,
+      489656.29
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      555000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      0.0,
+      28238.82,
+      28238.82
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1405760.0,
+      14400.0,
+      118158.6,
+      120247.19
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3670130.0,
+      0.0,
+      205939.87,
+      210917.71
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      9646510.0,
+      17699.6,
+      410535.67,
+      687056.04
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7042100.0,
+      4303.86,
+      736098.83,
+      793533.99
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      30000000.0,
+      0.0,
+      957282.99,
+      957282.99
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      162409590.85,
+      17999237.38,
+      36321904.68,
+      36354621.19
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1589311871.95,
+     111677759.2,
+     160492230.36,
+     166315725.81
+    ]
+   },
+   "7": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      467989.61,
+      226592.31,
+      123789.47
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      315879102.32,
+      33404419.36,
+      31086394.96,
+      29408186.1
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      -46723.44,
+      114643.53,
+      114688.8
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      7315460.0,
+      69239.8,
+      1717155.39,
+      755880.38
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2800000.0,
+      1400000.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      0.0,
+      531319.66,
+      531319.66
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6639160.0,
+      711883.19,
+      513885.55,
+      513885.55
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      21767696.01,
+      33458.55,
+      1517104.37,
+      1258209.98
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      10662170.42,
+      2036148.26,
+      2105271.71,
+      2105620.31
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      6368949.82,
+      1210870.83,
+      815157.67,
+      621402.67
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4824520.0,
+      101343.98,
+      220470.75,
+      175174.92
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      8289340.0,
+      -85023.88,
+      729379.32,
+      593014.44
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      9350550.0,
+      0.0,
+      464262.91,
+      464262.91
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      23432519.6,
+      116196.82,
+      2026218.25,
+      1618993.41
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      15546720.0,
+      893373.05,
+      1105189.1,
+      1024894.16
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      5939780.0,
+      1143547.62,
+      536129.66,
+      564849.74
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      23828343.0,
+      3090217.56,
+      4541825.06,
+      4719050.03
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      2014982.0,
+      67267.0,
+      1070.7,
+      949.56
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      7066610.0,
+      1001680.54,
+      725973.92,
+      487164.41
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      11213549.58,
+      666552.15,
+      442002.8,
+      380501.6
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      161020.32,
+      43549.55,
+      31349.55
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      159790.0,
+      65145.0,
+      43145.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      13831.6,
+      804729.55,
+      404290.19
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      1855470.0,
+      213440.0,
+      113651.22,
+      113626.14
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2234530.0,
+      170110.12,
+      35153.4,
+      31165.39
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      109690720.71,
+      4870557.98,
+      9422965.68,
+      8805506.37
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1602600.83,
+      58676.63,
+      185340.25,
+      180876.41
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9554070.97,
+      680475.76,
+      549913.57,
+      521635.33
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      81075964.43,
+      4326003.82,
+      9921351.7,
+      9255065.36
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      146414181.29,
+      14643357.4,
+      21704309.12,
+      22104057.62
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      3076468.0,
+      1490064.89,
+      1695545.89,
+      1695545.89
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      110331.83,
+      110331.83
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      0.0,
+      371033.56,
+      371033.56
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1320000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      17161630.0,
+      3936104.41,
+      2925238.96,
+      2878902.28
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      1205000.0,
+      330000.0,
+      394000.0,
+      24000.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      51871.71,
+      17290.57,
+      17290.57
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      49286338.73,
+      -3106817.62,
+      4609592.05,
+      3754063.83
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      60000.0,
+      65000.0,
+      65000.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      13567820.0,
+      103281.72,
+      405628.23,
+      368500.67
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      6041328.63,
+      5678499.77,
+      5249172.39
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      3000.0,
+      310970.74,
+      320936.2
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      30221998.19,
+      1094555.43,
+      3411919.23,
+      3002115.48
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      35330683.08,
+      454596.91,
+      2587938.07,
+      2583994.58
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      104082.55,
+      133524.06,
+      133524.06
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      149943713.15,
+      15756754.17,
+      12109313.74,
+      11836547.26
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      75589699.17,
+      6566979.42,
+      8248763.14,
+      7396122.28
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      37873569.44,
+      3816284.96,
+      3881574.6,
+      3799098.83
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      3146080.06,
+      327750.78,
+      351188.82,
+      14482.88
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      13533298.1,
+      1511694.36,
+      1163738.5,
+      1137724.75
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3635411.42,
+      367889.97,
+      585155.36,
+      593662.96
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      24630.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      50000.0,
+      28523.91,
+      28523.91
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1405760.0,
+      246020.93,
+      125078.27,
+      93371.07
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3430130.0,
+      264312.32,
+      130980.56,
+      111540.38
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      8386460.0,
+      1663184.74,
+      515412.69,
+      479881.65
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7044045.0,
+      -1092066.15,
+      714627.44,
+      651230.65
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      30000000.0,
+      0.0,
+      7092627.24,
+      4092627.24
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      159197991.11,
+      7765120.76,
+      30025081.5,
+      22431746.0
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1587156375.43,
+     119410329.52,
+     179954735.39,
+     160193526.66
+    ]
+   },
+   "8": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      2953000.0,
+      25159.49,
+      188367.22,
+      232337.79
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      312905953.69,
+      7727047.7,
+      25666367.1,
+      25531801.77
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3964120.0,
+      -192649.13,
+      3706.31,
+      3776.04
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      7315460.0,
+      961.44,
+      684114.38,
+      998015.62
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      0.0,
+      1400000.0,
+      1400000.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      8368710.0,
+      0.0,
+      1262166.88,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      5449640.72,
+      350790.44,
+      512291.65,
+      62165.82
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      22893640.0,
+      1000899.19,
+      1334936.33,
+      1277640.24
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      8692993.47,
+      256654.44,
+      2049255.28,
+      2040909.88
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5346095.02,
+      426489.4,
+      931513.6,
+      1288361.47
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4247406.13,
+      142551.47,
+      176416.87,
+      216139.36
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7607560.0,
+      167718.18,
+      238886.7,
+      330026.27
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      9754787.21,
+      0.0,
+      457011.41,
+      457011.41
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      23899936.1,
+      596854.31,
+      1178251.41,
+      1518592.64
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16760600.0,
+      1054617.35,
+      43373.05,
+      1105189.1
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      5068098.0,
+      217565.67,
+      641113.66,
+      296142.66
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      24680543.25,
+      1656601.0,
+      4430848.87,
+      4465983.77
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      1160076.75,
+      0.0,
+      53295.09,
+      48091.23
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      6197495.0,
+      -745461.96,
+      663949.6,
+      876350.98
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      14014835.0,
+      1079114.0,
+      2008322.0,
+      982738.8
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      0.0,
+      41340.32,
+      53740.32
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1525000.0,
+      202324.0,
+      205355.0,
+      116295.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      9750.0,
+      12235.33,
+      406002.36
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      2801906.0,
+      956051.84,
+      85208.07,
+      79901.76
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      1937692.14,
+      164245.68,
+      123184.28,
+      95332.18
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      108540409.19,
+      2667004.28,
+      8317872.62,
+      8729402.1
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1500874.17,
+      201566.7,
+      139146.87,
+      134674.13
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9314396.11,
+      490939.81,
+      817251.3,
+      816964.58
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      82616513.7,
+      1516944.04,
+      7040424.81,
+      7059034.72
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      144063321.03,
+      8029920.97,
+      17972148.71,
+      17684386.84
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      3913921.08,
+      1228921.08,
+      1308297.02,
+      1308297.02
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      0.0,
+      371085.41,
+      371085.41
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1820000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      19567252.11,
+      4471015.19,
+      5457020.23,
+      3156307.84
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      875000.0,
+      24000.0,
+      64000.0,
+      394000.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      0.0,
+      17290.57,
+      0.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      52510242.84,
+      1209192.84,
+      5868611.46,
+      6701339.68
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      30500.0,
+      103000.0,
+      100000.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      330000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      13567820.0,
+      103401.92,
+      49025.8,
+      105759.36
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      647269.75,
+      5014030.9,
+      4989362.37
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      3000.0,
+      325515.29,
+      310620.45
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      37028739.04,
+      277435.78,
+      2879404.81,
+      788365.76
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      35198028.63,
+      527824.16,
+      2398622.89,
+      2444588.74
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      42096.66,
+      97524.61,
+      30626.96
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      149851233.98,
+      9056586.24,
+      14850596.34,
+      13402417.79
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      72909219.86,
+      4581371.57,
+      7811868.14,
+      7912054.97
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      37144807.89,
+      2559581.65,
+      3971690.42,
+      2319839.31
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2682226.0,
+      46361.64,
+      212014.7,
+      485366.74
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      12700925.35,
+      484221.38,
+      824497.24,
+      811585.57
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3319887.76,
+      462575.24,
+      462504.97,
+      458179.71
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4540000.0,
+      0.0,
+      28747.35,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1405760.0,
+      -13783.12,
+      117658.37,
+      136365.57
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3670130.0,
+      34447.46,
+      79377.72,
+      23417.18
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      12911130.36,
+      2779040.67,
+      2562416.61,
+      2071719.88
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      5815752.87,
+      39720.24,
+      679973.39,
+      134541.48
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      32415866.41,
+      2415866.41,
+      1266239.95,
+      3000000.0
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      148691942.58,
+      2608258.96,
+      14639349.73,
+      14061128.14
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      970000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1584011408.44,
+     61622566.03,
+     150138718.64,
+     143823978.77
+    ]
+   },
+   "9": {
+    "linhas": [
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO DE RECEITAS",
+      3153000.0,
+      3153000.0,
+      6707.04,
+      271276.46,
+      102802.84
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      313170150.0,
+      317421019.97,
+      7652822.56,
+      21009763.22,
+      21863713.76
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      3986120.0,
+      3986120.0,
+      198368.6,
+      201788.4,
+      201788.4
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "COMUNICAÇÃO SOCIAL",
+      7315460.0,
+      7315460.0,
+      65787.0,
+      1438789.51,
+      1317993.19
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ENSINO PROFISSIONAL",
+      2300000.0,
+      2300000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "ORDENAMENTO TERRITORIAL",
+      8368710.0,
+      7668710.0,
+      199217.52,
+      0.0,
+      1262166.88
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "POLICIAMENTO",
+      6639160.0,
+      6639160.0,
+      246104.07,
+      598977.75,
+      821232.13
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "PROTEÇÃO E BENEFÍCIO AO TRABALHADOR",
+      22893640.0,
+      22893263.48,
+      107641.26,
+      1148781.41,
+      1500290.93
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "SERVIÇOS URBANOS",
+      8580000.0,
+      10220138.21,
+      1640138.0,
+      1776.2,
+      1919.25
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      5715755.0,
+      5528042.0,
+      69314.22,
+      672201.54,
+      429719.79
+     ],
+     [
+      "ADMINISTRAÇÃO",
+      "TURISMO",
+      27200.0,
+      27200.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ADMINISTRAÇÃO GERAL",
+      4824520.0,
+      4726748.42,
+      22235.93,
+      273973.49,
+      243268.47
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "ASSISTÊNCIA COMUNITÁRIA",
+      7607560.0,
+      7680027.99,
+      182687.36,
+      591720.61,
+      507425.2
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SEGURANÇA DE RENDA",
+      10250550.0,
+      10225550.0,
+      300000.0,
+      805932.94,
+      505932.94
+     ],
+     [
+      "ASSISTÊNCIA SOCIAL",
+      "SERVIÇOS SOCIOASSISTENCIAIS",
+      22531830.0,
+      22609830.0,
+      1449095.69,
+      1444014.69,
+      968212.3
+     ],
+     [
+      "CIÊNCIA E TECNOLOGIA",
+      "DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA",
+      16760600.0,
+      16707980.0,
+      839417.49,
+      2103260.74,
+      156751.1
+     ],
+     [
+      "COMÉRCIO E SERVIÇOS",
+      "TURISMO",
+      4939730.0,
+      5328650.0,
+      30412.0,
+      343314.73,
+      518938.06
+     ],
+     [
+      "CULTURA",
+      "ADMINISTRAÇÃO GERAL",
+      10000.0,
+      10000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "CULTURA",
+      "DIFUSÃO CULTURAL",
+      23797880.0,
+      23797880.0,
+      941018.38,
+      2039639.78,
+      1558927.59
+     ],
+     [
+      "CULTURA",
+      "PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO",
+      2052580.0,
+      2052580.0,
+      0.0,
+      80.04,
+      5405.04
+     ],
+     [
+      "DESPORTO E LAZER",
+      "ADMINISTRAÇÃO GERAL",
+      6047495.0,
+      6637495.0,
+      619672.05,
+      1392490.15,
+      484848.06
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO COMUNITÁRIO",
+      14014835.0,
+      13424835.0,
+      -159085.0,
+      180079.15,
+      1056572.4
+     ],
+     [
+      "DESPORTO E LAZER",
+      "DESPORTO DE RENDIMENTO",
+      635000.0,
+      635000.0,
+      4500.0,
+      44482.34,
+      15782.34
+     ],
+     [
+      "DESPORTO E LAZER",
+      "LAZER",
+      1595000.0,
+      1595000.0,
+      44109.75,
+      265136.0,
+      125455.0
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA A PESSOA IDOSA",
+      2645290.0,
+      2645290.0,
+      404971.36,
+      415167.69,
+      18751.16
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE",
+      1855470.0,
+      1855470.0,
+      0.0,
+      1012989.99,
+      1027831.73
+     ],
+     [
+      "DIREITOS DA CIDADANIA",
+      "DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS",
+      2237530.0,
+      2237530.0,
+      11304.88,
+      230441.46,
+      271840.08
+     ],
+     [
+      "EDUCAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      109359808.0,
+      108343268.02,
+      6204359.97,
+      11459027.7,
+      14209601.4
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO DE JOVENS E ADULTOS",
+      1593222.0,
+      1569623.22,
+      54505.85,
+      139555.06,
+      161015.47
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO ESPECIAL",
+      9335784.0,
+      9380183.18,
+      322045.57,
+      574137.07,
+      626271.55
+     ],
+     [
+      "EDUCAÇÃO",
+      "EDUCAÇÃO INFANTIL",
+      84714799.0,
+      84525020.49,
+      4814495.87,
+      6900501.27,
+      6009284.18
+     ],
+     [
+      "EDUCAÇÃO",
+      "ENSINO FUNDAMENTAL",
+      143273882.0,
+      144459400.09,
+      9718019.97,
+      16000996.22,
+      11301581.99
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "OUTROS ENCARGOS ESPECIAIS",
+      2685000.0,
+      2685000.0,
+      -32.34,
+      232941.26,
+      232941.26
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "REFINANCIAMENTO DA DÍVIDA INTERNA",
+      1315000.0,
+      1315000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ENCARGOS ESPECIAIS",
+      "SERVIÇOS DA DÍVIDA INTERNA",
+      4321940.0,
+      4321940.0,
+      152696.76,
+      371120.07,
+      371120.07
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "ADMINISTRAÇÃO GERAL",
+      1900000.0,
+      1900000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "AÇÃO JUDICIÁRIA",
+      17161630.0,
+      17161630.0,
+      2326088.1,
+      2123405.1,
+      4540689.06
+     ],
+     [
+      "ESSENCIAL À JUSTIÇA",
+      "REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL",
+      875000.0,
+      875000.0,
+      0.0,
+      64000.0,
+      64000.0
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "ADMINISTRAÇÃO GERAL",
+      204000.0,
+      204000.0,
+      0.0,
+      17290.57,
+      34581.14
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "CONTROLE AMBIENTAL",
+      51440000.0,
+      48890638.61,
+      3810553.72,
+      5396456.03,
+      669309.95
+     ],
+     [
+      "GESTÃO AMBIENTAL",
+      "PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL",
+      641380.0,
+      641380.0,
+      0.0,
+      80000.0,
+      -17000.0
+     ],
+     [
+      "HABITAÇÃO",
+      "ADMINISTRAÇÃO GERAL",
+      330000.0,
+      67.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "HABITAÇÃO",
+      "HABITAÇÃO URBANA",
+      13567820.0,
+      11921205.2,
+      1130441.3,
+      135501.7,
+      101834.3
+     ],
+     [
+      "LEGISLATIVA",
+      "AÇÃO LEGISLATIVA",
+      63570000.0,
+      63570000.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "PREVIDÊNCIA SOCIAL",
+      "PREVIDÊNCIA BÁSICA",
+      6233890.0,
+      6233890.0,
+      3000.0,
+      2107.02,
+      325324.16
+     ],
+     [
+      "RESERVA DE CONTINGÊNCIA",
+      "RESERVA DE CONTINGÊNCIA",
+      3151230.0,
+      3151230.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     [
+      "SANEAMENTO",
+      "SANEAMENTO BÁSICO URBANO",
+      37237460.0,
+      38511186.36,
+      1273726.36,
+      1844085.71,
+      3706867.03
+     ],
+     [
+      "SAÚDE",
+      "ADMINISTRAÇÃO GERAL",
+      35139628.0,
+      35075366.28,
+      93272.66,
+      2658048.98,
+      2409380.35
+     ],
+     [
+      "SAÚDE",
+      "ALIMENTAÇÃO E NUTRIÇÃO",
+      872529.0,
+      872529.0,
+      360.0,
+      124338.49,
+      191236.14
+     ],
+     [
+      "SAÚDE",
+      "ASSISTÊNCIA HOSPITALAR E AMBULATORIAL",
+      148409127.0,
+      149344415.6,
+      7840316.59,
+      15526926.91,
+      14002393.43
+     ],
+     [
+      "SAÚDE",
+      "ATENÇÃO BÁSICA",
+      74287056.0,
+      74165243.95,
+      -1384954.98,
+      7060759.69,
+      7122583.37
+     ],
+     [
+      "SAÚDE",
+      "SUPORTE PROFILÁTICO E TERAPÊUTICO",
+      36257530.0,
+      36026432.48,
+      2369886.52,
+      3747693.86,
+      5358471.83
+     ],
+     [
+      "SAÚDE",
+      "TECNOLOGIA DA INFORMAÇÃO",
+      2735236.0,
+      2573076.64,
+      19111.48,
+      168799.16,
+      72353.9
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA EPIDEMIOLÓGICA",
+      13190727.0,
+      12700270.05,
+      -466783.24,
+      730626.04,
+      823916.48
+     ],
+     [
+      "SAÚDE",
+      "VIGILÂNCIA SANITÁRIA",
+      3268757.0,
+      3671176.0,
+      402950.76,
+      392528.74,
+      457110.82
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "DEFESA CIVIL",
+      663000.0,
+      663000.0,
+      0.0,
+      24630.0,
+      0.0
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "INFORMAÇÃO E INTELIGÊNCIA",
+      4540000.0,
+      4477871.2,
+      0.0,
+      29325.23,
+      58072.58
+     ],
+     [
+      "SEGURANÇA PÚBLICA",
+      "POLICIAMENTO",
+      1405760.0,
+      1467888.8,
+      -16477.25,
+      162877.66,
+      106723.57
+     ],
+     [
+      "TRABALHO",
+      "EMPREGABILIDADE",
+      3670130.0,
+      3303842.0,
+      31949.57,
+      209284.0,
+      221914.32
+     ],
+     [
+      "TRABALHO",
+      "FOMENTO AO TRABALHO",
+      9646510.0,
+      10158878.0,
+      1741228.69,
+      3316350.32,
+      3157128.15
+     ],
+     [
+      "TRANSPORTE",
+      "NORMATIZAÇÃO E FISCALIZAÇÃO",
+      7042100.0,
+      7042100.0,
+      150921.6,
+      181667.72,
+      114635.69
+     ],
+     [
+      "TRANSPORTE",
+      "TRANSPORTES COLETIVOS URBANOS",
+      30000000.0,
+      33000000.0,
+      3000000.0,
+      4156682.86,
+      5422922.81
+     ],
+     [
+      "URBANISMO",
+      "INFRA-ESTRUTURA URBANA",
+      147650000.0,
+      158281033.52,
+      10930716.29,
+      4948167.94,
+      11537717.29
+     ],
+     [
+      "URBANISMO",
+      "ORDENAMENTO TERRITORIAL",
+      1170000.0,
+      1170000.0,
+      0.0,
+      0.0,
+      0.0
+     ]
+    ],
+    "total": [
+     1576815000.0,
+     1592974765.76,
+     69398839.98,
+     125265910.67,
+     128361550.93
+    ]
+   }
+  }
+ },
+ "coletado_em": "2026-10-08"
+}
