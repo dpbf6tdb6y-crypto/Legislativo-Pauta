@@ -368,6 +368,29 @@ try:
 except Exception as _e:
     print('gasto por função não carregado:', _e)
 
+# Receitas com destino obrigatório (só as classificadas em 100% por lei, pela
+# coluna Destinação da aba de receita), somadas nos meses coletados do ano.
+VINCULADAS = {'ano': int(ANO_EQUILIBRIO), 'bruta': 0.0, 'areas': {}}
+try:
+    for _chave in ('rc', 'cap'):
+        for _m, _regs in MENSAL.get(_chave, {}).get(ANO_EQUILIBRIO, {}).items():
+            for _c, _x in _regs.items():
+                VINCULADAS['bruta'] += _x
+                _tp, _lei = classifica(_c, D['tipos'].get(_c, ''), D['nomes'].get(_c, ''))
+                if _tp != 100:
+                    continue
+                _ar = area_vinc(_c, D['tipos'].get(_c, ''), D['nomes'].get(_c, '')) or 'Outras'
+                _a = VINCULADAS['areas'].setdefault(_ar, {'recebido': 0.0, 'leis': []})
+                _a['recebido'] += _x
+                if _lei and _lei not in _a['leis']:
+                    _a['leis'].append(_lei)
+    VINCULADAS['bruta'] = round(VINCULADAS['bruta'], 2)
+    for _a in VINCULADAS['areas'].values():
+        _a['recebido'] = round(_a['recebido'], 2)
+    PREFEITO['func_all'] = {k: round(v, 2) for k, v in _fx.items() if v > 0}
+except Exception as _e:
+    print('receitas vinculadas não calculadas:', _e)
+
 DATA = {
     'rc':  bloco('1'),
     'cap': bloco('2'),
@@ -383,6 +406,7 @@ DATA = {
     'natureza': NATUREZA,
     'lei': LEI,
     'prefeito': PREFEITO,
+    'vinculadas': VINCULADAS,
     'equilibrio': EQUILIBRIO,
     'art29a': ART29A,
     'dp_coleta': DP_COLETA,
@@ -1847,6 +1871,30 @@ function montaPrefeito(){
       alerta:c30.length+' contrato(s) vencem em até 30 dias, somando '+brlx(v30)+'.'});
   }
 
+  // 9) receitas com destino obrigatório (recebido x gasto na função correspondente)
+  const VI=DATA.vinculadas||{areas:{}}, FA=pf.func_all||{};
+  const FUNC_DE={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
+  const REGRA_DE={
+    'Mineração (restrita)':'Lei 7.990/1989: não pode pagar folha do quadro permanente nem dívida',
+    'Serviço da taxa':'só pode custear o serviço que a taxa remunera',
+    'Iluminação pública':'só pode custear a iluminação pública (CF art. 149-A)',
+    'Trânsito':'sinalização, engenharia, fiscalização e educação de trânsito (CTB art. 320)',
+    'Obra pública':'só pode custear a obra que gerou a contribuição de melhoria',
+    'Objeto do convênio':'só pode ser gasto no objeto do convênio',
+    'Assistência social':'só pode custear a assistência social (Lei 8.742/1993)'};
+  const linhasVi=Object.entries(VI.areas||{}).map(([a,v])=>{
+    const f=FUNC_DE[a], gasto=f?(FA[f]||0):null;
+    return {area:a, leis:v.leis.join(' · '), recebido:v.recebido, gasto, regra:REGRA_DE[a]||''};
+  }).sort((x,y)=>y.recebido-x.recebido);
+  const totVi=linhasVi.reduce((s,l)=>s+l.recebido,0);
+  const falta=linhasVi.filter(l=>l.gasto!==null&&l.recebido>l.gasto);
+  if(totVi>0){
+    cards.push({tit:'Receita com destino obrigatório', st:falta.length?'at':'info', valor:f1.format(VI.bruta?totVi/VI.bruta*100:0)+'%',
+      sub:'da receita bruta do ano só pode ser gasta na finalidade da lei ('+brlx(totVi)+').',
+      leg:linhasVi.slice(0,3).map(l=>l.area+' '+brlx(l.recebido)).join(' · '), ir:'rc',
+      alerta:'Em '+falta.map(l=>l.area).join(', ')+' foi recebido mais com destino obrigatório do que gasto na função.'});
+  }
+
   // frase de situação
   const ruins=cards.filter(c=>c.st==='ruim'), ats=cards.filter(c=>c.st==='at');
   const pior=ruins.length?'ruim':(ats.length?'at':'ok');
@@ -1890,6 +1938,34 @@ function montaPrefeito(){
     d.innerHTML='<i></i><span>Contrato '+esc(r[0])+' · '+esc(r[3])+' · '+brlx(r[6])+' — vence em '+r[8]+' dia(s).</span>';
     d.onclick=()=>irPara('ctr'); sAt.appendChild(d);
   });
+
+  // receitas com destino obrigatório
+  if(linhasVi.length){
+    const sVi=bloco(host,'Receitas com destino obrigatório · o que entrou e onde precisa ser gasto');
+    const rl=el('div','rolatab'); sVi.appendChild(rl);
+    const t=el('table');
+    t.innerHTML='<thead><tr><th class="e" style="width:18%">Área</th><th class="e">Base legal</th>'
+      +'<th>Recebido no ano (R$)</th><th>Gasto na função (R$)</th><th class="e" style="width:30%">Situação</th></tr></thead>';
+    const tb=el('tbody');
+    linhasVi.forEach(l=>{
+      const tr=el('tr');
+      let sit;
+      if(l.gasto===null) sit='<span style="color:var(--t3)">'+esc(l.regra||'o portal não separa o gasto por fonte, não dá para comparar')+'</span>';
+      else if(l.recebido>l.gasto) sit='<span style="color:var(--parcial);font-weight:600">Recebeu mais do que gastou na função — conferir</span>';
+      else sit='<span style="color:var(--alta);font-weight:600">Gasto na função cobre o que foi recebido</span>';
+      tr.innerHTML='<td class="e" style="font-weight:600">'+esc(l.area)+'</td>'
+        +'<td class="e" style="color:var(--t3)">'+esc(l.leis)+'</td>'
+        +'<td>'+exato(l.recebido)+'</td><td>'+(l.gasto===null?'—':exato(l.gasto))+'</td><td class="e">'+sit+'</td>';
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb); rl.appendChild(t);
+    const nt=el('div','nota');
+    nt.textContent='Soma das receitas classificadas como vinculadas por lei (aba Receita, coluna Destinação) nos meses coletados. '
+      +'O gasto é o empenhado da função de governo correspondente; o portal não separa a despesa por fonte de recurso, '
+      +'então a comparação é aproximada. A sobra de receita vinculada de anos anteriores (superávit financeiro por fonte), '
+      +'que também só pode ser usada na mesma finalidade, não aparece nos dados do portal.';
+    sVi.appendChild(nt);
+  }
 
   // para onde vai o dinheiro
   const sOnde=bloco(host,'Para onde vai o dinheiro · empenhado no ano, por área');
