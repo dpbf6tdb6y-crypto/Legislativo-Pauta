@@ -109,11 +109,11 @@ def main(visao='natureza'):
     novos = {}
     alvos = [(ano, m) for m in range(1, hoje.month + 1)]
     if visao == 'natureza':
-        # Despesa com pessoal usa janela móvel de 12 meses (LRF art. 18, §2º): os meses
-        # do ano anterior que entram na janela também são coletados (uma vez só —
+        # Despesa com pessoal usa janela móvel de 12 meses (LRF art. 18, §2º) e o Painel de
+        # Comando deixa escolher qualquer mês: coleta o ano anterior inteiro (uma vez só —
         # mês de ano anterior já fechado não é recoletado).
         _ja = dados.get('anos', {}).get(str(ano - 1), {})
-        alvos = [(ano - 1, m) for m in range(hoje.month, 13) if str(m) not in _ja] + alvos
+        alvos = [(ano - 1, m) for m in range(1, 13) if str(m) not in _ja] + alvos
 
     with sync_playwright() as p:
         nav = p.chromium.launch(headless=True, args=['--no-sandbox'])
