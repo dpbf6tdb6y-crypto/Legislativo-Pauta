@@ -2328,6 +2328,10 @@ function montaComando(){
         +lin('Empenhado',tot.emp,tot.atual?tot.emp/tot.atual*100:null)
         +lin('Liquidado',tot.liq,tot.atual?tot.liq/tot.atual*100:null)
         +lin('Pago',tot.pag,tot.atual?tot.pag/tot.atual*100:null)
+        +'<tr><td colspan="3" style="padding:0;height:10px;border:0"></td></tr>'
+        +'<tr style="border-top:2px solid var(--linha)"><td class="e" style="font-weight:700">Arrecadado (receita líquida)</td>'
+        +'<td style="font-weight:700;color:var(--alta)">'+exato(rec)+'</td>'
+        +'<td style="font-weight:700" title="Arrecadado dividido pelo empenhado">'+(tot.emp?f1.format(rec/tot.emp*100)+'% do empenhado':'—')+'</td></tr>'
         +'</tbody></table></div>'
         +'<div class="nota" style="padding-top:8px">De janeiro até '+MESNOME[M]+'. Valor Inicial = LOA; Valor Atual = LOA + remanejamentos até o mês'
         +(Math.abs(dif)>0.005?' ('+(dif>0?'+':'−')+brlx(Math.abs(dif))+' no ano)':'')+'.</div>';
