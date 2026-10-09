@@ -706,6 +706,8 @@ HTML = r'''<!DOCTYPE html>
   .pcard .pm i{ position:absolute; left:0; top:0; height:100%; background:var(--cs); border-radius:5px; }
   .pcard .pm u{ position:absolute; top:-3px; height:14px; width:2px; background:var(--t2); }
   .pgrid.p3{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .pgrid.p2{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  @media(max-width:560px){ .pgrid.p2{ grid-template-columns:1fr; } }
   @media(max-width:900px){ .pgrid.p3{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media(max-width:560px){ .pgrid.p3{ grid-template-columns:1fr; } }
   .palerta{ display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--linha);
@@ -2216,7 +2218,7 @@ function montaComando(){
   host.appendChild(selo);
   const linhaCards=el('div','dgrid'); host.appendChild(linhaCards);
   const colCards=el('div','c7'); linhaCards.appendChild(colCards);
-  const gradeC=el('div','pgrid p3'); colCards.appendChild(gradeC);
+  const gradeC=el('div','pgrid p2'); colCards.appendChild(gradeC);
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
   const hostTab=el('div'); sTab.appendChild(hostTab);
   const hostVin=el('div'); hostVin.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid var(--linha)'; sTab.appendChild(hostVin);
@@ -2311,23 +2313,6 @@ function montaComando(){
     cards.push({tit:'Folha de pessoal · 12 meses', st:'info', valor:brlx(R.pes),
       sub:'de pessoal e encargos (liquidado), inclusive inativos e terceirização.',
       leg:'RCL dos mesmos 12 meses: '+brlx(R.rcl)+(R.falt?' · janela com '+(12-R.falt)+' meses':''), ir:'eq'});
-    // obrigatório x livre
-    {
-      const npm=(DATA.natureza&&DATA.natureza.por_mes)||{}; let ob=0,di=0,nc=0;
-      ms.forEach(m=>(npm[m]||[]).forEach(l=>{ if(l[6]==='Obrigatória') ob+=l[3]; else if(l[6]) di+=l[3]; else nc+=l[3]; }));
-      const t=ob+di+nc;
-      if(t>0) cards.push({tit:'Gasto que a lei obriga', st:'info', valor:f1.format(ob/t*100)+'%',
-        sub:'do empenhado é obrigatório (pessoal, dívida, sentenças).',
-        leg:'Obrigatório '+brlx(ob)+' · discricionário '+brlx(di)+' · a classificar '+brlx(nc), ir:'desp'});
-    }
-    // receita com destino obrigatório
-    {
-      let tv=0,tb=0; const ar={};
-      ms.forEach(m=>{ tb+=(VI.bruta_mes||{})[m]||0; Object.entries((VI.mes||{})[m]||{}).forEach(([a,v])=>{ tv+=v; ar[a]=(ar[a]||0)+v; }); });
-      if(tv>0) cards.push({tit:'Receita com destino obrigatório', st:'info', valor:f1.format(tb?tv/tb*100:0)+'%',
-        sub:'da receita bruta só pode ser gasta na finalidade da lei ('+brlx(tv)+').',
-        leg:Object.entries(ar).sort((x,y)=>y[1]-x[1]).slice(0,3).map(([a,v])=>a+' '+brlx(v)).join(' · '), ir:'pre'});
-    }
     // contratos
     {
       const c=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0), c30=c.filter(r=>r[8]<=30), c90=c.filter(r=>r[8]<=90);
