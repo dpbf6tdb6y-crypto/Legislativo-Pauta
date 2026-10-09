@@ -708,6 +708,18 @@ HTML = r'''<!DOCTYPE html>
   .cg{ border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); padding:12px 10px 14px;
        text-align:center; cursor:pointer; transition:box-shadow .15s,border-color .15s; }
   .cg:hover{ box-shadow:0 3px 14px rgba(20,22,26,.10); border-color:var(--cs); }
+  .dgrid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:14px; margin:14px 0 0; }
+  .dgrid > .secao{ padding:14px 16px 16px; border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); min-width:0; }
+  .dgrid > .secao > .rot{ margin-bottom:12px; color:var(--t2); font-weight:700; }
+  .c3{ grid-column:span 3; } .c4{ grid-column:span 4; } .c5{ grid-column:span 5; } .c6{ grid-column:span 6; } .c7{ grid-column:span 7; }
+  @media(max-width:1100px){ .c3,.c4{ grid-column:span 6; } .c5,.c6,.c7{ grid-column:span 12; } }
+  @media(max-width:700px){ .dgrid > .secao{ grid-column:span 12; } }
+  .rk{ display:grid; grid-template-columns:92px 1fr 40px; gap:8px; align-items:center; font-size:12px; padding:5px 0; cursor:pointer; }
+  .rk:hover .n{ color:var(--acento); }
+  .rk .n{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--t1); }
+  .rk .b{ height:8px; background:var(--trilho); border-radius:4px; overflow:hidden; }
+  .rk .b i{ display:block; height:100%; background:var(--acento); border-radius:4px; }
+  .rk .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
   .cgrid.mini{ gap:10px; margin:14px 0 4px; }
   .cgrid.mini .cg{ padding:7px 8px 9px; }
   .cgrid.mini .ct{ font-size:10.5px; }
@@ -1801,13 +1813,13 @@ function limitesLegais(rot, rolaLei, notaLei){
 }
 
 /* barra empilhada: o que é obrigatório x discricionário no empenhado (por natureza) */
-function barraObrigatorias(host){
+function barraObrigatorias(host, ateMes){
   const npm=(DATA.natureza&&DATA.natureza.por_mes)||{};
   const acc={};
-  Object.values(npm).forEach(ls=>ls.forEach(l=>{
+  Object.entries(npm).forEach(([m,ls])=>{ if(ateMes&&+m>ateMes) return; ls.forEach(l=>{
     const k=l[6]==='Obrigatória'?l[7]:(l[6]?'Discricionárias':'A classificar');
     acc[k]=(acc[k]||0)+l[3];
-  }));
+  }); });
   const ordem=[['Pessoal e encargos','#B3262C'],['Dívida e sentenças','#DD6B70'],['Outras obrigações','#EDB3B5'],
                ['Discricionárias','var(--acento)'],['A classificar','#D9A441']];
   const tot=ordem.reduce((s,[k])=>s+(acc[k]||0),0);
@@ -1826,9 +1838,32 @@ function barraObrigatorias(host){
   });
   host.appendChild(barra); host.appendChild(leg);
   const nt=el('div','nota'); nt.style.paddingTop='12px';
-  nt.textContent='Pelo empenhado do ano, classificado pelo nome da natureza (tabela completa em Despesas → Órgãos). '
+  nt.textContent='Pelo empenhado'+(ateMes?' de janeiro até o mês escolhido':' do ano')+', classificado pelo nome da natureza (tabela completa em Despesas → Órgãos). '
     +'Obrigatória = pessoal, dívida, sentenças, exercícios anteriores e consórcios; "a classificar" = nenhuma regra cobre a linha.';
   host.appendChild(nt);
+}
+
+/* rosca: obrigatório x discricionário (empenhado por natureza, até o mês escolhido) */
+function donutObrigatorias(host, ateMes){
+  const npm=(DATA.natureza&&DATA.natureza.por_mes)||{}, acc={};
+  Object.entries(npm).forEach(([m,ls])=>{ if(ateMes&&+m>ateMes) return; ls.forEach(l=>{
+    const k=l[6]==='Obrigatória'?l[7]:(l[6]?'Discricionárias':'A classificar'); acc[k]=(acc[k]||0)+l[3]; }); });
+  const ordem=[['Pessoal e encargos','#B3262C'],['Dívida e sentenças','#DD6B70'],['Outras obrigações','#EDB3B5'],['Discricionárias','#1F6FEB'],['A classificar','#D9A441']];
+  const tot=ordem.reduce((s,[k])=>s+(acc[k]||0),0);
+  host.innerHTML='';
+  if(!tot){ const d=el('div','vazio'); d.textContent='Sem despesa por natureza coletada ainda.'; host.appendChild(d); return; }
+  const ob=(acc['Pessoal e encargos']||0)+(acc['Dívida e sentenças']||0)+(acc['Outras obrigações']||0);
+  const R=40, C=2*Math.PI*R; let off=0;
+  let svg='<svg viewBox="0 0 120 120" width="100%" style="max-width:150px;display:block;margin:0 auto" role="img" aria-label="Obrigatório x discricionário">'
+    +'<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="var(--trilho)" stroke-width="18"/>';
+  ordem.forEach(([k,c])=>{ const v=acc[k]||0; if(!v) return; const len=v/tot*C;
+    svg+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+c+'" stroke-width="18" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)
+      +'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 60 60)"><title>'+k+': '+exato(v)+'</title></circle>'; off+=len; });
+  svg+='<text x="60" y="58" text-anchor="middle" style="font-size:17px;font-weight:700;fill:var(--t1)">'+f1.format(ob/tot*100)+'%</text>'
+    +'<text x="60" y="72" text-anchor="middle" style="font-size:8px;fill:var(--t3)">obrigatório</text></svg>';
+  const leg=ordem.filter(([k])=>acc[k]).map(([k,c])=>'<div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--t2);padding:2px 0">'
+    +'<span style="width:9px;height:9px;border-radius:2px;background:'+c+';flex:none"></span><span style="flex:1">'+esc(k)+'</span><b style="color:var(--t1)">'+f1.format(acc[k]/tot*100)+'%</b></div>').join('');
+  host.innerHTML=svg+'<div style="margin-top:8px">'+leg+'</div>';
 }
 
 /* ---------------- página de equilíbrio (Gestão Fiscal) ---------------- */
@@ -2121,7 +2156,7 @@ function montaComando(){
   const meses=Object.keys(lei).map(Number).sort((a,b)=>a-b);
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
-  cab.innerHTML='<div><h1>Painel de Comando</h1><p>'+(eq.ano||'')+' · escolha o mês, reproduza o ano ou simule um cenário · '
+  cab.innerHTML='<div><h1>Painel de Comando</h1><p>'+(eq.ano||'')+' · escolha o mês ou reproduza o ano · '
     +'indicadores gerenciais, não substituem o RREO/RGF</p></div>';
   topopag.appendChild(cab);
   if(!meses.length||!eq.ano){
@@ -2136,27 +2171,18 @@ function montaComando(){
   host.appendChild(selo);
   const gradeC=el('div','pgrid'); host.appendChild(gradeC);
   const gradeG=el('div','cgrid mini'); host.appendChild(gradeG);
-  const sMes=bloco(host,'Mês a mês · valor atual, empenhado, liquidado e pago');
+  const row3=el('div','dgrid'); host.appendChild(row3);
+  const sMes=bloco(row3,'Mês a mês · valor atual, empenhado, liquidado e pago'); sMes.classList.add('c6');
   const barraMes=el('div','cbar'); sMes.appendChild(barraMes);
   const legMes=el('div'); legMes.style.cssText='display:flex;gap:20px;flex-wrap:wrap;margin:0 0 10px'; sMes.appendChild(legMes);
   const hostMes=el('div'); sMes.appendChild(hostMes);
   const notaMes=el('div','nota'); sMes.appendChild(notaMes);
-  const sim=el('div','csim'); host.appendChild(sim);
-  const sAl=bloco(host,'O que merece atenção agora');
-
-  /* controles do simulador */
-  sim.innerHTML='<h3>E se...? Simulador de cenário</h3><p>Parte dos números reais do mês escolhido e mexe neles. Os medidores acima reagem na hora.</p>';
-  const ctl={};
-  [['rr','Receita (RCL e impostos)',-15,15],['rf','Reajuste da folha de pessoal',0,20],
-   ['rs','Gasto em Saúde',-20,30],['re','Gasto em Educação',-20,30]].forEach(([k,rot,mi,ma])=>{
-    const l=el('div','csl'); l.innerHTML='<span>'+rot+'</span><input type="range" min="'+mi+'" max="'+ma+'" step="1" value="0"><b>0%</b>';
-    const inp=l.querySelector('input'), out=l.querySelector('b');
-    inp.oninput=()=>{ st[k]=+inp.value; out.textContent=(st[k]>0?'+':'')+st[k]+'%'; desenha_(); };
-    ctl[k]={inp,out}; sim.appendChild(l);
-  });
-  const rz=el('div','ano'); rz.textContent='↺ Voltar aos números reais'; rz.style.display='inline-block'; rz.style.marginTop='6px';
-  rz.onclick=()=>{ ['rr','rf','rs','re'].forEach(k=>{ st[k]=0; ctl[k].inp.value=0; ctl[k].out.textContent='0%'; }); desenha_(); };
-  sim.appendChild(rz);
+  const sObr=bloco(row3,'Obrigatório x livre'); sObr.classList.add('c3');
+  const hostObr=el('div'); sObr.appendChild(hostObr);
+  const sOnde=bloco(row3,'Para onde vai o dinheiro'); sOnde.classList.add('c3');
+  const row4=el('div','dgrid'); host.appendChild(row4);
+  const sVi=bloco(row4,'Receitas com destino obrigatório · o que entrou e onde precisa ser gasto'); sVi.classList.add('c7');
+  const sAl=bloco(row4,'O que merece atenção agora'); sAl.classList.add('c5');
 
   function calc(){
     const M=st.M, ms=meses.filter(m=>m<=M);
@@ -2205,14 +2231,13 @@ function montaComando(){
     const stSaldo=rec-pag>=0?'ok':((rec-pag)/(rec||1)>-0.03?'at':'ruim');
     const ss=R.gauges.map(stat), todos=ss.concat([stSaldo]);
     const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
-    const sim_=st.rr||st.rf||st.rs||st.re;
     const soSaldo=pior!=='ok'&&!ss.includes(pior);
     const frase=pior==='ok'?'Tudo dentro dos limites legais e as contas no azul'
       :(soSaldo?'Limites legais em dia, mas o pago passou da receita'
       :(pior==='ruim'?'Há indicador fora do limite':'Indicador perto do limite'));
     selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
       +'<b style="font-size:17px">'+frase+' · posição até '+MESNOME[M]+'</b>'
-      +(sim_?'<span class="csel" style="--cs:var(--acento)">SIMULAÇÃO ATIVA</span>':'');
+      ;
     /* medidores */
     gradeG.innerHTML='';
     R.gauges.forEach((g,i)=>{
@@ -2292,6 +2317,59 @@ function montaComando(){
         +'<div class="pb" style="font-size:'+(c.valor.length>12?'22':'28')+'px">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div><div class="pl">'+esc(c.leg)+'</div>';
       d.onclick=()=>irPara(c.ir); gradeC.appendChild(d);
     });
+    /* receitas com destino obrigatório x gasto na função (até o mês) */
+    {
+      sVi.querySelectorAll('.rolatab,.nota').forEach(x=>x.remove());
+      const FUNC_DE={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
+      const REGRA_DE={'Mineração (restrita)':'Lei 7.990/1989: não pode pagar folha do quadro permanente nem dívida',
+        'Serviço da taxa':'só pode custear o serviço que a taxa remunera','Iluminação pública':'só pode custear a iluminação pública (CF art. 149-A)',
+        'Trânsito':'sinalização, engenharia, fiscalização e educação de trânsito (CTB art. 320)',
+        'Obra pública':'só pode custear a obra que gerou a contribuição de melhoria','Objeto do convênio':'só pode ser gasto no objeto do convênio',
+        'Assistência social':'só pode custear a assistência social (Lei 8.742/1993)'};
+      const rec_={}, fg={};
+      ms.forEach(m=>{ Object.entries((VI.mes||{})[m]||{}).forEach(([a,v])=>{ rec_[a]=(rec_[a]||0)+v; });
+                      Object.entries((pf.func_mes||{})[m]||{}).forEach(([f,v])=>{ fg[f]=(fg[f]||0)+v; }); });
+      const leis={}; Object.entries(VI.areas||{}).forEach(([a,v])=>{ leis[a]=(v.leis||[]).join(' · '); });
+      const lv=Object.entries(rec_).map(([a,v])=>({area:a, leis:leis[a]||'', recebido:v, gasto:FUNC_DE[a]?(fg[FUNC_DE[a]]||0):null, regra:REGRA_DE[a]||''}))
+        .sort((x,y)=>y.recebido-x.recebido);
+      sVi.style.display=lv.length?'':'none';
+      if(lv.length){
+        const rl=el('div','rolatab'); sVi.appendChild(rl);
+        const t=el('table');
+        t.innerHTML='<thead><tr><th class="e" style="width:18%">Área</th><th class="e">Base legal</th><th>Recebido (R$)</th>'
+          +'<th>Gasto na função (R$)</th><th class="e" style="width:30%">Situação</th></tr></thead>';
+        const tb=el('tbody');
+        lv.forEach(l=>{
+          const tr=el('tr'); let sit;
+          if(l.gasto===null) sit='<span style="color:var(--t3)">'+esc(l.regra||'o portal não separa o gasto por fonte, não dá para comparar')+'</span>';
+          else if(l.recebido>l.gasto) sit='<span style="color:var(--parcial);font-weight:600">Recebeu mais do que gastou na função — conferir</span>';
+          else sit='<span style="color:var(--alta);font-weight:600">Gasto na função cobre o que foi recebido</span>';
+          tr.innerHTML='<td class="e" style="font-weight:600">'+esc(l.area)+'</td><td class="e" style="color:var(--t3)">'+esc(l.leis)+'</td>'
+            +'<td>'+exato(l.recebido)+'</td><td>'+(l.gasto===null?'—':exato(l.gasto))+'</td><td class="e">'+sit+'</td>';
+          tb.appendChild(tr);
+        });
+        t.appendChild(tb); rl.appendChild(t);
+        const nt=el('div','nota');
+        nt.textContent='Receitas classificadas como vinculadas por lei (aba Receita, coluna Destinação) de janeiro até o mês escolhido. '
+          +'O gasto é o empenhado da função de governo correspondente; o portal não separa a despesa por fonte de recurso, então a comparação é aproximada. '
+          +'A sobra de receita vinculada de anos anteriores (superávit financeiro por fonte) não aparece nos dados do portal.';
+        sVi.appendChild(nt);
+      }
+    }
+    /* para onde vai o dinheiro (até o mês) */
+    {
+      sOnde.querySelectorAll('.rk').forEach(x=>x.remove());
+      sOnde.querySelector('.rot').textContent='Para onde vai o dinheiro';
+      const ac={}; let tt=0;
+      ms.forEach(m=>Object.entries((pf.func_mes||{})[m]||{}).forEach(([f,v])=>{ if(v>0){ ac[f]=(ac[f]||0)+v; tt+=v; } }));
+      const fun=Object.entries(ac).sort((x,y)=>y[1]-x[1]).slice(0,9);
+      fun.forEach(([n,v])=>{
+        const r=el('div','rk'); r.title=exato(v);
+        r.innerHTML='<span class="n">'+esc(n.charAt(0)+n.slice(1).toLowerCase())+'</span><span class="b"><i style="width:'+(v/fun[0][1]*100).toFixed(1)+'%"></i></span><span class="p">'+f1.format(tt?v/tt*100:0)+'%</span>';
+        r.onclick=()=>irPara('desp'); sOnde.appendChild(r);
+      });
+    }
+    donutObrigatorias(hostObr, M);
     /* alertas */
     sAl.querySelectorAll('.palerta,.nota').forEach(x=>x.remove());
     const txt={0:g=>'A folha está em '+f1.format(g.v)+'% da RCL (limite 60%, alerta em 54%).',
@@ -2307,6 +2385,10 @@ function montaComando(){
     if(ct.length){ n++; const a=el('div','palerta'); a.style.setProperty('--cs',COR_ST.at);
       a.innerHTML='<i></i><span>'+ct.length+' contrato(s) vencem em até 30 dias ('+brlx(ct.reduce((s,r)=>s+r[6],0))+'). O primeiro: '+esc(ct[0][3])+', em '+ct[0][8]+' dia(s).</span>';
       a.onclick=()=>irPara('ctr'); sAl.appendChild(a); }
+    (DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0&&r[8]<=90).sort((a,b)=>a[8]-b[8]).slice(0,5).forEach(r=>{
+      const a=el('div','palerta'); a.style.setProperty('--cs',r[8]<=30?COR_ST.at:COR_ST.info);
+      a.innerHTML='<i></i><span>Contrato '+esc(r[0])+' · '+esc(r[3])+' · '+brlx(r[6])+' — vence em '+r[8]+' dia(s).</span>';
+      a.onclick=()=>irPara('ctr'); sAl.appendChild(a); n++; });
     if(!n){ const a=el('div','nota'); a.style.color='var(--alta)'; a.textContent='Nenhum alerta neste cenário.'; sAl.appendChild(a); }
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
