@@ -184,6 +184,14 @@ try:
         for _o in _v['orgaos']:
             _d = _dot_o.setdefault(_o[0], [_o[1], _o[1]])
             _d[1] += _o[2] - _o[1]
+    _dm, _acum = {}, None
+    for _m in sorted(_dp['anos'][_ano_desp], key=int) if _ano_desp else []:
+        _v = _dp['anos'][_ano_desp][_m]
+        if not _v.get('orgaos'):
+            continue
+        _acum = _v['ini'] if _acum is None else _acum + (_v['atual'] - _v['ini'])
+        _dm[_m] = [round(_v['ini'], 2), round(_acum, 2)]
+    DESPESAS['dot_mes'] = _dm        # mês -> [valor inicial, valor atual acumulado até o mês]
     DESPESAS['dot_orgaos'] = {k: [round(a, 2), round(b, 2)] for k, (a, b) in _dot_o.items()}
     DESPESAS['dot_total'] = [round(_dot_t[0], 2), round(_dot_t[1], 2)]
     DP_COLETA = _dp.get('coletado_em', '')
@@ -265,6 +273,15 @@ try:
             if _v2 is not None and _r2 is not None:
                 SERIE['pes']['%s-%02d' % (_y2, int(_m2))] = round(_v2, 2)
                 SERIE['rcl']['%s-%02d' % (_y2, int(_m2))] = round(_r2, 2)
+    for _yy in (_ano_nat, str(int(_ano_nat) - 1)):
+        for _mm2 in range(1, 13):
+            _r3 = _rcl_mes(int(_yy), _mm2)
+            if _r3 is None:
+                continue
+            _liq = (sum(MENSAL.get('rc', {}).get(_yy, {}).get(str(_mm2), {}).values())
+                    + sum(MENSAL.get('cap', {}).get(_yy, {}).get(str(_mm2), {}).values())
+                    - sum(MENSAL.get('ded', {}).get(_yy, {}).get(str(_mm2), {}).values()))
+            SERIE.setdefault('rec', {})['%s-%02d' % (_yy, _mm2)] = round(_liq, 2)
     NATUREZA['serie'] = SERIE
     NATUREZA['pessoal12'] = {
         'de': '%02d/%d' % (_janela[0][1], _janela[0][0]), 'ate': '%02d/%d' % (_janela[-1][1], _janela[-1][0]),
@@ -427,27 +444,36 @@ try:
     for _m, _v in _df['anos'][_ano_f].items():
         for _l in _v['linhas']:
             _fx[_l[0]] = _fx.get(_l[0], 0.0) + _l[4]
+    PREFEITO['func_mes'] = {_m: {} for _m in _df['anos'][_ano_f]}
+    for _m, _v in _df['anos'][_ano_f].items():
+        for _l in _v['linhas']:
+            PREFEITO['func_mes'][_m][_l[0]] = round(PREFEITO['func_mes'][_m].get(_l[0], 0.0) + _l[4], 2)
     PREFEITO['funcoes'] = [[k, round(v, 2)] for k, v in sorted(_fx.items(), key=lambda kv: -kv[1]) if v > 0][:9]
 except Exception as _e:
     print('gasto por função não carregado:', _e)
 
 # Receitas com destino obrigatório (só as classificadas em 100% por lei, pela
 # coluna Destinação da aba de receita), somadas nos meses coletados do ano.
-VINCULADAS = {'ano': int(ANO_EQUILIBRIO), 'bruta': 0.0, 'areas': {}}
+VINCULADAS = {'ano': int(ANO_EQUILIBRIO), 'bruta': 0.0, 'areas': {}, 'mes': {}, 'bruta_mes': {}}
 try:
     for _chave in ('rc', 'cap'):
         for _m, _regs in MENSAL.get(_chave, {}).get(ANO_EQUILIBRIO, {}).items():
             for _c, _x in _regs.items():
                 VINCULADAS['bruta'] += _x
+                VINCULADAS['bruta_mes'][_m] = VINCULADAS['bruta_mes'].get(_m, 0.0) + _x
                 _tp, _lei = classifica(_c, D['tipos'].get(_c, ''), D['nomes'].get(_c, ''))
                 if _tp != 100:
                     continue
                 _ar = area_vinc(_c, D['tipos'].get(_c, ''), D['nomes'].get(_c, '')) or 'Outras'
                 _a = VINCULADAS['areas'].setdefault(_ar, {'recebido': 0.0, 'leis': []})
                 _a['recebido'] += _x
+                _mm_ = VINCULADAS['mes'].setdefault(_m, {})
+                _mm_[_ar] = _mm_.get(_ar, 0.0) + _x
                 if _lei and _lei not in _a['leis']:
                     _a['leis'].append(_lei)
     VINCULADAS['bruta'] = round(VINCULADAS['bruta'], 2)
+    VINCULADAS['bruta_mes'] = {k: round(v, 2) for k, v in VINCULADAS['bruta_mes'].items()}
+    VINCULADAS['mes'] = {m: {k: round(v, 2) for k, v in d.items()} for m, d in VINCULADAS['mes'].items()}
     for _a in VINCULADAS['areas'].values():
         _a['recebido'] = round(_a['recebido'], 2)
     PREFEITO['func_all'] = {k: round(v, 2) for k, v in _fx.items() if v > 0}
@@ -682,6 +708,13 @@ HTML = r'''<!DOCTYPE html>
   .cg{ border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); padding:12px 10px 14px;
        text-align:center; cursor:pointer; transition:box-shadow .15s,border-color .15s; }
   .cg:hover{ box-shadow:0 3px 14px rgba(20,22,26,.10); border-color:var(--cs); }
+  .cgrid.mini{ gap:10px; margin:14px 0 4px; }
+  .cgrid.mini .cg{ padding:7px 8px 9px; }
+  .cgrid.mini .ct{ font-size:10.5px; }
+  .cgrid.mini .cv{ font-size:19px; margin:-2px 0 2px; }
+  .cgrid.mini svg{ max-width:104px; display:block; margin:2px auto 0; }
+  .cgrid.mini .cs{ font-size:11px; }
+  .cgrid.mini .cx{ font-size:10px; }
   .cg .ct{ font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); }
   .cg .cv{ font-size:30px; font-weight:700; line-height:1; margin:-4px 0 4px; color:var(--cs); font-variant-numeric:tabular-nums; }
   .cg .cs{ font-size:12px; color:var(--t2); line-height:1.4; }
@@ -2101,8 +2134,13 @@ function montaComando(){
   const barra=el('div','cbar'); host.appendChild(barra);
   const selo=el('div'); selo.style.cssText='margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap';
   host.appendChild(selo);
-  const gradeG=el('div','cgrid'); host.appendChild(gradeG);
-  const kpi=el('div','ckpi'); host.appendChild(kpi);
+  const gradeC=el('div','pgrid'); host.appendChild(gradeC);
+  const gradeG=el('div','cgrid mini'); host.appendChild(gradeG);
+  const sMes=bloco(host,'Mês a mês · valor atual, empenhado, liquidado e pago');
+  const barraMes=el('div','cbar'); sMes.appendChild(barraMes);
+  const legMes=el('div'); legMes.style.cssText='display:flex;gap:20px;flex-wrap:wrap;margin:0 0 10px'; sMes.appendChild(legMes);
+  const hostMes=el('div'); sMes.appendChild(hostMes);
+  const notaMes=el('div','nota'); sMes.appendChild(notaMes);
   const sim=el('div','csim'); host.appendChild(sim);
   const sAl=bloco(host,'O que merece atenção agora');
 
@@ -2187,11 +2225,73 @@ function montaComando(){
         +'<div class="cv">'+f1.format(g.v)+'%</div><div class="cs">'+g.sub+'</div><div class="cx">'+g.x+'</div>';
       d.onclick=()=>irPara('eq'); gradeG.appendChild(d);
     });
-    /* números do período */
-    kpi.innerHTML='<div><small>Receita líquida no ano</small><b>'+brlx(rec)+'</b></div>'
-      +'<div><small>Pago no ano</small><b>'+brlx(pag)+'</b></div>'
-      +'<div><small>Saldo</small><b style="color:'+(rec-pag>=0?'var(--alta)':'var(--baixa)')+'">'+(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag))+'</b></div>'
-      +'<div><small>Folha de pessoal · 12 meses</small><b>'+brlx(R.pes)+'</b></div>';
+    /* painel de cartões (reagem ao mês escolhido) */
+    const pad=m=>String(m).padStart(2,'0'), ms=meses.filter(m=>m<=M), pf=DATA.prefeito||{}, VI=DATA.vinculadas||{mes:{},bruta_mes:{}};
+    const cards=[];
+    // contas no azul
+    cards.push({tit:'Contas no azul?', st:stSaldo, valor:(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
+      sub:rec-pag>=0?'A receita cobriu tudo o que foi pago.':'Foi pago mais do que o município arrecadou.',
+      leg:'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+' (o pago inclui restos a pagar de anos anteriores)', ir:'eq'});
+    // arrecadação x ano anterior
+    {
+      const sr=(DATA.serie&&DATA.serie.rec)||{}; let a1=0,a0=0,n=0;
+      ms.forEach(m=>{ const k1=eq.ano+'-'+pad(m), k0=(eq.ano-1)+'-'+pad(m); if(sr[k1]!==undefined&&sr[k0]!==undefined){ a1+=sr[k1]; a0+=sr[k0]; n++; } });
+      if(a0>0){ const v=(a1/a0-1)*100;
+        cards.push({tit:'Arrecadação x ano passado', st:v>=0?'ok':(v>-5?'at':'ruim'), valor:(v>=0?'+':'−')+f1.format(Math.abs(v))+'%',
+          sub:v>=0?'a mais que no mesmo período de '+(eq.ano-1)+'.':'a menos que no mesmo período de '+(eq.ano-1)+'.',
+          leg:'Janeiro a '+MESNOME[M]+': '+brlx(a1)+' contra '+brlx(a0)+(M>fech?' · inclui mês em andamento':''), ir:'rc'}); }
+    }
+    // orçamento executado
+    if(pf.dot_atual>0){
+      const emp=em.reduce((s,m)=>s+m[2],0), pe=emp/pf.dot_atual*100, dl=pf.dot_atual-pf.dot_ini;
+      cards.push({tit:'Orçamento executado', st:pe>100?'ruim':'info', valor:f1.format(pe)+'%',
+        sub:'do orçamento atualizado já foi empenhado.',
+        leg:'Empenhado '+brlx(emp)+' de '+brlx(pf.dot_atual)+' · LOA '+brlx(pf.dot_ini)+' ('+(dl>=0?'+':'−')+brlx(Math.abs(dl))+' de remanejamento) · pago '+brlx(pag), ir:'desp'});
+    }
+    // folha em reais
+    cards.push({tit:'Folha de pessoal · 12 meses', st:'info', valor:brlx(R.pes),
+      sub:'de pessoal e encargos (liquidado), inclusive inativos e terceirização.',
+      leg:'RCL dos mesmos 12 meses: '+brlx(R.rcl)+(R.falt?' · janela com '+(12-R.falt)+' meses':''), ir:'eq'});
+    // obrigatório x livre
+    {
+      const npm=(DATA.natureza&&DATA.natureza.por_mes)||{}; let ob=0,di=0,nc=0;
+      ms.forEach(m=>(npm[m]||[]).forEach(l=>{ if(l[6]==='Obrigatória') ob+=l[3]; else if(l[6]) di+=l[3]; else nc+=l[3]; }));
+      const t=ob+di+nc;
+      if(t>0) cards.push({tit:'Gasto que a lei obriga', st:'info', valor:f1.format(ob/t*100)+'%',
+        sub:'do empenhado é obrigatório (pessoal, dívida, sentenças).',
+        leg:'Obrigatório '+brlx(ob)+' · discricionário '+brlx(di)+' · a classificar '+brlx(nc), ir:'desp'});
+    }
+    // receita com destino obrigatório
+    {
+      let tv=0,tb=0; const ar={};
+      ms.forEach(m=>{ tb+=(VI.bruta_mes||{})[m]||0; Object.entries((VI.mes||{})[m]||{}).forEach(([a,v])=>{ tv+=v; ar[a]=(ar[a]||0)+v; }); });
+      if(tv>0) cards.push({tit:'Receita com destino obrigatório', st:'info', valor:f1.format(tb?tv/tb*100:0)+'%',
+        sub:'da receita bruta só pode ser gasta na finalidade da lei ('+brlx(tv)+').',
+        leg:Object.entries(ar).sort((x,y)=>y[1]-x[1]).slice(0,3).map(([a,v])=>a+' '+brlx(v)).join(' · '), ir:'pre'});
+    }
+    // contratos
+    {
+      const c=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0), c30=c.filter(r=>r[8]<=30), c90=c.filter(r=>r[8]<=90);
+      cards.push({tit:'Contratos vencendo', st:c30.length===0?'ok':(c30.length<=20?'at':'ruim'), valor:String(c30.length),
+        sub:c30.length?'contrato(s) vencem nos próximos 30 dias ('+brlx(c30.reduce((s,r)=>s+r[6],0))+').':'Nenhum contrato vence nos próximos 30 dias.',
+        leg:c90.length+' vencem em até 90 dias · '+c.length+' contratos vigentes', ir:'ctr'});
+    }
+    // maiores áreas de gasto
+    {
+      const fm=pf.func_mes||{}, ac={}; let tt=0;
+      ms.forEach(m=>Object.entries(fm[m]||{}).forEach(([f,v])=>{ if(v>0){ ac[f]=(ac[f]||0)+v; tt+=v; } }));
+      const top=Object.entries(ac).sort((x,y)=>y[1]-x[1]).slice(0,3);
+      if(top.length) cards.push({tit:'Para onde vai o dinheiro', st:'info', valor:top[0][0].charAt(0)+top[0][0].slice(1).toLowerCase(),
+        sub:'é a maior área: '+f1.format(top[0][1]/tt*100)+'% do empenhado ('+brlx(top[0][1])+').',
+        leg:top.slice(1).map(([f,v])=>f.charAt(0)+f.slice(1).toLowerCase()+' '+f1.format(v/tt*100)+'% ('+brlx(v)+')').join(' · '), ir:'desp'});
+    }
+    gradeC.innerHTML='';
+    cards.forEach(c=>{
+      const d=el('div','pcard'); d.style.setProperty('--cs',COR_ST[c.st]);
+      d.innerHTML='<div class="pt"><span>'+esc(c.tit)+'</span><span class="tag">'+TAG_ST[c.st]+'</span></div>'
+        +'<div class="pb" style="font-size:'+(c.valor.length>12?'22':'28')+'px">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div><div class="pl">'+esc(c.leg)+'</div>';
+      d.onclick=()=>irPara(c.ir); gradeC.appendChild(d);
+    });
     /* alertas */
     sAl.querySelectorAll('.palerta,.nota').forEach(x=>x.remove());
     const txt={0:g=>'A folha está em '+f1.format(g.v)+'% da RCL (limite 60%, alerta em 54%).',
@@ -2215,8 +2315,34 @@ function montaComando(){
     st.tm=setInterval(()=>{ i++; if(i>=lista.length){ parar(); desenha_(); return; } st.M=lista[i]; desenha_(); },1100);
     desenha_();
   }
-  desenha_();
-  return function(){};
+  /* gráfico mês a mês: "No mês" (empenhado, liquidado, pago) ou "Acumulado" (inclui o Valor Atual, que é anual) */
+  const SER=[{chave:'dot',nome:'Valor Atual (dotação)',cor:'#9DB4D6'},{chave:'emp',nome:'Empenhado',cor:'#5B6472'},
+             {chave:'liq',nome:'Liquidado',cor:'#1F8A70'},{chave:'pag',nome:'Pago',cor:'#B8860B'}];
+  let modoMes='mes';
+  function grafMes(){
+    barraMes.innerHTML='';
+    [['mes','No mês'],['acum','Acumulado no ano']].forEach(([k,t])=>{
+      const b=el('div','ano'+(modoMes===k?' on':'')); b.textContent=t; b.onclick=()=>{ modoMes=k; grafMes(); }; barraMes.appendChild(b);
+    });
+    const ds=(DATA.despesas&&DATA.despesas.meses)||[], dm=(DATA.despesas&&DATA.despesas.dot_mes)||{};
+    const usados=ds.filter(r=>r[1]||r[2]||r[3]);
+    let ae=0,al=0,ap=0,dotUlt=null;
+    const dados=usados.map(([m,emp,liq,pag])=>{
+      ae+=emp; al+=liq; ap+=pag; if(dm[m]) dotUlt=dm[m][1];
+      return modoMes==='mes'?{k:MESES[m-1],emp,liq,pag}:{k:MESES[m-1],dot:dotUlt||0,emp:ae,liq:al,pag:ap};
+    });
+    const series=modoMes==='mes'?SER.slice(1):SER;
+    legMes.innerHTML='';
+    series.forEach(x=>{ const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)';
+      it.innerHTML='<span style="width:10px;height:10px;border-radius:3px;background:'+x.cor+';display:inline-block"></span>'+x.nome; legMes.appendChild(it); });
+    if(!dados.length){ hostMes.innerHTML=''; notaMes.textContent='Sem despesas coletadas ainda.'; return; }
+    colunasMesTrio(hostMes,dados,series);
+    notaMes.textContent=modoMes==='mes'
+      ?'Valores do próprio mês (competência), não acumulados. O Valor Atual é a dotação do ano inteiro e aparece na visão "Acumulado no ano".'
+      :'Acumulado de janeiro até o mês. Valor Atual = orçamento aprovado (LOA) mais os remanejamentos feitos até o mês.';
+  }
+  desenha_(); grafMes();
+  return function(){ grafMes(); };
 }
 
 /* ---------------- montagem ---------------- */
