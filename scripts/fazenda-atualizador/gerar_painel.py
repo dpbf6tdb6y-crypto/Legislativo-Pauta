@@ -533,7 +533,9 @@ HTML = r'''<!DOCTYPE html>
   header{ position:sticky; top:0; z-index:20; background:rgba(255,255,255,.92);
           backdrop-filter:blur(8px); border-bottom:1px solid var(--linha); }
   .topo{ max-width:1680px; margin:0 auto; padding:0 48px;
-         display:flex; align-items:center; gap:34px; height:60px; flex-wrap:wrap; }
+         display:flex; align-items:center; gap:24px; height:60px; flex-wrap:nowrap; }
+  .topo nav{ flex-wrap:nowrap; min-width:0; gap:16px; }
+  @media (max-width:1180px){ .topo{ flex-wrap:wrap; height:auto; padding-top:10px; padding-bottom:10px; } .topo nav{ flex-wrap:wrap; } }
   @media (max-width:1400px){ .topo{ max-width:100%; padding:0 40px; } }
   @media (max-width:760px){ .topo{ padding:0 20px; gap:18px; height:auto;
                                    padding-top:12px; padding-bottom:12px; } }
@@ -720,6 +722,15 @@ HTML = r'''<!DOCTYPE html>
   .rk .b{ height:8px; background:var(--trilho); border-radius:4px; overflow:hidden; }
   .rk .b i{ display:block; height:100%; background:var(--acento); border-radius:4px; }
   .rk .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
+  .linhaTopo{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:6px 0 10px; }
+  .linhaTopo .cbar{ margin:0; flex:none; }
+  .cgrid.inl{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; flex:1; min-width:560px; margin:0; }
+  .cgrid.inl .cg{ display:flex; align-items:center; gap:8px; padding:2px 10px; border:0; border-left:1px solid var(--linha);
+                  border-radius:0; text-align:left; background:transparent; }
+  .cgrid.inl .cg:hover{ box-shadow:none; background:var(--sup); }
+  .cgrid.inl svg{ width:46px; flex:none; }
+  .cgrid.inl .cv{ font-size:17px; margin:0; line-height:1.1; }
+  .cgrid.inl .cl{ font-size:11px; color:var(--t3); line-height:1.25; white-space:nowrap; }
   .cgrid.mini{ gap:10px; margin:14px 0 4px; }
   .cgrid.mini .cg{ padding:7px 8px 9px; }
   .cgrid.mini .ct{ font-size:10.5px; }
@@ -2166,11 +2177,12 @@ function montaComando(){
   const fech=Math.min((DATA.lei&&DATA.lei.fechado)||meses[meses.length-1], meses[meses.length-1]);
   const st={M:fech, rr:0, rf:0, rs:0, re:0, tm:null};
 
-  const barra=el('div','cbar'); host.appendChild(barra);
+  const linhaTopo=el('div','linhaTopo'); host.appendChild(linhaTopo);
+  const barra=el('div','cbar'); linhaTopo.appendChild(barra);
+  const gradeG=el('div','cgrid inl'); linhaTopo.appendChild(gradeG);
   const selo=el('div'); selo.style.cssText='margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap';
   host.appendChild(selo);
   const gradeC=el('div','pgrid'); host.appendChild(gradeC);
-  const gradeG=el('div','cgrid mini'); host.appendChild(gradeG);
   const row3=el('div','dgrid'); host.appendChild(row3);
   const sMes=bloco(row3,'Mês a mês · valor atual, empenhado, liquidado e pago'); sMes.classList.add('c6');
   const barraMes=el('div','cbar'); sMes.appendChild(barraMes);
@@ -2200,10 +2212,10 @@ function montaComando(){
     const cam=ms.reduce((s,m)=>s+((a29.camara_mes||{})[m]||0),0);
     const pPes=rcl?pes/rcl*100:0, pEdu=rit?edu/rit*100:0, pSau=rit?sau/rit*100:0, pCam=a29.teto_2026?cam/a29.teto_2026*100:0;
     return {falt,pes,rcl,rit,gauges:[
-      {n:'Folha de pessoal', v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
-      {n:'Educação', v:pEdu, lim:25, max:50, tipo:'min', sub:'da receita de impostos', x:'Mínimo 25% (CF art. 212)'},
-      {n:'Saúde', v:pSau, lim:15, max:40, tipo:'min', sub:'da receita de impostos', x:'Mínimo 15% (LC 141/2012)'},
-      {n:'Repasse à Câmara', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
+      {n:'Folha de pessoal', c:'Folha · 12 meses', v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
+      {n:'Educação', c:'Educação · mín. 25%', v:pEdu, lim:25, max:50, tipo:'min', sub:'da receita de impostos', x:'Mínimo 25% (CF art. 212)'},
+      {n:'Saúde', c:'Saúde · mín. 15%', v:pSau, lim:15, max:40, tipo:'min', sub:'da receita de impostos', x:'Mínimo 15% (LC 141/2012)'},
+      {n:'Repasse à Câmara', c:'Câmara · do teto', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
   }
   function stat(g){
     /* o mínimo é anual: abaixo dele antes de dezembro é só observação, não descumprimento */
@@ -2242,11 +2254,11 @@ function montaComando(){
     R.gauges.forEach((g,i)=>{
       const c=COR_ST[ss[i]], f=Math.min(g.v/g.max,1), l=g.lim/g.max, m1=pt(60,62,46,l), m2=pt(60,62,35,l);
       const d=el('div','cg'); d.style.setProperty('--cs',c);
-      d.innerHTML='<div class="ct">'+g.n+'</div>'
-        +'<svg viewBox="0 0 120 70" width="100%" role="img" aria-label="'+g.n+'"><path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="10"/>'
+      d.title=g.n+' · '+g.sub+' · '+g.x;
+      d.innerHTML='<svg viewBox="0 0 120 70" role="img" aria-label="'+g.n+'"><path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="10"/>'
         +'<path d="'+arc(60,62,41,0,Math.max(f,0.002))+'" fill="none" stroke="'+c+'" stroke-width="10"/>'
         +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m1[0].toFixed(1)+'" y2="'+m1[1].toFixed(1)+'" stroke="var(--t2)" stroke-width="2"/></svg>'
-        +'<div class="cv">'+f1.format(g.v)+'%</div><div class="cs">'+g.sub+'</div><div class="cx">'+g.x+'</div>';
+        +'<div><div class="cv">'+f1.format(g.v)+'%</div><div class="cl">'+g.c+'</div></div>';
       d.onclick=()=>irPara('eq'); gradeG.appendChild(d);
     });
     /* painel de cartões (reagem ao mês escolhido) */
