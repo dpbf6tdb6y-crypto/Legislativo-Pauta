@@ -2156,7 +2156,7 @@ function montaComando(){
   const meses=Object.keys(lei).map(Number).sort((a,b)=>a-b);
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
-  cab.innerHTML='<div><h1>Painel de Comando</h1><p>'+(eq.ano||'')+' · escolha o mês ou reproduza o ano · '
+  cab.innerHTML='<div><h1>Painel de Comando</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
     +'indicadores gerenciais, não substituem o RREO/RGF</p></div>';
   topopag.appendChild(cab);
   if(!meses.length||!eq.ano){
@@ -2224,7 +2224,6 @@ function montaComando(){
       const b=el('div','ano'+(m===M?' on':'')+(m>fech?' parcial':'')); b.textContent=MESES[m-1]+(m>fech?' *':'');
       b.title=m>fech?'mês ainda em andamento':''; b.onclick=()=>{ parar(); st.M=m; desenha_(); }; barra.appendChild(b);
     });
-    const pl=el('div','ano'); pl.textContent=st.tm?'⏸ Pausar':'▶ Reproduzir o ano'; pl.onclick=()=>{ st.tm?parar():tocar(); }; barra.appendChild(pl);
     /* selo */
     /* o saldo (receita líquida − pago) também pesa no selo: pago acima da receita é atenção, e alerta se passar de 3% */
     const em=(eq.meses||[]).filter(m=>m[0]<=M), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
@@ -2257,15 +2256,6 @@ function montaComando(){
     cards.push({tit:'Contas no azul?', st:stSaldo, valor:(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
       sub:rec-pag>=0?'A receita cobriu tudo o que foi pago.':'Foi pago mais do que o município arrecadou.',
       leg:'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+' (o pago inclui restos a pagar de anos anteriores)', ir:'eq'});
-    // arrecadação x ano anterior
-    {
-      const sr=(DATA.serie&&DATA.serie.rec)||{}; let a1=0,a0=0,n=0;
-      ms.forEach(m=>{ const k1=eq.ano+'-'+pad(m), k0=(eq.ano-1)+'-'+pad(m); if(sr[k1]!==undefined&&sr[k0]!==undefined){ a1+=sr[k1]; a0+=sr[k0]; n++; } });
-      if(a0>0){ const v=(a1/a0-1)*100;
-        cards.push({tit:'Arrecadação x ano passado', st:v>=0?'ok':(v>-5?'at':'ruim'), valor:(v>=0?'+':'−')+f1.format(Math.abs(v))+'%',
-          sub:v>=0?'a mais que no mesmo período de '+(eq.ano-1)+'.':'a menos que no mesmo período de '+(eq.ano-1)+'.',
-          leg:'Janeiro a '+MESNOME[M]+': '+brlx(a1)+' contra '+brlx(a0)+(M>fech?' · inclui mês em andamento':''), ir:'rc'}); }
-    }
     // orçamento executado
     if(pf.dot_atual>0){
       const emp=em.reduce((s,m)=>s+m[2],0), pe=emp/pf.dot_atual*100, dl=pf.dot_atual-pf.dot_ini;
@@ -2392,11 +2382,6 @@ function montaComando(){
     if(!n){ const a=el('div','nota'); a.style.color='var(--alta)'; a.textContent='Nenhum alerta neste cenário.'; sAl.appendChild(a); }
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
-  function tocar(){
-    parar(); const lista=meses.filter(m=>m<=fech); let i=0; st.M=lista[0]; desenha_();
-    st.tm=setInterval(()=>{ i++; if(i>=lista.length){ parar(); desenha_(); return; } st.M=lista[i]; desenha_(); },1100);
-    desenha_();
-  }
   /* gráfico mês a mês: "No mês" (empenhado, liquidado, pago) ou "Acumulado" (inclui o Valor Atual, que é anual) */
   const SER=[{chave:'dot',nome:'Valor Atual (dotação)',cor:'#9DB4D6'},{chave:'emp',nome:'Empenhado',cor:'#5B6472'},
              {chave:'liq',nome:'Liquidado',cor:'#1F8A70'},{chave:'pag',nome:'Pago',cor:'#B8860B'}];
