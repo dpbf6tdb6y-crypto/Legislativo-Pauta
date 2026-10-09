@@ -719,6 +719,15 @@ HTML = r'''<!DOCTYPE html>
   .c3{ grid-column:span 3; } .c4{ grid-column:span 4; } .c5{ grid-column:span 5; } .c6{ grid-column:span 6; } .c7{ grid-column:span 7; }
   @media(max-width:1100px){ .c3,.c4{ grid-column:span 6; } .c5,.c6,.c7{ grid-column:span 12; } }
   @media(max-width:700px){ .dgrid > .secao{ grid-column:span 12; } }
+  .rv{ display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) 42px 44px; gap:10px; align-items:center;
+       font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--linha); cursor:pointer; }
+  .rv:last-child{ border-bottom:0; }
+  .rv:hover .n{ color:var(--acento); }
+  .rv .n{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--t1); }
+  .rv .b{ height:7px; background:var(--trilho); border-radius:4px; overflow:hidden; }
+  .rv .b i{ display:block; height:100%; background:var(--acento); border-radius:4px; }
+  .rv .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
+  .rv .q{ text-align:right; color:var(--t1); font-variant-numeric:tabular-nums; }
   .rk{ display:grid; grid-template-columns:92px 1fr 40px; gap:8px; align-items:center; font-size:12px; padding:5px 0; cursor:pointer; }
   .rk:hover .n{ color:var(--acento); }
   .rk .n{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--t1); }
@@ -2190,6 +2199,7 @@ function montaComando(){
   const gradeC=el('div','pgrid p3'); colCards.appendChild(gradeC);
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
   const hostTab=el('div'); sTab.appendChild(hostTab);
+  const hostVin=el('div'); hostVin.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid var(--linha)'; sTab.appendChild(hostVin);
   const row3=el('div','dgrid'); host.appendChild(row3);
   const sMes=bloco(row3,'Mês a mês · valor atual, empenhado, liquidado e pago'); sMes.classList.add('c6');
   const barraMes=el('div','cbar'); sMes.appendChild(barraMes);
@@ -2335,10 +2345,8 @@ function montaComando(){
         +'<tr><td colspan="3" style="padding:0;height:10px;border:0"></td></tr>'
         +'<tr style="border-top:2px solid var(--linha)"><td class="e" style="font-weight:700">Arrecadado (receita líquida)</td>'
         +'<td style="font-weight:700;color:var(--alta)">'+exato(rec)+'</td>'
-        +'<td style="font-weight:700" title="Arrecadado dividido pelo empenhado">'+(tot.emp?f1.format(rec/tot.emp*100)+'% do empenhado':'—')+'</td></tr>'
-        +'</tbody></table></div>'
-        +'<div class="nota" style="padding-top:8px">De janeiro até '+MESNOME[M]+'. Valor Inicial = LOA; Valor Atual = LOA + remanejamentos até o mês'
-        +(Math.abs(dif)>0.005?' ('+(dif>0?'+':'−')+brlx(Math.abs(dif))+' no ano)':'')+'.</div>';
+        +'<td style="font-weight:700" title="Arrecadado dividido pelo pago">'+(tot.pag?f1.format(rec/tot.pag*100)+'% do pago':'—')+'</td></tr>'
+        +'</tbody></table></div>';
       sTab.querySelector('.rot').textContent='Execução do orçamento · até '+MESNOME[M];
     }
     gradeC.innerHTML='';
@@ -2449,6 +2457,20 @@ function montaComando(){
       ?'Valores do próprio mês (competência), não acumulados. O Valor Atual é a dotação do ano inteiro e aparece na visão "Acumulado no ano".'
       :'Acumulado de janeiro até o mês. Valor Atual = orçamento aprovado (LOA) mais os remanejamentos feitos até o mês.';
   }
+  /* vínculo dos servidores: o mesmo recorte da aba Pessoal, sempre do último mês da folha coletada */
+  (function(){
+    const rh=DATA.rh||[], mv=new Map();
+    rh.forEach(r=>mv.set(r[2],(mv.get(r[2])||0)+1));
+    const tv=[...mv].sort((a,b)=>b[1]-a[1]), mx=tv.length?tv[0][1]:1, tot=rh.length;
+    const ref=(DATA.rh_ref||'').replace('referência','folha de');
+    let h='<div class="rot" style="margin-bottom:10px">Vínculo · servidores'+(ref?' · '+esc(ref):'')+'</div>';
+    if(!tot) h+='<div class="vazio">Sem folha coletada ainda.</div>';
+    tv.forEach(([k,v])=>{
+      h+='<div class="rv" onclick="irPara(\'pes\')"><span class="n">'+esc(k)+'</span><span class="b"><i style="width:'+(v/mx*100).toFixed(1)+'%"></i></span>'
+        +'<span class="p">'+f1.format(v/tot*100)+'%</span><span class="q">'+f0.format(v)+'</span></div>';
+    });
+    hostVin.innerHTML=h;
+  })();
   desenha_(); grafMes();
   return function(){ grafMes(); };
 }
