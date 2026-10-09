@@ -454,7 +454,7 @@ except Exception as _e:
 
 # Receitas com destino obrigatório (só as classificadas em 100% por lei, pela
 # coluna Destinação da aba de receita), somadas nos meses coletados do ano.
-VINCULADAS = {'ano': int(ANO_EQUILIBRIO), 'bruta': 0.0, 'areas': {}, 'mes': {}, 'bruta_mes': {}}
+VINCULADAS = {'ano': int(ANO_EQUILIBRIO), 'bruta': 0.0, 'areas': {}, 'mes': {}, 'bruta_mes': {}, 'livre_mes': {}, 'nc_mes': {}}
 try:
     for _chave in ('rc', 'cap'):
         for _m, _regs in MENSAL.get(_chave, {}).get(ANO_EQUILIBRIO, {}).items():
@@ -462,6 +462,10 @@ try:
                 VINCULADAS['bruta'] += _x
                 VINCULADAS['bruta_mes'][_m] = VINCULADAS['bruta_mes'].get(_m, 0.0) + _x
                 _tp, _lei = classifica(_c, D['tipos'].get(_c, ''), D['nomes'].get(_c, ''))
+                if _tp == 0:
+                    VINCULADAS['livre_mes'][_m] = VINCULADAS['livre_mes'].get(_m, 0.0) + _x
+                elif _tp is None:
+                    VINCULADAS['nc_mes'][_m] = VINCULADAS['nc_mes'].get(_m, 0.0) + _x
                 if _tp != 100:
                     continue
                 _ar = area_vinc(_c, D['tipos'].get(_c, ''), D['nomes'].get(_c, '')) or 'Outras'
@@ -473,6 +477,8 @@ try:
                     _a['leis'].append(_lei)
     VINCULADAS['bruta'] = round(VINCULADAS['bruta'], 2)
     VINCULADAS['bruta_mes'] = {k: round(v, 2) for k, v in VINCULADAS['bruta_mes'].items()}
+    VINCULADAS['livre_mes'] = {k: round(v, 2) for k, v in VINCULADAS['livre_mes'].items()}
+    VINCULADAS['nc_mes'] = {k: round(v, 2) for k, v in VINCULADAS['nc_mes'].items()}
     VINCULADAS['mes'] = {m: {k: round(v, 2) for k, v in d.items()} for m, d in VINCULADAS['mes'].items()}
     for _a in VINCULADAS['areas'].values():
         _a['recebido'] = round(_a['recebido'], 2)
@@ -719,6 +725,20 @@ HTML = r'''<!DOCTYPE html>
   .c3{ grid-column:span 3; } .c4{ grid-column:span 4; } .c5{ grid-column:span 5; } .c6{ grid-column:span 6; } .c7{ grid-column:span 7; }
   @media(max-width:1100px){ .c3,.c4{ grid-column:span 6; } .c5,.c6,.c7{ grid-column:span 12; } }
   @media(max-width:700px){ .dgrid > .secao{ grid-column:span 12; } }
+  .c12{ grid-column:span 12; }
+  .vbar{ display:flex; height:16px; border-radius:8px; overflow:hidden; background:var(--trilho); margin:4px 0 6px; }
+  .vleg{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--t2); margin-bottom:12px; }
+  .vleg i{ display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; }
+  .vrow{ display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) 84px 56px; gap:12px; align-items:center;
+         padding:8px 4px; border-bottom:1px solid var(--linha); font-size:13px; cursor:pointer; }
+  .vrow:hover .n{ color:var(--acento); }
+  .vrow.cab{ cursor:default; font-size:11px; color:var(--t3); letter-spacing:.06em; text-transform:uppercase; padding-top:2px; }
+  .vrow .n{ font-weight:600; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .vrow .b{ height:9px; background:var(--trilho); border-radius:5px; overflow:hidden; }
+  .vrow .b i{ display:block; height:100%; background:var(--acento); border-radius:5px; }
+  .vrow .q, .vrow .p{ text-align:right; font-variant-numeric:tabular-nums; }
+  .vrow .p{ font-weight:700; }
+  .vdet{ background:var(--sup); border-radius:var(--r); padding:9px 12px; margin:2px 0 6px; font-size:12.5px; color:var(--t2); line-height:1.55; }
   .rv{ display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) 42px 44px; gap:10px; align-items:center;
        font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--linha); cursor:pointer; }
   .rv:last-child{ border-bottom:0; }
@@ -2201,17 +2221,10 @@ function montaComando(){
   const hostTab=el('div'); sTab.appendChild(hostTab);
   const hostVin=el('div'); hostVin.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid var(--linha)'; sTab.appendChild(hostVin);
   const row3=el('div','dgrid'); host.appendChild(row3);
-  const sMes=bloco(row3,'Mês a mês · valor atual, empenhado, liquidado e pago'); sMes.classList.add('c6');
-  const barraMes=el('div','cbar'); sMes.appendChild(barraMes);
-  const legMes=el('div'); legMes.style.cssText='display:flex;gap:20px;flex-wrap:wrap;margin:0 0 10px'; sMes.appendChild(legMes);
-  const hostMes=el('div'); sMes.appendChild(hostMes);
-  const notaMes=el('div','nota'); sMes.appendChild(notaMes);
-  const sObr=bloco(row3,'Obrigatório x livre'); sObr.classList.add('c3');
-  const hostObr=el('div'); sObr.appendChild(hostObr);
-  const sOnde=bloco(row3,'Para onde vai o dinheiro'); sOnde.classList.add('c3');
+  const sVi=bloco(row3,'Receitas vinculadas'); sVi.classList.add('c7');
+  const sOnde=bloco(row3,'Para onde vai o dinheiro'); sOnde.classList.add('c5');
   const row4=el('div','dgrid'); host.appendChild(row4);
-  const sVi=bloco(row4,'Receitas com destino obrigatório · o que entrou e onde precisa ser gasto'); sVi.classList.add('c7');
-  const sAl=bloco(row4,'O que merece atenção agora'); sAl.classList.add('c5');
+  const sAl=bloco(row4,'O que merece atenção agora'); sAl.classList.add('c12');
 
   function calc(){
     const M=st.M, ms=meses.filter(m=>m<=M);
@@ -2354,44 +2367,58 @@ function montaComando(){
         +'<div class="pb" style="font-size:'+(c.valor.length>12?'22':'28')+'px">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div><div class="pl">'+esc(c.leg)+'</div>';
       d.onclick=()=>irPara(c.ir); gradeC.appendChild(d);
     });
-    /* receitas com destino obrigatório x gasto na função (até o mês) */
+    /* receitas vinculadas: total, percentual da receita e quebra por área (de janeiro até o mês) */
     {
-      sVi.querySelectorAll('.rolatab,.nota').forEach(x=>x.remove());
+      sVi.querySelectorAll('.vbox').forEach(x=>x.remove());
+      sVi.querySelector('.rot').textContent='Receitas vinculadas · de janeiro até '+MESNOME[M];
       const FUNC_DE={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
-      const REGRA_DE={'Mineração (restrita)':'Lei 7.990/1989: não pode pagar folha do quadro permanente nem dívida',
-        'Serviço da taxa':'só pode custear o serviço que a taxa remunera','Iluminação pública':'só pode custear a iluminação pública (CF art. 149-A)',
-        'Trânsito':'sinalização, engenharia, fiscalização e educação de trânsito (CTB art. 320)',
-        'Obra pública':'só pode custear a obra que gerou a contribuição de melhoria','Objeto do convênio':'só pode ser gasto no objeto do convênio',
-        'Assistência social':'só pode custear a assistência social (Lei 8.742/1993)'};
-      const rec_={}, fg={};
-      ms.forEach(m=>{ Object.entries((VI.mes||{})[m]||{}).forEach(([a,v])=>{ rec_[a]=(rec_[a]||0)+v; });
-                      Object.entries((pf.func_mes||{})[m]||{}).forEach(([f,v])=>{ fg[f]=(fg[f]||0)+v; }); });
+      const REGRA_DE={'Mineração (restrita)':'Lei 7.990/1989: não pode pagar folha do quadro permanente nem dívida.',
+        'Serviço da taxa':'Só pode custear o serviço que a taxa remunera (CF art. 145).','Iluminação pública':'Só pode custear a iluminação pública (CF art. 149-A).',
+        'Trânsito':'Sinalização, engenharia, fiscalização e educação de trânsito (CTB art. 320).',
+        'Obra pública':'Só pode custear a obra que gerou a contribuição de melhoria.','Objeto do convênio':'Só pode ser gasto no objeto do convênio.',
+        'Assistência social':'Só pode custear a assistência social (Lei 8.742/1993).',
+        'Educação':'Educação básica: FUNDEB, salário-educação, PNAE e PNATE só podem ser aplicados na educação.',
+        'Saúde':'Repasses do SUS e do Estado só podem ser aplicados em ações e serviços públicos de saúde.'};
+      const rec_={}, fg={}; let tb=0, tl=0, tn=0;
+      ms.forEach(m=>{ tb+=(VI.bruta_mes||{})[m]||0; tl+=(VI.livre_mes||{})[m]||0; tn+=(VI.nc_mes||{})[m]||0;
+        Object.entries((VI.mes||{})[m]||{}).forEach(([a,v])=>{ rec_[a]=(rec_[a]||0)+v; });
+        Object.entries((pf.func_mes||{})[m]||{}).forEach(([f,v])=>{ fg[f]=(fg[f]||0)+v; }); });
       const leis={}; Object.entries(VI.areas||{}).forEach(([a,v])=>{ leis[a]=(v.leis||[]).join(' · '); });
-      const lv=Object.entries(rec_).map(([a,v])=>({area:a, leis:leis[a]||'', recebido:v, gasto:FUNC_DE[a]?(fg[FUNC_DE[a]]||0):null, regra:REGRA_DE[a]||''}))
-        .sort((x,y)=>y.recebido-x.recebido);
-      sVi.style.display=lv.length?'':'none';
-      if(lv.length){
-        const rl=el('div','rolatab'); sVi.appendChild(rl);
-        const t=el('table');
-        t.innerHTML='<thead><tr><th class="e" style="width:18%">Área</th><th class="e">Base legal</th><th>Recebido (R$)</th>'
-          +'<th>Gasto na função (R$)</th><th class="e" style="width:30%">Situação</th></tr></thead>';
-        const tb=el('tbody');
+      const lv=Object.entries(rec_).map(([a,v])=>({area:a, v, lei:leis[a]||'', gasto:FUNC_DE[a]?(fg[FUNC_DE[a]]||0):null}))
+        .sort((x,y)=>y.v-x.v);
+      const tv=lv.reduce((s,l)=>s+l.v,0), pc=x=>f1.format(tb?x/tb*100:0)+'%', mi=x=>(x/1e6).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
+      const box=el('div','vbox'); sVi.appendChild(box);
+      if(!tv){ box.innerHTML='<div class="vazio">Sem receita vinculada nos meses coletados.</div>'; }
+      else {
+        const livre=tb-tv-tn;
+        let h='<div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:2px 0 10px">'
+          +'<span style="font-size:34px;font-weight:700;color:var(--acento);line-height:1">'+pc(tv)+'</span>'
+          +'<span style="font-size:14.5px;color:var(--t1);line-height:1.4">da receita bruta, <b>'+brlx(tv)+'</b>, só pode ser gasta na finalidade que a lei fixou</span></div>'
+          +'<div class="vbar"><div style="width:'+(tb?tv/tb*100:0).toFixed(2)+'%;background:var(--acento)"></div>'
+          +'<div style="width:'+(tb?livre/tb*100:0).toFixed(2)+'%;background:#C9D1DC"></div>'
+          +'<div style="width:'+(tb?tn/tb*100:0).toFixed(2)+'%;background:#E3A008"></div></div>'
+          +'<div class="vleg"><span><i style="background:var(--acento)"></i>Vinculada '+brlx(tv)+' · '+pc(tv)+'</span>'
+          +'<span><i style="background:#C9D1DC"></i>Livre '+brlx(livre)+' · '+pc(livre)+'</span>'
+          +(tn>0.005?'<span><i style="background:#E3A008"></i>Sem regra definida '+brlx(tn)+' · '+pc(tn)+'</span>':'')+'</div>'
+          +'<div class="vrow cab"><span>Área</span><span>Parte do vinculado</span><span style="text-align:right">R$ mi</span><span style="text-align:right">% da receita</span></div>';
         lv.forEach(l=>{
-          const tr=el('tr'); let sit;
-          if(l.gasto===null) sit='<span style="color:var(--t3)">'+esc(l.regra||'o portal não separa o gasto por fonte, não dá para comparar')+'</span>';
-          else if(l.recebido>l.gasto) sit='<span style="color:var(--parcial);font-weight:600">Recebeu mais do que gastou na função — conferir</span>';
-          else sit='<span style="color:var(--alta);font-weight:600">Gasto na função cobre o que foi recebido</span>';
-          tr.innerHTML='<td class="e" style="font-weight:600">'+esc(l.area)+'</td><td class="e" style="color:var(--t3)">'+esc(l.leis)+'</td>'
-            +'<td>'+exato(l.recebido)+'</td><td>'+(l.gasto===null?'—':exato(l.gasto))+'</td><td class="e">'+sit+'</td>';
-          tb.appendChild(tr);
+          h+='<div class="vrow" data-a="'+esc(l.area)+'"><span class="n">'+esc(l.area)+'</span>'
+            +'<span class="b"><i style="width:'+(l.v/lv[0].v*100).toFixed(1)+'%"></i></span>'
+            +'<span class="q">'+mi(l.v)+'</span><span class="p">'+pc(l.v)+'</span></div>';
+          if(st.area===l.area){
+            const cob=l.gasto===null?'':(l.v>l.gasto
+              ?'<br><b style="color:var(--parcial)">Recebeu mais do que gastou na função — conferir.</b> Gasto na função: '+exato(l.gasto)+'.'
+              :'<br><b style="color:var(--alta)">O gasto na função cobre o que foi recebido</b> ('+exato(l.gasto)+').');
+            h+='<div class="vdet"><b>Base legal:</b> '+esc(l.lei||'—')+'<br>'+esc(REGRA_DE[l.area]||'')+'<br>Recebido: '+exato(l.v)+cob+'</div>';
+          }
         });
-        t.appendChild(tb); rl.appendChild(t);
-        const nt=el('div','nota');
-        nt.textContent='Receitas classificadas como vinculadas por lei (aba Receita, coluna Destinação) de janeiro até o mês escolhido. '
-          +'O gasto é o empenhado da função de governo correspondente; o portal não separa a despesa por fonte de recurso, então a comparação é aproximada. '
-          +'A sobra de receita vinculada de anos anteriores (superávit financeiro por fonte) não aparece nos dados do portal.';
-        sVi.appendChild(nt);
+        box.innerHTML=h;
+        box.querySelectorAll('.vrow[data-a]').forEach(r=>{ r.onclick=()=>{ st.area=(st.area===r.dataset.a?null:r.dataset.a); desenha_(); }; });
       }
+      const nt=el('div','nota'); nt.style.paddingTop='10px';
+      nt.textContent='Receita bruta = Corrente + Capital, antes das deduções. "Sem regra definida" são linhas de receita que ainda não têm regra de vinculação e ficam fora do vinculado. '
+        +'O portal não separa a despesa por fonte de recurso; a comparação com o gasto na função é aproximada.';
+      box.appendChild(nt);
     }
     /* para onde vai o dinheiro (até o mês) */
     {
@@ -2406,7 +2433,6 @@ function montaComando(){
         r.onclick=()=>irPara('desp'); sOnde.appendChild(r);
       });
     }
-    donutObrigatorias(hostObr, M);
     /* alertas */
     sAl.querySelectorAll('.palerta,.nota').forEach(x=>x.remove());
     const txt={0:g=>'A folha está em '+f1.format(g.v)+'% da RCL (limite 60%, alerta em 54%).',
@@ -2429,48 +2455,8 @@ function montaComando(){
     if(!n){ const a=el('div','nota'); a.style.color='var(--alta)'; a.textContent='Nenhum alerta neste cenário.'; sAl.appendChild(a); }
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
-  /* gráfico mês a mês: "No mês" (empenhado, liquidado, pago) ou "Acumulado" (inclui o Valor Atual, que é anual) */
-  const SER=[{chave:'dot',nome:'Valor Atual (dotação)',cor:'#9DB4D6'},{chave:'emp',nome:'Empenhado',cor:'#5B6472'},
-             {chave:'liq',nome:'Liquidado',cor:'#1F8A70'},{chave:'pag',nome:'Pago',cor:'#B8860B'}];
-  let modoMes='mes';
-  function grafMes(){
-    barraMes.innerHTML='';
-    [['mes','No mês'],['acum','Acumulado no ano']].forEach(([k,t])=>{
-      const b=el('div','ano'+(modoMes===k?' on':'')); b.textContent=t; b.onclick=()=>{ modoMes=k; grafMes(); }; barraMes.appendChild(b);
-    });
-    const ds=(DATA.despesas&&DATA.despesas.meses)||[], dm=(DATA.despesas&&DATA.despesas.dot_mes)||{};
-    const usados=ds.filter(r=>r[1]||r[2]||r[3]);
-    let ae=0,al=0,ap=0,dotUlt=null;
-    const dados=usados.map(([m,emp,liq,pag])=>{
-      ae+=emp; al+=liq; ap+=pag; if(dm[m]) dotUlt=dm[m][1];
-      return modoMes==='mes'?{k:MESES[m-1],emp,liq,pag}:{k:MESES[m-1],dot:dotUlt||0,emp:ae,liq:al,pag:ap};
-    });
-    const series=modoMes==='mes'?SER.slice(1):SER;
-    legMes.innerHTML='';
-    series.forEach(x=>{ const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)';
-      it.innerHTML='<span style="width:10px;height:10px;border-radius:3px;background:'+x.cor+';display:inline-block"></span>'+x.nome; legMes.appendChild(it); });
-    if(!dados.length){ hostMes.innerHTML=''; notaMes.textContent='Sem despesas coletadas ainda.'; return; }
-    colunasMesTrio(hostMes,dados,series);
-    notaMes.textContent=modoMes==='mes'
-      ?'Valores do próprio mês (competência), não acumulados. O Valor Atual é a dotação do ano inteiro e aparece na visão "Acumulado no ano".'
-      :'Acumulado de janeiro até o mês. Valor Atual = orçamento aprovado (LOA) mais os remanejamentos feitos até o mês.';
-  }
-  /* vínculo dos servidores: o mesmo recorte da aba Pessoal, sempre do último mês da folha coletada */
-  (function(){
-    const rh=DATA.rh||[], mv=new Map();
-    rh.forEach(r=>mv.set(r[2],(mv.get(r[2])||0)+1));
-    const tv=[...mv].sort((a,b)=>b[1]-a[1]), mx=tv.length?tv[0][1]:1, tot=rh.length;
-    const ref=(DATA.rh_ref||'').replace('referência','folha de');
-    let h='<div class="rot" style="margin-bottom:10px">Vínculo · servidores'+(ref?' · '+esc(ref):'')+'</div>';
-    if(!tot) h+='<div class="vazio">Sem folha coletada ainda.</div>';
-    tv.forEach(([k,v])=>{
-      h+='<div class="rv" onclick="irPara(\'pes\')"><span class="n">'+esc(k)+'</span><span class="b"><i style="width:'+(v/mx*100).toFixed(1)+'%"></i></span>'
-        +'<span class="p">'+f1.format(v/tot*100)+'%</span><span class="q">'+f0.format(v)+'</span></div>';
-    });
-    hostVin.innerHTML=h;
-  })();
-  desenha_(); grafMes();
-  return function(){ grafMes(); };
+  desenha_();
+  return function(){};
 }
 
 /* ---------------- montagem ---------------- */
