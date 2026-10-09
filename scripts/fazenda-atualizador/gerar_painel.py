@@ -2325,10 +2325,10 @@ function montaComando(){
       const tr=(n,r,neg)=>'<tr'+(neg?' style="font-weight:700;border-bottom:1px solid var(--linha)"':'')+'><td class="e" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">'+esc(n)+'</td>'
         +'<td>'+mi(r.ini)+'</td><td style="'+(Math.abs(r.atual-r.ini)>0.005?'color:'+(r.atual>r.ini?'var(--acento)':'var(--baixa)')+';font-weight:600':'')+'">'+mi(r.atual)+'</td>'
         +'<td>'+mi(r.emp)+'</td><td>'+mi(r.liq)+'</td><td>'+mi(r.pag)+'</td></tr>';
-      hostTab.innerHTML='<div class="rolatab"><table style="font-size:12px"><thead><tr><th class="e">Secretaria</th><th>LOA</th><th>Atualizado</th><th>Empenhado</th><th>Liquidado</th><th>Pago</th></tr></thead><tbody>'
+      hostTab.innerHTML='<div class="rolatab"><table style="font-size:12px"><thead><tr><th class="e">Secretaria</th><th>Valor Inicial</th><th>Valor Atual</th><th>Empenhado</th><th>Liquidado</th><th>Pago</th></tr></thead><tbody>'
         +tr('Total do município',tot,true)+top.map(r=>tr(nome(r.nome),r,false)).join('')
         +(rows.length>8?tr('Demais ('+(rows.length-8)+')',resto,false):'')+'</tbody></table></div>'
-        +'<div class="nota" style="padding-top:8px">Valores em R$ milhões, de janeiro até '+MESNOME[M]+'. Atualizado = LOA + remanejamentos até o mês (azul subiu, vermelho desceu).</div>';
+        +'<div class="nota" style="padding-top:8px">Valores em R$ milhões, de janeiro até '+MESNOME[M]+'. Valor Inicial = LOA; Valor Atual = LOA + remanejamentos até o mês (azul subiu, vermelho desceu).</div>';
       sTab.querySelector('.rot').textContent='Execução do orçamento · até '+MESNOME[M];
     }
     gradeC.innerHTML='';
