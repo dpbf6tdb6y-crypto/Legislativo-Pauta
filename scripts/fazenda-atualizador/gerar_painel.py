@@ -724,13 +724,12 @@ HTML = r'''<!DOCTYPE html>
   .rk .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
   .linhaTopo{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:6px 0 10px; }
   .linhaTopo .cbar{ margin:0; flex:none; }
-  .cgrid.inl{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; flex:1; min-width:560px; margin:0; }
-  .cgrid.inl .cg{ display:flex; align-items:center; gap:8px; padding:2px 10px; border:0; border-left:1px solid var(--linha);
-                  border-radius:0; text-align:left; background:transparent; }
+  .cgrid.inl{ display:flex; gap:6px; margin:0 0 0 auto; flex:none; justify-content:flex-end; }
+  .cgrid.inl .cg{ display:flex; flex-direction:column; align-items:center; padding:2px 8px 0; border:0;
+                  border-radius:var(--r); background:transparent; text-align:center; }
   .cgrid.inl .cg:hover{ box-shadow:none; background:var(--sup); }
-  .cgrid.inl svg{ width:46px; flex:none; }
-  .cgrid.inl .cv{ font-size:17px; margin:0; line-height:1.1; }
-  .cgrid.inl .cl{ font-size:11px; color:var(--t3); line-height:1.25; white-space:nowrap; }
+  .cgrid.inl svg{ width:88px; flex:none; display:block; }
+  .cgrid.inl .cl{ font-size:10.5px; color:var(--t3); line-height:1.2; white-space:nowrap; margin-top:-2px; }
   .cgrid.mini{ gap:10px; margin:14px 0 4px; }
   .cgrid.mini .cg{ padding:7px 8px 9px; }
   .cgrid.mini .ct{ font-size:10.5px; }
@@ -2257,8 +2256,9 @@ function montaComando(){
       d.title=g.n+' · '+g.sub+' · '+g.x;
       d.innerHTML='<svg viewBox="0 0 120 70" role="img" aria-label="'+g.n+'"><path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="10"/>'
         +'<path d="'+arc(60,62,41,0,Math.max(f,0.002))+'" fill="none" stroke="'+c+'" stroke-width="10"/>'
-        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m1[0].toFixed(1)+'" y2="'+m1[1].toFixed(1)+'" stroke="var(--t2)" stroke-width="2"/></svg>'
-        +'<div><div class="cv">'+f1.format(g.v)+'%</div><div class="cl">'+g.c+'</div></div>';
+        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m1[0].toFixed(1)+'" y2="'+m1[1].toFixed(1)+'" stroke="var(--t2)" stroke-width="2"/>'
+        +'<text x="60" y="57" text-anchor="middle" style="font-size:19px;font-weight:700;fill:'+c+'">'+f1.format(g.v)+'%</text></svg>'
+        +'<div class="cl">'+g.c+'</div>';
       d.onclick=()=>irPara('eq'); gradeG.appendChild(d);
     });
     /* painel de cartões (reagem ao mês escolhido) */
