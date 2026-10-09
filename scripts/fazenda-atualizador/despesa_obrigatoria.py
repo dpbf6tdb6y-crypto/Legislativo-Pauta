@@ -28,36 +28,42 @@ def _norm(s):
     return ''.join(c for c in s if not unicodedata.combining(c)).upper()
 
 
-# (trecho do nome, tipo, grupo, base legal) — a primeira regra que casar vale.
+# (trecho do nome, tipo, grupo, base legal, entra_no_limite_de_pessoal)
+# O último campo é a regra da LRF para a "despesa total com pessoal" (art. 18 e 19):
+#   entram: vencimentos, encargos, inativos e pensionistas, contratação temporária e a
+#           terceirização de mão de obra que substitui servidores (art. 18, §1º);
+#   não entram (art. 19, §1º): indenização por demissão, sentenças de períodos anteriores
+#           e despesas de exercícios anteriores.
 REGRAS = [
-    ('INDENIZACOES E RESTITUICOES TRABALHISTAS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19'),
-    ('VENCIMENTOS E VANTAGENS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19'),
-    ('OBRIGACOES PATRONAIS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19'),
-    ('APOSENTADORIAS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19'),
-    ('PENSOES', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19'),
-    ('CONTRATACAO POR TEMPO DETERMINADO', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19'),
-    ('OUTRAS DESPESAS VARIAVEIS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19'),
-    ('SENTENCAS JUDICIAIS', OBRIG, 'Dívida e sentenças', 'CF art. 100'),
-    ('JUROS SOBRE A DIVIDA', OBRIG, 'Dívida e sentenças', 'Contrato da dívida (LRF art. 29)'),
-    ('ENCARGOS SOBRE A DIVIDA', OBRIG, 'Dívida e sentenças', 'Contrato da dívida (LRF art. 29)'),
-    ('PRINCIPAL DA DIVIDA', OBRIG, 'Dívida e sentenças', 'Contrato da dívida (LRF art. 29)'),
-    ('DESPESAS DE EXERCICIOS ANTERIORES', OBRIG, 'Outras obrigações', 'Lei 4.320/1964 art. 37'),
-    ('RATEIO PELA PARTICIPACAO EM CONSORCIO', OBRIG, 'Outras obrigações', 'Lei 11.107/2005'),
-    ('OBRAS E INSTALACOES', DISCR, 'Investimentos', ''),
-    ('EQUIPAMENTOS E MATERIAL PERMANENTE', DISCR, 'Investimentos', ''),
-    ('AQUISICAO DE IMOVEIS', DISCR, 'Investimentos', ''),
-    ('MATERIAL DE CONSUMO', DISCR, 'Custeio', ''),
-    ('PASSAGENS E DESPESAS COM LOCOMOCAO', DISCR, 'Custeio', ''),
-    ('DIARIAS', DISCR, 'Custeio', ''),
-    ('PREMIACOES', DISCR, 'Custeio', ''),
-    ('SERVICOS DE CONSULTORIA', DISCR, 'Custeio', ''),
+    ('INDENIZACOES E RESTITUICOES TRABALHISTAS', OBRIG, 'Pessoal e encargos', 'CF art. 169 · fora do limite: LRF art. 19, §1º, I', False),
+    ('VENCIMENTOS E VANTAGENS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19', True),
+    ('OBRIGACOES PATRONAIS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19', True),
+    ('APOSENTADORIAS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 18 (inativos)', True),
+    ('PENSOES', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 18 (pensionistas)', True),
+    ('CONTRATACAO POR TEMPO DETERMINADO', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19', True),
+    ('OUTRAS DESPESAS VARIAVEIS', OBRIG, 'Pessoal e encargos', 'CF art. 169 / LRF art. 19', True),
+    ('DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO', OBRIG, 'Pessoal e encargos', 'LRF art. 18, §1º (terceirização)', True),
+    ('SENTENCAS JUDICIAIS', OBRIG, 'Dívida e sentenças', 'CF art. 100', False),
+    ('JUROS SOBRE A DIVIDA', OBRIG, 'Dívida e sentenças', 'Contrato da dívida (LRF art. 29)', False),
+    ('ENCARGOS SOBRE A DIVIDA', OBRIG, 'Dívida e sentenças', 'Contrato da dívida (LRF art. 29)', False),
+    ('PRINCIPAL DA DIVIDA', OBRIG, 'Dívida e sentenças', 'Contrato da dívida (LRF art. 29)', False),
+    ('DESPESAS DE EXERCICIOS ANTERIORES', OBRIG, 'Outras obrigações', 'Lei 4.320/1964 art. 37', False),
+    ('RATEIO PELA PARTICIPACAO EM CONSORCIO', OBRIG, 'Outras obrigações', 'Lei 11.107/2005', False),
+    ('OBRAS E INSTALACOES', DISCR, 'Investimentos', '', False),
+    ('EQUIPAMENTOS E MATERIAL PERMANENTE', DISCR, 'Investimentos', '', False),
+    ('AQUISICAO DE IMOVEIS', DISCR, 'Investimentos', '', False),
+    ('MATERIAL DE CONSUMO', DISCR, 'Custeio', '', False),
+    ('PASSAGENS E DESPESAS COM LOCOMOCAO', DISCR, 'Custeio', '', False),
+    ('DIARIAS', DISCR, 'Custeio', '', False),
+    ('PREMIACOES', DISCR, 'Custeio', '', False),
+    ('SERVICOS DE CONSULTORIA', DISCR, 'Custeio', '', False),
 ]
 
 
 def classifica(nome):
-    """Devolve (tipo, grupo, base legal); tipo None = a classificar."""
+    """Devolve (tipo, grupo, base legal, entra_no_limite_de_pessoal); tipo None = a classificar."""
     n = _norm(nome)
-    for trecho, tipo, grupo, lei in REGRAS:
+    for trecho, tipo, grupo, lei, dtp in REGRAS:
         if trecho in n:
-            return tipo, grupo, lei
-    return None, '', ''
+            return tipo, grupo, lei, dtp
+    return None, '', '', False
