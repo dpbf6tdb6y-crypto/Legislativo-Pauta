@@ -2310,7 +2310,7 @@ function montaComando(){
         sub:c30.length?'contrato(s) vencem nos próximos 30 dias ('+brlx(c30.reduce((s,r)=>s+r[6],0))+').':'Nenhum contrato vence nos próximos 30 dias.',
         leg:c90.length+' vencem em até 90 dias · '+c.length+' contratos vigentes', ir:'ctr'});
     }
-    /* tabela do orçamento por secretaria: LOA, atualizado, empenhado, liquidado e pago (acumulados até o mês) */
+    /* tabela de total do município: valor inicial, valor atual, empenhado, liquidado e pago (acumulados até o mês) */
     {
       const opm=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{}, mapa=new Map();
       Object.keys(opm).map(Number).sort((a,b)=>a-b).filter(m=>m<=M).forEach(m=>opm[m].forEach(([nome,ini,atual,emp,liq,pg])=>{
@@ -2319,16 +2319,18 @@ function montaComando(){
       const rows=[...mapa.values()].map(o=>({nome:o.nome.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''), ini:o.ini, atual:o.ini+o.dl, emp:o.emp, liq:o.liq, pag:o.pag}))
         .sort((a,b)=>b.emp-a.emp);
       const soma=l=>l.reduce((a,r)=>({ini:a.ini+r.ini,atual:a.atual+r.atual,emp:a.emp+r.emp,liq:a.liq+r.liq,pag:a.pag+r.pag}),{ini:0,atual:0,emp:0,liq:0,pag:0});
-      const tot=soma(rows), top=rows.slice(0,8), resto=soma(rows.slice(8));
-      const mi=v=>(v/1e6).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
-      const nome=n=>n.charAt(0)+n.slice(1).toLowerCase();
-      const tr=(n,r,neg)=>'<tr'+(neg?' style="font-weight:700;border-bottom:1px solid var(--linha)"':'')+'><td class="e" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px">'+esc(n)+'</td>'
-        +'<td>'+mi(r.ini)+'</td><td style="'+(Math.abs(r.atual-r.ini)>0.005?'color:'+(r.atual>r.ini?'var(--acento)':'var(--baixa)')+';font-weight:600':'')+'">'+mi(r.atual)+'</td>'
-        +'<td>'+mi(r.emp)+'</td><td>'+mi(r.liq)+'</td><td>'+mi(r.pag)+'</td></tr>';
-      hostTab.innerHTML='<div class="rolatab"><table style="font-size:12px"><thead><tr><th class="e">Secretaria</th><th>Valor Inicial</th><th>Valor Atual</th><th>Empenhado</th><th>Liquidado</th><th>Pago</th></tr></thead><tbody>'
-        +tr('Total do município',tot,true)+top.map(r=>tr(nome(r.nome),r,false)).join('')
-        +(rows.length>8?tr('Demais ('+(rows.length-8)+')',resto,false):'')+'</tbody></table></div>'
-        +'<div class="nota" style="padding-top:8px">Valores em R$ milhões, de janeiro até '+MESNOME[M]+'. Valor Inicial = LOA; Valor Atual = LOA + remanejamentos até o mês (azul subiu, vermelho desceu).</div>';
+      const tot=soma(rows);
+      const dif=tot.atual-tot.ini;
+      const lin=(n,v,pct,extra)=>'<tr><td class="e" style="font-weight:600">'+n+'</td><td style="'+(extra||'')+'">'+exato(v)+'</td><td style="color:var(--t3)">'+(pct===null?'—':f1.format(pct)+'%')+'</td></tr>';
+      hostTab.innerHTML='<div class="rolatab"><table style="font-size:13px"><thead><tr><th class="e">Total do município</th><th>Valor (R$)</th><th>% do Valor Atual</th></tr></thead><tbody>'
+        +lin('Valor Inicial',tot.ini,tot.atual?tot.ini/tot.atual*100:null)
+        +lin('Valor Atual',tot.atual,100,Math.abs(dif)>0.005?'font-weight:700;color:'+(dif>0?'var(--acento)':'var(--baixa)'):'font-weight:700')
+        +lin('Empenhado',tot.emp,tot.atual?tot.emp/tot.atual*100:null)
+        +lin('Liquidado',tot.liq,tot.atual?tot.liq/tot.atual*100:null)
+        +lin('Pago',tot.pag,tot.atual?tot.pag/tot.atual*100:null)
+        +'</tbody></table></div>'
+        +'<div class="nota" style="padding-top:8px">De janeiro até '+MESNOME[M]+'. Valor Inicial = LOA; Valor Atual = LOA + remanejamentos até o mês'
+        +(Math.abs(dif)>0.005?' ('+(dif>0?'+':'−')+brlx(Math.abs(dif))+' no ano)':'')+'.</div>';
       sTab.querySelector('.rot').textContent='Execução do orçamento · até '+MESNOME[M];
     }
     gradeC.innerHTML='';
