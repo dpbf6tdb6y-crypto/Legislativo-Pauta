@@ -2303,15 +2303,6 @@ function montaComando(){
         sub:c30.length?'contrato(s) vencem nos próximos 30 dias ('+brlx(c30.reduce((s,r)=>s+r[6],0))+').':'Nenhum contrato vence nos próximos 30 dias.',
         leg:c90.length+' vencem em até 90 dias · '+c.length+' contratos vigentes', ir:'ctr'});
     }
-    // maiores áreas de gasto
-    {
-      const fm=pf.func_mes||{}, ac={}; let tt=0;
-      ms.forEach(m=>Object.entries(fm[m]||{}).forEach(([f,v])=>{ if(v>0){ ac[f]=(ac[f]||0)+v; tt+=v; } }));
-      const top=Object.entries(ac).sort((x,y)=>y[1]-x[1]).slice(0,3);
-      if(top.length) cards.push({tit:'Para onde vai o dinheiro', st:'info', valor:top[0][0].charAt(0)+top[0][0].slice(1).toLowerCase(),
-        sub:'é a maior área: '+f1.format(top[0][1]/tt*100)+'% do empenhado ('+brlx(top[0][1])+').',
-        leg:top.slice(1).map(([f,v])=>f.charAt(0)+f.slice(1).toLowerCase()+' '+f1.format(v/tt*100)+'% ('+brlx(v)+')').join(' · '), ir:'desp'});
-    }
     gradeC.innerHTML='';
     cards.forEach(c=>{
       const d=el('div','pcard'); d.style.setProperty('--cs',COR_ST[c.st]);
