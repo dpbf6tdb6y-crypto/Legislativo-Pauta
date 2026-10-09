@@ -2455,6 +2455,28 @@ function montaComando(){
     if(!n){ const a=el('div','nota'); a.style.color='var(--alta)'; a.textContent='Nenhum alerta neste cenário.'; sAl.appendChild(a); }
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
+  /* vínculo dos servidores: o mesmo recorte da aba Pessoal, sempre da última folha coletada;
+     o balão de cada barra mostra o que foi gasto (bruto e vencimentos) por vínculo */
+  (function(){
+    const rh=DATA.rh||[], mv=new Map();
+    rh.forEach(r=>{ const o=mv.get(r[2])||{n:0,venc:0,bruto:0}; o.n++; o.venc+=r[5]||0; o.bruto+=r[6]||0; mv.set(r[2],o); });
+    const tv=[...mv].sort((x,y)=>y[1].n-x[1].n), mx=tv.length?tv[0][1].n:1, tot=rh.length;
+    const totBruto=tv.reduce((s,[,o])=>s+o.bruto,0);
+    const ref=(DATA.rh_ref||'').replace('referência','').trim();
+    let h='<div class="rot" style="margin-bottom:10px">Vínculo · servidores'+(ref?' · <b style="color:var(--t1)">Folha de '+esc(ref)+'</b>':'')+'</div>';
+    if(!tot) h+='<div class="vazio">Sem folha coletada ainda.</div>';
+    tv.forEach(([k,o],i)=>{
+      h+='<div class="rv" data-i="'+i+'"><span class="n">'+esc(k)+'</span><span class="b"><i style="width:'+(o.n/mx*100).toFixed(1)+'%"></i></span>'
+        +'<span class="p">'+f1.format(o.n/tot*100)+'%</span><span class="q">'+f0.format(o.n)+'</span></div>';
+    });
+    hostVin.innerHTML=h;
+    hostVin.querySelectorAll('.rv').forEach(x=>{
+      const [k,o]=tv[+x.dataset.i];
+      x.onclick=()=>irPara('pes');
+      dica(x, k, '<em>'+exato(o.bruto)+'</em><br>gasto bruto da folha · '+f1.format(totBruto?o.bruto/totBruto*100:0)+'% do total'
+        +'<br>'+f0.format(o.n)+' servidores · vencimentos '+exato(o.venc)+'<br>média por servidor: '+exato(o.n?o.venc/o.n:0));
+    });
+  })();
   desenha_();
   return function(){};
 }
