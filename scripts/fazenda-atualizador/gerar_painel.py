@@ -2142,7 +2142,8 @@ function montaComando(){
       {n:'Repasse à Câmara', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
   }
   function stat(g){
-    if(g.tipo==='min') return g.v>=g.lim?'ok':(g.v>=g.lim-2?'at':'ruim');
+    /* o mínimo é anual: abaixo dele antes de dezembro é só observação, não descumprimento */
+    if(g.tipo==='min') return g.v>=g.lim?'ok':((g.v>=g.lim-2||st.M<12)?'at':'ruim');
     if(g.v>g.lim) return 'ruim';
     return (g.alerta&&g.v>g.alerta)?'at':'ok';
   }
@@ -2161,9 +2162,16 @@ function montaComando(){
     });
     const pl=el('div','ano'); pl.textContent=st.tm?'⏸ Pausar':'▶ Reproduzir o ano'; pl.onclick=()=>{ st.tm?parar():tocar(); }; barra.appendChild(pl);
     /* selo */
-    const ss=R.gauges.map(stat), pior=ss.includes('ruim')?'ruim':(ss.includes('at')?'at':'ok');
+    /* o saldo (receita líquida − pago) também pesa no selo: pago acima da receita é atenção, e alerta se passar de 3% */
+    const em=(eq.meses||[]).filter(m=>m[0]<=M), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
+    const stSaldo=rec-pag>=0?'ok':((rec-pag)/(rec||1)>-0.03?'at':'ruim');
+    const ss=R.gauges.map(stat), todos=ss.concat([stSaldo]);
+    const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
     const sim_=st.rr||st.rf||st.rs||st.re;
-    const frase=pior==='ruim'?'Há indicador fora do limite':(pior==='at'?'Indicador perto do limite':'Tudo dentro dos limites legais');
+    const soSaldo=pior!=='ok'&&!ss.includes(pior);
+    const frase=pior==='ok'?'Tudo dentro dos limites legais e as contas no azul'
+      :(soSaldo?'Limites legais em dia, mas o pago passou da receita'
+      :(pior==='ruim'?'Há indicador fora do limite':'Indicador perto do limite'));
     selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
       +'<b style="font-size:17px">'+frase+' · posição até '+MESNOME[M]+'</b>'
       +(sim_?'<span class="csel" style="--cs:var(--acento)">SIMULAÇÃO ATIVA</span>':'');
@@ -2180,7 +2188,6 @@ function montaComando(){
       d.onclick=()=>irPara('eq'); gradeG.appendChild(d);
     });
     /* números do período */
-    const em=(eq.meses||[]).filter(m=>m[0]<=M), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
     kpi.innerHTML='<div><small>Receita líquida no ano</small><b>'+brlx(rec)+'</b></div>'
       +'<div><small>Pago no ano</small><b>'+brlx(pag)+'</b></div>'
       +'<div><small>Saldo</small><b style="color:'+(rec-pag>=0?'var(--alta)':'var(--baixa)')+'">'+(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag))+'</b></div>'
