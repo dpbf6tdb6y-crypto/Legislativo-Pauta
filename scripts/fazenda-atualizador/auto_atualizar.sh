@@ -21,8 +21,10 @@ git checkout -- . >> "$LOG" 2>&1
 git pull >> "$LOG" 2>&1
 
 cd scripts/fazenda-atualizador
-.venv/bin/python3 coletor.py >> "$LOG" 2>&1
-.venv/bin/python3 coletor_contratos.py >> "$LOG" 2>&1
+# Falha de coleta (portal lento/fora do ar) nunca pode impedir a publicação do código:
+# o painel segue com os dados que já existiam e o aviso fica no log.
+.venv/bin/python3 coletor.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Receita falhou — mantendo os dados anteriores" >> "$LOG"
+.venv/bin/python3 coletor_contratos.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Contratos falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_pessoal.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Pessoal falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_despesas_auto.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Despesas por órgão falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_natureza.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Natureza falhou — mantendo os dados anteriores" >> "$LOG"

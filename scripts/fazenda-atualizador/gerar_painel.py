@@ -208,6 +208,7 @@ try:
                     _a[_i] += _l[_i + 1]
                 if _k not in _nm or sum(ord(c) > 127 for c in _l[0]) > sum(ord(c) > 127 for c in _nm[_k]):
                     _nm[_k] = _l[0]
+            # linha: [nome, ini, atual, emp, liq, pag, tipo, grupo, lei, entra_no_limite_pessoal, chave]
             NATUREZA['por_mes'][_m] = [[_nm[_k]] + [round(x, 2) for x in _a] + list(classifica_desp(_nm[_k])) + [_k]
                                        for _k, _a in _ac.items()]
         # dotação atual por natureza: inicial + soma das alterações mensais (mesma regra do órgão)
@@ -221,6 +222,47 @@ try:
                 _d = _dot.setdefault(_k, [_i, _i])
                 _d[1] += _a - _i
         NATUREZA['dot'] = {k: [round(v[0], 2), round(v[1], 2)] for k, v in _dot.items()}
+    # ---- Despesa total com pessoal: janela móvel de 12 meses (mês de referência + 11
+    # anteriores), pela despesa LIQUIDADA (competência), sobre a RCL dos mesmos 12 meses.
+    # O mês de referência é o último mês FECHADO. Entram: vencimentos, encargos, inativos e
+    # pensionistas, contratação temporária e terceirização que substitui servidores; ficam
+    # de fora as exclusões do art. 19, §1º (ver despesa_obrigatoria.py).
+    _hoje_p = __import__('datetime').date.today()
+    _fim = (_hoje_p.year - 1, 12) if _hoje_p.month == 1 else (_hoje_p.year, _hoje_p.month - 1)
+    _janela = []
+    _y, _mm = _fim
+    for _ in range(12):
+        _janela.append((_y, _mm))
+        _mm -= 1
+        if _mm == 0:
+            _y, _mm = _y - 1, 12
+    _janela.reverse()
+    def _pessoal_mes(y, m):
+        _meses = _dn.get('anos', {}).get(str(y), {}).get(str(m))
+        if not _meses:
+            return None
+        return sum(l[4] for l in _meses['linhas'] if classifica_desp(l[0])[3])
+    def _rcl_mes(y, m):
+        _rc = MENSAL.get('rc', {}).get(str(y), {}).get(str(m))
+        if not _rc:
+            return None
+        return sum(_rc.values()) - sum(MENSAL.get('ded', {}).get(str(y), {}).get(str(m), {}).values())
+    _pes = _rcl = 0.0
+    _faltam = []
+    for _y, _mm in _janela:
+        _a, _b = _pessoal_mes(_y, _mm), _rcl_mes(_y, _mm)
+        if _a is None or _b is None:
+            _faltam.append('%02d/%d' % (_mm, _y))
+            continue      # janela incompleta: só somam meses que têm numerador E denominador
+        _pes += _a
+        _rcl += _b
+    NATUREZA['pessoal12'] = {
+        'de': '%02d/%d' % (_janela[0][1], _janela[0][0]), 'ate': '%02d/%d' % (_janela[-1][1], _janela[-1][0]),
+        'pessoal': round(_pes, 2), 'rcl': round(_rcl, 2), 'meses': 12 - len(_faltam), 'faltam': _faltam}
+    print('pessoal 12 meses %s a %s: %.2f / RCL %.2f = %.2f%% (%d meses%s)'
+          % (NATUREZA['pessoal12']['de'], NATUREZA['pessoal12']['ate'], _pes, _rcl,
+             (_pes / _rcl * 100) if _rcl else 0, 12 - len(_faltam),
+             ', faltam ' + ', '.join(_faltam) if _faltam else ''))
 except Exception as _e:
     print('natureza não carregada:', _e)
 
@@ -232,6 +274,8 @@ except Exception as _e:
 # Aproximação gerencial — não substitui SIOPE/SIOPS/RREO.
 _TRANSF_IMPOSTOS = {'1711511100', '1711512100', '1711520100', '1721500100', '1721510100', '1721520100'}
 _LEIS_EDU_FED = {'CF art. 212, §5º', 'Leis do FNDE (PNAE/PNATE)'}
+_GLOSA = {'EDUCAÇÃO': ['ALIMENT', 'PREVID', 'APOSENT', 'PENS', 'INATIV'],
+          'SAÚDE': ['ALIMENT', 'PREVID', 'APOSENT', 'PENS', 'INATIV', 'SANEAMENTO', 'LIMPEZA']}
 LEI = {'ano': None, 'meses': {}}
 try:
     _df = json.load(open(os.path.join(BASE, 'dados_funcao.json'), encoding='utf-8'))
@@ -243,9 +287,13 @@ try:
             if not _rc:
                 continue   # sem receita do mês ainda — não há base de cálculo
             _ded = sum(MENSAL.get('ded', {}).get(_ano_f, {}).get(_m, {}).values())
-            _f = {}
+            _f, _g = {}, {'EDUCAÇÃO': 0.0, 'SAÚDE': 0.0}
             for _l in _v['linhas']:
-                _f[_l[0]] = _f.get(_l[0], 0.0) + _l[4]       # empenho por função
+                _f[_l[0]] = _f.get(_l[0], 0.0) + _l[5]       # LIQUIDADO por função (regime de competência)
+                # glosa: gasto que a lei não deixa contar no mínimo (inativos/pensionistas, alimentação
+                # e, na saúde, saneamento e limpeza urbana) — LDB art. 71 e LC 141/2012 art. 4º
+                if _l[0] in _g and any(k in _norm_desp(_l[1]) for k in _GLOSA[_l[0]]):
+                    _g[_l[0]] += _l[5]
             LEI['meses'][_m] = {
                 'rit': round(sum(x for c, x in _rc.items()
                                  if D['tipos'].get(c) == 'Impostos' or c in _TRANSF_IMPOSTOS), 2),
@@ -254,8 +302,9 @@ try:
                                      if classifica(c, D['tipos'].get(c, ''), D['nomes'].get(c, ''))[1] in _LEIS_EDU_FED), 2),
                 'saude_fed': round(sum(x for c, x in _rc.items()
                                        if classifica(c, D['tipos'].get(c, ''), D['nomes'].get(c, ''))[1] == 'LC 141/2012'), 2),
-                'edu': round(_f.get('EDUCAÇÃO', 0.0), 2),
-                'saude': round(_f.get('SAÚDE', 0.0), 2),
+                'edu': round(_f.get('EDUCAÇÃO', 0.0) - _g['EDUCAÇÃO'], 2),
+                'saude': round(_f.get('SAÚDE', 0.0) - _g['SAÚDE'], 2),
+                'edu_glosa': round(_g['EDUCAÇÃO'], 2), 'saude_glosa': round(_g['SAÚDE'], 2),
             }
 except Exception as _e:
     print('gastos por lei não carregados:', _e)
@@ -1511,7 +1560,7 @@ function montaDespesas(){
       ? sel.map(m=>MESNOME[m]).join(', ') : 'todos os meses coletados');
     const mapa=new Map();
     usar.forEach(m=>{
-      (naturezaPorMes[m]||[]).forEach(([nome,ini,atual,emp,liq,pag,tipo,grupo,lei,l9])=>{
+      (naturezaPorMes[m]||[]).forEach(([nome,ini,atual,emp,liq,pag,tipo,grupo,lei,dtp,l9])=>{
         const c=mapa.get(nome)||{nome,ini:0,atual:0,emp:0,liq:0,pag:0,tipo,grupo,lei,key:l9};
         c.emp+=emp; c.liq+=liq; c.pag+=pag; c.ini=ini; c.atual=atual;
         mapa.set(nome,c);
@@ -1621,14 +1670,14 @@ function limitesLegais(rot, rolaLei, notaLei){
   if(!usar.length){ const d=el('div','vazio'); d.textContent='Sem dados de função/receita coletados ainda.'; rolaLei.appendChild(d); return; }
   const S=k=>usar.reduce((s,m)=>s+(leiMeses[m][k]||0),0);
   const rit=S('rit'), rcl=S('rcl');
-  const pessoal=usar.reduce((s,m)=>s+(naturezaPorMes[m]||[]).filter(l=>l[7]==='Pessoal e encargos').reduce((a,l)=>a+l[3],0),0);
+  const p12=(DATA.natureza&&DATA.natureza.pessoal12)||{pessoal:0,rcl:0,meses:0,faltam:[]};
   const linhas=[
     {n:'Educação (MDE)', regra:'mínimo 25% · CF art. 212', tipo:'min', lim:25, base:rit, ref:rit*0.25,
      apl:S('edu')-S('edu_fed'), bn:'receita de impostos e transferências'},
     {n:'Saúde (ASPS)', regra:'mínimo 15% · LC 141/2012', tipo:'min', lim:15, base:rit, ref:rit*0.15,
      apl:S('saude')-S('saude_fed'), bn:'receita de impostos e transferências'},
-    {n:'Despesa com pessoal', regra:'máximo 60% · LRF art. 19', tipo:'max', lim:60, base:rcl, ref:rcl*0.60,
-     apl:pessoal, bn:'receita corrente líquida (aprox.)'},
+    {n:'Despesa com pessoal (12 meses)', regra:'máximo 60% · LRF art. 19 · janela móvel '+(p12.de||'')+' a '+(p12.ate||''), tipo:'max', lim:60, base:p12.rcl, ref:p12.rcl*0.60,
+     apl:p12.pessoal, bn:'receita corrente líquida dos 12 meses (aprox.)', anual:true},
     {n:'Repasse à Câmara (empenhado)', regra:'teto 6% · CF art. 29-A', tipo:'max', lim:6, base:art29.base_2025||0, ref:art29.teto_2026||0,
      apl:art29.emp_camara_2026||0, bn:'receita tributária e transferências de 2025', anual:true},
     {n:'Repasse à Câmara (pago)', regra:'teto 6% · CF art. 29-A', tipo:'max', lim:6, base:art29.base_2025||0, ref:art29.teto_2026||0,
@@ -1663,10 +1712,15 @@ function limitesLegais(rot, rolaLei, notaLei){
     +'empenhado <b>'+exato(art29.emp_camara_2026||0)+'</b> · pago <b>'+exato(art29.pag_camara_2026||0)+'</b> · '
     +'teto do art. 29-A <b>'+exato(teto)+'</b></div>'
     +'Barra: preenchimento = % aplicado; traço = limite legal. Verde = dentro da regra; âmbar = abaixo do mínimo no período; vermelho = acima do teto.<br>'
-    +'<b>Aproximação gerencial</b> pelo empenhado do período, sem substituir SIOPE/SIOPS/RREO. '
-    +'Educação e Saúde: empenhado da função, menos salário-educação/PNAE/PNATE (educação) e repasses do SUS e do Estado (saúde); '
+    +'<b>Aproximação gerencial</b> pelo liquidado do ano civil (restos a pagar não entram), sem substituir SIOPE/SIOPS/RREO. '
+    +'Educação e Saúde: liquidado da função, menos salário-educação/PNAE/PNATE (educação) e repasses do SUS e do Estado (saúde); '
+    +'glosa por subfunção (alimentação, inativos/pensionistas; na saúde também saneamento e limpeza): educação '+exato(S('edu_glosa'))+', saúde '+exato(S('saude_glosa'))+'; '
     +'base = IPTU, ISS, ITBI, IRRF, FPM, ITR, cota-parte de ICMS, IPVA e IPI, sem dívida ativa nem multas e juros. '
-    +'Pessoal: "pessoal e encargos" empenhado (natureza) ÷ receita corrente líquida (corrente − deduções), sem terceirização (a classificar). '
+    +'Pessoal: janela móvel dos últimos 12 meses fechados ('+(p12.de||'')+' a '+(p12.ate||'')+'), pela despesa liquidada (competência) ÷ RCL dos mesmos 12 meses; '
+    +'inclui inativos, pensionistas, contratação temporária e a terceirização que substitui servidores (LRF art. 18, §1º); '
+    +'fora: indenização por demissão, sentenças e despesas de exercícios anteriores (art. 19, §1º). '
+    +(p12.faltam&&p12.faltam.length?'<b>Janela incompleta: faltam '+p12.faltam.join(', ')+' (calculado com '+p12.meses+' meses).</b> ':'')
+    +'A RCL aqui é corrente − deduções, sem excluir a contribuição previdenciária do servidor. '
     +'Câmara: ano todo; o valor efetivamente repassado (duodécimo) não vem separado no portal, então o pago pela Câmara é a referência. '
     +'FUNDEB (70% em remuneração) não é calculável: o portal não separa a despesa por fonte.';
 }
@@ -1780,10 +1834,11 @@ function calcLegais(){
   if(!ms.length) return null;
   const S=k=>ms.reduce((s,m)=>s+(lm[m][k]||0),0);
   const rit=S('rit'), rcl=S('rcl');
-  const pessoal=ms.reduce((s,m)=>s+(npm[m]||[]).filter(l=>l[7]==='Pessoal e encargos').reduce((a,l)=>a+l[3],0),0);
+  const p12=(DATA.natureza&&DATA.natureza.pessoal12)||{pessoal:0,rcl:0};
+  const pessoal=p12.pessoal;
   const edu=S('edu')-S('edu_fed'), saude=S('saude')-S('saude_fed');
   return { rit, rcl, pessoal, edu, saude, a29,
-    pEdu:rit?edu/rit*100:0, pSaude:rit?saude/rit*100:0, pPes:rcl?pessoal/rcl*100:0,
+    pEdu:rit?edu/rit*100:0, pSaude:rit?saude/rit*100:0, pPes:p12.rcl?pessoal/p12.rcl*100:0,
     pCam:a29.teto_2026?(a29.emp_camara_2026||0)/a29.teto_2026*100:0,
     ate:MESNOME[ms.sort((a,b)=>+a-+b)[ms.length-1]] };
 }
@@ -1821,8 +1876,8 @@ function montaPrefeito(){
   {
     const st=L.pPes>=57?'ruim':(L.pPes>=54?'at':'ok');
     cards.push({tit:'Folha de pagamento', st, valor:f1.format(L.pPes)+'%',
-      sub:'da receita corrente líquida vai para pessoal e encargos.',
-      leg:'Limite da LRF: 60% · alerta a partir de 54% · prudencial em 57%', barra:{pct:L.pPes,lim:60}, ir:'eq', legal:true,
+      sub:'da receita corrente líquida vai para pessoal e encargos (últimos 12 meses).',
+      leg:'Limite da LRF: 60% · alerta a partir de 54% · prudencial em 57% · janela móvel de 12 meses', barra:{pct:L.pPes,lim:60}, ir:'eq', legal:true,
       alerta:'A folha está em '+f1.format(L.pPes)+'% da receita; o limite legal é 60% e o alerta começa em 54%.'});
   }
   // 3) educação / 4) saúde (mínimos)

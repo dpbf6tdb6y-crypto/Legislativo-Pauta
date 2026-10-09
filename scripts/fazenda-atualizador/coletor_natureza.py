@@ -107,6 +107,13 @@ def main(visao='natureza'):
     hoje = datetime.date.today()
     ano = hoje.year
     novos = {}
+    alvos = [(ano, m) for m in range(1, hoje.month + 1)]
+    if visao == 'natureza':
+        # Despesa com pessoal usa janela móvel de 12 meses (LRF art. 18, §2º): os meses
+        # do ano anterior que entram na janela também são coletados (uma vez só —
+        # mês de ano anterior já fechado não é recoletado).
+        _ja = dados.get('anos', {}).get(str(ano - 1), {})
+        alvos = [(ano - 1, m) for m in range(hoje.month, 13) if str(m) not in _ja] + alvos
 
     with sync_playwright() as p:
         nav = p.chromium.launch(headless=True, args=['--no-sandbox'])
@@ -114,11 +121,11 @@ def main(visao='natureza'):
         page = ctx.new_page()
         page.set_default_timeout(120000)
         page.goto(URL, wait_until='networkidle')
-        for mes in range(1, hoje.month + 1):
-            rotulo = '%s/%d' % (MESES[mes - 1], ano)
-            arq = os.path.join(CACHE, '%s_%d_%02d.xls' % (visao, ano, mes))
+        for ano_i, mes in alvos:
+            rotulo = '%s/%d' % (MESES[mes - 1], ano_i)
+            arq = os.path.join(CACHE, '%s_%d_%02d.xls' % (visao, ano_i, mes))
             try:
-                exporta(page, ano, mes, arq)
+                exporta(page, ano_i, mes, arq)
             except Exception as e:
                 log('  %s: falhou ao exportar (%s)' % (rotulo, str(e).splitlines()[0]))
                 continue
@@ -127,7 +134,7 @@ def main(visao='natureza'):
                 log('  %s: arquivo ilegível, ignorado' % rotulo)
                 continue
             a, m, linhas, tot = info
-            if (a, m) != (ano, mes):
+            if (a, m) != (ano_i, mes):
                 log('  %s: o arquivo veio de %d/%02d, ignorado' % (rotulo, a, m))
                 continue
             if abs(tot[2] + tot[3] + tot[4]) < TOL:
@@ -137,13 +144,13 @@ def main(visao='natureza'):
             if any(abs(soma[i] - tot[i]) > TOL for i in range(5)):
                 log('  %s: soma das linhas não bate com o TOTAL do arquivo, ignorado' % rotulo)
                 continue
-            ref = total_orgaos(ano, mes)
+            ref = total_orgaos(ano_i, mes)
             if ref and (abs(ref[0] - tot[2]) > TOL or abs(ref[1] - tot[4]) > TOL):
                 # dados_despesas.json (órgãos) é coletado à parte e pode estar defasado
                 # — só avisa; a conferência que descarta é a soma das linhas = TOTAL.
                 log('  AVISO %s: empenho/pagamento (%.2f / %.2f) diferem do total por órgão já coletado (%.2f / %.2f)'
                     % (rotulo, tot[2], tot[4], ref[0], ref[1]))
-            novos[str(mes)] = {'linhas': linhas, 'total': tot}
+            novos.setdefault(str(ano_i), {})[str(mes)] = {'linhas': linhas, 'total': tot}
             log('  %s: %d linhas | empenho R$ %s' % (rotulo, len(linhas), format(tot[2], ',.2f')))
             time.sleep(3)
         nav.close()
@@ -151,7 +158,8 @@ def main(visao='natureza'):
     if not novos:
         log('Nada coletado — dados anteriores mantidos.')
         return 2
-    dados.setdefault('anos', {}).setdefault(str(ano), {}).update(novos)
+    for a_, meses_ in novos.items():
+        dados.setdefault('anos', {}).setdefault(a_, {}).update(meses_)
     dados['coletado_em'] = hoje.isoformat()
     json.dump(dados, open(DEST, 'w', encoding='utf-8'), ensure_ascii=False, indent=1, sort_keys=True)
     log('gravado: %s' % DEST)
