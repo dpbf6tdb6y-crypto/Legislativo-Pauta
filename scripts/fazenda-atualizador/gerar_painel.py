@@ -736,13 +736,13 @@ HTML = r'''<!DOCTYPE html>
   .rk .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
   .linhaTopo{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:6px 0 10px; }
   .linhaTopo .cbar{ margin:0; flex:none; }
-  .cgrid.inl{ display:flex; gap:10px; margin:0 0 0 auto; flex:none; justify-content:flex-end; }
+  .cgrid.inl{ display:flex; gap:6px; margin:0 0 0 auto; flex:none; justify-content:flex-end; }
   .cgrid.inl .cg{ display:flex; flex-direction:column; align-items:center; padding:2px 8px 0; border:0;
                   border-radius:var(--r); background:transparent; text-align:center; }
   .cgrid.inl .cg:hover{ box-shadow:none; background:var(--sup); }
-  .cgrid.inl svg{ width:clamp(104px,9.4vw,172px); flex:none; display:block; overflow:visible; }
-  .cgrid.inl .cg{ padding:6px 10px 6px; }
-  .cgrid.inl .cl{ font-size:12px; font-weight:600; color:var(--t2); line-height:1.2; white-space:nowrap; margin-top:2px; }
+  .cgrid.inl svg{ width:clamp(74px,5.6vw,96px); flex:none; display:block; overflow:visible; }
+  .cgrid.inl .cg{ padding:0 8px; }
+  .cgrid.inl .cl{ font-size:11px; font-weight:600; color:var(--t2); line-height:1.15; white-space:nowrap; margin-top:0; }
   .cgrid.mini{ gap:10px; margin:14px 0 4px; }
   .cgrid.mini .cg{ padding:7px 8px 9px; }
   .cgrid.mini .ct{ font-size:10.5px; }
@@ -2248,7 +2248,6 @@ function montaComando(){
     const R=calc(), M=st.M;
     /* meses */
     barra.innerHTML='';
-    const rotulo=el('span'); rotulo.style.cssText='font-size:12px;color:var(--t3);margin-right:4px'; rotulo.textContent='Posição até:'; barra.appendChild(rotulo);
     meses.forEach(m=>{
       const b=el('div','ano'+(m===M?' on':'')+(m>fech?' parcial':'')); b.textContent=MESES[m-1]+(m>fech?' *':'');
       b.title=m>fech?'mês ainda em andamento':''; b.onclick=()=>{ parar(); st.M=m; desenha_(); }; barra.appendChild(b);
@@ -2271,14 +2270,13 @@ function montaComando(){
     R.gauges.forEach((g,i)=>{
       const c=COR_ST[ss[i]], f=Math.min(g.v/g.max,1), l=g.lim/g.max, m1=pt(60,62,47,l), m2=pt(60,62,34,l);
       /* arco em cor viva, com brilho; o número fica na cor mais escura, que lê melhor no branco */
-      const cb=({ok:'#19C37D',at:'#FFB020',ruim:'#FF4D4F'})[ss[i]];
+      const cb=({ok:'#009C3B',at:'#E3A008',ruim:'#D92D20'})[ss[i]], cn=({ok:'#007A2E',at:'#9A6B00',ruim:'#B42318'})[ss[i]];
       const d=el('div','cg'); d.style.setProperty('--cs',c);
-      d.style.background='radial-gradient(ellipse at 50% 55%, '+cb+'26, transparent 72%)';
       d.title=g.n+' · '+g.sub+' · '+g.x;
-      d.innerHTML='<svg viewBox="0 0 120 70" role="img" aria-label="'+g.n+'"><path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="'+cb+'33" stroke-width="12"/>'
-        +'<path d="'+arc(60,62,41,0,Math.max(f,0.002))+'" fill="none" stroke="'+cb+'" stroke-width="12" stroke-linecap="round" style="filter:drop-shadow(0 0 3px '+cb+')"/>'
+      d.innerHTML='<svg viewBox="0 0 120 70" role="img" aria-label="'+g.n+'"><path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="11"/>'
+        +'<path d="'+arc(60,62,41,0,Math.max(f,0.002))+'" fill="none" stroke="'+cb+'" stroke-width="11"/>'
         +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m1[0].toFixed(1)+'" y2="'+m1[1].toFixed(1)+'" stroke="var(--t1)" stroke-width="2.5"/>'
-        +'<text x="60" y="58" text-anchor="middle" style="font-size:21px;font-weight:700;fill:'+c+'">'+f1.format(g.v)+'%</text></svg>'
+        +'<text x="60" y="58" text-anchor="middle" style="font-size:21px;font-weight:700;fill:'+cn+'">'+f1.format(g.v)+'%</text></svg>'
         +'<div class="cl">'+g.c+'</div>';
       d.onclick=()=>irPara('eq'); gradeG.appendChild(d);
     });
