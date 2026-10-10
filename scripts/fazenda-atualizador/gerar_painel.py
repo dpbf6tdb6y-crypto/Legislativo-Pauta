@@ -2296,6 +2296,8 @@ function montaComando(){
       const soma=l=>l.reduce((a,r)=>({ini:a.ini+r.ini,atual:a.atual+r.atual,emp:a.emp+r.emp,liq:a.liq+r.liq,pag:a.pag+r.pag}),{ini:0,atual:0,emp:0,liq:0,pag:0});
       const tot=soma(rows);
       const dif=tot.atual-tot.ini;
+      /* receita bruta = corrente + capital (antes das deduções); as deduções são a diferença até a líquida */
+      const bruta=ms.reduce((s_,m)=>s_+((VI.bruta_mes||{})[m]||0),0), ded=Math.max(0,bruta-rec);
       const lin=(n,v,pct,extra)=>'<tr><td class="e" style="font-weight:600">'+n+'</td><td style="'+(extra||'')+'">'+exato(v)+'</td><td style="color:var(--t3)">'+(pct===null?'—':f1.format(pct)+'%')+'</td></tr>';
       hostTab.innerHTML='<div class="rolatab"><table style="font-size:13px"><thead><tr><th class="e">Total do município</th><th>Valor (R$)</th><th>% do Valor Atual</th></tr></thead><tbody>'
         +lin('Valor Inicial',tot.ini,tot.atual?tot.ini/tot.atual*100:null)
@@ -2304,7 +2306,11 @@ function montaComando(){
         +lin('Liquidado',tot.liq,tot.atual?tot.liq/tot.atual*100:null)
         +lin('Pago',tot.pag,tot.atual?tot.pag/tot.atual*100:null)
         +'<tr><td colspan="3" style="padding:0;height:10px;border:0"></td></tr>'
-        +'<tr style="border-top:2px solid var(--linha)"><td class="e" style="font-weight:700">Arrecadado (receita líquida)</td>'
+        +'<tr style="border-top:2px solid var(--linha)"><td class="e" style="font-weight:700">Receita bruta (Corrente + Capital)</td>'
+        +'<td style="font-weight:700">'+exato(bruta)+'</td><td style="color:var(--t3)">antes das deduções</td></tr>'
+        +'<tr><td class="e" style="color:var(--t2)">(−) Deduções (FUNDEB e outras)</td>'
+        +'<td style="color:var(--t2)">− '+exato(ded)+'</td><td style="color:var(--t3)">'+(bruta?f1.format(ded/bruta*100)+'% da bruta':'—')+'</td></tr>'
+        +'<tr style="border-top:1px solid var(--linha)"><td class="e" style="font-weight:700">Arrecadado (receita líquida)</td>'
         +'<td style="font-weight:700;color:var(--alta)">'+exato(rec)+'</td>'
         +'<td style="font-weight:700" title="Arrecadado dividido pelo pago">'+(tot.pag?f1.format(rec/tot.pag*100)+'% do pago':'—')+'</td></tr>'
         +'</tbody></table></div>';
