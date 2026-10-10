@@ -765,6 +765,7 @@ HTML = r'''<!DOCTYPE html>
   .vrow .bb .rr i{ background:var(--acento); }
   .vrow .bb .gg i{ background:#12805C; }
   .vrow .bb em{ font-size:10.5px; font-style:italic; color:var(--parcial); line-height:1.2; }
+  .vsem{ margin-top:10px; padding:9px 12px; border-radius:var(--r); background:#FFF6E0; border:1px solid #F1D48A; font-size:12.5px; color:#6B4A00; line-height:1.5; }
   .vlegd{ display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color:var(--t2); margin:0 0 6px; }
   .vlegd i{ display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; }
   .vrow .q, .vrow .p{ text-align:right; font-variant-numeric:tabular-nums; }
@@ -2448,8 +2449,10 @@ function montaComando(){
           +'<div class="vlegd"><span><i style="background:var(--acento)"></i>Receita vinculada recebida</span>'
           +'<span><i style="background:#12805C"></i>Despesa na função correspondente <b>(aproximada, não é por fonte de recurso)</b></span></div>'
           +'<div class="vrow cab"><span>Área</span><span>Recebido x gasto</span><span style="text-align:right">Recebido</span><span style="text-align:right">Gasto</span><span style="text-align:right">% receita</span></div>';
-        const mxb=Math.max(...lv.map(l=>Math.max(l.v,l.gasto||0)),1);
-        lv.forEach(l=>{
+        /* a tabela traz só as áreas com despesa vinculada identificada; as demais ficam resumidas numa nota */
+        const lvD=lv.filter(l=>l.gasto!==null), lvS=lv.filter(l=>l.gasto===null);
+        const mxb=Math.max(...lvD.map(l=>Math.max(l.v,l.gasto||0)),1);
+        lvD.forEach(l=>{
           const temG=l.gasto!==null;
           h+='<div class="vrow" data-a="'+esc(l.area)+'"><span class="n">'+esc(l.area)+'</span>'
             +'<span class="bb"><span class="t rr"><i style="width:'+(l.v/mxb*100).toFixed(1)+'%"></i></span>'
@@ -2464,6 +2467,12 @@ function montaComando(){
             h+='<div class="vdet"><b>Base legal:</b> '+esc(l.lei||'—')+'<br>'+esc(REGRA_DE[l.area]||'')+'<br>Recebido: '+exato(l.v)+cob+'</div>';
           }
         });
+        if(!lvD.length) h+='<div class="vazio">Nenhuma receita vinculada com despesa identificada no período.</div>';
+        if(lvS.length){
+          const vs=lvS.reduce((a,l)=>a+l.v,0);
+          h+='<div class="vsem"><b>Sem despesa vinculada identificada:</b> '+lvS.map(l=>esc(l.area)+' '+brlx(l.v)).join(' · ')
+            +' — <b>'+brlx(vs)+' ('+pc(vs)+' da receita)</b>. O portal não separa a despesa por fonte de recurso, então não dá para dizer onde foi gasta.</div>';
+        }
         box.innerHTML=h;
         box.querySelectorAll('.vrow[data-a]').forEach(r=>{ r.onclick=()=>{ st.area=(st.area===r.dataset.a?null:r.dataset.a); desenha_(); }; });
       }
