@@ -556,10 +556,10 @@ HTML = r'''<!DOCTYPE html>
   nav b.grupoLabel{ font-weight:700; color:var(--t1); cursor:default; padding:6px 0; }
   nav b.grupoLabel:hover{ color:var(--t1); }
   nav .espaco{ width:14px; }
-  #btnAtualizar{ margin-left:auto; display:flex; align-items:center; gap:6px;
-                 font-size:12.5px; font-weight:600; color:var(--t2); cursor:pointer;
-                 padding:7px 14px; border:1px solid var(--linha); border-radius:100px;
-                 background:var(--bg); white-space:nowrap; }
+  #btnAtualizar{ margin-left:auto; display:flex; align-items:center; justify-content:center;
+                 width:34px; height:34px; font-size:18px; line-height:1; font-weight:600; color:var(--t2); cursor:pointer;
+                 border:1px solid var(--linha); border-radius:50%;
+                 background:var(--bg); user-select:none; }
   #btnAtualizar:hover{ border-color:#B9BFC9; color:var(--t1); }
 
   /* ---------------- título da página ---------------- */
@@ -867,7 +867,7 @@ HTML = r'''<!DOCTYPE html>
     <span class="espaco"></span>
     <b data-p="eq">__ANO_EQ__ · Gestão Fiscal</b>
   </nav>
-  <div id="btnAtualizar">↻ Atualizar</div>
+  <div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div>
 </div></header>
 
 <div class="env">
