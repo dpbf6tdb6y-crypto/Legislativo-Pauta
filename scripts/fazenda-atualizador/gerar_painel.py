@@ -2180,8 +2180,6 @@ function montaComando(){
   const sOnde=bloco(colEsq,'Para onde vai o dinheiro');
   const sVin=bloco(linhaCards,'Vínculo · servidores'); sVin.classList.add('c5');
   const hostVin=el('div'); sVin.appendChild(hostVin);
-  const row3=el('div','dgrid'); host.appendChild(row3);
-  const sAl=bloco(row3,'O que merece atenção agora'); sAl.classList.add('c12');
 
   function calc(Pin){
     const P=Pin||periodo(), M=P.M, ms=P.ms.filter(m=>lei[m]);
@@ -2396,26 +2394,6 @@ function montaComando(){
         r.onclick=()=>irPara('desp'); sOnde.appendChild(r);
       });
     }
-    /* alertas */
-    sAl.querySelectorAll('.palerta,.nota').forEach(x=>x.remove());
-    const txt={0:g=>'A folha está em '+f1.format(g.v)+'% da RCL (limite 60%, alerta em 54%).',
-      1:g=>'Educação em '+f1.format(g.v)+'%, abaixo do mínimo de 25%.', 2:g=>'Saúde em '+f1.format(g.v)+'%, abaixo do mínimo de 15%.',
-      3:g=>'O repasse à Câmara já usou '+f1.format(g.v)+'% do teto de 6%.'};
-    let n=0;
-    R.gauges.forEach((g,i)=>{ if(ss[i]!=='ok'){ n++; const a=el('div','palerta'); a.style.setProperty('--cs',COR_ST[ss[i]]);
-      a.innerHTML='<i></i><span>'+esc(txt[i](g))+'</span>'; a.onclick=()=>irPara('eq'); sAl.appendChild(a); } });
-    if(rec-pag<0){ n++; const a=el('div','palerta'); a.style.setProperty('--cs',COR_ST.at);
-      a.innerHTML='<i></i><span>No período ('+P.rot+') foram pagos '+brlx(pag-rec)+' a mais do que a receita líquida arrecadada (o pago inclui restos a pagar de anos anteriores).</span>';
-      a.onclick=()=>irPara('eq'); sAl.appendChild(a); }
-    const ct=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0&&r[8]<=30).sort((a,b)=>a[8]-b[8]);
-    if(ct.length){ n++; const a=el('div','palerta'); a.style.setProperty('--cs',COR_ST.at);
-      a.innerHTML='<i></i><span>'+ct.length+' contrato(s) vencem em até 30 dias ('+brlx(ct.reduce((s,r)=>s+r[6],0))+'). O primeiro: '+esc(ct[0][3])+', em '+ct[0][8]+' dia(s).</span>';
-      a.onclick=()=>irPara('ctr'); sAl.appendChild(a); }
-    (DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0&&r[8]<=90).sort((a,b)=>a[8]-b[8]).slice(0,5).forEach(r=>{
-      const a=el('div','palerta'); a.style.setProperty('--cs',r[8]<=30?COR_ST.at:COR_ST.info);
-      a.innerHTML='<i></i><span>Contrato '+esc(r[0])+' · '+esc(r[3])+' · '+brlx(r[6])+' — vence em '+r[8]+' dia(s).</span>';
-      a.onclick=()=>irPara('ctr'); sAl.appendChild(a); n++; });
-    if(!n){ const a=el('div','nota'); a.style.color='var(--alta)'; a.textContent='Nenhum alerta neste cenário.'; sAl.appendChild(a); }
     desenhaVinculo(P);
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
