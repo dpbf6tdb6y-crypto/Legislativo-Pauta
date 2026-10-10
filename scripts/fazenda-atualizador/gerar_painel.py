@@ -273,6 +273,14 @@ try:
             if _v2 is not None and _r2 is not None:
                 SERIE['pes']['%s-%02d' % (_y2, int(_m2))] = round(_v2, 2)
                 SERIE['rcl']['%s-%02d' % (_y2, int(_m2))] = round(_r2, 2)
+                # por natureza (só as que entram no limite) — pra explicar de onde vem cada variação
+                _pn = {}
+                for _l3 in _dn['anos'][_y2][_m2]['linhas']:
+                    if classifica_desp(_l3[0])[3]:
+                        _k3 = _norm_desp(_l3[0])
+                        _pn[_k3] = _pn.get(_k3, 0.0) + _l3[4]
+                        SERIE.setdefault('pnome', {}).setdefault(_k3, _l3[0])
+                SERIE.setdefault('pnat', {})['%s-%02d' % (_y2, int(_m2))] = {k: round(v, 2) for k, v in _pn.items()}
     for _yy in (_ano_nat, str(int(_ano_nat) - 1)):
         for _mm2 in range(1, 13):
             _r3 = _rcl_mes(int(_yy), _mm2)
@@ -810,7 +818,18 @@ HTML = r'''<!DOCTYPE html>
         text-transform:uppercase; color:var(--t2); font-weight:700; }
   .pjt span{ text-transform:none; letter-spacing:0; font-weight:400; color:var(--t3); }
   .pjg{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(6,auto); grid-auto-flow:column; gap:0 22px; }
-  .pj{ display:flex; justify-content:space-between; gap:8px; padding:4px 6px; border-bottom:1px solid var(--linha); font-size:12.5px; }
+  .pj{ padding:4px 6px; border-bottom:1px solid var(--linha); font-size:12.5px; }
+  .pjr{ display:grid; grid-template-columns:50px 1fr auto; gap:8px; align-items:center; }
+  .pjr .vr{ font-style:normal; font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; white-space:nowrap; min-width:64px; text-align:center; }
+  .vr.n0{ background:var(--trilho); color:var(--t3); }
+  .vr.n1{ background:#FEF0C7; color:#93370D; }
+  .vr.n2{ background:#FEE4E2; color:#B42318; }
+  .pjr b{ text-align:right; }
+  .pjx{ font-size:11px; color:var(--t3); margin:2px 0 1px 58px; line-height:1.35; }
+  .pjv{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin:2px 0 10px; }
+  .pjv > div{ background:var(--sup); border-radius:var(--r); padding:7px 10px; }
+  .pjv small{ display:block; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--t3); }
+  .pjv b{ font-size:13.5px; }
   .pj span{ color:var(--t2); } .pj b{ font-weight:600; font-variant-numeric:tabular-nums; color:var(--t1); }
   .pj.on{ background:var(--sup); } .pj.on span{ color:var(--acento); font-weight:700; }
   .pjs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:10px; }
@@ -2590,17 +2609,41 @@ function montaComando(){
       for(let i=0;i<12;i++){ lista.push({y,m}); m--; if(!m){ m=12; y--; } }
       /* ordem decrescente: do mês mais recente para o mais antigo */
       let soma12=0, rcl12=0, falt=0, somaSel=0, nSel=0;
-      let cel='';
+      const chave=(y,m)=>y+'-'+String(m).padStart(2,'0');
+      const prevDe=(y,m)=>{ m--; if(!m){ m=12; y--; } return chave(y,m); };
+      const nomeNat=k=>{ const n=(ser.pnome||{})[k]||k; return n.charAt(0)+n.slice(1).toLowerCase(); };
+      const miv=v=>(v<0?'−':'+')+'R$ '+(Math.abs(v)/1e6).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' mi';
+      let cel='', maiorAlta=null, maiorQueda=null, nFora=0;
+      /* a lista está do mais recente para o mais antigo: a variação é contra o mês seguinte da lista (o anterior no tempo) */
       lista.forEach(({y,m})=>{
-        const k=y+'-'+String(m).padStart(2,'0'), v=ser.pes[k], r=ser.rcl[k];
+        const k=chave(y,m), v=ser.pes[k], r=ser.rcl[k], vp=ser.pes[prevDe(y,m)];
         const dentro=(y===eq.ano)&&P.sel.includes(m);
         if(v===undefined||r===undefined){ falt++; }
         else { soma12+=v; rcl12+=r; if(dentro){ somaSel+=v; nSel++; } }
-        cel+='<div class="pj'+(dentro?' on':'')+'"><span>'+MESES[m-1]+'/'+String(y).slice(2)+'</span><b>'+(v===undefined?'—':exato(v))+'</b></div>';
+        let chip='<em class="vr n0">—</em>', sub='';
+        if(v!==undefined&&vp!==undefined&&vp>0){
+          const var_=(v-vp)/vp*100, ab=Math.abs(var_), nv=ab>=25?2:(ab>=10?1:0);
+          chip='<em class="vr n'+nv+'" title="Variação contra '+prevDe(y,m)+': '+miv(v-vp)+'">'+(var_>=0?'▲ +':'▼ −')+f1.format(ab)+'%</em>';
+          if(!maiorAlta||var_>maiorAlta.v) maiorAlta={v:var_,k:MESES[m-1]+'/'+String(y).slice(2),d:v-vp};
+          if(!maiorQueda||var_<maiorQueda.v) maiorQueda={v:var_,k:MESES[m-1]+'/'+String(y).slice(2),d:v-vp};
+          if(nv>0){
+            nFora++;
+            /* causa provável: a natureza de despesa que mais mexeu entre os dois meses */
+            const a_=(ser.pnat||{})[k]||{}, b_=(ser.pnat||{})[prevDe(y,m)]||{}; let best=null;
+            new Set([...Object.keys(a_),...Object.keys(b_)]).forEach(n=>{ const d=(a_[n]||0)-(b_[n]||0); if(!best||Math.abs(d)>Math.abs(best.d)) best={n,d}; });
+            if(best&&Math.abs(best.d)>0) sub='<div class="pjx">Maior efeito: <b>'+esc(nomeNat(best.n))+'</b> '+miv(best.d)+' · variação total '+miv(v-vp)+'</div>';
+          }
+        }
+        cel+='<div class="pj'+(dentro?' on':'')+'"><div class="pjr"><span>'+MESES[m-1]+'/'+String(y).slice(2)+'</span><b>'+(v===undefined?'—':exato(v))+'</b>'+chip+'</div>'+sub+'</div>';
       });
+      const media=(12-falt)?soma12/(12-falt):0;
       const pc=rcl12?soma12/rcl12*100:0;
       const cor=pc>=57?'var(--baixa)':(pc>=54?'var(--parcial)':'var(--alta)');
       h+='<div class="pjt">Despesa com pessoal · mês a mês <span>(liquidado que entra no limite da LRF)</span></div>'
+        +'<div class="pjv"><div><small>Média mensal</small><b>'+exato(media)+'</b></div>'
+        +(maiorAlta?'<div><small>Maior alta</small><b style="color:var(--baixa)">'+maiorAlta.k+' · +'+f1.format(maiorAlta.v)+'%</b></div>':'')
+        +(maiorQueda?'<div><small>Maior queda</small><b style="color:var(--acento)">'+maiorQueda.k+' · −'+f1.format(Math.abs(maiorQueda.v))+'%</b></div>':'')
+        +'<div><small>Meses com variação ≥ 10%</small><b>'+nFora+' de '+Math.max(0,11)+'</b></div></div>'
         +'<div class="pjg">'+cel+'</div>'
         +'<div class="pjs"><div><small>Total dos 12 meses</small><b>'+exato(soma12)+'</b></div>'
         +'<div><small>% da RCL ('+brlx(rcl12)+')</small><b style="color:'+cor+'">'+f1.format(pc)+'%</b></div>'
