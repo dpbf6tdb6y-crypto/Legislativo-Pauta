@@ -2235,7 +2235,7 @@ function montaComando(){
     const ss=R.gauges.map(stat), todos=ss.concat([stSaldo]);
     const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
     const soSaldo=pior!=='ok'&&!ss.includes(pior);
-    const frase=pior==='ok'?'Tudo dentro dos limites legais e as contas no azul'
+    const frase=pior==='ok'?'Tudo dentro dos limites legais e a receita cobre o que foi pago'
       :(soSaldo?'Limites legais em dia, mas o pago passou da receita'
       :(pior==='ruim'?'Há indicador fora do limite':'Indicador perto do limite'));
     selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
@@ -2264,8 +2264,8 @@ function montaComando(){
     /* painel de cartões (reagem ao mês escolhido) */
     const pad=m=>String(m).padStart(2,'0'), ms=P.ms, pf=DATA.prefeito||{}, VI=DATA.vinculadas||{mes:{},bruta_mes:{}};
     const cards=[];
-    // contas no azul
-    cards.push({tit:'Contas no azul?', st:stSaldo, valor:(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
+    // receita x despesa paga (saldo do ano)
+    cards.push({tit:'Receita x despesa paga', st:stSaldo, valor:(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
       sub:rec-pag>=0?'A receita cobriu tudo o que foi pago.':'Foi pago mais do que o município arrecadou.',
       leg:'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+' (o pago inclui restos a pagar de anos anteriores)', ir:'eq'});
     // orçamento executado
@@ -2452,7 +2452,7 @@ function montaComando(){
     // ---- equilíbrio
     {
       const sd=rec-pag, rel=rec?sd/rec:0, n=sd>=0?'o':(rel>-0.03?'l':'v');
-      add('Equilíbrio das contas',n,sd>=0?'Receita líquida cobre o que foi pago':'Pago acima da receita líquida arrecadada',
+      add('Equilíbrio das contas',n,sd>=0?'Receita x despesa paga: a receita líquida cobre o que foi pago':'Receita x despesa paga: pago acima da receita líquida arrecadada',
         'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+'. O pago inclui restos a pagar de anos anteriores.',(sd>=0?'+':'−')+brlx(Math.abs(sd)),'eq');
     }
     if(pf.dot_atual>0){
@@ -2531,7 +2531,7 @@ function montaComando(){
       [/^Saúde \(ASPS\)/,'CF art. 198; LC 141/2012, arts. 4º e 7º','Manter o acompanhamento bimestral; conferir despesas que não contam como ASPS (inativos, merenda, saneamento).'],
       [/^FUNDEB/,'Lei 14.113/2020, art. 26','Garantir que ao menos 70% dos recursos do FUNDEB sejam aplicados na remuneração dos profissionais da educação básica.'],
       [/^Repasse à Câmara/,'CF art. 29-A','Controlar o duodécimo contra o teto de 6% da base de 2025; repasse acima do teto é crime de responsabilidade.'],
-      [/^Pago acima da receita|^Receita líquida cobre/,'LRF art. 1º, §1º e art. 9º','Verificar o fluxo de caixa e a origem dos restos a pagar pagos; se o desequilíbrio persistir, avaliar a limitação de empenho (LRF art. 9º).'],
+      [/^Receita x despesa paga/,'LRF art. 1º, §1º e art. 9º','Verificar o fluxo de caixa e a origem dos restos a pagar pagos; se o desequilíbrio persistir, avaliar a limitação de empenho (LRF art. 9º).'],
       [/^Empenhado sobre o orçamento/,'Lei 4.320/1964, arts. 58 a 60','Acompanhar o ritmo de empenho contra o calendário e a arrecadação, para não comprometer o fim do exercício.'],
       [/^Remanejamento do orçamento/,'CF art. 167, V; Lei 4.320/1964, arts. 40 a 46','Conferir se os créditos adicionais têm lei ou decreto e fonte de recurso indicada.'],
       [/^Receita vinculada sem despesa/,'CF art. 167, IV; LRF art. 8º, parágrafo único','Solicitar à Contabilidade o balancete da despesa por fonte/destinação de recursos e conciliar mensalmente receita vinculada e despesa paga.'],
