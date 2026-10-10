@@ -593,8 +593,9 @@ HTML = r'''<!DOCTYPE html>
     @page{ margin:14mm 12mm; }
   }
   .acoes{ margin-left:auto; display:flex; align-items:center; gap:8px; }
-  #btnLimpar{ display:none; align-items:center; justify-content:center; width:34px; height:34px; font-size:15px; line-height:1;
-              cursor:pointer; border:1px solid var(--linha); border-radius:50%; background:var(--bg); user-select:none; }
+  #btnLimpar{ display:none; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--t2);
+              cursor:pointer; padding:7px 14px; border:1px solid var(--linha); border-radius:100px; background:var(--bg);
+              white-space:nowrap; user-select:none; }
   #btnLimpar:hover{ border-color:#B9BFC9; }
   #btnAtualizar{ margin-left:0; display:flex; align-items:center; justify-content:center;
                  width:34px; height:34px; font-size:18px; line-height:1; font-weight:600; color:var(--t2); cursor:pointer;
@@ -939,7 +940,7 @@ HTML = r'''<!DOCTYPE html>
     <span class="espaco"></span>
     <b data-p="eq">__ANO_EQ__ · Gestão Fiscal</b>
   </nav>
-  <div class="acoes"><div id="btnAuditoria" title="Auditoria interna: pontos de atenção" role="button">🛡️ Auditoria interna</div><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
+  <div class="acoes"><div id="btnAuditoria" title="Auditoria interna: pontos de atenção" role="button">🛡️ Auditoria interna</div><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️ Limpar</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
 </div></header>
 
 <div id="audModal" aria-hidden="true">
