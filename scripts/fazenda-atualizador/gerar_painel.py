@@ -556,7 +556,11 @@ HTML = r'''<!DOCTYPE html>
   nav b.grupoLabel{ font-weight:700; color:var(--t1); cursor:default; padding:6px 0; }
   nav b.grupoLabel:hover{ color:var(--t1); }
   nav .espaco{ width:14px; }
-  #btnAtualizar{ margin-left:auto; display:flex; align-items:center; justify-content:center;
+  .acoes{ margin-left:auto; display:flex; align-items:center; gap:8px; }
+  #btnLimpar{ display:none; align-items:center; justify-content:center; width:34px; height:34px; font-size:15px; line-height:1;
+              cursor:pointer; border:1px solid var(--linha); border-radius:50%; background:var(--bg); user-select:none; }
+  #btnLimpar:hover{ border-color:#B9BFC9; }
+  #btnAtualizar{ margin-left:0; display:flex; align-items:center; justify-content:center;
                  width:34px; height:34px; font-size:18px; line-height:1; font-weight:600; color:var(--t2); cursor:pointer;
                  border:1px solid var(--linha); border-radius:50%;
                  background:var(--bg); user-select:none; }
@@ -790,6 +794,13 @@ HTML = r'''<!DOCTYPE html>
   .cgrid.inl svg{ width:clamp(101px,7.7vw,132px); flex:none; display:block; overflow:visible; }
   .cgrid.inl .cg{ padding:0 8px; }
   .cgrid.inl .cl{ font-size:11px; font-weight:600; color:var(--t2); line-height:1.15; white-space:nowrap; margin-top:0; }
+  .cmdtop{ padding-top:10px !important; align-items:flex-start; }
+  .coltit{ min-width:0; flex:1; }
+  .coltit .cbar{ margin:10px 0 4px; }
+  .ano.ultimo{ border-color:#009C3B; color:#007A2E; background:#E9F7EE; font-weight:700; }
+  .ano.ultimo.on{ background:var(--acento); color:#fff; border-color:#009C3B; box-shadow:0 0 0 2px #009C3B55; }
+  .cbtodos{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; color:var(--t2); cursor:pointer; user-select:none; margin-right:6px; }
+  .cbtodos input{ width:15px; height:15px; accent-color:var(--acento); cursor:pointer; }
   .cgrid.mini{ gap:10px; margin:14px 0 4px; }
   .cgrid.mini .cg{ padding:7px 8px 9px; }
   .cgrid.mini .ct{ font-size:10.5px; }
@@ -892,7 +903,7 @@ HTML = r'''<!DOCTYPE html>
     <span class="espaco"></span>
     <b data-p="eq">__ANO_EQ__ · Gestão Fiscal</b>
   </nav>
-  <div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div>
+  <div class="acoes"><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
 </div></header>
 
 <div class="env">
@@ -2224,11 +2235,12 @@ function montaComando(){
   const eq=DATA.equilibrio||{ano:null,meses:[]}, lei=(DATA.lei&&DATA.lei.meses)||{},
         ser=DATA.serie||{pes:{},rcl:{}}, a29=DATA.art29a||{};
   const meses=Object.keys(lei).map(Number).sort((a,b)=>a-b);
-  const topopag=el('div','topopag'); host.appendChild(topopag);
+  const topopag=el('div','topopag cmdtop'); host.appendChild(topopag);
+  const colTit=el('div','coltit'); topopag.appendChild(colTit);
   const cab=el('div','cab');
   cab.innerHTML='<div><h1>Painel de Comando</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
     +'indicadores gerenciais, não substituem o RREO/RGF</p></div>';
-  topopag.appendChild(cab);
+  colTit.appendChild(cab);
   if(!meses.length||!eq.ano){
     const d=el('div','vazio'); d.textContent='Sem dados suficientes ainda pra montar o painel.'; host.appendChild(d);
     return function(){};
@@ -2247,8 +2259,7 @@ function montaComando(){
     return {ms,M,rot,sel};
   }
 
-  const linhaTopo=el('div','linhaTopo'); host.appendChild(linhaTopo);
-  const barra=el('div','cbar'); linhaTopo.appendChild(barra);
+  const barra=el('div','cbar'); colTit.appendChild(barra);
   const gradeG=el('div','cgrid inl'); topopag.appendChild(gradeG);   /* sobe pra linha do título, no canto direito */
   const selo=el('div'); selo.style.cssText='margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap';
   host.appendChild(selo);
@@ -2301,13 +2312,16 @@ function montaComando(){
     const P=periodo(), M=P.M, R=calc();
     /* meses */
     barra.innerHTML='';
+    const cbTodos=el('label','cbtodos'); cbTodos.title='Marcar ou desmarcar todos os meses';
+    cbTodos.innerHTML='<input type="checkbox"'+(st.sel.size===meses.length?' checked':'')+'><span>Todos</span>';
+    cbTodos.querySelector('input').onchange=e=>{ if(e.target.checked){ meses.forEach(m=>st.sel.add(m)); } else { st.sel.clear(); } desenha_(); };
+    barra.appendChild(cbTodos);
     meses.forEach(m=>{
-      const b=el('div','ano'+(st.sel.has(m)?' on':'')+(m>fech?' parcial':'')); b.textContent=MESES[m-1]+(m>fech?' *':'');
-      b.title=(m>fech?'mês ainda em andamento · ':'')+'clique para marcar ou desmarcar (pode marcar vários)';
+      const b=el('div','ano'+(st.sel.has(m)?' on':'')+(m>fech?' parcial':'')+(m===fech?' ultimo':''));
+      b.textContent=MESES[m-1]+(m>fech?' *':'');
+      b.title=(m>fech?'mês ainda em andamento · ':(m===fech?'último mês fechado, com todas as informações · ':''))+'clique para marcar ou desmarcar (pode marcar vários)';
       b.onclick=()=>{ st.sel.has(m)?st.sel.delete(m):st.sel.add(m); desenha_(); }; barra.appendChild(b);
     });
-    const lp=el('div','ano'); lp.textContent='🗑️ Limpar'; lp.title='Voltar ao ano, de janeiro até o último mês fechado';
-    lp.onclick=()=>{ st.sel.clear(); desenha_(); }; barra.appendChild(lp);
     /* selo */
     /* o saldo (receita líquida − pago) também pesa no selo: pago acima da receita é atenção, e alerta se passar de 3% */
     const em=(eq.meses||[]).filter(m=>P.ms.includes(m[0])), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
@@ -2494,6 +2508,7 @@ function montaComando(){
     desenhaVinculo(P);
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
+  window.__limparCmd=()=>{ st.sel.clear(); st.vinc=null; st.area=null; desenha_(); };   /* limpa todos os filtros do painel */
   /* vínculo dos servidores (mesmo recorte da aba Pessoal, última folha coletada) e, logo abaixo, a despesa com
      pessoal mês a mês pela regra da LRF: despesa liquidada que entra no limite, janela dos 12 meses que
      terminam no último mês escolhido. Clicar num vínculo mostra o recorte da folha daquele vínculo. */
@@ -2563,11 +2578,13 @@ const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
 function render(){
   document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
+  document.getElementById('btnLimpar').style.display=(pagina==='cmd')?'flex':'none';   /* só no Painel de Comando */
   desenha[pagina]();
 }
 document.querySelectorAll('#abas b[data-p]').forEach(b=>b.onclick=()=>{
   pagina=b.dataset.p; render(); scrollTo({top:0,behavior:'smooth'}); });
 document.getElementById('btnAtualizar').onclick=()=>location.reload();
+document.getElementById('btnLimpar').onclick=()=>{ if(window.__limparCmd) window.__limparCmd(); };
 let t=null;
 addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(render,120); });
 render();
