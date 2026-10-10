@@ -598,13 +598,17 @@ HTML = r'''<!DOCTYPE html>
   .relKpi div{ border:1px solid #CBD5E1; border-radius:6px; padding:10px 12px; text-align:center; }
   .relKpi b{ display:block; font-size:26px; line-height:1.1; }
   .relKpi span{ font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:#475569; font-weight:700; }
-  .relTab{ width:100%; border-collapse:collapse; font-size:12px; }
+  .relTab{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
+  .relTab th:nth-child(1){ width:34px; } .relTab th:nth-child(3){ width:96px; } .relTab th:nth-child(4){ width:118px; } .relTab th:nth-child(5){ width:150px; }
+  .relTab th{ text-align:left; } .relTab td{ text-align:left; overflow-wrap:anywhere; }
+  .relMeta td{ text-align:left; }
+  .audCaixa{ overflow:hidden; }
   .relTab th{ background:#0F2A5C; color:#fff; text-align:left; padding:7px 8px; font-size:11px; letter-spacing:.05em; text-transform:uppercase; }
-  .relTab td{ border:1px solid #CBD5E1; padding:7px 8px; vertical-align:top; line-height:1.45; }
+  .relTab td{ border:1px solid #CBD5E1; padding:7px 8px !important; vertical-align:top; line-height:1.45; }
   .relTab tr{ break-inside:avoid; }
-  .relTab .num{ text-align:center; font-weight:700; width:30px; }
-  .relTab .sit{ white-space:nowrap; font-weight:700; }
-  .relTab .vl{ text-align:right; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .relTab td.num{ text-align:center; font-weight:700; }
+  .relTab td.sit{ font-weight:700; }
+  .relTab td.vl{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
   .relTab .dd{ color:#475569; font-size:11.5px; margin-top:2px; }
   .relTab tr.grp td{ background:#E8EEF8; font-weight:800; color:#0F2A5C; text-transform:uppercase; font-size:11px; letter-spacing:.07em; }
   .relLi{ font-size:13px; line-height:1.55; margin:4px 0 4px 18px; color:#1F2937; }
