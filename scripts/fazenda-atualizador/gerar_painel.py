@@ -486,6 +486,11 @@ try:
 except Exception as _e:
     print('receitas vinculadas não calculadas:', _e)
 
+try:
+    RREO = json.load(open(os.path.join(BASE, 'dados_rreo.json'), encoding='utf-8'))
+except Exception:
+    RREO = {}
+
 DATA = {
     'rc':  bloco('1'),
     'cap': bloco('2'),
@@ -501,6 +506,7 @@ DATA = {
     'natureza': NATUREZA,
     'lei': LEI,
     'prefeito': PREFEITO,
+    'rreo': RREO,
     'serie': NATUREZA.get('serie', {'pes': {}, 'rcl': {}}),
     'vinculadas': VINCULADAS,
     'equilibrio': EQUILIBRIO,
@@ -556,6 +562,36 @@ HTML = r'''<!DOCTYPE html>
   nav b.grupoLabel{ font-weight:700; color:var(--t1); cursor:default; padding:6px 0; }
   nav b.grupoLabel:hover{ color:var(--t1); }
   nav .espaco{ width:14px; }
+  #btnAuditoria{ display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--t2); cursor:pointer;
+                 padding:7px 14px; border:1px solid var(--linha); border-radius:100px; background:var(--bg); white-space:nowrap; user-select:none; }
+  #btnAuditoria:hover{ border-color:#B9BFC9; color:var(--t1); }
+  #audModal{ display:none; position:fixed; inset:0; z-index:100; background:rgba(15,23,42,.45); overflow:auto; padding:28px 16px; }
+  #audModal.on{ display:block; }
+  .audCaixa{ max-width:900px; margin:0 auto; background:var(--bg); border-radius:14px; padding:22px 26px 26px; box-shadow:0 18px 60px rgba(15,23,42,.35); }
+  .audTopo{ display:flex; justify-content:space-between; gap:16px; align-items:flex-start; border-bottom:1px solid var(--linha); padding-bottom:14px; }
+  .audTit{ font-size:21px; font-weight:700; color:var(--t1); }
+  .audSub{ font-size:12.5px; color:var(--t3); margin-top:3px; line-height:1.5; }
+  .audBtns{ display:flex; gap:8px; flex:none; }
+  .audBtns button{ font:inherit; font-size:12.5px; font-weight:600; padding:8px 14px; border-radius:100px; border:1px solid var(--linha); background:var(--bg); color:var(--t2); cursor:pointer; }
+  .audBtns button:hover{ border-color:#B9BFC9; color:var(--t1); }
+  .audResumo{ display:flex; gap:22px; flex-wrap:wrap; margin:14px 0 4px; font-size:13.5px; color:var(--t1); }
+  .audResumo span{ display:inline-flex; align-items:center; gap:7px; font-weight:600; }
+  .audGrupo{ margin:18px 0 4px; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--t2); font-weight:700; }
+  .audItem{ display:grid; grid-template-columns:14px 1fr auto; gap:12px; padding:9px 0; border-bottom:1px solid var(--linha); break-inside:avoid; }
+  .audItem:last-child{ border-bottom:0; }
+  .audItem .tt{ font-size:14px; color:var(--t1); line-height:1.45; }
+  .audItem .dd{ font-size:12.5px; color:var(--t3); line-height:1.5; margin-top:2px; }
+  .audItem .vv{ font-size:13px; font-weight:700; white-space:nowrap; color:var(--t1); font-variant-numeric:tabular-nums; }
+  .bol{ width:12px; height:12px; border-radius:50%; margin-top:4px; display:inline-block; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .bol.v{ background:#D92D20; } .bol.l{ background:#F79009; } .bol.o{ background:#12B76A; }
+  .audRodape{ margin-top:18px; padding-top:12px; border-top:1px solid var(--linha); font-size:11.5px; color:var(--t3); line-height:1.55; }
+  @media print{
+    body > header, body > .env{ display:none !important; }
+    #audModal{ position:static !important; display:block !important; background:none !important; padding:0 !important; overflow:visible !important; }
+    .audCaixa{ box-shadow:none !important; max-width:none !important; padding:0 !important; border-radius:0 !important; }
+    .audBtns{ display:none !important; }
+    @page{ margin:14mm 12mm; }
+  }
   .acoes{ margin-left:auto; display:flex; align-items:center; gap:8px; }
   #btnLimpar{ display:none; align-items:center; justify-content:center; width:34px; height:34px; font-size:15px; line-height:1;
               cursor:pointer; border:1px solid var(--linha); border-radius:50%; background:var(--bg); user-select:none; }
@@ -903,8 +939,18 @@ HTML = r'''<!DOCTYPE html>
     <span class="espaco"></span>
     <b data-p="eq">__ANO_EQ__ · Gestão Fiscal</b>
   </nav>
-  <div class="acoes"><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
+  <div class="acoes"><div id="btnAuditoria" title="Auditoria interna: pontos de atenção" role="button">🛡️ Auditoria interna</div><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
 </div></header>
+
+<div id="audModal" aria-hidden="true">
+  <div class="audCaixa" role="dialog" aria-label="Auditoria interna">
+    <div class="audTopo">
+      <div><div class="audTit">Auditoria interna · pontos de atenção</div><div class="audSub" id="audSub"></div></div>
+      <div class="audBtns"><button id="audPdf" type="button">🖨️ Imprimir / salvar em PDF</button><button id="audFechar" type="button" aria-label="Fechar">✕</button></div>
+    </div>
+    <div id="audCorpo"></div>
+  </div>
+</div>
 
 <div class="env">
   <div class="pg on" id="pg-cmd"></div>
@@ -2067,8 +2113,9 @@ function montaComando(){
   const sOnde=bloco(row3,'Para onde vai o dinheiro'); sOnde.classList.add('c5');
   const sAl=bloco(row3,'O que merece atenção agora'); sAl.classList.add('c7');
 
-  function calc(){
-    const P=periodo(), M=P.M, ms=P.ms.filter(m=>lei[m]);
+  function calc(Pin){
+    const P=Pin||periodo(), M=P.M, ms=P.ms.filter(m=>lei[m]);
+    const rr=(DATA.rreo&&DATA.rreo.ultimo)||null;
     const S=k=>ms.reduce((s,m)=>s+(lei[m][k]||0),0);
     const fr=1+st.rr/100;
     const rit=S('rit')*fr;
@@ -2084,13 +2131,13 @@ function montaComando(){
     const pPes=rcl?pes/rcl*100:0, pEdu=rit?edu/rit*100:0, pSau=rit?sau/rit*100:0, pCam=a29.teto_2026?cam/a29.teto_2026*100:0;
     return {falt,pes,rcl,rit,gauges:[
       {n:'Folha de pessoal', c:'Folha · 12 meses', v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
-      {n:'Educação', c:'Educação · mín. 25%', v:pEdu, lim:25, max:50, tipo:'min', sub:'da receita de impostos', x:'Mínimo 25% (CF art. 212)'},
-      {n:'Saúde', c:'Saúde · mín. 15%', v:pSau, lim:15, max:40, tipo:'min', sub:'da receita de impostos', x:'Mínimo 15% (LC 141/2012)'},
+      {n:'Educação', c:'Educação · mín. 25%', v:pEdu, lim:25, max:50, tipo:'min', sub:'da receita de impostos', x:'Mínimo 25% (CF art. 212)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+'): '+f1.format(rr.mde.pct)+'%':'')},
+      {n:'Saúde', c:'Saúde · mín. 15%', v:pSau, lim:15, max:40, tipo:'min', sub:'da receita de impostos', x:'Mínimo 15% (LC 141/2012)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+'): '+f1.format(rr.asps.pct)+'%':'')},
       {n:'Repasse à Câmara', c:'Câmara · do teto', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
   }
-  function stat(g){
+  function stat(g,Mref){
     /* o mínimo é anual: abaixo dele antes de dezembro é só observação, não descumprimento */
-    if(g.tipo==='min') return g.v>=g.lim?'ok':((g.v>=g.lim-2||periodo().M<12)?'at':'ruim');
+    if(g.tipo==='min') return g.v>=g.lim?'ok':((g.v>=g.lim-2||(Mref||periodo().M)<12)?'at':'ruim');
     if(g.v>g.lim) return 'ruim';
     return (g.alerta&&g.v>g.alerta)?'at':'ok';
   }
@@ -2238,10 +2285,9 @@ function montaComando(){
           +'<div class="vlegd"><span><i style="background:var(--acento)"></i>Receita vinculada recebida</span>'
           +'<span><i style="background:#12805C"></i>Despesa na função correspondente <b>(aproximada, não é por fonte de recurso)</b></span></div>'
           +'<div class="vrow cab"><span>Área</span><span>Recebido x gasto</span><span style="text-align:right">Recebido</span><span style="text-align:right">Gasto</span><span style="text-align:right">% receita</span></div>';
-        /* a tabela traz só as áreas com despesa vinculada identificada; as demais ficam resumidas numa nota */
-        const lvD=lv.filter(l=>l.gasto!==null), lvS=lv.filter(l=>l.gasto===null);
-        const mxb=Math.max(...lvD.map(l=>Math.max(l.v,l.gasto||0)),1);
-        lvD.forEach(l=>{
+        /* a tabela traz TODAS as receitas vinculadas; onde não há despesa identificada, a própria linha avisa */
+        const mxb=Math.max(...lv.map(l=>Math.max(l.v,l.gasto||0)),1);
+        lv.forEach(l=>{
           const temG=l.gasto!==null;
           h+='<div class="vrow" data-a="'+esc(l.area)+'"><span class="n">'+esc(l.area)+'</span>'
             +'<span class="bb"><span class="t rr"><i style="width:'+(l.v/mxb*100).toFixed(1)+'%"></i></span>'
@@ -2256,12 +2302,6 @@ function montaComando(){
             h+='<div class="vdet"><b>Base legal:</b> '+esc(l.lei||'—')+'<br>'+esc(REGRA_DE[l.area]||'')+'<br>Recebido: '+exato(l.v)+cob+'</div>';
           }
         });
-        if(!lvD.length) h+='<div class="vazio">Nenhuma receita vinculada com despesa identificada no período.</div>';
-        if(lvS.length){
-          const vs=lvS.reduce((a,l)=>a+l.v,0);
-          h+='<div class="vsem"><b>Sem despesa vinculada identificada:</b> '+lvS.map(l=>esc(l.area)+' '+brlx(l.v)).join(' · ')
-            +' — <b>'+brlx(vs)+' ('+pc(vs)+' da receita)</b>. O portal não separa a despesa por fonte de recurso, então não dá para dizer onde foi gasta.</div>';
-        }
         box.innerHTML=h;
         box.querySelectorAll('.vrow[data-a]').forEach(r=>{ r.onclick=()=>{ st.area=(st.area===r.dataset.a?null:r.dataset.a); desenha_(); }; });
       }
@@ -2307,6 +2347,129 @@ function montaComando(){
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
   window.__limparCmd=()=>{ st.sel.clear(); st.vinc=null; st.area=null; desenha_(); };   /* limpa todos os filtros do painel */
+  /* ---------------- auditoria interna: pontos de atenção (posição: ano até o último mês fechado) ---------------- */
+  function auditoria(){
+    const Pb={ms:meses.filter(m=>m<=fech), M:fech, sel:[], rot:'janeiro a '+MESNOME[fech]};
+    const R=calc(Pb), it=[];
+    const add=(g,n,t,d,v,ir)=>it.push({g,n,t,d,v:v||'',ir:ir||''});
+    const pf=DATA.prefeito||{}, rr=(DATA.rreo&&DATA.rreo.ultimo)||null, VI=DATA.vinculadas||{mes:{},bruta_mes:{},livre_mes:{},nc_mes:{}};
+    const em=(eq.meses||[]).filter(m=>Pb.ms.includes(m[0])), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0), emp=em.reduce((s,m)=>s+m[2],0);
+    const p1=x=>f1.format(x)+'%', p2=x=>f2.format(x)+'%';
+    // ---- limites legais
+    {
+      const g=R.gauges[0], n=g.v>=57?'v':(g.v>=54?'l':'o');
+      add('Limites legais',n,'Despesa com pessoal sobre a RCL (janela de 12 meses)','Limite de 60% da LRF; alerta a partir de 54% e prudencial em 57%. Liquidado que entra no limite ÷ RCL dos mesmos 12 meses.',p1(g.v),'eq');
+    }
+    const lim=(nome,minimo,aprox,ofi,fonte,art)=>{
+      if(ofi!==null){
+        const n=ofi>=minimo?'o':(rr&&rr.bimestre>=6?'v':'l');
+        add('Limites legais',n,nome+': '+p2(ofi)+' aplicado até o '+rr.bimestre+'º bimestre (mínimo '+minimo+'%)',
+          'Apuração oficial do RREO, posição em '+rr.posicao+'. '+(ofi>=minimo?'Acima do mínimo.':'Abaixo do mínimo hoje; a verificação é anual (dezembro), mas a margem exige acompanhamento.')+' Aproximação do painel (jan–'+MESNOME[fech]+'): '+p1(aprox)+'. '+art,p2(ofi),'eq');
+      } else {
+        add('Limites legais',aprox>=minimo?'l':'l',nome+': '+p1(aprox)+' (aproximação, sem RREO)','O RREO oficial ainda não foi coletado; o painel só tem uma aproximação pelo liquidado. '+art,p1(aprox),'eq');
+      }
+    };
+    lim('Educação (MDE)',25,R.gauges[1].v,rr?rr.mde.pct:null,'', 'CF art. 212.');
+    lim('Saúde (ASPS)',15,R.gauges[2].v,rr?rr.asps.pct:null,'', 'LC 141/2012, art. 7º.');
+    if(rr){
+      const f=rr.fundeb70.pct;
+      add('Limites legais',f>=70?'o':'l','FUNDEB: '+p2(f)+' na remuneração dos profissionais da educação básica (mínimo 70%)',
+        'Apuração oficial do RREO, posição em '+rr.posicao+'. Lei 14.113/2020.',p2(f),'eq');
+    }
+    {
+      const g=R.gauges[3], n=g.v>100?'v':(g.v>=90?'l':'o');
+      add('Limites legais',n,'Repasse à Câmara dentro do teto do art. 29-A','Empenhado da Câmara contra o teto de 6% da base de 2025 ('+brlx((DATA.art29a||{}).teto_2026||0)+').',p1(g.v),'eq');
+    }
+    // ---- equilíbrio
+    {
+      const sd=rec-pag, rel=rec?sd/rec:0, n=sd>=0?'o':(rel>-0.03?'l':'v');
+      add('Equilíbrio das contas',n,sd>=0?'Receita líquida cobre o que foi pago':'Pago acima da receita líquida arrecadada',
+        'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+'. O pago inclui restos a pagar de anos anteriores.',(sd>=0?'+':'−')+brlx(Math.abs(sd)),'eq');
+    }
+    if(pf.dot_atual>0){
+      const pe=emp/pf.dot_atual*100, ritmo=fech/12*100, n=pe>100?'v':(pe-ritmo>10?'l':'o');
+      add('Equilíbrio das contas',n,'Empenhado sobre o orçamento atualizado',
+        'Empenhado '+brlx(emp)+' de '+brlx(pf.dot_atual)+'. Já passaram '+p1(ritmo)+' do ano'+(pe-ritmo>10&&pe<=100?': o ritmo de empenho está acima do calendário.':'.'),p1(pe),'desp');
+      const dl=pf.dot_atual-pf.dot_ini, rl=pf.dot_ini?dl/pf.dot_ini*100:0;
+      add('Equilíbrio das contas',Math.abs(rl)>5?'l':'o','Remanejamento do orçamento em relação à LOA',
+        'LOA '+brlx(pf.dot_ini)+' · atualizado '+brlx(pf.dot_atual)+'. Créditos adicionais precisam de lei/decreto e de fonte de recurso.',(dl>=0?'+':'−')+p1(Math.abs(rl)),'desp');
+    }
+    // ---- receitas vinculadas
+    {
+      const rec_={}; let tb=0, tn=0; const fg={};
+      Pb.ms.forEach(m=>{ tb+=(VI.bruta_mes||{})[m]||0; tn+=(VI.nc_mes||{})[m]||0;
+        Object.entries((VI.mes||{})[m]||{}).forEach(([a,v])=>{ rec_[a]=(rec_[a]||0)+v; });
+        Object.entries((pf.func_mes||{})[m]||{}).forEach(([f,v])=>{ fg[f]=(fg[f]||0)+v; }); });
+      const FUNC={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
+      const sem=Object.entries(rec_).filter(([a])=>!FUNC[a]), vs=sem.reduce((s,[,v])=>s+v,0);
+      if(vs>0) add('Receitas vinculadas','l','Receita vinculada sem despesa identificada',
+        sem.map(([a,v])=>a+' '+brlx(v)).join(' · ')+'. O portal não separa a despesa por fonte de recurso; não dá para confirmar a aplicação na finalidade.',brlx(vs)+' ('+p1(tb?vs/tb*100:0)+')','pre');
+      Object.entries(rec_).filter(([a])=>FUNC[a]).forEach(([a,v])=>{
+        const g=fg[FUNC[a]]||0;
+        add('Receitas vinculadas',v>g?'v':'o',a+(v>g?': gasto na função é menor que a receita vinculada recebida':': gasto na função cobre a receita vinculada recebida'),
+          'Recebido '+brlx(v)+' · gasto na função '+brlx(g)+' (aproximado, por função de governo).',brlx(g),'pre');
+      });
+      if(rec_['Mineração (restrita)']) add('Receitas vinculadas','l','CFEM: vedado pagar quadro permanente de pessoal e dívida',
+        'Lei 7.990/1989. Recebido '+brlx(rec_['Mineração (restrita)'])+'. Não é verificável com os dados do portal.',brlx(rec_['Mineração (restrita)']),'pre');
+      add('Receitas vinculadas',tb&&tn/tb>0.02?'l':'o','Receita sem regra de vinculação definida',
+        'Linhas de receita que ainda não têm regra e ficam fora do vinculado.',brlx(tn)+' ('+p1(tb?tn/tb*100:0)+')','rc');
+    }
+    // ---- contratos e pessoal
+    {
+      const c=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0), c30=c.filter(r=>r[8]<=30), v30=c30.reduce((s,r)=>s+r[6],0);
+      add('Contratos e pessoal',c30.length===0?'o':(c30.length<=20?'l':'v'),'Contratos vencendo nos próximos 30 dias',
+        c30.length?c30.length+' contratos, somando '+brlx(v30)+'. Renovação ou nova licitação precisa começar antes do vencimento. '+c.filter(r=>r[8]<=90).length+' vencem em até 90 dias.':'Nenhum contrato vence em 30 dias.',String(c30.length),'ctr');
+      const rh=DATA.rh||[], tot=rh.length, tmp=rh.filter(r=>/TEMPOR/i.test(r[2])).length;
+      if(tot){ const pt=tmp/tot*100;
+        add('Contratos e pessoal',pt>40?'v':(pt>25?'l':'o'),'Peso dos contratos temporários na folha',
+          f0.format(tmp)+' de '+f0.format(tot)+' servidores. Contratação temporária exige excepcional interesse público (CF art. 37, IX).',p1(pt),'pes'); }
+    }
+    // ---- confiança dos dados
+    {
+      const p12=(DATA.natureza&&DATA.natureza.pessoal12)||{faltam:[]};
+      add('Confiança dos dados',(p12.faltam||[]).length?'l':'o','Janela de 12 meses da despesa com pessoal',
+        (p12.faltam||[]).length?'Faltam dados de '+(p12.faltam||[]).join(', ')+'. O limite foi calculado com os meses disponíveis.':'Todos os 12 meses coletados ('+(p12.de||'')+' a '+(p12.ate||'')+').',(p12.faltam||[]).length?'incompleta':'completa','eq');
+      const npm=(DATA.natureza&&DATA.natureza.por_mes)||{}; let nc=0, tt=0;
+      Pb.ms.forEach(m=>(npm[m]||[]).forEach(l=>{ tt+=l[3]; if(!l[6]) nc+=l[3]; }));
+      if(tt) add('Confiança dos dados',nc/tt>0.3?'l':'o','Despesa por natureza sem classificação (obrigatória x livre)',
+        'Parte do empenhado ainda não tem regra de classificação.',p1(nc/tt*100),'desp');
+      const hoje=new Date(), dias=d=>d?Math.floor((hoje-new Date(d+'T12:00:00'))/86400000):null;
+      const dd=dias(DATA.dp_coleta);
+      add('Confiança dos dados',dd===null||dd>3?'l':'o','Atualização das despesas do portal',
+        'Última coleta em '+(DATA.dp_coleta?DATA.dp_coleta.split('-').reverse().join('/'):'—')+'.',dd===null?'—':(dd===0?'hoje':dd+' dia(s)'),'desp');
+      if(rr){
+        const prox=rr.bimestre<6?rr.bimestre+1:null, hoje2=new Date();
+        if(prox){
+          const fimB=new Date(rr.ano,prox*2,0), prazo=new Date(fimB.getTime()+30*86400000), atraso=Math.floor((hoje2-prazo)/86400000);
+          const dmy=d=>d.toLocaleDateString('pt-BR');
+          add('Confiança dos dados',atraso>0?'l':'o',atraso>0?'RREO do '+prox+'º bimestre ainda não consta no portal':'RREO em dia',
+            'Último RREO publicado: '+rr.bimestre+'º bimestre/'+rr.ano+' (posição em '+rr.posicao+'). Prazo legal do '+prox+'º bimestre: '+dmy(prazo)+' (30 dias após o fim do bimestre).',
+            atraso>0?atraso+' dia(s) de atraso':'no prazo','eq');
+        } else add('Confiança dos dados','o','RREO em dia','Último RREO publicado: 6º bimestre/'+rr.ano+'.','em dia','eq');
+      }
+      else add('Confiança dos dados','l','RREO oficial não coletado','Sem o RREO, Educação, Saúde e FUNDEB aparecem só por aproximação.','—','eq');
+    }
+    return {it,P:Pb};
+  }
+  function abreAuditoria(){
+    const {it,P}=auditoria();
+    const hoje=new Date(), dt=hoje.toLocaleDateString('pt-BR')+' às '+hoje.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('audSub').innerHTML='Prefeitura Municipal de Nova Lima · exercício '+eq.ano+' · posição: '+P.rot+' · gerado em '+dt;
+    const n={v:0,l:0,o:0}; it.forEach(x=>n[x.n]++);
+    const nome={v:'Crítico',l:'Atenção',o:'Em ordem'};
+    let h='<div class="audResumo">'+['v','l','o'].map(k=>'<span><i class="bol '+k+'" style="margin:0"></i>'+n[k]+' '+nome[k].toLowerCase()+(n[k]===1?'':(k==='v'?'s':''))+'</span>').join('')+'</div>';
+    let g='';
+    it.forEach(x=>{
+      if(x.g!==g){ g=x.g; h+='<div class="audGrupo">'+esc(g)+'</div>'; }
+      h+='<div class="audItem"><i class="bol '+x.n+'"></i><div><div class="tt">'+esc(x.t)+'</div><div class="dd">'+esc(x.d)+'</div></div><div class="vv">'+esc(x.v)+'</div></div>';
+    });
+    h+='<div class="audRodape"><b>Legenda:</b> vermelho = descumprimento ou risco imediato · laranja = ponto de atenção ou dado que o painel não consegue confirmar · verde = em ordem. '
+      +'Este relatório reúne <b>pontos de atenção gerenciais</b> calculados a partir dos dados públicos do Portal da Transparência. '
+      +'Não substitui a auditoria do controle interno, o parecer do Tribunal de Contas nem o RREO/RGF oficiais.</div>';
+    document.getElementById('audCorpo').innerHTML=h;
+    const m=document.getElementById('audModal'); m.classList.add('on'); m.setAttribute('aria-hidden','false');
+  }
+  window.__abrirAuditoria=abreAuditoria;
   /* vínculo dos servidores (mesmo recorte da aba Pessoal, última folha coletada) e, logo abaixo, a despesa com
      pessoal mês a mês pela regra da LRF: despesa liquidada que entra no limite, janela dos 12 meses que
      terminam no último mês escolhido. Clicar num vínculo mostra o recorte da folha daquele vínculo. */
@@ -2383,6 +2546,15 @@ document.querySelectorAll('#abas b[data-p]').forEach(b=>b.onclick=()=>{
   pagina=b.dataset.p; render(); scrollTo({top:0,behavior:'smooth'}); });
 document.getElementById('btnAtualizar').onclick=()=>location.reload();
 document.getElementById('btnLimpar').onclick=()=>{ if(window.__limparCmd) window.__limparCmd(); };
+(function(){
+  const m=document.getElementById('audModal');
+  const fecha=()=>{ m.classList.remove('on'); m.setAttribute('aria-hidden','true'); };
+  document.getElementById('btnAuditoria').onclick=()=>{ if(window.__abrirAuditoria) window.__abrirAuditoria(); };
+  document.getElementById('audFechar').onclick=fecha;
+  document.getElementById('audPdf').onclick=()=>window.print();
+  m.addEventListener('click',e=>{ if(e.target===m) fecha(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') fecha(); });
+})();
 let t=null;
 addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(render,120); });
 render();
