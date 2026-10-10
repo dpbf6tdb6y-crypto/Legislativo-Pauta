@@ -809,7 +809,7 @@ HTML = r'''<!DOCTYPE html>
   .pjt{ margin:14px 0 8px; padding-top:12px; border-top:1px solid var(--linha); font-size:11px; letter-spacing:.07em;
         text-transform:uppercase; color:var(--t2); font-weight:700; }
   .pjt span{ text-transform:none; letter-spacing:0; font-weight:400; color:var(--t3); }
-  .pjg{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 22px; }
+  .pjg{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:repeat(6,auto); grid-auto-flow:column; gap:0 22px; }
   .pj{ display:flex; justify-content:space-between; gap:8px; padding:4px 6px; border-bottom:1px solid var(--linha); font-size:12.5px; }
   .pj span{ color:var(--t2); } .pj b{ font-weight:600; font-variant-numeric:tabular-nums; color:var(--t1); }
   .pj.on{ background:var(--sup); } .pj.on span{ color:var(--acento); font-weight:700; }
@@ -2588,7 +2588,7 @@ function montaComando(){
     {
       let y=eq.ano, m=P.M; const lista=[];
       for(let i=0;i<12;i++){ lista.push({y,m}); m--; if(!m){ m=12; y--; } }
-      lista.reverse();
+      /* ordem decrescente: do mês mais recente para o mais antigo */
       let soma12=0, rcl12=0, falt=0, somaSel=0, nSel=0;
       let cel='';
       lista.forEach(({y,m})=>{
