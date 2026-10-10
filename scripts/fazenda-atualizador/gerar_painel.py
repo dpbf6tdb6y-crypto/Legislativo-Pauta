@@ -724,6 +724,9 @@ HTML = r'''<!DOCTYPE html>
   .dgrid{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:14px; margin:14px 0 0; }
   .dgrid > .secao{ padding:14px 16px 16px; border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); min-width:0; }
   .dgrid > .secao > .rot{ margin-bottom:12px; color:var(--t2); font-weight:700; }
+  .colbox{ min-width:0; }
+  .colbox > .secao{ margin-top:14px; padding:14px 16px 16px; border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); }
+  .colbox > .secao > .rot{ margin-bottom:12px; color:var(--t2); font-weight:700; }
   .c3{ grid-column:span 3; } .c4{ grid-column:span 4; } .c5{ grid-column:span 5; } .c6{ grid-column:span 6; } .c7{ grid-column:span 7; }
   @media(max-width:1100px){ .c3,.c4{ grid-column:span 6; } .c5,.c6,.c7{ grid-column:span 12; } }
   @media(max-width:700px){ .dgrid > .secao{ grid-column:span 12; } }
@@ -2217,16 +2220,15 @@ function montaComando(){
   const selo=el('div'); selo.style.cssText='margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap';
   host.appendChild(selo);
   const linhaCards=el('div','dgrid'); host.appendChild(linhaCards);
-  const colCards=el('div','c7'); linhaCards.appendChild(colCards);
+  const colCards=el('div','c7 colbox'); linhaCards.appendChild(colCards);
   const gradeC=el('div','pgrid p2'); colCards.appendChild(gradeC);
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
   const hostTab=el('div'); sTab.appendChild(hostTab);
   const hostVin=el('div'); hostVin.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid var(--linha)'; sTab.appendChild(hostVin);
+  const sVi=bloco(colCards,'Receitas vinculadas');   /* sobe pro espaço abaixo dos cartões */
   const row3=el('div','dgrid'); host.appendChild(row3);
-  const sVi=bloco(row3,'Receitas vinculadas'); sVi.classList.add('c7');
   const sOnde=bloco(row3,'Para onde vai o dinheiro'); sOnde.classList.add('c5');
-  const row4=el('div','dgrid'); host.appendChild(row4);
-  const sAl=bloco(row4,'O que merece atenção agora'); sAl.classList.add('c12');
+  const sAl=bloco(row3,'O que merece atenção agora'); sAl.classList.add('c7');
 
   function calc(){
     const M=st.M, ms=meses.filter(m=>m<=M);
