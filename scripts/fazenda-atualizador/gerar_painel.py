@@ -748,13 +748,19 @@ HTML = r'''<!DOCTYPE html>
   .vbar{ display:flex; height:16px; border-radius:8px; overflow:hidden; background:var(--trilho); margin:4px 0 6px; }
   .vleg{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--t2); margin-bottom:12px; }
   .vleg i{ display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; }
-  .vrow{ display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.4fr) 84px 56px; gap:12px; align-items:center;
+  .vrow{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) 72px 72px 56px; gap:12px; align-items:center;
          padding:8px 4px; border-bottom:1px solid var(--linha); font-size:13px; cursor:pointer; }
   .vrow:hover .n{ color:var(--acento); }
   .vrow.cab{ cursor:default; font-size:11px; color:var(--t3); letter-spacing:.06em; text-transform:uppercase; padding-top:2px; }
   .vrow .n{ font-weight:600; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .vrow .b{ height:9px; background:var(--trilho); border-radius:5px; overflow:hidden; }
-  .vrow .b i{ display:block; height:100%; background:var(--acento); border-radius:5px; }
+  .vrow .bb{ display:flex; flex-direction:column; gap:4px; }
+  .vrow .bb .t{ height:8px; background:var(--trilho); border-radius:4px; overflow:hidden; }
+  .vrow .bb .t i{ display:block; height:100%; border-radius:4px; }
+  .vrow .bb .rr i{ background:var(--acento); }
+  .vrow .bb .gg i{ background:#12805C; }
+  .vrow .bb em{ font-size:10.5px; font-style:italic; color:var(--parcial); line-height:1.2; }
+  .vlegd{ display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color:var(--t2); margin:0 0 6px; }
+  .vlegd i{ display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; }
   .vrow .q, .vrow .p{ text-align:right; font-variant-numeric:tabular-nums; }
   .vrow .p{ font-weight:700; }
   .vdet{ background:var(--sup); border-radius:var(--r); padding:9px 12px; margin:2px 0 6px; font-size:12.5px; color:var(--t2); line-height:1.55; }
@@ -2423,11 +2429,18 @@ function montaComando(){
           +'<div class="vleg"><span><i style="background:var(--acento)"></i>Vinculada '+brlx(tv)+' · '+pc(tv)+'</span>'
           +'<span><i style="background:#C9D1DC"></i>Livre '+brlx(livre)+' · '+pc(livre)+'</span>'
           +(tn>0.005?'<span><i style="background:#E3A008"></i>Sem regra definida '+brlx(tn)+' · '+pc(tn)+'</span>':'')+'</div>'
-          +'<div class="vrow cab"><span>Área</span><span>Parte do vinculado</span><span style="text-align:right">R$ mi</span><span style="text-align:right">% da receita</span></div>';
+          +'<div class="vlegd"><span><i style="background:var(--acento)"></i>Receita vinculada recebida</span>'
+          +'<span><i style="background:#12805C"></i>Despesa na função correspondente <b>(aproximada, não é por fonte de recurso)</b></span></div>'
+          +'<div class="vrow cab"><span>Área</span><span>Recebido x gasto</span><span style="text-align:right">Recebido</span><span style="text-align:right">Gasto</span><span style="text-align:right">% receita</span></div>';
+        const mxb=Math.max(...lv.map(l=>Math.max(l.v,l.gasto||0)),1);
         lv.forEach(l=>{
+          const temG=l.gasto!==null;
           h+='<div class="vrow" data-a="'+esc(l.area)+'"><span class="n">'+esc(l.area)+'</span>'
-            +'<span class="b"><i style="width:'+(l.v/lv[0].v*100).toFixed(1)+'%"></i></span>'
-            +'<span class="q">'+mi(l.v)+'</span><span class="p">'+pc(l.v)+'</span></div>';
+            +'<span class="bb"><span class="t rr"><i style="width:'+(l.v/mxb*100).toFixed(1)+'%"></i></span>'
+            +(temG?'<span class="t gg" title="Gasto na função: '+exato(l.gasto)+'"><i style="width:'+(l.gasto/mxb*100).toFixed(1)+'%"></i></span>'
+                  :'<em>aguardando despesa por fonte de recurso</em>')+'</span>'
+            +'<span class="q">'+mi(l.v)+'</span><span class="q" style="'+(temG&&l.gasto<l.v?'color:var(--parcial);font-weight:600':'')+'">'+(temG?mi(l.gasto):'—')+'</span>'
+            +'<span class="p">'+pc(l.v)+'</span></div>';
           if(st.area===l.area){
             const cob=l.gasto===null?'':(l.v>l.gasto
               ?'<br><b style="color:var(--parcial)">Recebeu mais do que gastou na função — conferir.</b> Gasto na função: '+exato(l.gasto)+'.'
