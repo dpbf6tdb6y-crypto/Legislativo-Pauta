@@ -45,7 +45,22 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { hideAtualizar } = useTopbar();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Menu recolhido por padrão: só os ícones aparecem; ao passar o mouse ele abre por cima do
+  // conteúdo. O botão do alto fixa (fica aberto e ocupa espaço) ou solta o menu — a escolha
+  // é lembrada neste navegador.
+  const [fixado, setFixado] = useState(false);
+  const [sobre, setSobre] = useState(false);
+  useEffect(() => {
+    try { setFixado(localStorage.getItem("segov_menu_fixado") === "1"); } catch {}
+  }, []);
+  const alternaFixado = () => {
+    setFixado(v => {
+      const novo = !v;
+      try { localStorage.setItem("segov_menu_fixado", novo ? "1" : "0"); } catch {}
+      return novo;
+    });
+  };
+  const sidebarOpen = fixado || sobre;
   const perfilAtual = (session?.user as any)?.perfil;
   const isAdminOuMaster = perfilAtual === "admin" || perfilAtual === "master";
   const podeVerIndicacoes = perfilAtual === "master" || !!(session?.user as any)?.podeVerIndicacoes;
@@ -79,9 +94,13 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
-      {/* Sidebar */}
+      {/* Sidebar: a coluna reserva só 4rem (ou 16rem se fixado); aberto por hover, o menu se sobrepõe ao conteúdo */}
+      <div
+        className={`${fixado ? "w-64" : "w-16"} relative flex-shrink-0 h-screen transition-all duration-300`}
+        onMouseEnter={() => setSobre(true)}
+        onMouseLeave={() => setSobre(false)}>
       <aside
-        className={`${sidebarOpen ? "w-64" : "w-16"} flex flex-col transition-all duration-300 flex-shrink-0 shadow-xl sticky top-0 h-screen`}
+        className={`${sidebarOpen ? "w-64" : "w-16"} absolute left-0 top-0 z-40 flex flex-col transition-all duration-300 shadow-xl h-screen`}
         style={{ background: SIDEBAR_BG }}>
 
         {/* Header */}
@@ -101,23 +120,30 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
             </div>
           )}
           {!sidebarOpen && (
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center mx-auto shadow"
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center mx-auto shadow cursor-pointer"
+              onClick={alternaFixado} title="Fixar o menu"
               style={{ background: ACCENT_GRADIENT }}>
               <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16" />
               </svg>
             </div>
           )}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg transition ml-auto"
-            style={{ color: NAV_INACTIVE }}
-            onMouseEnter={e => (e.currentTarget.style.background = NAV_HOVER_BG)}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {sidebarOpen && (
+            <button
+              onClick={alternaFixado}
+              title={fixado ? "Soltar o menu (recolher)" : "Fixar o menu aberto"}
+              aria-pressed={fixado}
+              className="p-1.5 rounded-lg transition ml-auto"
+              style={{ color: fixado ? "#f97316" : NAV_INACTIVE, background: fixado ? "rgba(249,115,22,0.12)" : "transparent" }}
+              onMouseEnter={e => (e.currentTarget.style.background = fixado ? "rgba(249,115,22,0.2)" : NAV_HOVER_BG)}
+              onMouseLeave={e => (e.currentTarget.style.background = fixado ? "rgba(249,115,22,0.12)" : "transparent")}>
+              {/* alfinete: laranja = fixado */}
+              <svg className="w-4 h-4" fill={fixado ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"
+                style={{ transform: fixado ? "none" : "rotate(45deg)" }}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 4h6l-1 5 3 3v2H7v-2l3-3-1-5zM12 14v6" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Navegação */}
@@ -258,6 +284,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </aside>
+      </div>
 
       {/* Conteúdo principal */}
       <div className="flex-1 flex flex-col overflow-auto">
