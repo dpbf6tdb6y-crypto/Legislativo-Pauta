@@ -731,6 +731,20 @@ HTML = r'''<!DOCTYPE html>
   @media(max-width:1100px){ .c3,.c4{ grid-column:span 6; } .c5,.c6,.c7{ grid-column:span 12; } }
   @media(max-width:700px){ .dgrid > .secao{ grid-column:span 12; } }
   .c12{ grid-column:span 12; }
+  .rv.sel{ background:var(--sup); }
+  .rv.sel .n{ color:var(--acento); font-weight:700; }
+  .rv.esm{ opacity:.45; }
+  .pjt{ margin:14px 0 8px; padding-top:12px; border-top:1px solid var(--linha); font-size:11px; letter-spacing:.07em;
+        text-transform:uppercase; color:var(--t2); font-weight:700; }
+  .pjt span{ text-transform:none; letter-spacing:0; font-weight:400; color:var(--t3); }
+  .pjg{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 22px; }
+  .pj{ display:flex; justify-content:space-between; gap:8px; padding:4px 6px; border-bottom:1px solid var(--linha); font-size:12.5px; }
+  .pj span{ color:var(--t2); } .pj b{ font-weight:600; font-variant-numeric:tabular-nums; color:var(--t1); }
+  .pj.on{ background:var(--sup); } .pj.on span{ color:var(--acento); font-weight:700; }
+  .pjs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:10px; }
+  .pjs > div{ background:var(--sup); border-radius:var(--r); padding:8px 12px; }
+  .pjs small{ display:block; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--t3); }
+  .pjs b{ font-size:15px; font-variant-numeric:tabular-nums; }
   .vbar{ display:flex; height:16px; border-radius:8px; overflow:hidden; background:var(--trilho); margin:4px 0 6px; }
   .vleg{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--t2); margin-bottom:12px; }
   .vleg i{ display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; }
@@ -2212,7 +2226,7 @@ function montaComando(){
     return function(){};
   }
   const fech=Math.min((DATA.lei&&DATA.lei.fechado)||meses[meses.length-1], meses[meses.length-1]);
-  const st={M:fech, rr:0, rf:0, rs:0, re:0, tm:null, sel:new Set()};
+  const st={M:fech, rr:0, rf:0, rs:0, re:0, tm:null, sel:new Set(), vinc:null};
   /* período: os meses marcados (vários) ou, sem marcação, o ano de janeiro até o último mês fechado.
      Os indicadores somam só os meses do período; M é o último deles (fim da janela de 12 meses). */
   function periodo(){
@@ -2231,12 +2245,15 @@ function montaComando(){
   const selo=el('div'); selo.style.cssText='margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap';
   host.appendChild(selo);
   const linhaCards=el('div','dgrid'); host.appendChild(linhaCards);
-  const colCards=el('div','c7 colbox'); linhaCards.appendChild(colCards);
+  /* quadrantes em 2 colunas x 2 linhas, cada par com a mesma altura:
+       [cartões] [execução do orçamento] / [receitas vinculadas] [vínculo e pessoal] */
+  const colCards=el('div','c7'); linhaCards.appendChild(colCards);
   const gradeC=el('div','pgrid p2'); colCards.appendChild(gradeC);
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
   const hostTab=el('div'); sTab.appendChild(hostTab);
-  const hostVin=el('div'); hostVin.style.cssText='margin-top:18px;padding-top:14px;border-top:1px solid var(--linha)'; sTab.appendChild(hostVin);
-  const sVi=bloco(colCards,'Receitas vinculadas');   /* sobe pro espaço abaixo dos cartões */
+  const sVi=bloco(linhaCards,'Receitas vinculadas'); sVi.classList.add('c7');
+  const sVin=bloco(linhaCards,'Vínculo · servidores'); sVin.classList.add('c5');
+  const hostVin=el('div'); sVin.appendChild(hostVin);
   const row3=el('div','dgrid'); host.appendChild(row3);
   const sOnde=bloco(row3,'Para onde vai o dinheiro'); sOnde.classList.add('c5');
   const sAl=bloco(row3,'O que merece atenção agora'); sAl.classList.add('c7');
@@ -2459,30 +2476,67 @@ function montaComando(){
       a.innerHTML='<i></i><span>Contrato '+esc(r[0])+' · '+esc(r[3])+' · '+brlx(r[6])+' — vence em '+r[8]+' dia(s).</span>';
       a.onclick=()=>irPara('ctr'); sAl.appendChild(a); n++; });
     if(!n){ const a=el('div','nota'); a.style.color='var(--alta)'; a.textContent='Nenhum alerta neste cenário.'; sAl.appendChild(a); }
+    desenhaVinculo(P);
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
-  /* vínculo dos servidores: o mesmo recorte da aba Pessoal, sempre da última folha coletada;
-     o balão de cada barra mostra o que foi gasto (bruto e vencimentos) por vínculo */
-  (function(){
+  /* vínculo dos servidores (mesmo recorte da aba Pessoal, última folha coletada) e, logo abaixo, a despesa com
+     pessoal mês a mês pela regra da LRF: despesa liquidada que entra no limite, janela dos 12 meses que
+     terminam no último mês escolhido. Clicar num vínculo mostra o recorte da folha daquele vínculo. */
+  function desenhaVinculo(P){
     const rh=DATA.rh||[], mv=new Map();
     rh.forEach(r=>{ const o=mv.get(r[2])||{n:0,venc:0,bruto:0}; o.n++; o.venc+=r[5]||0; o.bruto+=r[6]||0; mv.set(r[2],o); });
     const tv=[...mv].sort((x,y)=>y[1].n-x[1].n), mx=tv.length?tv[0][1].n:1, tot=rh.length;
-    const totBruto=tv.reduce((s,[,o])=>s+o.bruto,0);
+    const totBruto=tv.reduce((s,[,o])=>s+o.bruto,0), totVenc=tv.reduce((s,[,o])=>s+o.venc,0);
     const ref=(DATA.rh_ref||'').replace('referência','').trim();
-    let h='<div class="rot" style="margin-bottom:10px">Vínculo · servidores'+(ref?' · <b style="color:var(--t1)">Folha de '+esc(ref)+'</b>':'')+'</div>';
+    sVin.querySelector('.rot').innerHTML='Vínculo · servidores'+(ref?' · <b style="color:var(--t1)">Folha de '+esc(ref)+'</b>':'');
+    let h='';
     if(!tot) h+='<div class="vazio">Sem folha coletada ainda.</div>';
     tv.forEach(([k,o],i)=>{
-      h+='<div class="rv" data-i="'+i+'"><span class="n">'+esc(k)+'</span><span class="b"><i style="width:'+(o.n/mx*100).toFixed(1)+'%"></i></span>'
+      const sel=st.vinc===k, esm=st.vinc&&!sel;
+      h+='<div class="rv'+(sel?' sel':'')+(esm?' esm':'')+'" data-i="'+i+'"><span class="n">'+esc(k)+'</span><span class="b"><i style="width:'+(o.n/mx*100).toFixed(1)+'%"></i></span>'
         +'<span class="p">'+f1.format(o.n/tot*100)+'%</span><span class="q">'+f0.format(o.n)+'</span></div>';
     });
+    /* despesa com pessoal: janela de 12 meses terminando no último mês do período */
+    const nomes=[];
+    {
+      let y=eq.ano, m=P.M; const lista=[];
+      for(let i=0;i<12;i++){ lista.push({y,m}); m--; if(!m){ m=12; y--; } }
+      lista.reverse();
+      let soma12=0, rcl12=0, falt=0, somaSel=0, nSel=0;
+      let cel='';
+      lista.forEach(({y,m})=>{
+        const k=y+'-'+String(m).padStart(2,'0'), v=ser.pes[k], r=ser.rcl[k];
+        const dentro=(y===eq.ano)&&P.sel.includes(m);
+        if(v===undefined||r===undefined){ falt++; }
+        else { soma12+=v; rcl12+=r; if(dentro){ somaSel+=v; nSel++; } }
+        cel+='<div class="pj'+(dentro?' on':'')+'"><span>'+MESES[m-1]+'/'+String(y).slice(2)+'</span><b>'+(v===undefined?'—':exato(v))+'</b></div>';
+      });
+      const pc=rcl12?soma12/rcl12*100:0;
+      const cor=pc>=57?'var(--baixa)':(pc>=54?'var(--parcial)':'var(--alta)');
+      h+='<div class="pjt">Despesa com pessoal · mês a mês <span>(liquidado que entra no limite da LRF)</span></div>'
+        +'<div class="pjg">'+cel+'</div>'
+        +'<div class="pjs"><div><small>Total dos 12 meses</small><b>'+exato(soma12)+'</b></div>'
+        +'<div><small>% da RCL ('+brlx(rcl12)+')</small><b style="color:'+cor+'">'+f1.format(pc)+'%</b></div>'
+        +(nSel?'<div><small>Meses marcados ('+nSel+')</small><b>'+exato(somaSel)+'</b></div>':'')+'</div>'
+        +'<div class="nota" style="padding-top:6px">Limite 60% da RCL (alerta a partir de 54%). '
+        +(falt?'<b>Janela incompleta: faltam '+falt+' mês(es) de dados.</b> ':'')
+        +'Inclui inativos, pensionistas, contratação temporária e terceirização que substitui servidores; fora: indenização por demissão, sentenças e exercícios anteriores.</div>';
+    }
+    /* recorte do vínculo escolhido (a folha mensal por vínculo só existe para o último mês publicado) */
+    if(st.vinc&&mv.get(st.vinc)){
+      const o=mv.get(st.vinc);
+      h+='<div class="vdet" style="margin-top:10px"><b>'+esc(st.vinc)+'</b> na folha de '+esc(ref)+': '+f0.format(o.n)+' servidores ('+f1.format(tot?o.n/tot*100:0)+'%) · '
+        +'bruto <b>'+exato(o.bruto)+'</b> ('+f1.format(totBruto?o.bruto/totBruto*100:0)+'% da folha) · vencimentos '+exato(o.venc)
+        +' · média '+exato(o.n?o.venc/o.n:0)+'.<br><span style="color:var(--t3)">O portal só publica a folha por vínculo do último mês; a tabela mensal acima considera todos os vínculos.</span></div>';
+    }
     hostVin.innerHTML=h;
     hostVin.querySelectorAll('.rv').forEach(x=>{
       const [k,o]=tv[+x.dataset.i];
-      x.onclick=()=>irPara('pes');
+      x.onclick=()=>{ st.vinc=(st.vinc===k?null:k); desenha_(); };
       dica(x, k, '<em>'+exato(o.bruto)+'</em><br>gasto bruto da folha · '+f1.format(totBruto?o.bruto/totBruto*100:0)+'% do total'
         +'<br>'+f0.format(o.n)+' servidores · vencimentos '+exato(o.venc)+'<br>média por servidor: '+exato(o.n?o.venc/o.n:0));
     });
-  })();
+  }
   desenha_();
   return function(){};
 }
