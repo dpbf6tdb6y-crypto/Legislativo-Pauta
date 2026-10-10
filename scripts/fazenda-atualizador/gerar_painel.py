@@ -494,6 +494,47 @@ try:
 except Exception as _e:
     print('receitas vinculadas não calculadas:', _e)
 
+# ---------------------------------------------------------------- LOA: previsto x executado
+LOA = {'ano': int(ANO_EQUILIBRIO), 'rec': {}, 'tipos': [], 'funcoes': [], 'fechado': LEI.get('fechado')}
+try:
+    _ar = D['anos'][ANO_EQUILIBRIO]
+    def _sr(pre, k, tipo=None):
+        return sum(v[k] for c, v in _ar.items()
+                   if c.startswith(pre) and (tipo is None or D['tipos'].get(c, '(outros)') == tipo))
+    for _nome, _pre in (('rc', '1'), ('cap', '2'), ('ded', '9')):
+        LOA['rec'][_nome] = {'ini': round(_sr(_pre, 'orc_ini'), 2), 'atual': round(_sr(_pre, 'orc_atual'), 2),
+                             'real': round(_sr(_pre, 'ate_per'), 2)}
+    _tp = {}
+    for _c, _v in _ar.items():
+        if _c.startswith('1'):
+            _t = D['tipos'].get(_c, '(outros)') or '(outros)'
+            _o = _tp.setdefault(_t, {'ini': 0.0, 'atual': 0.0, 'real': 0.0})
+            _o['ini'] += _v['orc_ini']; _o['atual'] += _v['orc_atual']; _o['real'] += _v['ate_per']
+    LOA['tipos'] = sorted([[k, round(v['ini'], 2), round(v['atual'], 2), round(v['real'], 2)] for k, v in _tp.items()],
+                          key=lambda r: -r[2])
+except Exception as _e:
+    print('LOA receita não calculada:', _e)
+try:
+    # despesa por função: dotação inicial (1º mês) + remanejamentos mensais acumulados; empenhado até o último mês fechado
+    _fim_m = LEI.get('fechado') or 12
+    _fo = {}
+    _primeiro = True
+    for _m in sorted(_df['anos'][_ano_f], key=int):
+        if int(_m) > _fim_m:
+            continue
+        _por = {}
+        for _l in _df['anos'][_ano_f][_m]['linhas']:
+            _x = _por.setdefault(_l[0], [0.0, 0.0, 0.0])
+            _x[0] += _l[2]; _x[1] += _l[3]; _x[2] += _l[4]
+        for _f, (_i, _a, _e) in _por.items():
+            _o = _fo.setdefault(_f, {'ini': _i, 'dl': 0.0, 'emp': 0.0})
+            _o['dl'] += _a - _i
+            _o['emp'] += _e
+    LOA['funcoes'] = sorted([[f, round(o['ini'], 2), round(o['ini'] + o['dl'], 2), round(o['emp'], 2)]
+                             for f, o in _fo.items() if o['ini'] or o['emp']], key=lambda r: -r[2])
+except Exception as _e:
+    print('LOA por função não calculada:', _e)
+
 try:
     RREO = json.load(open(os.path.join(BASE, 'dados_rreo.json'), encoding='utf-8'))
 except Exception:
@@ -516,6 +557,7 @@ DATA = {
     'lei': LEI,
     'prefeito': PREFEITO,
     'rreo': RREO,
+    'loa': LOA,
     'serie': NATUREZA.get('serie', {'pes': {}, 'rcl': {}}),
     'vinculadas': VINCULADAS,
     'equilibrio': EQUILIBRIO,
@@ -820,6 +862,27 @@ HTML = r'''<!DOCTYPE html>
   @media(max-width:1100px){ .c3,.c4{ grid-column:span 6; } .c5,.c6,.c7{ grid-column:span 12; } }
   @media(max-width:700px){ .dgrid > .secao{ grid-column:span 12; } }
   .c12{ grid-column:span 12; }
+  .ltab{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:12.5px; }
+  .ltab th{ font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); font-weight:600; padding:6px 8px;
+            border-bottom:1px solid var(--linha); text-align:right; white-space:normal; }
+  .ltab th:first-child, .ltab td:first-child{ text-align:left; }
+  .ltab td{ padding:7px 8px !important; border-bottom:1px solid var(--linha); text-align:right; white-space:normal !important;
+            overflow:visible !important; text-overflow:clip !important; font-variant-numeric:tabular-nums; color:var(--t1); }
+  .ltab td:first-child{ font-weight:600; }
+  .ltab tr.tot td{ font-weight:800; border-top:2px solid var(--linha); }
+  .ltab tr.sub td:first-child{ padding-left:20px !important; font-weight:400; color:var(--t2); }
+  .lbar{ display:inline-block; width:100%; height:7px; background:var(--trilho); border-radius:4px; overflow:hidden; vertical-align:middle; }
+  .lbar i{ display:block; height:100%; border-radius:4px; background:var(--acento); }
+  .leq{ display:grid; grid-template-columns:230px 1fr 150px; gap:12px; align-items:center; padding:6px 0; font-size:13px; }
+  .leq .bt{ height:14px; background:var(--trilho); border-radius:7px; overflow:hidden; }
+  .leq .bt i{ display:block; height:100%; border-radius:7px; }
+  .lcaixa{ border-radius:var(--r); padding:11px 14px; font-size:13.5px; line-height:1.55; margin-top:10px; }
+  .lnota{ font-size:11.5px; color:var(--t3); line-height:1.55; margin-top:8px; }
+  .lchip{ display:inline-block; font-size:10.5px; font-weight:700; padding:1px 8px; border-radius:10px; white-space:nowrap; }
+  .lchip.l{ background:#FEF0C7; color:#93370D; } .lchip.c{ background:var(--trilho); color:var(--t3); } .lchip.o{ background:#DCFAE6; color:#067647; }
+  .lgrid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 22px; }
+  .lgrid div{ display:flex; justify-content:space-between; gap:8px; padding:4px 6px; border-bottom:1px solid var(--linha); font-size:12.5px; }
+  @media(max-width:700px){ .leq{ grid-template-columns:1fr; } }
   .rv.sel{ background:var(--sup); }
   .rv.sel .n{ color:var(--acento); font-weight:700; }
   .rv.esm{ opacity:.45; }
@@ -1005,6 +1068,7 @@ HTML = r'''<!DOCTYPE html>
     <b data-p="ctr">Contratos</b>
     <span class="espaco"></span>
     <b data-p="eq">__ANO_EQ__ · Gestão Fiscal</b>
+    <b data-p="loa">LOA · Previsto x Executado</b>
   </nav>
   <div class="acoes"><div id="btnAuditoria" title="Auditoria interna: pontos de atenção" role="button">🛡️ Auditoria interna</div><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️ Limpar</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
 </div></header>
@@ -1028,6 +1092,7 @@ HTML = r'''<!DOCTYPE html>
   <div class="pg" id="pg-pes"></div>
   <div class="pg" id="pg-desp"></div>
   <div class="pg" id="pg-eq"></div>
+  <div class="pg" id="pg-loa"></div>
 </div>
 
 <script>
@@ -2691,10 +2756,143 @@ function montaComando(){
   return function(){};
 }
 
+/* ---------------- LOA · previsto x executado ---------------- */
+function montaLoa(){
+  const host=document.getElementById('pg-loa'); host.innerHTML='';
+  const L=DATA.loa||{}, eq=DATA.equilibrio||{ano:null}, pf=DATA.prefeito||{}, ser=DATA.serie||{pes:{},rcl:{},rec:{}};
+  const topopag=el('div','topopag'); host.appendChild(topopag);
+  const cab=el('div','cab'); topopag.appendChild(cab);
+  const R=L.rec||{};
+  if(!R.rc||!pf.dot_atual){
+    cab.innerHTML='<div><h1>LOA · Previsto x Executado</h1></div>';
+    const d=el('div','vazio'); d.textContent='Sem dados da LOA coletados ainda.'; host.appendChild(d); return function(){};
+  }
+  const fech=L.fechado||12, mesNome=MESNOME[fech];
+  cab.innerHTML='<div><h1>LOA · Previsto x Executado</h1><p>'+(eq.ano||'')+' · o que foi aprovado na LOA, o que foi atualizado e o que está sendo executado · posição: janeiro a '+mesNome+'</p></div>';
+  const pc=(v,b)=>b?f1.format(v/b*100)+'%':'—';
+  const mi=v=>brlx(v);
+  /* números */
+  const recIni=R.rc.ini+R.cap.ini-R.ded.ini, recAt=R.rc.atual+R.cap.atual-R.ded.atual, recReal=R.rc.real+R.cap.real-R.ded.real;
+  const dIni=pf.dot_ini, dAt=pf.dot_atual;
+  const ms=((DATA.despesas&&DATA.despesas.meses)||[]).filter(r=>r[0]<=fech);
+  const emp=ms.reduce((s,r)=>s+r[1],0), liq=ms.reduce((s,r)=>s+r[2],0), pag=ms.reduce((s,r)=>s+r[3],0);
+  const barra=(v,max,cor)=>'<span class="lbar"><i style="width:'+Math.max(0,Math.min(100,max?v/max*100:0)).toFixed(1)+'%;background:'+cor+'"></i></span>';
+
+  /* 1) equilíbrio da LOA */
+  const grade=el('div','dgrid'); host.appendChild(grade);
+  const sEq=bloco(grade,'Equilíbrio da LOA · receita prevista x despesa autorizada'); sEq.classList.add('c12');
+  {
+    const mx=Math.max(recIni,dIni,recAt,dAt), dif=dAt-recAt, difI=dIni-recIni;
+    const lin=(n,v,cor,extra)=>'<div class="leq"><span>'+n+'</span><div class="bt"><i style="width:'+(v/mx*100).toFixed(1)+'%;background:'+cor+'"></i></div><b style="text-align:right">'+exato(v)+'</b></div>';
+    let h=lin('Receita prevista na LOA (inicial)',recIni,'#1F6FEB')+lin('Despesa fixada na LOA (inicial)',dIni,'#5B6472')
+      +'<div class="lnota" style="margin:2px 0 8px">Na aprovação a LOA '+(Math.abs(difI)<1?'estava <b>equilibrada</b>: receita e despesa iguais.':'tinha diferença de '+exato(Math.abs(difI))+'.')+'</div>'
+      +lin('Receita prevista atualizada',recAt,'#1F6FEB')+lin('Despesa autorizada (atualizada)',dAt,'#5B6472');
+    if(dif>0.005){
+      h+='<div class="lcaixa" style="background:#FFF6E0;border:1px solid #F1D48A;color:#6B4A00"><b>Atenção:</b> a despesa autorizada está <b>'+mi(dif)+' ('+pc(dif,recAt)+')</b> acima da receita prevista atualizada. '
+        +'Os créditos adicionais abertos ('+(dAt>=dIni?'+':'−')+mi(Math.abs(dAt-dIni))+' sobre a LOA) precisam de cobertura: superávit financeiro do exercício anterior, excesso de arrecadação ou operações de crédito. '
+        +'O painel não enxerga a fonte desses créditos; vale conferir com a Contabilidade (decretos de abertura).</div>';
+    } else h+='<div class="lcaixa" style="background:#ECFDF3;border:1px solid #ABEFC6;color:#067647">A despesa autorizada está dentro da receita prevista atualizada.</div>';
+    sEq.insertAdjacentHTML('beforeend',h);
+  }
+
+  /* 2) receita: previsto x realizado */
+  const sRec=bloco(grade,'Receita · previsto x realizado'); sRec.classList.add('c6');
+  {
+    const linha=(n,o,cls)=>'<tr class="'+(cls||'')+'"><td>'+n+'</td><td>'+exato(o.ini)+'</td><td>'+exato(o.atual)+'</td><td>'+exato(o.real)+'</td><td>'+pc(o.real,o.atual)+barra(o.real,o.atual,'var(--acento)')+'</td></tr>';
+    let h='<table class="ltab"><thead><tr><th style="width:26%">Receita</th><th>Previsão inicial</th><th>Previsão atualizada</th><th>Realizada</th><th style="width:15%">% realizado</th></tr></thead><tbody>'
+      +linha('Receitas correntes',R.rc)+linha('Receitas de capital',R.cap)
+      +linha('(−) Deduções',R.ded)
+      +linha('Receita líquida',{ini:recIni,atual:recAt,real:recReal},'tot');
+    h+='</tbody></table><div class="lnota" style="margin-top:12px"><b>Receitas correntes por origem</b> (previsão atualizada x realizada)</div>'
+      +'<table class="ltab"><tbody>';
+    (L.tipos||[]).slice(0,7).forEach(([n,ini,at,re])=>{ h+='<tr class="sub"><td>'+esc(n)+'</td><td>'+exato(at)+'</td><td>'+exato(re)+'</td><td>'+pc(re,at)+barra(re,at,'#8DB3F2')+'</td></tr>'; });
+    h+='</tbody></table>';
+    sRec.insertAdjacentHTML('beforeend',h);
+  }
+
+  /* 3) despesa: fixada x executada */
+  const sDes=bloco(grade,'Despesa · fixada x executada'); sDes.classList.add('c6');
+  {
+    const L_=(n,v,sub,cor)=>'<tr><td>'+n+'</td><td>'+exato(v)+'</td><td>'+(sub===null?'—':pc(v,dAt)+barra(v,dAt,cor||'#5B6472'))+'</td></tr>';
+    let h='<table class="ltab"><thead><tr><th style="width:36%">Despesa</th><th>Valor (R$)</th><th style="width:26%">% do atualizado</th></tr></thead><tbody>'
+      +L_('Fixada na LOA (valor inicial)',dIni,0)+'<tr class="tot"><td>Atualizada (valor atual)</td><td>'+exato(dAt)+'</td><td>'+(dAt>=dIni?'▲ +':'▼ −')+pc(Math.abs(dAt-dIni),dIni)+' s/ LOA</td></tr>'
+      +L_('Empenhada',emp,0,'#5B6472')+L_('Liquidada',liq,0,'#1F8A70')+L_('Paga',pag,0,'#B8860B')
+      +'<tr class="tot"><td>Saldo de dotação (a empenhar)</td><td>'+exato(dAt-emp)+'</td><td>'+pc(dAt-emp,dAt)+'</td></tr>'
+      +'<tr class="sub"><td>Empenhado e ainda não liquidado</td><td>'+exato(emp-liq)+'</td><td>'+pc(emp-liq,emp)+' do empenhado</td></tr>'
+      +'<tr class="sub"><td>Liquidado e ainda não pago</td><td>'+exato(liq-pag)+'</td><td>'+pc(liq-pag,liq)+' do liquidado</td></tr>'
+      +'</tbody></table>'
+      +'<div class="lnota">Já passaram '+f1.format(fech/12*100)+'% do ano. O empenhado representa '+pc(emp,dAt)+' da dotação atualizada.</div>';
+    sDes.insertAdjacentHTML('beforeend',h);
+  }
+
+  /* 4) RCL e o que depende dela */
+  const sRcl=bloco(grade,'Receita Corrente Líquida (RCL) · base de cálculo dos limites'); sRcl.classList.add('c6');
+  {
+    const p12=(DATA.natureza&&DATA.natureza.pessoal12)||{pessoal:0,rcl:0,de:'',ate:'',faltam:[]};
+    const rcl=p12.rcl, pes=p12.pessoal, lim=rcl*0.60, ale=rcl*0.54, pru=rcl*0.57;
+    const pcr=rcl?pes/rcl*100:0, cor=pcr>=57?'var(--baixa)':(pcr>=54?'var(--parcial)':'var(--alta)');
+    const meses12=Object.keys(ser.rcl).sort().slice(-12).reverse();
+    let h='<div class="lnota" style="margin:0 0 6px">RCL = receitas correntes − deduções (FUNDEB e outras), somadas nos 12 meses '+esc(p12.de||'')+' a '+esc(p12.ate||'')+'.'
+      +((p12.faltam||[]).length?' <b>Janela incompleta: faltam '+(p12.faltam||[]).join(', ')+'.</b>':'')+'</div>'
+      +'<table class="ltab"><tbody>'
+      +'<tr class="tot"><td>RCL dos 12 meses</td><td>'+exato(rcl)+'</td></tr>'
+      +'<tr><td>Despesa com pessoal (liquidada)</td><td>'+exato(pes)+'</td></tr>'
+      +'<tr><td>% da RCL</td><td style="color:'+cor+';font-weight:800">'+f1.format(pcr)+'%</td></tr>'
+      +'<tr class="sub"><td>Limite da LRF (60%)</td><td>'+exato(lim)+'</td></tr>'
+      +'<tr class="sub"><td>Prudencial (57%)</td><td>'+exato(pru)+'</td></tr>'
+      +'<tr class="sub"><td>Alerta (54%)</td><td>'+exato(ale)+'</td></tr>'
+      +'<tr class="tot"><td>Margem até o alerta</td><td style="color:'+(ale-pes>=0?'var(--alta)':'var(--baixa)')+'">'+(ale-pes>=0?'':'− ')+exato(Math.abs(ale-pes))+'</td></tr>'
+      +'<tr><td>Margem até o limite</td><td>'+exato(lim-pes)+'</td></tr>'
+      +'</tbody></table>'
+      +'<div class="lnota" style="margin-top:10px"><b>RCL mês a mês</b></div><div class="lgrid">'
+      +meses12.map(k=>{ const [y,m]=k.split('-'); return '<div><span>'+MESES[+m-1]+'/'+y.slice(2)+'</span><b>'+exato(ser.rcl[k])+'</b></div>'; }).join('')+'</div>'
+      +'<div class="lnota">A RCL também é a base de outros limites da LRF (dívida consolidada, operações de crédito, garantias); o painel ainda não tem esses dados.</div>';
+    sRcl.insertAdjacentHTML('beforeend',h);
+  }
+
+  /* 5) execução por função: dotação atual x empenhado */
+  const sFun=bloco(grade,'Execução por função de governo · dotação atual x empenhado'); sFun.classList.add('c6');
+  {
+    const ritmo=fech/12*100;
+    let h='<table class="ltab"><thead><tr><th style="width:30%">Função</th><th>Dotação atual</th><th>Empenhado</th><th style="width:21%">% executado</th><th style="width:15%">Ritmo</th></tr></thead><tbody>';
+    (L.funcoes||[]).slice(0,12).forEach(([f,ini,at,em])=>{
+      const pe=at?em/at*100:0, d=pe-ritmo;
+      const chip=d>10?'<span class="lchip l">acima</span>':(d<-30&&at>5e6?'<span class="lchip c">baixa</span>':'<span class="lchip o">ok</span>');
+      h+='<tr><td>'+esc(f.charAt(0)+f.slice(1).toLowerCase())+'</td><td>'+exato(at)+'</td><td>'+exato(em)+'</td><td>'+f1.format(pe)+'%'+barra(em,at,d>10?'#F79009':'var(--acento)')+'</td><td style="text-align:center">'+chip+'</td></tr>';
+    });
+    h+='</tbody></table><div class="lnota">Ritmo de referência: '+f1.format(ritmo)+'% (parte do ano que já passou). "Acima" = executou mais de 10 pontos além do ritmo; "baixa" = mais de 30 pontos abaixo, em funções com dotação acima de R$ 5 mi.</div>';
+    sFun.insertAdjacentHTML('beforeend',h);
+  }
+
+  /* 6) projeção de fechamento (estimativa) */
+  const sPro=bloco(grade,'Projeção de fechamento da receita · estimativa'); sPro.classList.add('c12');
+  {
+    const a25=(eq.ano-1)+'-', a26=eq.ano+'-', pad=m=>String(m).padStart(2,'0');
+    let ate=0, tot=0, ok=true;
+    for(let m=1;m<=12;m++){ const v=ser.rec[a25+pad(m)]; if(v===undefined){ ok=false; break; } tot+=v; if(m<=fech) ate+=v; }
+    if(!ok||!tot||!ate){
+      sPro.insertAdjacentHTML('beforeend','<div class="vazio">Sem a série completa de 2025 para projetar.</div>');
+    } else {
+      const frac=ate/tot, proj=recReal/frac, vsPrev=proj-recAt, vsDesp=proj-dAt;
+      let h='<table class="ltab"><tbody>'
+        +'<tr><td>Parte da receita de '+(eq.ano-1)+' que já tinha entrado até '+mesNome+'</td><td>'+f1.format(frac*100)+'%</td></tr>'
+        +'<tr><td>Receita líquida realizada em '+eq.ano+' (até '+mesNome+')</td><td>'+exato(recReal)+'</td></tr>'
+        +'<tr class="tot"><td>Receita líquida projetada para o ano</td><td>'+exato(proj)+'</td></tr>'
+        +'<tr class="sub"><td>Contra a previsão atualizada ('+exato(recAt)+')</td><td style="color:'+(vsPrev>=0?'var(--alta)':'var(--baixa)')+'">'+(vsPrev>=0?'+':'−')+exato(Math.abs(vsPrev))+' ('+f1.format(proj/recAt*100)+'% da previsão)</td></tr>'
+        +'<tr class="sub"><td>Contra a despesa autorizada ('+exato(dAt)+')</td><td style="color:'+(vsDesp>=0?'var(--alta)':'var(--baixa)')+'">'+(vsDesp>=0?'+':'−')+exato(Math.abs(vsDesp))+'</td></tr>'
+        +'</tbody></table>'
+        +'<div class="lcaixa" style="background:var(--sup);border:1px solid var(--linha);color:var(--t2)"><b>Isto é uma estimativa, não um dado.</b> Ela assume que '+eq.ano+' repete a distribuição da arrecadação ao longo do ano de '+(eq.ano-1)+'. '
+        +'Mudanças de alíquota, receitas extraordinárias e a sazonalidade das transferências podem alterar o resultado. Use como ordem de grandeza.</div>';
+      sPro.insertAdjacentHTML('beforeend',h);
+    }
+  }
+  return function(){};
+}
+
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
-                desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando() };
+                desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando(), loa:montaLoa() };
 function render(){
   document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
