@@ -775,11 +775,11 @@ HTML = r'''<!DOCTYPE html>
   .rk .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
   .linhaTopo{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:6px 0 10px; }
   .linhaTopo .cbar{ margin:0; flex:none; }
-  .cgrid.inl{ display:flex; gap:10px; margin:0; flex:1; min-width:0; justify-content:center; }
+  .cgrid.inl{ display:flex; gap:12px; margin:-8px 0 0 auto; flex:none; justify-content:flex-end; align-self:flex-start; }
   .cgrid.inl .cg{ display:flex; flex-direction:column; align-items:center; padding:2px 8px 0; border:0;
                   border-radius:var(--r); background:transparent; text-align:center; }
   .cgrid.inl .cg:hover{ box-shadow:none; background:var(--sup); }
-  .cgrid.inl svg{ width:clamp(92px,7vw,120px); flex:none; display:block; overflow:visible; }
+  .cgrid.inl svg{ width:clamp(101px,7.7vw,132px); flex:none; display:block; overflow:visible; }
   .cgrid.inl .cg{ padding:0 8px; }
   .cgrid.inl .cl{ font-size:11px; font-weight:600; color:var(--t2); line-height:1.15; white-space:nowrap; margin-top:0; }
   .cgrid.mini{ gap:10px; margin:14px 0 4px; }
@@ -2241,7 +2241,7 @@ function montaComando(){
 
   const linhaTopo=el('div','linhaTopo'); host.appendChild(linhaTopo);
   const barra=el('div','cbar'); linhaTopo.appendChild(barra);
-  const gradeG=el('div','cgrid inl'); linhaTopo.appendChild(gradeG);
+  const gradeG=el('div','cgrid inl'); topopag.appendChild(gradeG);   /* sobe pra linha do título, no canto direito */
   const selo=el('div'); selo.style.cssText='margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap';
   host.appendChild(selo);
   const linhaCards=el('div','dgrid'); host.appendChild(linhaCards);
