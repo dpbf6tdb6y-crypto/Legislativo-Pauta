@@ -600,19 +600,20 @@ HTML = r'''<!DOCTYPE html>
   .relKpi span{ font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:#475569; font-weight:700; }
   .relTab{ width:100%; border-collapse:collapse; font-size:12px; table-layout:fixed; }
   .relTab th:nth-child(1){ width:34px; } .relTab th:nth-child(3){ width:96px; } .relTab th:nth-child(4){ width:118px; } .relTab th:nth-child(5){ width:150px; }
-  .relTab th{ text-align:left; } .relTab td{ text-align:left; overflow-wrap:anywhere; }
-  .relMeta td{ text-align:left; }
+  .relTab th{ text-align:left; white-space:normal; }
+  .relTab td{ text-align:left; white-space:normal !important; overflow:visible !important; text-overflow:clip !important; overflow-wrap:break-word; word-break:normal; }
+  .relMeta td{ text-align:left; white-space:normal !important; overflow:visible !important; text-overflow:clip !important; }
   .audCaixa{ overflow:hidden; }
   .relTab th{ background:#0F2A5C; color:#fff; text-align:left; padding:7px 8px; font-size:11px; letter-spacing:.05em; text-transform:uppercase; }
   .relTab td{ border:1px solid #CBD5E1; padding:7px 8px !important; vertical-align:top; line-height:1.45; }
   .relTab tr{ break-inside:avoid; }
   .relTab td.num{ text-align:center; font-weight:700; }
-  .relTab td.sit{ font-weight:700; }
-  .relTab td.vl{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; }
+  .relTab td.sit{ font-weight:700; white-space:nowrap !important; }
+  .relTab td.vl{ text-align:right; font-weight:700; font-variant-numeric:tabular-nums; white-space:normal !important; }
   .relTab .dd{ color:#475569; font-size:11.5px; margin-top:2px; }
   .relTab tr.grp td{ background:#E8EEF8; font-weight:800; color:#0F2A5C; text-transform:uppercase; font-size:11px; letter-spacing:.07em; }
   .relLi{ font-size:13px; line-height:1.55; margin:4px 0 4px 18px; color:#1F2937; }
-  .relAss{ display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-top:44px; font-size:11.5px; text-align:center; color:#334155; }
+  .relAss{ display:grid; grid-template-columns:repeat(2,1fr); gap:26px; margin-top:44px; font-size:11.5px; text-align:center; color:#334155; }
   .relAss div{ border-top:1px solid #334155; padding-top:5px; }
   .audResumo{ display:flex; gap:22px; flex-wrap:wrap; margin:14px 0 4px; font-size:13.5px; color:var(--t1); }
   .audResumo span{ display:inline-flex; align-items:center; gap:7px; font-weight:600; }
@@ -2600,7 +2601,7 @@ function montaComando(){
       +'<div class="relLi">Portal da Transparência de Nova Lima: receitas, despesas por órgão, natureza e função, servidores, contratos e RREO.</div>'
       +'<div class="relLi">Última coleta das despesas: '+(DATA.dp_coleta?esc(DATA.dp_coleta.split('-').reverse().join('/')):'—')+' · RREO: '+(rr?esc(rr.fonte||'RREO'):'—')+'.</div>';
 
-    h+='<div class="relAss"><div>Elaborado por<br>(responsável pela análise)</div><div>Responsável pelo Controle Interno</div><div>Prefeito Municipal</div></div>'
+    h+='<div class="relAss"><div>Elaborado por<br>(responsável pela análise)</div><div>Responsável técnico</div></div>'
       +'<div class="audRodape" style="text-align:center;border:0;margin-top:14px">Legenda: <b style="color:#D92D20">crítico</b> = descumprimento ou risco imediato · '
       +'<b style="color:#B54708">atenção</b> = ponto a acompanhar ou dado que o painel não consegue confirmar · <b style="color:#067647">em ordem</b>.</div>';
     document.getElementById('audCorpo').innerHTML=h;
