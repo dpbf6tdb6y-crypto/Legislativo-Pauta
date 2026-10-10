@@ -29,6 +29,7 @@ cd scripts/fazenda-atualizador
 .venv/bin/python3 coletor_despesas_auto.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Despesas por órgão falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_natureza.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Natureza falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_natureza.py funcao >> "$LOG" 2>&1 || echo "AVISO: coleta de Função falhou — mantendo os dados anteriores" >> "$LOG"
+.venv/bin/python3 coletor_rreo.py >> "$LOG" 2>&1 || echo "AVISO: coleta do RREO falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 gerar_painel.py >> "$LOG" 2>&1
 mkdir -p ../../private/fazenda
 cp ../Painel_Receita_Despesas.html ../../private/fazenda/painel.html
@@ -47,6 +48,7 @@ git checkout -- scripts/fazenda-atualizador/dados_receita.json \
                 scripts/fazenda-atualizador/dados_pessoal.json \
                 scripts/fazenda-atualizador/dados_natureza.json \
                 scripts/fazenda-atualizador/dados_funcao.json \
-                scripts/fazenda-atualizador/dados_despesas.json >> "$LOG" 2>&1
+                scripts/fazenda-atualizador/dados_despesas.json \
+                scripts/fazenda-atualizador/dados_rreo.json >> "$LOG" 2>&1
 
 echo "concluído" >> "$LOG"

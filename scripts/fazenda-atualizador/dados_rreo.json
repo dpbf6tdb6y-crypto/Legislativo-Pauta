@@ -1,0 +1,47 @@
+{
+ "coletado_em": "2026-10-10",
+ "historico": {
+  "2026-3": {
+   "ano": 2026,
+   "asps": {
+    "minimo": 15.0,
+    "pct": 17.71,
+    "valor": 100354009.56
+   },
+   "bimestre": 3,
+   "fonte": "RREO · Tabela 14.0 (Demonstrativo Simplificado)",
+   "fundeb70": {
+    "minimo": 70.0,
+    "pct": 88.45,
+    "valor": 38438385.23
+   },
+   "mde": {
+    "minimo": 25.0,
+    "pct": 24.62,
+    "valor": 138643652.36
+   },
+   "posicao": "30/06/2026"
+  }
+ },
+ "ultimo": {
+  "ano": 2026,
+  "asps": {
+   "minimo": 15.0,
+   "pct": 17.71,
+   "valor": 100354009.56
+  },
+  "bimestre": 3,
+  "fonte": "RREO · Tabela 14.0 (Demonstrativo Simplificado)",
+  "fundeb70": {
+   "minimo": 70.0,
+   "pct": 88.45,
+   "valor": 38438385.23
+  },
+  "mde": {
+   "minimo": 25.0,
+   "pct": 24.62,
+   "valor": 138643652.36
+  },
+  "posicao": "30/06/2026"
+ }
+}
