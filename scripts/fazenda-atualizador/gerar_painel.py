@@ -1063,9 +1063,7 @@ HTML = r'''<!DOCTYPE html>
     <span class="espaco"></span>
     <b data-p="rc">Receita</b>
     <span class="espaco"></span>
-    <b class="grupoLabel">Despesas</b>
-    <b data-p="pes">Pessoal</b>
-    <b data-p="desp">Órgãos</b>
+    <b data-p="desp">Despesas</b>
     <b data-p="ctr">Contratos</b>
     <span class="espaco"></span>
     <b data-p="eq">__ANO_EQ__ · Gestão Fiscal</b>
@@ -1310,16 +1308,22 @@ function colunasMesTrio(host,dados,series){
   });
 }
 
+/* barra de opções dentro de uma aba agrupada (Receita, Despesas) */
+function subAbas(host,itens,atual){
+  const sub=el('div','subrec'); host.appendChild(sub);
+  itens.forEach(([k,n])=>{
+    const b=el('b',k===atual?'on':''); b.textContent=n;
+    b.onclick=()=>{ pagina=k; render(); };
+    sub.appendChild(b);
+  });
+}
+const SUBDESP=[['desp','Órgãos'],['pes','Pessoal']];
+
 /* ---------------- páginas de receita ---------------- */
 function montaReceita(id){
   const cfg=PAGS[id], st=estado[id], host=document.getElementById('pg-'+id);
   host.innerHTML='';
-  const sub=el('div','subrec'); host.appendChild(sub);
-  [['rc','Receita Corrente'],['cap','Receita de Capital'],['ded','Deduções']].forEach(([k,n])=>{
-    const b=el('b',k===id?'on':''); b.textContent=n;
-    b.onclick=()=>{ pagina=k; render(); };
-    sub.appendChild(b);
-  });
+  subAbas(host,[['rc','Receita Corrente'],['cap','Receita de Capital'],['ded','Deduções']],id);
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
   cab.innerHTML='<div><h1>'+cfg.t+'</h1><p>'+cfg.sub+'</p></div>';
@@ -1686,6 +1690,7 @@ function montaContratos(){
 function montaPessoal(){
   const st=estado.pes, host=document.getElementById('pg-pes');
   host.innerHTML='';
+  subAbas(host,SUBDESP,'pes');
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
   cab.innerHTML='<div><h1>Pessoal</h1><p>Folha da Prefeitura de Nova Lima · '+(DATA.rh_ref||'')+'</p></div>';
@@ -1792,6 +1797,7 @@ function montaPessoal(){
 function montaDespesas(){
   const host=document.getElementById('pg-desp');
   host.innerHTML='';
+  subAbas(host,SUBDESP,'desp');
   const meses=(DATA.despesas&&DATA.despesas.meses)||[];
   const ano=DATA.despesas&&DATA.despesas.ano;
   const orgaosPorMes=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{};
@@ -2900,7 +2906,7 @@ const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
                 desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando(), loa:montaLoa() };
 function render(){
-  document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina||(b.dataset.p==='rc'&&(pagina==='cap'||pagina==='ded'))));
+  document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina||(b.dataset.p==='rc'&&(pagina==='cap'||pagina==='ded'))||(b.dataset.p==='desp'&&pagina==='pes')));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
   document.getElementById('btnLimpar').style.display=(pagina==='cmd')?'flex':'none';   /* só no Painel de Comando */
   desenha[pagina]();
