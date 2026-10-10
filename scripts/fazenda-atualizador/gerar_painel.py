@@ -890,7 +890,6 @@ HTML = r'''<!DOCTYPE html>
   <div class="marca">Nova Lima</div>
   <nav id="abas">
     <b data-p="cmd" class="on">Painel de Comando</b>
-    <b data-p="pre">Visão do Prefeito</b>
     <span class="espaco"></span>
     <b class="grupoLabel">Receita</b>
     <b data-p="rc">Receita Corrente</b>
@@ -909,7 +908,6 @@ HTML = r'''<!DOCTYPE html>
 
 <div class="env">
   <div class="pg on" id="pg-cmd"></div>
-  <div class="pg" id="pg-pre"></div>
   <div class="pg" id="pg-rc"></div>
   <div class="pg" id="pg-cap"></div>
   <div class="pg" id="pg-ded"></div>
@@ -2013,221 +2011,12 @@ function montaEquilibrio(){
 }
 
 
-/* ---------------- Visão do Prefeito ---------------- */
+/* ---------------- cores e navegação do Painel de Comando ---------------- */
 const COR_ST={ ok:'var(--alta)', at:'var(--parcial)', ruim:'var(--baixa)', info:'var(--acento)' };
 const TAG_LEI={ ok:'DENTRO DO LIMITE', at:'ATENÇÃO', ruim:'FORA DO LIMITE' };
 const TAG_ST={ ok:'OK', at:'ATENÇÃO', ruim:'ALERTA', info:'INFORMATIVO' };
 function irPara(p){ pagina=p; render(); scrollTo({top:0,behavior:'smooth'}); }
 
-/* mesmas fórmulas da tabela "Limites legais" (aproximação pelo empenhado) */
-function calcLegais(){
-  const lm=(DATA.lei&&DATA.lei.meses)||{}, npm=(DATA.natureza&&DATA.natureza.por_mes)||{}, a29=DATA.art29a||{};
-  const ms=Object.keys(lm);
-  if(!ms.length) return null;
-  const S=k=>ms.reduce((s,m)=>s+(lm[m][k]||0),0);
-  const rit=S('rit'), rcl=S('rcl');
-  const p12=(DATA.natureza&&DATA.natureza.pessoal12)||{pessoal:0,rcl:0};
-  const pessoal=p12.pessoal;
-  const edu=S('edu')-S('edu_fed'), saude=S('saude')-S('saude_fed');
-  return { rit, rcl, pessoal, edu, saude, a29,
-    pEdu:rit?edu/rit*100:0, pSaude:rit?saude/rit*100:0, pPes:p12.rcl?pessoal/p12.rcl*100:0,
-    pCam:a29.teto_2026?(a29.emp_camara_2026||0)/a29.teto_2026*100:0,
-    ate:MESNOME[ms.sort((a,b)=>+a-+b)[ms.length-1]] };
-}
-
-function montaPrefeito(){
-  const host=document.getElementById('pg-pre');
-  host.innerHTML='';
-  const eq=DATA.equilibrio||{ano:null,meses:[]};
-  const L=calcLegais(), pf=DATA.prefeito||{};
-  const topopag=el('div','topopag'); host.appendChild(topopag);
-  const cab=el('div','cab');
-  cab.innerHTML='<div><h1>Visão do Prefeito</h1><p>Como está a gestão em '+(eq.ano||'')
-    +' · indicadores gerenciais calculados pelo empenhado, não substituem o RREO/RGF · clique num cartão para ver o detalhe</p></div>';
-  topopag.appendChild(cab);
-  if(!L||!(eq.meses||[]).length){
-    const d=el('div','vazio'); d.textContent='Sem dados suficientes ainda pra montar o painel.'; host.appendChild(d);
-    return function(){};
-  }
-
-  const totRec=eq.meses.reduce((s,m)=>s+m[1],0), totEmp=eq.meses.reduce((s,m)=>s+m[2],0),
-        totPag=eq.meses.reduce((s,m)=>s+m[3],0);
-  const saldo=totRec-totPag;
-  const cards=[];   // {id, tit, st, valor, sub, leg, barra:{pct,lim}, ir, alerta}
-
-  // 1) contas no azul
-  {
-    const rel=totRec?saldo/totRec:0;
-    const st=saldo>=0?'ok':(rel>-0.03?'at':'ruim');
-    cards.push({tit:'Contas no azul?', st, valor:(saldo>=0?'+':'−')+brlx(Math.abs(saldo)),
-      sub:saldo>=0?'A receita cobriu tudo o que foi pago.':'Foi pago mais do que o município arrecadou.',
-      leg:'Recebido '+brlx(totRec)+' · pago '+brlx(totPag)+' (o pago inclui restos a pagar de anos anteriores)', ir:'eq',
-      alerta:'Foram pagos '+brlx(Math.abs(saldo))+' a mais do que a receita líquida arrecadada no ano.'});
-  }
-  // 2) folha de pagamento (limite 60%, alerta 54%, prudencial 57%)
-  {
-    const st=L.pPes>=57?'ruim':(L.pPes>=54?'at':'ok');
-    cards.push({tit:'Folha de pagamento', st, valor:f1.format(L.pPes)+'%',
-      sub:'da receita corrente líquida vai para pessoal e encargos (últimos 12 meses).',
-      leg:'Limite da LRF: 60% · alerta a partir de 54% · prudencial em 57% · janela móvel de 12 meses', barra:{pct:L.pPes,lim:60}, ir:'eq', legal:true,
-      alerta:'A folha está em '+f1.format(L.pPes)+'% da receita; o limite legal é 60% e o alerta começa em 54%.'});
-  }
-  // 3) educação / 4) saúde (mínimos)
-  [['Educação',L.pEdu,25,L.edu,'CF art. 212'],['Saúde',L.pSaude,15,L.saude,'LC 141/2012']].forEach(([n,pct,min,apl,lei])=>{
-    const st=pct>=min?'ok':(pct>=min-2?'at':'ruim');
-    cards.push({tit:n, st, valor:f1.format(pct)+'%',
-      sub:pct>=min?'da receita de impostos aplicados — acima do mínimo.':'da receita de impostos aplicados — abaixo do mínimo.',
-      leg:'Mínimo obrigatório: '+min+'% ('+lei+')', barra:{pct,lim:min,min:true}, ir:'eq', legal:true,
-      alerta:n+' está em '+f1.format(pct)+'%, abaixo do mínimo de '+min+'% (faltam cerca de '+brlx(Math.max(0,L.rit*min/100-apl))+').'});
-  });
-  // 5) câmara
-  {
-    const st=L.pCam>100?'ruim':(L.pCam>=90?'at':'ok'), a=L.a29;
-    cards.push({tit:'Repasse à Câmara', st, valor:f1.format(L.pCam)+'%',
-      sub:'do teto constitucional já foi empenhado.',
-      leg:'Empenhado '+brlx(a.emp_camara_2026||0)+' · teto de 6% (CF art. 29-A): '+brlx(a.teto_2026||0), barra:{pct:L.pCam,lim:100}, ir:'eq', legal:true,
-      alerta:'O repasse à Câmara já usou '+f1.format(L.pCam)+'% do teto de 6% (art. 29-A).'});
-  }
-  // 6) arrecadação x ano anterior
-  if(pf.comp&&pf.comp.anterior>0){
-    const v=(pf.comp.atual/pf.comp.anterior-1)*100, st=v>=0?'ok':(v>-5?'at':'ruim');
-    cards.push({tit:'Arrecadação', st, valor:(v>=0?'+':'−')+f1.format(Math.abs(v))+'%',
-      sub:v>=0?'a mais que no mesmo período do ano passado.':'a menos que no mesmo período do ano passado.',
-      leg:'Janeiro a '+MESNOME[String(pf.comp.ate)]+' (meses fechados): '+brlx(pf.comp.atual)+' em '+pf.comp.ano+' contra '+brlx(pf.comp.anterior)+' em '+(pf.comp.ano-1), ir:'rc',
-      alerta:'A arrecadação caiu '+f1.format(Math.abs(v))+'% frente ao mesmo período de '+(pf.comp.ano-1)+'.'});
-  }
-  // 7) orçamento executado
-  if(pf.dot_atual>0){
-    const pe=totEmp/pf.dot_atual*100, anoPct=(eq.meses.filter(m=>m[2]||m[3]).length/12)*100;
-    const st=pe>100?'ruim':'info';
-    cards.push({tit:'Orçamento executado', st, valor:f1.format(pe)+'%',
-      sub:'do orçamento atualizado já foi empenhado.',
-      leg:'Empenhado '+brlx(totEmp)+' de '+brlx(pf.dot_atual)+' previstos · pago '+brlx(totPag)+' ('+f1.format(totPag/pf.dot_atual*100)+'%) · já passaram ~'+f1.format(anoPct)+'% do ano',
-      barra:{pct:pe,lim:100}, ir:'desp',
-      alerta:'O empenhado já passou da dotação atualizada.'});
-  }
-  // 8) contratos a vencer
-  {
-    const c=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0);
-    const c30=c.filter(r=>r[8]<=30), c90=c.filter(r=>r[8]<=90);
-    const st=c30.length===0?'ok':(c30.length<=20?'at':'ruim');
-    const v30=c30.reduce((s,r)=>s+r[6],0);
-    cards.push({tit:'Contratos vencendo', st, valor:String(c30.length),
-      sub:c30.length?'contrato(s) vencem nos próximos 30 dias ('+brlx(v30)+').':'Nenhum contrato vence nos próximos 30 dias.',
-      leg:c90.length+' vencem em até 90 dias · '+c.length+' contratos vigentes', ir:'ctr',
-      alerta:c30.length+' contrato(s) vencem em até 30 dias, somando '+brlx(v30)+'.'});
-  }
-
-  // 9) receitas com destino obrigatório (recebido x gasto na função correspondente)
-  const VI=DATA.vinculadas||{areas:{}}, FA=pf.func_all||{};
-  const FUNC_DE={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
-  const REGRA_DE={
-    'Mineração (restrita)':'Lei 7.990/1989: não pode pagar folha do quadro permanente nem dívida',
-    'Serviço da taxa':'só pode custear o serviço que a taxa remunera',
-    'Iluminação pública':'só pode custear a iluminação pública (CF art. 149-A)',
-    'Trânsito':'sinalização, engenharia, fiscalização e educação de trânsito (CTB art. 320)',
-    'Obra pública':'só pode custear a obra que gerou a contribuição de melhoria',
-    'Objeto do convênio':'só pode ser gasto no objeto do convênio',
-    'Assistência social':'só pode custear a assistência social (Lei 8.742/1993)'};
-  const linhasVi=Object.entries(VI.areas||{}).map(([a,v])=>{
-    const f=FUNC_DE[a], gasto=f?(FA[f]||0):null;
-    return {area:a, leis:v.leis.join(' · '), recebido:v.recebido, gasto, regra:REGRA_DE[a]||''};
-  }).sort((x,y)=>y.recebido-x.recebido);
-  const totVi=linhasVi.reduce((s,l)=>s+l.recebido,0);
-  const falta=linhasVi.filter(l=>l.gasto!==null&&l.recebido>l.gasto);
-  if(totVi>0){
-    cards.push({tit:'Receita com destino obrigatório', st:falta.length?'at':'info', valor:f1.format(VI.bruta?totVi/VI.bruta*100:0)+'%',
-      sub:'da receita bruta do ano só pode ser gasta na finalidade da lei ('+brlx(totVi)+').',
-      leg:linhasVi.slice(0,3).map(l=>l.area+' '+brlx(l.recebido)).join(' · '), ir:'rc',
-      alerta:'Em '+falta.map(l=>l.area).join(', ')+' foi recebido mais com destino obrigatório do que gasto na função.'});
-  }
-
-  // frase de situação
-  const ruins=cards.filter(c=>c.st==='ruim'), ats=cards.filter(c=>c.st==='at');
-  const pior=ruins.length?'ruim':(ats.length?'at':'ok');
-  const fr=el('div','pfrase'); fr.style.setProperty('--cs',COR_ST[pior]);
-  const nomes=l=>l.map(c=>c.tit.toLowerCase()).join(', ');
-  fr.innerHTML=(pior==='ruim'?'<b>Atenção:</b> '+ruins.length+' indicador(es) em alerta — '+nomes(ruins)+'.'
-      +(ats.length?' Em observação: '+nomes(ats)+'.':'')
-    :pior==='at'?'<b>Ponto de atenção:</b> '+nomes(ats)+'. Os demais indicadores estão dentro dos limites.'
-    :'<b>Tudo dentro dos limites</b> até '+L.ate+'.')
-    +' Receita líquida de '+brlx(totRec)+', pago '+brlx(totPag)+'.';
-  host.appendChild(fr);
-
-  // cartões
-  const grade=el('div','pgrid'); host.appendChild(grade);
-  cards.forEach(c=>{
-    const d=el('div','pcard'); d.style.setProperty('--cs',COR_ST[c.st]);
-    let barra='';
-    if(c.barra){
-      const esc_=Math.max(c.barra.pct,c.barra.lim)*1.2||1;
-      barra='<div class="pm"><i style="width:'+Math.min(100,c.barra.pct/esc_*100).toFixed(1)+'%"></i>'
-        +'<u style="left:'+(c.barra.lim/esc_*100).toFixed(1)+'%" title="limite legal"></u></div>';
-    }
-    d.innerHTML='<div class="pt"><span>'+esc(c.tit)+'</span><span class="tag">'+((c.legal&&TAG_LEI[c.st])||TAG_ST[c.st])+'</span></div>'
-      +'<div class="pb">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div>'+barra
-      +'<div class="pl">'+esc(c.leg)+'</div>';
-    d.onclick=()=>irPara(c.ir);
-    grade.appendChild(d);
-  });
-
-  // o que merece atenção
-  const sAt=bloco(host,'O que merece atenção');
-  const lista=cards.filter(c=>c.st==='ruim'||c.st==='at');
-  if(!lista.length){ const d=el('div','nota'); d.style.color='var(--alta)'; d.textContent='Nenhum alerta no momento.'; sAt.appendChild(d); }
-  lista.sort((a,b)=>(b.st==='ruim')-(a.st==='ruim')).forEach(c=>{
-    const d=el('div','palerta'); d.style.setProperty('--cs',COR_ST[c.st]);
-    d.innerHTML='<i></i><span>'+esc(c.alerta)+'</span>'; d.onclick=()=>irPara(c.ir); sAt.appendChild(d);
-  });
-  const prox=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0&&r[8]<=90).sort((a,b)=>a[8]-b[8]).slice(0,5);
-  prox.forEach(r=>{
-    const d=el('div','palerta'); d.style.setProperty('--cs',r[8]<=30?COR_ST.at:COR_ST.info);
-    d.innerHTML='<i></i><span>Contrato '+esc(r[0])+' · '+esc(r[3])+' · '+brlx(r[6])+' — vence em '+r[8]+' dia(s).</span>';
-    d.onclick=()=>irPara('ctr'); sAt.appendChild(d);
-  });
-
-  // receitas com destino obrigatório
-  if(linhasVi.length){
-    const sVi=bloco(host,'Receitas com destino obrigatório · o que entrou e onde precisa ser gasto');
-    const rl=el('div','rolatab'); sVi.appendChild(rl);
-    const t=el('table');
-    t.innerHTML='<thead><tr><th class="e" style="width:18%">Área</th><th class="e">Base legal</th>'
-      +'<th>Recebido no ano (R$)</th><th>Gasto na função (R$)</th><th class="e" style="width:30%">Situação</th></tr></thead>';
-    const tb=el('tbody');
-    linhasVi.forEach(l=>{
-      const tr=el('tr');
-      let sit;
-      if(l.gasto===null) sit='<span style="color:var(--t3)">'+esc(l.regra||'o portal não separa o gasto por fonte, não dá para comparar')+'</span>';
-      else if(l.recebido>l.gasto) sit='<span style="color:var(--parcial);font-weight:600">Recebeu mais do que gastou na função — conferir</span>';
-      else sit='<span style="color:var(--alta);font-weight:600">Gasto na função cobre o que foi recebido</span>';
-      tr.innerHTML='<td class="e" style="font-weight:600">'+esc(l.area)+'</td>'
-        +'<td class="e" style="color:var(--t3)">'+esc(l.leis)+'</td>'
-        +'<td>'+exato(l.recebido)+'</td><td>'+(l.gasto===null?'—':exato(l.gasto))+'</td><td class="e">'+sit+'</td>';
-      tb.appendChild(tr);
-    });
-    t.appendChild(tb); rl.appendChild(t);
-    const nt=el('div','nota');
-    nt.textContent='Soma das receitas classificadas como vinculadas por lei (aba Receita, coluna Destinação) nos meses coletados. '
-      +'O gasto é o empenhado da função de governo correspondente; o portal não separa a despesa por fonte de recurso, '
-      +'então a comparação é aproximada. A sobra de receita vinculada de anos anteriores (superávit financeiro por fonte), '
-      +'que também só pode ser usada na mesma finalidade, não aparece nos dados do portal.';
-    sVi.appendChild(nt);
-  }
-
-  // para onde vai o dinheiro
-  const sOnde=bloco(host,'Para onde vai o dinheiro · empenhado no ano, por área');
-  const fun=pf.funcoes||[];
-  if(fun.length){
-    const tot=fun.reduce((s,f)=>s+f[1],0), mx=fun[0][1];
-    fun.forEach(([n,v])=>{
-      const l=linha(n.charAt(0)+n.slice(1).toLowerCase(), exato(v), v/mx, f1.format(v/totEmp*100)+'%', {click:()=>irPara('desp')});
-      sOnde.appendChild(l);
-    });
-  }
-  const sObr=bloco(host,'O que a lei obriga x o que o prefeito decide');
-  const hostObr=el('div'); sObr.appendChild(hostObr); barraObrigatorias(hostObr);
-  return function(){};
-}
 
 /* ---------------- Painel de Comando ---------------- */
 function montaComando(){
@@ -2583,7 +2372,7 @@ function montaComando(){
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
-                desp:montaDespesas(), eq:montaEquilibrio(), pre:montaPrefeito(), cmd:montaComando() };
+                desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando() };
 function render(){
   document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
