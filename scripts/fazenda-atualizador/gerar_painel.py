@@ -1049,6 +1049,10 @@ HTML = r'''<!DOCTYPE html>
 
   .vazio{ color:var(--t3); font-size:13px; padding:26px 0; }
   .pg{ display:none; } .pg.on{ display:block; }
+  .subrec{ display:flex; gap:6px; margin:0 0 18px; border-bottom:1px solid var(--linha); }
+  .subrec b{ cursor:pointer; padding:8px 14px; font-size:13.5px; font-weight:600; color:var(--t3); border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .subrec b:hover{ color:var(--t1); }
+  .subrec b.on{ color:var(--acento); border-bottom-color:var(--acento); }
   .nota{ color:var(--t3); font-size:11.5px; padding-top:26px; }
 </style>
 
@@ -1057,10 +1061,7 @@ HTML = r'''<!DOCTYPE html>
   <nav id="abas">
     <b data-p="cmd" class="on">Painel de Comando</b>
     <span class="espaco"></span>
-    <b class="grupoLabel">Receita</b>
-    <b data-p="rc">Receita Corrente</b>
-    <b data-p="cap">Receita de Capital</b>
-    <b data-p="ded">Deduções</b>
+    <b data-p="rc">Receita</b>
     <span class="espaco"></span>
     <b class="grupoLabel">Despesas</b>
     <b data-p="pes">Pessoal</b>
@@ -1244,7 +1245,7 @@ const MESNOME={'1':'janeiro','2':'fevereiro','3':'março','4':'abril','5':'maio'
                '7':'julho','8':'agosto','9':'setembro','10':'outubro','11':'novembro','12':'dezembro'};
 function colunasMes(host,dados,sel,onClick,multi){
   host.innerHTML='';
-  const W=host.clientWidth||900, H=190, base=H-28, topo=24;
+  const W=host.clientWidth||900, H=210, base=H-30, topo=26;
   const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
   const max=Math.max(...dados.map(d=>d.v),0)||1;
   const soma=dados.reduce((a,d)=>a+d.v,0);
@@ -1313,7 +1314,12 @@ function colunasMesTrio(host,dados,series){
 function montaReceita(id){
   const cfg=PAGS[id], st=estado[id], host=document.getElementById('pg-'+id);
   host.innerHTML='';
-
+  const sub=el('div','subrec'); host.appendChild(sub);
+  [['rc','Receita Corrente'],['cap','Receita de Capital'],['ded','Deduções']].forEach(([k,n])=>{
+    const b=el('b',k===id?'on':''); b.textContent=n;
+    b.onclick=()=>{ pagina=k; render(); };
+    sub.appendChild(b);
+  });
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
   cab.innerHTML='<div><h1>'+cfg.t+'</h1><p>'+cfg.sub+'</p></div>';
@@ -2894,7 +2900,7 @@ const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
                 desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando(), loa:montaLoa() };
 function render(){
-  document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina));
+  document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina||(b.dataset.p==='rc'&&(pagina==='cap'||pagina==='ded'))));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
   document.getElementById('btnLimpar').style.display=(pagina==='cmd')?'flex':'none';   /* só no Painel de Comando */
   desenha[pagina]();
