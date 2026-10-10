@@ -761,11 +761,11 @@ HTML = r'''<!DOCTYPE html>
   .rk .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
   .linhaTopo{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:6px 0 10px; }
   .linhaTopo .cbar{ margin:0; flex:none; }
-  .cgrid.inl{ display:flex; gap:6px; margin:0 0 0 auto; flex:none; justify-content:flex-end; }
+  .cgrid.inl{ display:flex; gap:10px; margin:0; flex:1; min-width:0; justify-content:center; }
   .cgrid.inl .cg{ display:flex; flex-direction:column; align-items:center; padding:2px 8px 0; border:0;
                   border-radius:var(--r); background:transparent; text-align:center; }
   .cgrid.inl .cg:hover{ box-shadow:none; background:var(--sup); }
-  .cgrid.inl svg{ width:clamp(74px,5.6vw,96px); flex:none; display:block; overflow:visible; }
+  .cgrid.inl svg{ width:clamp(92px,7vw,120px); flex:none; display:block; overflow:visible; }
   .cgrid.inl .cg{ padding:0 8px; }
   .cgrid.inl .cl{ font-size:11px; font-weight:600; color:var(--t2); line-height:1.15; white-space:nowrap; margin-top:0; }
   .cgrid.mini{ gap:10px; margin:14px 0 4px; }
@@ -2212,7 +2212,18 @@ function montaComando(){
     return function(){};
   }
   const fech=Math.min((DATA.lei&&DATA.lei.fechado)||meses[meses.length-1], meses[meses.length-1]);
-  const st={M:fech, rr:0, rf:0, rs:0, re:0, tm:null};
+  const st={M:fech, rr:0, rf:0, rs:0, re:0, tm:null, sel:new Set()};
+  /* período: os meses marcados (vários) ou, sem marcação, o ano de janeiro até o último mês fechado.
+     Os indicadores somam só os meses do período; M é o último deles (fim da janela de 12 meses). */
+  function periodo(){
+    const sel=[...st.sel].sort((a,b)=>a-b);
+    const ms=sel.length?sel:meses.filter(m=>m<=fech);
+    const M=ms[ms.length-1]||fech;
+    let rot;
+    if(!sel.length) rot='janeiro a '+MESNOME[fech];
+    else rot=ms.map(m=>MESNOME[m]).join(', ');
+    return {ms,M,rot,sel};
+  }
 
   const linhaTopo=el('div','linhaTopo'); host.appendChild(linhaTopo);
   const barra=el('div','cbar'); linhaTopo.appendChild(barra);
@@ -2231,7 +2242,7 @@ function montaComando(){
   const sAl=bloco(row3,'O que merece atenção agora'); sAl.classList.add('c7');
 
   function calc(){
-    const M=st.M, ms=meses.filter(m=>m<=M);
+    const P=periodo(), M=P.M, ms=P.ms.filter(m=>lei[m]);
     const S=k=>ms.reduce((s,m)=>s+(lei[m][k]||0),0);
     const fr=1+st.rr/100;
     const rit=S('rit')*fr;
@@ -2243,7 +2254,7 @@ function montaComando(){
       mm--; if(!mm){ mm=12; y--; }
     }
     pes*=1+st.rf/100; rcl*=fr;
-    const cam=ms.reduce((s,m)=>s+((a29.camara_mes||{})[m]||0),0);
+    const cam=meses.filter(m=>m<=M).reduce((s,m)=>s+((a29.camara_mes||{})[m]||0),0);   // Câmara: acumulado até o fim do período, contra o teto anual
     const pPes=rcl?pes/rcl*100:0, pEdu=rit?edu/rit*100:0, pSau=rit?sau/rit*100:0, pCam=a29.teto_2026?cam/a29.teto_2026*100:0;
     return {falt,pes,rcl,rit,gauges:[
       {n:'Folha de pessoal', c:'Folha · 12 meses', v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
@@ -2253,7 +2264,7 @@ function montaComando(){
   }
   function stat(g){
     /* o mínimo é anual: abaixo dele antes de dezembro é só observação, não descumprimento */
-    if(g.tipo==='min') return g.v>=g.lim?'ok':((g.v>=g.lim-2||st.M<12)?'at':'ruim');
+    if(g.tipo==='min') return g.v>=g.lim?'ok':((g.v>=g.lim-2||periodo().M<12)?'at':'ruim');
     if(g.v>g.lim) return 'ruim';
     return (g.alerta&&g.v>g.alerta)?'at':'ok';
   }
@@ -2262,16 +2273,19 @@ function montaComando(){
     return 'M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+' A'+r+' '+r+' 0 0 1 '+b[0].toFixed(1)+' '+b[1].toFixed(1); };
 
   function desenha_(){
-    const R=calc(), M=st.M;
+    const P=periodo(), M=P.M, R=calc();
     /* meses */
     barra.innerHTML='';
     meses.forEach(m=>{
-      const b=el('div','ano'+(m===M?' on':'')+(m>fech?' parcial':'')); b.textContent=MESES[m-1]+(m>fech?' *':'');
-      b.title=m>fech?'mês ainda em andamento':''; b.onclick=()=>{ parar(); st.M=m; desenha_(); }; barra.appendChild(b);
+      const b=el('div','ano'+(st.sel.has(m)?' on':'')+(m>fech?' parcial':'')); b.textContent=MESES[m-1]+(m>fech?' *':'');
+      b.title=(m>fech?'mês ainda em andamento · ':'')+'clique para marcar ou desmarcar (pode marcar vários)';
+      b.onclick=()=>{ st.sel.has(m)?st.sel.delete(m):st.sel.add(m); desenha_(); }; barra.appendChild(b);
     });
+    const lp=el('div','ano'); lp.textContent='🗑️ Limpar'; lp.title='Voltar ao ano, de janeiro até o último mês fechado';
+    lp.onclick=()=>{ st.sel.clear(); desenha_(); }; barra.appendChild(lp);
     /* selo */
     /* o saldo (receita líquida − pago) também pesa no selo: pago acima da receita é atenção, e alerta se passar de 3% */
-    const em=(eq.meses||[]).filter(m=>m[0]<=M), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
+    const em=(eq.meses||[]).filter(m=>P.ms.includes(m[0])), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
     const stSaldo=rec-pag>=0?'ok':((rec-pag)/(rec||1)>-0.03?'at':'ruim');
     const ss=R.gauges.map(stat), todos=ss.concat([stSaldo]);
     const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
@@ -2280,7 +2294,7 @@ function montaComando(){
       :(soSaldo?'Limites legais em dia, mas o pago passou da receita'
       :(pior==='ruim'?'Há indicador fora do limite':'Indicador perto do limite'));
     selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
-      +'<b style="font-size:17px">'+frase+' · posição até '+MESNOME[M]+'</b>'
+      +'<b style="font-size:17px">'+frase+' · '+(P.sel.length?'meses: ':'')+P.rot+'</b>'
       ;
     /* medidores */
     gradeG.innerHTML='';
@@ -2290,15 +2304,20 @@ function montaComando(){
       const cb=({ok:'#009C3B',at:'#E3A008',ruim:'#D92D20'})[ss[i]], cn=({ok:'#007A2E',at:'#9A6B00',ruim:'#B42318'})[ss[i]];
       const d=el('div','cg'); d.style.setProperty('--cs',c);
       d.title=g.n+' · '+g.sub+' · '+g.x;
-      d.innerHTML='<svg viewBox="0 0 120 70" role="img" aria-label="'+g.n+'"><path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="11"/>'
+      /* a meta: traço branco por baixo (contorno), traço escuro por cima e uma bolinha na ponta, pra destacar no arco */
+      const m3=pt(60,62,54,l);
+      d.innerHTML='<svg viewBox="0 0 120 78" role="img" aria-label="'+g.n+'"><g transform="translate(0,62) scale(1,1.2) translate(0,-62)">'
+        +'<path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="11"/>'
         +'<path d="'+arc(60,62,41,0,Math.max(f,0.002))+'" fill="none" stroke="'+cb+'" stroke-width="11"/>'
-        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m1[0].toFixed(1)+'" y2="'+m1[1].toFixed(1)+'" stroke="var(--t1)" stroke-width="2.5"/>'
+        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m3[0].toFixed(1)+'" y2="'+m3[1].toFixed(1)+'" stroke="#fff" stroke-width="7"/>'
+        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m3[0].toFixed(1)+'" y2="'+m3[1].toFixed(1)+'" stroke="#111827" stroke-width="3.6"/>'
+        +'<circle cx="'+m3[0].toFixed(1)+'" cy="'+m3[1].toFixed(1)+'" r="3.4" fill="#111827" stroke="#fff" stroke-width="1.5"/></g>'
         +'<text x="60" y="58" text-anchor="middle" style="font-size:21px;font-weight:700;fill:'+cn+'">'+f1.format(g.v)+'%</text></svg>'
         +'<div class="cl">'+g.c+'</div>';
       d.onclick=()=>irPara('eq'); gradeG.appendChild(d);
     });
     /* painel de cartões (reagem ao mês escolhido) */
-    const pad=m=>String(m).padStart(2,'0'), ms=meses.filter(m=>m<=M), pf=DATA.prefeito||{}, VI=DATA.vinculadas||{mes:{},bruta_mes:{}};
+    const pad=m=>String(m).padStart(2,'0'), ms=P.ms, pf=DATA.prefeito||{}, VI=DATA.vinculadas||{mes:{},bruta_mes:{}};
     const cards=[];
     // contas no azul
     cards.push({tit:'Contas no azul?', st:stSaldo, valor:(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
@@ -2326,8 +2345,8 @@ function montaComando(){
     {
       const opm=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{}, mapa=new Map();
       Object.keys(opm).map(Number).sort((a,b)=>a-b).filter(m=>m<=M).forEach(m=>opm[m].forEach(([nome,ini,atual,emp,liq,pg])=>{
-        const o=mapa.get(nome)||{nome,ini,dl:0,emp:0,liq:0,pag:0};
-        o.dl+=atual-ini; o.emp+=emp; o.liq+=liq; o.pag+=pg; mapa.set(nome,o); }));
+        const o=mapa.get(nome)||{nome,ini,dl:0,emp:0,liq:0,pag:0}, dentro=P.ms.includes(m);
+        o.dl+=atual-ini; if(dentro){ o.emp+=emp; o.liq+=liq; o.pag+=pg; } mapa.set(nome,o); }));
       const rows=[...mapa.values()].map(o=>({nome:o.nome.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''), ini:o.ini, atual:o.ini+o.dl, emp:o.emp, liq:o.liq, pag:o.pag}))
         .sort((a,b)=>b.emp-a.emp);
       const soma=l=>l.reduce((a,r)=>({ini:a.ini+r.ini,atual:a.atual+r.atual,emp:a.emp+r.emp,liq:a.liq+r.liq,pag:a.pag+r.pag}),{ini:0,atual:0,emp:0,liq:0,pag:0});
@@ -2345,7 +2364,7 @@ function montaComando(){
         +'<td style="font-weight:700;color:var(--alta)">'+exato(rec)+'</td>'
         +'<td style="font-weight:700" title="Arrecadado dividido pelo pago">'+(tot.pag?f1.format(rec/tot.pag*100)+'% do pago':'—')+'</td></tr>'
         +'</tbody></table></div>';
-      sTab.querySelector('.rot').textContent='Execução do orçamento · até '+MESNOME[M];
+      sTab.querySelector('.rot').textContent='Execução do orçamento · '+P.rot;
     }
     gradeC.innerHTML='';
     cards.forEach(c=>{
@@ -2357,7 +2376,7 @@ function montaComando(){
     /* receitas vinculadas: total, percentual da receita e quebra por área (de janeiro até o mês) */
     {
       sVi.querySelectorAll('.vbox').forEach(x=>x.remove());
-      sVi.querySelector('.rot').textContent='Receitas vinculadas · de janeiro até '+MESNOME[M];
+      sVi.querySelector('.rot').textContent='Receitas vinculadas · '+P.rot;
       const FUNC_DE={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
       const REGRA_DE={'Mineração (restrita)':'Lei 7.990/1989: não pode pagar folha do quadro permanente nem dívida.',
         'Serviço da taxa':'Só pode custear o serviço que a taxa remunera (CF art. 145).','Iluminação pública':'Só pode custear a iluminação pública (CF art. 149-A).',
@@ -2429,7 +2448,7 @@ function montaComando(){
     R.gauges.forEach((g,i)=>{ if(ss[i]!=='ok'){ n++; const a=el('div','palerta'); a.style.setProperty('--cs',COR_ST[ss[i]]);
       a.innerHTML='<i></i><span>'+esc(txt[i](g))+'</span>'; a.onclick=()=>irPara('eq'); sAl.appendChild(a); } });
     if(rec-pag<0){ n++; const a=el('div','palerta'); a.style.setProperty('--cs',COR_ST.at);
-      a.innerHTML='<i></i><span>Até '+MESNOME[M]+' foram pagos '+brlx(pag-rec)+' a mais do que a receita líquida arrecadada (o pago inclui restos a pagar de anos anteriores).</span>';
+      a.innerHTML='<i></i><span>No período ('+P.rot+') foram pagos '+brlx(pag-rec)+' a mais do que a receita líquida arrecadada (o pago inclui restos a pagar de anos anteriores).</span>';
       a.onclick=()=>irPara('eq'); sAl.appendChild(a); }
     const ct=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0&&r[8]<=30).sort((a,b)=>a[8]-b[8]);
     if(ct.length){ n++; const a=el('div','palerta'); a.style.setProperty('--cs',COR_ST.at);
