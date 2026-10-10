@@ -808,6 +808,9 @@ HTML = r'''<!DOCTYPE html>
   .dgrid > .secao{ padding:14px 16px 16px; border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); min-width:0; }
   .dgrid > .secao > .rot{ margin-bottom:12px; color:var(--t2); font-weight:700; }
   .colbox{ min-width:0; }
+  .colesq{ display:flex; flex-direction:column; }
+  .colesq > .secao:first-child{ margin-top:0; }
+  .colesq > .secao:last-child{ flex:1; }   /* o último quadrante estica até a base do quadrante ao lado */
   .colbox > .secao{ margin-top:14px; padding:14px 16px 16px; border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); }
   .colbox > .secao > .rot{ margin-bottom:12px; color:var(--t2); font-weight:700; }
   .colcards{ display:flex; flex-direction:column; min-width:0; }
@@ -2169,12 +2172,15 @@ function montaComando(){
   const gradeC=el('div','pgrid p2'); colCards.appendChild(gradeC);
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
   const hostTab=el('div'); sTab.appendChild(hostTab);
-  const sVi=bloco(linhaCards,'Receitas vinculadas'); sVi.classList.add('c7');
+  /* coluna da esquerda da 2ª linha: receitas vinculadas e, logo abaixo, "para onde vai o dinheiro"
+     (ocupa o espaço que sobrava ao lado do quadrante de vínculo/pessoal) */
+  const colEsq=el('div','c7 colbox colesq'); linhaCards.appendChild(colEsq);
+  const sVi=bloco(colEsq,'Receitas vinculadas');
+  const sOnde=bloco(colEsq,'Para onde vai o dinheiro');
   const sVin=bloco(linhaCards,'Vínculo · servidores'); sVin.classList.add('c5');
   const hostVin=el('div'); sVin.appendChild(hostVin);
   const row3=el('div','dgrid'); host.appendChild(row3);
-  const sOnde=bloco(row3,'Para onde vai o dinheiro'); sOnde.classList.add('c5');
-  const sAl=bloco(row3,'O que merece atenção agora'); sAl.classList.add('c7');
+  const sAl=bloco(row3,'O que merece atenção agora'); sAl.classList.add('c12');
 
   function calc(Pin){
     const P=Pin||periodo(), M=P.M, ms=P.ms.filter(m=>lei[m]);
