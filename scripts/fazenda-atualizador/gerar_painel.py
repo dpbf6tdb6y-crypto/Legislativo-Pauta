@@ -510,6 +510,7 @@ DATA = {
     'ct_coleta': CT_COLETA,
     'rh_ref': RH_REF,
     'pessoal_hist': PESSOAL_HIST,
+    'pessoal_serie': _pj,
     'despesas': DESPESAS,
     'natureza': NATUREZA,
     'lei': LEI,
@@ -2634,7 +2635,15 @@ function montaComando(){
             if(best&&Math.abs(best.d)>0) sub='<div class="pjx">Maior efeito: <b>'+esc(nomeNat(best.n))+'</b> '+miv(best.d)+' · variação total '+miv(v-vp)+'</div>';
           }
         }
-        cel+='<div class="pj'+(dentro?' on':'')+'"><div class="pjr"><span>'+MESES[m-1]+'/'+String(y).slice(2)+'</span><b>'+(v===undefined?'—':exato(v))+'</b>'+chip+'</div>'+sub+'</div>';
+        /* servidores do mês (folha publicada) e a variação contra o mês anterior */
+        const ps=DATA.pessoal_serie||{}, sv=ps[k], svp=ps[prevDe(y,m)];
+        let subS;
+        if(sv){
+          let vv='';
+          if(svp&&svp.servidores){ const dv=(sv.servidores-svp.servidores)/svp.servidores*100; vv=' · '+(dv>=0?'▲ +':'▼ −')+f1.format(Math.abs(dv))+'%'; }
+          subS='<div class="pjx" style="color:var(--t2)">Servidores: <b>'+f0.format(sv.servidores)+'</b>'+vv+' · bruto da folha '+brlx(sv.bruto)+' · média '+exato(sv.media)+'</div>';
+        } else subS='<div class="pjx">Servidores: ainda não coletado para este mês</div>';
+        cel+='<div class="pj'+(dentro?' on':'')+'"><div class="pjr"><span>'+MESES[m-1]+'/'+String(y).slice(2)+'</span><b>'+(v===undefined?'—':exato(v))+'</b>'+chip+'</div>'+subS+sub+'</div>';
       });
       const media=(12-falt)?soma12/(12-falt):0;
       const pc=rcl12?soma12/rcl12*100:0;
@@ -2643,7 +2652,13 @@ function montaComando(){
         +'<div class="pjv"><div><small>Média mensal</small><b>'+exato(media)+'</b></div>'
         +(maiorAlta?'<div><small>Maior alta</small><b style="color:var(--baixa)">'+maiorAlta.k+' · +'+f1.format(maiorAlta.v)+'%</b></div>':'')
         +(maiorQueda?'<div><small>Maior queda</small><b style="color:var(--acento)">'+maiorQueda.k+' · −'+f1.format(Math.abs(maiorQueda.v))+'%</b></div>':'')
-        +'<div><small>Meses com variação ≥ 10%</small><b>'+nFora+' de '+Math.max(0,11)+'</b></div></div>'
+        +'<div><small>Meses com variação ≥ 10%</small><b>'+nFora+' de 11</b></div>'
+        +(()=>{ const ps=DATA.pessoal_serie||{}, ks=Object.keys(ps).sort(); if(!ks.length) return '';
+                const u=ps[ks[ks.length-1]], q=ks.length>1?ps[ks[ks.length-2]]:null;
+                const dv=q&&q.servidores?(u.servidores-q.servidores)/q.servidores*100:null;
+                return '<div><small>Servidores no último mês ('+MESES[u.mes-1]+'/'+String(u.ano).slice(2)+')</small><b>'+f0.format(u.servidores)
+                  +(dv===null?'':' <span style="font-size:11px;color:var(--t3)">'+(dv>=0?'▲ +':'▼ −')+f1.format(Math.abs(dv))+'% no mês</span>')+'</b></div>'; })()
+        +'</div>'
         +'<div class="pjg">'+cel+'</div>'
         +'<div class="pjs"><div><small>Total dos 12 meses</small><b>'+exato(soma12)+'</b></div>'
         +'<div><small>% da RCL ('+brlx(rcl12)+')</small><b style="color:'+cor+'">'+f1.format(pc)+'%</b></div>'
