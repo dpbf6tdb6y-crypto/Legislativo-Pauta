@@ -831,6 +831,15 @@ HTML = r'''<!DOCTYPE html>
   .vr.n2{ background:#FEE4E2; color:#B42318; }
   .pjr b{ text-align:right; }
   .pjx{ font-size:11px; color:var(--t3); margin:2px 0 1px 58px; line-height:1.35; }
+  .pjtab{ width:100%; border-collapse:collapse; table-layout:fixed; margin-top:2px; }
+  .pjtab th{ font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); padding:6px 6px; border-bottom:1px solid var(--linha); font-weight:600; }
+  .pjtab td{ padding:5px 6px !important; border-bottom:1px solid var(--linha); font-size:12.5px; font-variant-numeric:tabular-nums; }
+  .pjtab .m{ text-align:left; width:19%; color:var(--t2); } .pjtab td.m{ font-weight:600; color:var(--t1); }
+  .pjtab .p{ text-align:center; width:22%; }
+  .pjtab .s{ text-align:right; width:21%; }
+  .pjtab .v{ text-align:right; width:38%; } .pjtab td.v{ font-weight:700; color:var(--t1); }
+  .pjtab tr.on td{ background:var(--sup); } .pjtab tr.on td.m{ color:var(--acento); }
+  .pjtab .vr{ display:inline-block; }
   .pjv{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin:2px 0 10px; }
   .pjv > div{ background:var(--sup); border-radius:var(--r); padding:7px 10px; }
   .pjv small{ display:block; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--t3); }
@@ -2639,15 +2648,13 @@ function montaComando(){
             if(best&&Math.abs(best.d)>0) sub='<div class="pjx">Maior efeito: <b>'+esc(nomeNat(best.n))+'</b> '+miv(best.d)+' · variação total '+miv(v-vp)+'</div>';
           }
         }
-        /* servidores do mês (folha publicada) e a variação contra o mês anterior */
-        const ps=DATA.pessoal_serie||{}, sv=ps[k], svp=ps[prevDe(y,m)];
-        let subS;
-        if(sv){
-          let vv='';
-          if(svp&&svp.servidores){ const dv=(sv.servidores-svp.servidores)/svp.servidores*100; vv=' · '+(dv>=0?'▲ +':'▼ −')+f1.format(Math.abs(dv))+'%'; }
-          subS='<div class="pjx" style="color:var(--t2)">Servidores: <b>'+f0.format(sv.servidores)+'</b>'+vv+' · bruto da folha '+brlx(sv.bruto)+' · média '+exato(sv.media)+'</div>';
-        } else subS='<div class="pjx">Servidores: ainda não coletado para este mês</div>';
-        cel+='<div class="pj'+(dentro?' on':'')+'"><div class="pjr"><span>'+MESES[m-1]+'/'+String(y).slice(2)+'</span><b>'+(v===undefined?'—':exato(v))+'</b>'+chip+'</div>'+subS+sub+'</div>';
+        /* servidores do mês (folha publicada); o "maior efeito" fica no balão da linha */
+        const sv=(DATA.pessoal_serie||{})[k];
+        const efeito=sub.replace(/<[^>]+>/g,'').trim();
+        cel+='<tr class="'+(dentro?'on':'')+'" title="'+esc(efeito)+'"><td class="m">'+MESES[m-1]+'/'+String(y).slice(2)+'</td>'
+          +'<td class="p">'+chip+'</td>'
+          +'<td class="s">'+(sv?f0.format(sv.servidores):'<span style="color:var(--t3)">—</span>')+'</td>'
+          +'<td class="v">'+(v===undefined?'—':exato(v))+'</td></tr>';
       });
       const media=(12-falt)?soma12/(12-falt):0;
       const pc=rcl12?soma12/rcl12*100:0;
@@ -2663,7 +2670,7 @@ function montaComando(){
                 return '<div><small>Servidores no último mês ('+MESES[u.mes-1]+'/'+String(u.ano).slice(2)+')</small><b>'+f0.format(u.servidores)
                   +(dv===null?'':' <span style="font-size:11px;color:var(--t3)">'+(dv>=0?'▲ +':'▼ −')+f1.format(Math.abs(dv))+'% no mês</span>')+'</b></div>'; })()
         +'</div>'
-        +'<div class="pjg">'+cel+'</div>'
+        +'<table class="pjtab"><thead><tr><th class="m">Mês</th><th class="p" title="Variação do valor gasto contra o mês anterior">%</th><th class="s">Servidores</th><th class="v">Valor gasto total</th></tr></thead><tbody>'+cel+'</tbody></table>'
         +'<div class="pjs"><div><small>Total dos 12 meses</small><b>'+exato(soma12)+'</b></div>'
         +'<div><small>% da RCL ('+brlx(rcl12)+')</small><b style="color:'+cor+'">'+f1.format(pc)+'%</b></div>'
         +(nSel?'<div><small>Meses marcados ('+nSel+')</small><b>'+exato(somaSel)+'</b></div>':'')+'</div>'
