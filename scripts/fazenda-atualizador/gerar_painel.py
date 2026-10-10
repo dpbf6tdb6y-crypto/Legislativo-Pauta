@@ -562,9 +562,9 @@ HTML = r'''<!DOCTYPE html>
   nav b.grupoLabel{ font-weight:700; color:var(--t1); cursor:default; padding:6px 0; }
   nav b.grupoLabel:hover{ color:var(--t1); }
   nav .espaco{ width:14px; }
-  #btnAuditoria{ display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--t2); cursor:pointer;
-                 padding:7px 14px; border:1px solid var(--linha); border-radius:100px; background:var(--bg); white-space:nowrap; user-select:none; }
-  #btnAuditoria:hover{ border-color:#B9BFC9; color:var(--t1); }
+  #btnAuditoria{ display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:#fff; cursor:pointer;
+                 padding:7px 16px; border:1px solid var(--acento); border-radius:100px; background:var(--acento); white-space:nowrap; user-select:none; }
+  #btnAuditoria:hover{ background:#1757C2; border-color:#1757C2; }
   #audModal{ display:none; position:fixed; inset:0; z-index:100; background:rgba(15,23,42,.45); overflow:auto; padding:28px 16px; }
   #audModal.on{ display:block; }
   .audCaixa{ max-width:900px; margin:0 auto; background:var(--bg); border-radius:14px; padding:22px 26px 26px; box-shadow:0 18px 60px rgba(15,23,42,.35); }
@@ -574,6 +574,33 @@ HTML = r'''<!DOCTYPE html>
   .audBtns{ display:flex; gap:8px; flex:none; }
   .audBtns button{ font:inherit; font-size:12.5px; font-weight:600; padding:8px 14px; border-radius:100px; border:1px solid var(--linha); background:var(--bg); color:var(--t2); cursor:pointer; }
   .audBtns button:hover{ border-color:#B9BFC9; color:var(--t1); }
+  #audCorpo{ background:#fff; color:#111827; }
+  .relCab{ text-align:center; border-top:4px solid #0F2A5C; border-bottom:1px solid #0F2A5C; padding:16px 0 12px; margin:6px 0 14px; }
+  .relBras{ font-size:11.5px; letter-spacing:.16em; color:#0F2A5C; font-weight:700; }
+  .relT{ font-size:23px; font-weight:800; letter-spacing:.04em; color:#0F2A5C; margin:6px 0 2px; }
+  .relST{ font-size:12.5px; color:#475569; }
+  .relMeta{ width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:6px; }
+  .relMeta td{ border:1px solid #CBD5E1; padding:6px 10px; }
+  .relMeta td:first-child{ background:#F1F5F9; font-weight:700; width:26%; color:#0F2A5C; }
+  .relH{ font-size:13.5px; font-weight:800; color:#0F2A5C; text-transform:uppercase; letter-spacing:.05em; margin:20px 0 8px;
+         padding-bottom:4px; border-bottom:2px solid #0F2A5C; }
+  .relP{ font-size:13px; line-height:1.6; margin:6px 0; color:#1F2937; }
+  .relKpi{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:10px 0; }
+  .relKpi div{ border:1px solid #CBD5E1; border-radius:6px; padding:10px 12px; text-align:center; }
+  .relKpi b{ display:block; font-size:26px; line-height:1.1; }
+  .relKpi span{ font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:#475569; font-weight:700; }
+  .relTab{ width:100%; border-collapse:collapse; font-size:12px; }
+  .relTab th{ background:#0F2A5C; color:#fff; text-align:left; padding:7px 8px; font-size:11px; letter-spacing:.05em; text-transform:uppercase; }
+  .relTab td{ border:1px solid #CBD5E1; padding:7px 8px; vertical-align:top; line-height:1.45; }
+  .relTab tr{ break-inside:avoid; }
+  .relTab .num{ text-align:center; font-weight:700; width:30px; }
+  .relTab .sit{ white-space:nowrap; font-weight:700; }
+  .relTab .vl{ text-align:right; font-weight:700; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .relTab .dd{ color:#475569; font-size:11.5px; margin-top:2px; }
+  .relTab tr.grp td{ background:#E8EEF8; font-weight:800; color:#0F2A5C; text-transform:uppercase; font-size:11px; letter-spacing:.07em; }
+  .relLi{ font-size:13px; line-height:1.55; margin:4px 0 4px 18px; color:#1F2937; }
+  .relAss{ display:grid; grid-template-columns:repeat(3,1fr); gap:26px; margin-top:44px; font-size:11.5px; text-align:center; color:#334155; }
+  .relAss div{ border-top:1px solid #334155; padding-top:5px; }
   .audResumo{ display:flex; gap:22px; flex-wrap:wrap; margin:14px 0 4px; font-size:13.5px; color:var(--t1); }
   .audResumo span{ display:inline-flex; align-items:center; gap:7px; font-weight:600; }
   .audGrupo{ margin:18px 0 4px; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--t2); font-weight:700; }
@@ -589,8 +616,10 @@ HTML = r'''<!DOCTYPE html>
     body > header, body > .env{ display:none !important; }
     #audModal{ position:static !important; display:block !important; background:none !important; padding:0 !important; overflow:visible !important; }
     .audCaixa{ box-shadow:none !important; max-width:none !important; padding:0 !important; border-radius:0 !important; }
-    .audBtns{ display:none !important; }
-    @page{ margin:14mm 12mm; }
+    .audBtns, .audTopo{ display:none !important; }
+    #audCorpo{ padding:0 !important; }
+    .relH{ break-after:avoid; }
+    @page{ size:A4; margin:14mm 12mm; }
   }
   .acoes{ margin-left:auto; display:flex; align-items:center; gap:8px; }
   #btnLimpar{ display:none; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--t2);
@@ -2454,21 +2483,87 @@ function montaComando(){
   }
   function abreAuditoria(){
     const {it,P}=auditoria();
-    const hoje=new Date(), dt=hoje.toLocaleDateString('pt-BR')+' às '+hoje.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-    document.getElementById('audSub').innerHTML='Prefeitura Municipal de Nova Lima · exercício '+eq.ano+' · posição: '+P.rot+' · gerado em '+dt;
+    const hoje=new Date(), rr=(DATA.rreo&&DATA.rreo.ultimo)||null;
+    const dt=hoje.toLocaleDateString('pt-BR')+' às '+hoje.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    /* base legal e recomendação de cada ponto de controle */
+    const META=[
+      [/^Despesa com pessoal/,'LRF arts. 18 a 23 (limite 60%; alerta 54%; prudencial 57%)','Acompanhar mensalmente a despesa total com pessoal; antes de novas nomeações, reajustes ou horas extras, simular o efeito sobre o limite.'],
+      [/^Educação \(MDE\)/,'CF art. 212; LDB arts. 70 e 71','Programar a aplicação do saldo até dezembro para atingir 25% da receita de impostos; conferir glosas (inativos, merenda, desvio de função).'],
+      [/^Saúde \(ASPS\)/,'CF art. 198; LC 141/2012, arts. 4º e 7º','Manter o acompanhamento bimestral; conferir despesas que não contam como ASPS (inativos, merenda, saneamento).'],
+      [/^FUNDEB/,'Lei 14.113/2020, art. 26','Garantir que ao menos 70% dos recursos do FUNDEB sejam aplicados na remuneração dos profissionais da educação básica.'],
+      [/^Repasse à Câmara/,'CF art. 29-A','Controlar o duodécimo contra o teto de 6% da base de 2025; repasse acima do teto é crime de responsabilidade.'],
+      [/^Pago acima da receita|^Receita líquida cobre/,'LRF art. 1º, §1º e art. 9º','Verificar o fluxo de caixa e a origem dos restos a pagar pagos; se o desequilíbrio persistir, avaliar a limitação de empenho (LRF art. 9º).'],
+      [/^Empenhado sobre o orçamento/,'Lei 4.320/1964, arts. 58 a 60','Acompanhar o ritmo de empenho contra o calendário e a arrecadação, para não comprometer o fim do exercício.'],
+      [/^Remanejamento do orçamento/,'CF art. 167, V; Lei 4.320/1964, arts. 40 a 46','Conferir se os créditos adicionais têm lei ou decreto e fonte de recurso indicada.'],
+      [/^Receita vinculada sem despesa/,'CF art. 167, IV; LRF art. 8º, parágrafo único','Solicitar à Contabilidade o balancete da despesa por fonte/destinação de recursos e conciliar mensalmente receita vinculada e despesa paga.'],
+      [/aplicação da receita vinculada|receita vinculada recebida maior/,'CF art. 167, IV; LRF art. 8º, parágrafo único','Conciliar, por fonte de recurso, a receita vinculada recebida com a despesa que a consumiu.'],
+      [/^CFEM/,'Lei 7.990/1989, art. 8º; Lei 13.540/2017','Conferir na contabilidade que a fonte CFEM não pagou folha do quadro permanente nem dívida.'],
+      [/^Receita sem regra/,'—','Definir a regra de vinculação das linhas de receita ainda sem classificação.'],
+      [/^Contratos vencendo/,'Lei 14.133/2021','Priorizar prorrogações ou novos processos licitatórios dos contratos com vencimento próximo, evitando contratação sem cobertura.'],
+      [/^Peso dos contratos temporários/,'CF art. 37, II e IX','Avaliar a substituição gradual da contratação temporária por provimento efetivo, observados os limites de pessoal.'],
+      [/^Janela de 12 meses/,'LRF art. 18, §2º','Completar a série mensal para apurar o limite com os 12 meses.'],
+      [/^Despesa por natureza sem classificação/,'—','Completar as regras de classificação obrigatória x discricionária.'],
+      [/^Atualização das despesas/,'Lei 12.527/2011','Verificar a publicação do portal e a coleta automática.'],
+      [/^RREO/,'LRF art. 52; LC 101/2000','Acompanhar a publicação do RREO no prazo legal (30 dias após o bimestre).']
+    ];
+    const meta=t=>{ for(const [rx,b,r] of META) if(rx.test(t)) return {b,r}; return {b:'—',r:''}; };
+    it.forEach((x,i)=>{ x.i=i+1; Object.assign(x,meta(x.t)); });
     const n={v:0,l:0,o:0}; it.forEach(x=>n[x.n]++);
-    const nome={v:'Crítico',l:'Atenção',o:'Em ordem'};
-    let h='<div class="audResumo">'+['v','l','o'].map(k=>'<span><i class="bol '+k+'" style="margin:0"></i>'+n[k]+' '+nome[k].toLowerCase()+(n[k]===1?'':(k==='v'?'s':''))+'</span>').join('')+'</div>';
+    const NOME={v:'Crítico',l:'Atenção',o:'Em ordem'}, COR={v:'#D92D20',l:'#F79009',o:'#12B76A'};
+    const dot=k=>'<i class="bol '+k+'" style="margin:0 6px -1px 0"></i>';
+    const crit=it.filter(x=>x.n==='v'), aten=it.filter(x=>x.n==='l'), ordem=it.filter(x=>x.n==='o');
+    document.getElementById('audSub').innerHTML='Relatório pronto para impressão · gerado em '+dt;
+
+    let h='<div class="relCab"><div class="relBras">PREFEITURA MUNICIPAL DE NOVA LIMA · MINAS GERAIS</div>'
+      +'<div class="relT">RELATÓRIO DE AUDITORIA INTERNA</div>'
+      +'<div class="relST">Acompanhamento da gestão fiscal e orçamentária · exercício '+eq.ano+'</div></div>'
+      +'<table class="relMeta"><tr><td>Exercício</td><td>'+eq.ano+'</td></tr>'
+      +'<tr><td>Posição dos dados</td><td>'+esc(P.rot)+' de '+eq.ano+' (último mês fechado)</td></tr>'
+      +'<tr><td>Referência oficial</td><td>'+(rr?'RREO do '+rr.bimestre+'º bimestre/'+rr.ano+', posição em '+esc(rr.posicao):'RREO não coletado')+'</td></tr>'
+      +'<tr><td>Data de emissão</td><td>'+esc(dt)+'</td></tr>'
+      +'<tr><td>Natureza</td><td>Pontos de controle gerenciais, calculados a partir dos dados públicos do Portal da Transparência</td></tr></table>';
+
+    h+='<div class="relH">1. Objetivo e escopo</div>'
+      +'<p class="relP">Apresentar, de forma objetiva, os pontos de atenção da gestão fiscal e orçamentária do município no exercício, cobrindo: limites constitucionais e da Lei de Responsabilidade Fiscal; equilíbrio das contas; aplicação das receitas vinculadas; contratos e pessoal; e a confiabilidade dos dados utilizados.</p>';
+
+    h+='<div class="relH">2. Resumo executivo</div>'
+      +'<p class="relP">Foram avaliados <b>'+it.length+' pontos de controle</b>: <b style="color:#D92D20">'+n.v+' crítico'+(n.v===1?'':'s')+'</b>, '
+      +'<b style="color:#B54708">'+n.l+' de atenção</b> e <b style="color:#067647">'+n.o+' em ordem</b>.</p>'
+      +'<div class="relKpi"><div><b style="color:#D92D20">'+n.v+'</b><span>Críticos</span></div><div><b style="color:#F79009">'+n.l+'</b><span>Atenção</span></div><div><b style="color:#12B76A">'+n.o+'</b><span>Em ordem</span></div></div>';
+    if(crit.length){ h+='<p class="relP"><b>Pontos críticos (exigem providência):</b></p>'; crit.forEach(x=>{ h+='<div class="relLi">'+dot('v')+'<b>'+x.i+'.</b> '+esc(x.t)+' — <b>'+esc(x.v)+'</b></div>'; }); }
+    if(aten.length){ h+='<p class="relP"><b>Pontos de atenção (acompanhar):</b></p>'; aten.forEach(x=>{ h+='<div class="relLi">'+dot('l')+'<b>'+x.i+'.</b> '+esc(x.t)+' — <b>'+esc(x.v)+'</b></div>'; }); }
+
+    h+='<div class="relH">3. Quadro de achados</div>'
+      +'<table class="relTab"><thead><tr><th>Nº</th><th>Ponto de controle</th><th>Situação</th><th>Resultado</th><th>Base legal</th></tr></thead><tbody>';
     let g='';
     it.forEach(x=>{
-      if(x.g!==g){ g=x.g; h+='<div class="audGrupo">'+esc(g)+'</div>'; }
-      h+='<div class="audItem"><i class="bol '+x.n+'"></i><div><div class="tt">'+esc(x.t)+'</div><div class="dd">'+esc(x.d)+'</div></div><div class="vv">'+esc(x.v)+'</div></div>';
+      if(x.g!==g){ g=x.g; h+='<tr class="grp"><td colspan="5">'+esc(g)+'</td></tr>'; }
+      h+='<tr><td class="num">'+x.i+'</td><td><b>'+esc(x.t)+'</b><div class="dd">'+esc(x.d)+'</div></td>'
+        +'<td class="sit">'+dot(x.n)+NOME[x.n]+'</td><td class="vl">'+esc(x.v)+'</td><td>'+esc(x.b)+'</td></tr>';
     });
-    h+='<div class="audRodape"><b>Legenda:</b> vermelho = descumprimento ou risco imediato · laranja = ponto de atenção ou dado que o painel não consegue confirmar · verde = em ordem. '
-      +'Este relatório reúne <b>pontos de atenção gerenciais</b> calculados a partir dos dados públicos do Portal da Transparência. '
-      +'Não substitui a auditoria do controle interno, o parecer do Tribunal de Contas nem o RREO/RGF oficiais.</div>';
+    h+='</tbody></table>';
+
+    const recs=crit.concat(aten);
+    h+='<div class="relH">4. Recomendações</div>';
+    if(!recs.length) h+='<p class="relP">Não há recomendações: todos os pontos de controle estão em ordem.</p>';
+    recs.forEach((x,k)=>{ h+='<div class="relLi"><b>R'+(k+1)+'.</b> '+(x.r?esc(x.r):'Acompanhar.')+' <span style="color:#64748B">(achado '+x.i+' · '+NOME[x.n].toLowerCase()+')</span></div>'; });
+
+    h+='<div class="relH">5. Limitações do trabalho</div>'
+      +'<div class="relLi">O portal não informa a <b>fonte (destinação) de recurso</b> da despesa: a aplicação das receitas vinculadas não pode ser confirmada, apenas indicada por função de governo.</div>'
+      +'<div class="relLi">Os percentuais de pessoal usam a despesa liquidada e a receita corrente líquida aproximada (corrente menos deduções, sem excluir a contribuição previdenciária do servidor).</div>'
+      +'<div class="relLi">Os limites de Educação e Saúde seguem o RREO oficial (posição do último bimestre publicado); entre uma publicação e outra, o painel traz apenas aproximações.</div>'
+      +'<div class="relLi">Restos a pagar e despesas fora do portal não entram nos cálculos. Este relatório não substitui a auditoria do controle interno, o parecer do Tribunal de Contas nem o RREO/RGF oficiais.</div>';
+
+    h+='<div class="relH">6. Fontes dos dados</div>'
+      +'<div class="relLi">Portal da Transparência de Nova Lima: receitas, despesas por órgão, natureza e função, servidores, contratos e RREO.</div>'
+      +'<div class="relLi">Última coleta das despesas: '+(DATA.dp_coleta?esc(DATA.dp_coleta.split('-').reverse().join('/')):'—')+' · RREO: '+(rr?esc(rr.fonte||'RREO'):'—')+'.</div>';
+
+    h+='<div class="relAss"><div>Elaborado por<br>(responsável pela análise)</div><div>Responsável pelo Controle Interno</div><div>Prefeito Municipal</div></div>'
+      +'<div class="audRodape" style="text-align:center;border:0;margin-top:14px">Legenda: <b style="color:#D92D20">crítico</b> = descumprimento ou risco imediato · '
+      +'<b style="color:#B54708">atenção</b> = ponto a acompanhar ou dado que o painel não consegue confirmar · <b style="color:#067647">em ordem</b>.</div>';
     document.getElementById('audCorpo').innerHTML=h;
     const m=document.getElementById('audModal'); m.classList.add('on'); m.setAttribute('aria-hidden','false');
+    m.scrollTop=0;
   }
   window.__abrirAuditoria=abreAuditoria;
   /* vínculo dos servidores (mesmo recorte da aba Pessoal, última folha coletada) e, logo abaixo, a despesa com
