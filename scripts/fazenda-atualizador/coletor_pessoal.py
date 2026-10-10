@@ -27,7 +27,7 @@ BASE  = os.path.dirname(os.path.abspath(__file__))
 DEST  = os.path.join(BASE, 'dados_pessoal.json')
 CACHE = os.path.join(BASE, '_cache')
 URL   = 'https://mgnl.abaco.com.br/transparencia/servlet/wmservidores?0'
-JANELA = 4              # mês mais recente + 3 anteriores
+JANELA = 13             # mês mais recente + 12 anteriores (histórico pro painel; meses antigos só são baixados uma vez)
 MIN_SERVIDORES = 1000   # abaixo disso o arquivo certamente veio filtrado/incompleto
 VARIACAO_MAX = 0.20     # mês a mês, mais que isso é suspeito
 MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -126,6 +126,8 @@ def main():
         log('Meses a coletar: %s' % ', '.join('%s/%d' % (MESES[m - 1], a) for a, m in alvo))
 
         for i, (ano, mes) in enumerate(alvo):
+            if i >= 2 and chave(ano, mes) in dados.get('meses', {}):
+                continue   # mês fechado já coletado: só os 2 mais recentes são revistos
             rotulo = '%s/%d' % (MESES[mes - 1], ano)
             arq = os.path.join(CACHE, 'pessoal_%d_%02d.xls' % (ano, mes))
             try:
