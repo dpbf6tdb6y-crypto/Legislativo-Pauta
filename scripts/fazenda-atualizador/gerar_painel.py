@@ -824,7 +824,7 @@ HTML = r'''<!DOCTYPE html>
   .rk .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
   .linhaTopo{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin:6px 0 10px; }
   .linhaTopo .cbar{ margin:0; flex:none; }
-  .cgrid.inl{ display:flex; gap:12px; margin:-8px 0 0 auto; flex:none; justify-content:flex-end; align-self:flex-start; }
+  .cgrid.inl{ display:flex; gap:12px; margin:8px 0 0 auto; flex:none; justify-content:flex-end; align-self:flex-start; }
   .cgrid.inl .cg{ display:flex; flex-direction:column; align-items:center; padding:2px 8px 0; border:0;
                   border-radius:var(--r); background:transparent; text-align:center; }
   .cgrid.inl .cg:hover{ box-shadow:none; background:var(--sup); }
@@ -2182,7 +2182,7 @@ function montaComando(){
       d.title=g.n+' · '+g.sub+' · '+g.x;
       /* a meta: traço branco por baixo (contorno), traço escuro por cima e uma bolinha na ponta, pra destacar no arco */
       const m3=pt(60,62,54,l);
-      d.innerHTML='<svg viewBox="0 0 120 78" role="img" aria-label="'+g.n+'"><g transform="translate(0,62) scale(1,1.2) translate(0,-62)">'
+      d.innerHTML='<svg viewBox="0 -10 120 88" role="img" aria-label="'+g.n+'"><g transform="translate(0,62) scale(1,1.2) translate(0,-62)">'
         +'<path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="11"/>'
         +'<path d="'+arc(60,62,41,0,Math.max(f,0.002))+'" fill="none" stroke="'+cb+'" stroke-width="11"/>'
         +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m3[0].toFixed(1)+'" y2="'+m3[1].toFixed(1)+'" stroke="#fff" stroke-width="7"/>'
