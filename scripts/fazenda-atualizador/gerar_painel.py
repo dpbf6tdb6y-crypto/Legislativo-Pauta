@@ -2311,6 +2311,9 @@ function montaComando(){
         +'</tbody></table></div>';
       sTab.querySelector('.rot').textContent='Execução do orçamento · '+P.rot;
     }
+    /* ordem dos cartões (2 colunas): receita x despesa e contratos em cima; orçamento executado e folha embaixo */
+    const ORDEM=['Receita x despesa paga','Contratos vencendo','Orçamento executado','Folha de pessoal · 12 meses'];
+    cards.sort((x,y)=>ORDEM.indexOf(x.tit)-ORDEM.indexOf(y.tit));
     gradeC.innerHTML='';
     cards.forEach(c=>{
       const d=el('div','pcard'); d.style.setProperty('--cs',COR_ST[c.st]);
