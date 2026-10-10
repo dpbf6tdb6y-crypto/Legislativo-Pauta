@@ -727,6 +727,8 @@ HTML = r'''<!DOCTYPE html>
   .colbox{ min-width:0; }
   .colbox > .secao{ margin-top:14px; padding:14px 16px 16px; border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); }
   .colbox > .secao > .rot{ margin-bottom:12px; color:var(--t2); font-weight:700; }
+  .colcards{ display:flex; flex-direction:column; min-width:0; }
+  .colcards > .pgrid{ flex:1; margin:0; grid-auto-rows:1fr; }   /* cartões preenchem a altura do quadrante ao lado */
   .c3{ grid-column:span 3; } .c4{ grid-column:span 4; } .c5{ grid-column:span 5; } .c6{ grid-column:span 6; } .c7{ grid-column:span 7; }
   @media(max-width:1100px){ .c3,.c4{ grid-column:span 6; } .c5,.c6,.c7{ grid-column:span 12; } }
   @media(max-width:700px){ .dgrid > .secao{ grid-column:span 12; } }
@@ -2253,7 +2255,7 @@ function montaComando(){
   const linhaCards=el('div','dgrid'); host.appendChild(linhaCards);
   /* quadrantes em 2 colunas x 2 linhas, cada par com a mesma altura:
        [cartões] [execução do orçamento] / [receitas vinculadas] [vínculo e pessoal] */
-  const colCards=el('div','c7'); linhaCards.appendChild(colCards);
+  const colCards=el('div','c7 colcards'); linhaCards.appendChild(colCards);
   const gradeC=el('div','pgrid p2'); colCards.appendChild(gradeC);
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
   const hostTab=el('div'); sTab.appendChild(hostTab);
