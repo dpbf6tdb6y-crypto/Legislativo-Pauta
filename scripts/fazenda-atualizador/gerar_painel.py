@@ -800,7 +800,7 @@ HTML = r'''<!DOCTYPE html>
   .vrow .bb .t{ height:8px; background:var(--trilho); border-radius:4px; overflow:hidden; }
   .vrow .bb .t i{ display:block; height:100%; border-radius:4px; }
   .vrow .bb .rr i{ background:var(--acento); }
-  .vrow .bb .gg i{ background:#12805C; }
+  .vrow .bb .gg i{ background:#8A94A6; }
   .vrow .bb em{ font-size:10.5px; font-style:italic; color:var(--parcial); line-height:1.2; }
   .vsem{ margin-top:10px; padding:9px 12px; border-radius:var(--r); background:#FFF6E0; border:1px solid #F1D48A; font-size:12.5px; color:#6B4A00; line-height:1.5; }
   .vlegd{ display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color:var(--t2); margin:0 0 6px; }
@@ -2284,8 +2284,8 @@ function montaComando(){
           +'<span><i style="background:#C9D1DC"></i>Livre '+brlx(livre)+' · '+pc(livre)+'</span>'
           +(tn>0.005?'<span><i style="background:#E3A008"></i>Sem regra definida '+brlx(tn)+' · '+pc(tn)+'</span>':'')+'</div>'
           +'<div class="vlegd"><span><i style="background:var(--acento)"></i>Receita vinculada recebida</span>'
-          +'<span><i style="background:#12805C"></i>Despesa na função correspondente <b>(aproximada, não é por fonte de recurso)</b></span></div>'
-          +'<div class="vrow cab"><span>Área</span><span>Recebido x gasto</span><span style="text-align:right">Recebido</span><span style="text-align:right">Gasto</span><span style="text-align:right">% receita</span></div>';
+          +'<span><i style="background:#8A94A6"></i>Despesa total da função de governo <b>(não é só a parte paga com esta receita: o portal não informa a fonte de recurso)</b></span></div>'
+          +'<div class="vrow cab"><span>Área</span><span>Recebido x gasto</span><span style="text-align:right">Recebido</span><span style="text-align:right">Gasto na função</span><span style="text-align:right">% receita</span></div>';
         /* a tabela traz TODAS as receitas vinculadas; onde não há despesa identificada, a própria linha avisa */
         const mxb=Math.max(...lv.map(l=>Math.max(l.v,l.gasto||0)),1);
         lv.forEach(l=>{
@@ -2299,7 +2299,7 @@ function montaComando(){
           if(st.area===l.area){
             const cob=l.gasto===null?'':(l.v>l.gasto
               ?'<br><b style="color:var(--parcial)">Recebeu mais do que gastou na função — conferir.</b> Gasto na função: '+exato(l.gasto)+'.'
-              :'<br><b style="color:var(--alta)">O gasto na função cobre o que foi recebido</b> ('+exato(l.gasto)+').');
+              :'<br><b style="color:var(--parcial)">Aplicação na finalidade não confirmável.</b> A despesa total da função é '+exato(l.gasto)+', mas o portal não informa qual parte foi paga com esta receita vinculada.');
             h+='<div class="vdet"><b>Base legal:</b> '+esc(l.lei||'—')+'<br>'+esc(REGRA_DE[l.area]||'')+'<br>Recebido: '+exato(l.v)+cob+'</div>';
           }
         });
@@ -2407,8 +2407,8 @@ function montaComando(){
         sem.map(([a,v])=>a+' '+brlx(v)).join(' · ')+'. O portal não separa a despesa por fonte de recurso; não dá para confirmar a aplicação na finalidade.',brlx(vs)+' ('+p1(tb?vs/tb*100:0)+')','pre');
       Object.entries(rec_).filter(([a])=>FUNC[a]).forEach(([a,v])=>{
         const g=fg[FUNC[a]]||0;
-        add('Receitas vinculadas',v>g?'v':'o',a+(v>g?': gasto na função é menor que a receita vinculada recebida':': gasto na função cobre a receita vinculada recebida'),
-          'Recebido '+brlx(v)+' · gasto na função '+brlx(g)+' (aproximado, por função de governo).',brlx(g),'pre');
+        add('Receitas vinculadas',v>g?'v':'l',v>g?a+': receita vinculada recebida maior que toda a despesa da função':a+': aplicação da receita vinculada não confirmável',
+          'Recebido '+brlx(v)+' · despesa total da função '+brlx(g)+'. O portal não informa a fonte de recurso, então não dá para saber quanto da despesa foi paga com a receita vinculada.',brlx(v),'pre');
       });
       if(rec_['Mineração (restrita)']) add('Receitas vinculadas','l','CFEM: vedado pagar quadro permanente de pessoal e dívida',
         'Lei 7.990/1989. Recebido '+brlx(rec_['Mineração (restrita)'])+'. Não é verificável com os dados do portal.',brlx(rec_['Mineração (restrita)']),'pre');
