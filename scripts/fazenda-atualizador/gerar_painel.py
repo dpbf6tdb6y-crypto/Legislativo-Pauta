@@ -596,23 +596,24 @@ HTML = r'''<!DOCTYPE html>
   header{ position:sticky; top:0; z-index:20; background:rgba(255,255,255,.92);
           backdrop-filter:blur(8px); border-bottom:1px solid var(--linha); }
   .topo{ max-width:1680px; margin:0 auto; padding:0 48px;
-         display:flex; align-items:center; gap:24px; height:60px; flex-wrap:nowrap; }
+         display:flex; align-items:center; gap:24px; height:70px; flex-wrap:nowrap; }
   .topo nav{ flex-wrap:nowrap; min-width:0; gap:16px; }
   @media (max-width:1180px){ .topo{ flex-wrap:wrap; height:auto; padding-top:10px; padding-bottom:10px; } .topo nav{ flex-wrap:wrap; } }
   @media (max-width:1400px){ .topo{ max-width:100%; padding:0 40px; } }
   @media (max-width:760px){ .topo{ padding:0 20px; gap:18px; height:auto;
                                    padding-top:12px; padding-bottom:12px; } }
   /* identidade: faixa nas cores do site da prefeitura (laranja, magenta, roxo, azul, verde) */
-  header::before{ content:''; display:block; height:4px; background:linear-gradient(90deg,#FF5A00 0%,#E10C8C 28%,#6A3FBF 52%,#0077FF 76%,#00B85C 100%); }
-  .marca img.logo{ height:46px; width:auto; display:block; }
+  .marca img.logo{ height:52px; width:auto; display:block; }
   .marca{ font-size:17px; font-weight:800; letter-spacing:-.02em; white-space:nowrap; color:var(--t1); line-height:1; text-transform:uppercase; }
   .marca small{ display:block; font-size:11px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--t2); margin-top:2px; }
-  nav{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
+  nav{ display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
   nav b{ font-size:13.5px; font-weight:400; color:var(--t3); cursor:pointer;
          padding:6px 0; border-bottom:2px solid transparent; user-select:none;
          white-space:nowrap; }
   nav b:hover{ color:var(--t2); }
-  nav b.on{ color:var(--t1); font-weight:600; border-bottom-color:#E10C8C; }
+  nav b{ padding:7px 13px; border-radius:20px; border-bottom:0; }
+  nav b:hover{ background:var(--sup); }
+  nav b.on, nav b.on:hover{ color:#fff; font-weight:600; background:#E10C8C; }
   nav b.grupoLabel{ font-weight:700; color:var(--t1); cursor:default; padding:6px 0; }
   nav b.grupoLabel:hover{ color:var(--t1); }
   nav .espaco{ display:none; }
