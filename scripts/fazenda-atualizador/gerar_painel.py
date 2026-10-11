@@ -2248,7 +2248,7 @@ function montaComando(){
     return function(){};
   }
   const fech=Math.min((DATA.lei&&DATA.lei.fechado)||meses[meses.length-1], meses[meses.length-1]);
-  const st={M:fech, rr:0, rf:0, rs:0, re:0, tm:null, sel:new Set(), vinc:null};
+  const st={M:fech, rr:0, rf:0, rs:0, re:0, tm:null, sel:new Set(meses), vinc:null};   /* abre com todos os meses marcados */
   /* restos a pagar pagos em 2026 (RREO, Anexo 07): só vale para o ano inteiro, contra o pago acumulado */
   function ajusteRP(P){
     const rp=(DATA.rreo&&DATA.rreo.ultimo&&DATA.rreo.ultimo.rp)||null;
@@ -2263,6 +2263,7 @@ function montaComando(){
     const M=ms[ms.length-1]||fech;
     let rot;
     if(!sel.length) rot='janeiro a '+MESNOME[fech];
+    else if(sel.every((m,i)=>m===sel[0]+i)) rot=sel.length===1?MESNOME[sel[0]]:MESNOME[sel[0]]+' a '+MESNOME[sel[sel.length-1]];
     else rot=ms.map(m=>MESNOME[m]).join(', ');
     return {ms,M,rot,sel};
   }
@@ -2372,7 +2373,7 @@ function montaComando(){
       :(soSaldo?'Limites legais em dia, mas o pago passou da receita'
       :(pior==='ruim'?'Há indicador fora do limite':'Indicador perto do limite'));
     selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
-      +'<b style="font-size:17px">'+frase+' · '+(P.sel.length?'meses: ':'')+P.rot+'</b>'
+      +'<span style="font-size:17px">'+frase+' · '+P.rot+'</span>'
       ;
     /* medidores */
     gradeG.innerHTML='';
@@ -2579,7 +2580,7 @@ function montaComando(){
     desenhaVinculo(P);
   }
   function parar(){ if(st.tm){ clearInterval(st.tm); st.tm=null; } }
-  window.__limparCmd=()=>{ st.sel.clear(); st.vinc=null; st.area=null; desenha_(); };   /* limpa todos os filtros do painel */
+  window.__limparCmd=()=>{ st.sel=new Set(meses); st.vinc=null; st.area=null; desenha_(); };   /* limpa todos os filtros do painel */
   /* ---------------- auditoria interna: pontos de atenção (posição: ano até o último mês fechado) ---------------- */
   function auditoria(){
     const Pb={ms:meses.filter(m=>m<=fech), M:fech, sel:[], rot:'janeiro a '+MESNOME[fech]};
