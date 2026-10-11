@@ -602,14 +602,16 @@ HTML = r'''<!DOCTYPE html>
   @media (max-width:1400px){ .topo{ max-width:100%; padding:0 40px; } }
   @media (max-width:760px){ .topo{ padding:0 20px; gap:18px; height:auto;
                                    padding-top:12px; padding-bottom:12px; } }
-  .marca{ font-size:15px; font-weight:700; letter-spacing:-.01em; white-space:nowrap;
-          color:var(--t1); }
+  /* identidade: faixa nas cores do site da prefeitura (laranja, magenta, roxo, azul, verde) */
+  header{ border-top:4px solid transparent; border-image:linear-gradient(90deg,#FF5A00 0%,#E10C8C 28%,#6A3FBF 52%,#0077FF 76%,#00B85C 100%) 1; }
+  .marca{ font-size:17px; font-weight:800; letter-spacing:-.02em; white-space:nowrap; color:var(--t1); line-height:1; text-transform:uppercase; }
+  .marca small{ display:block; font-size:11px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--t2); margin-top:2px; }
   nav{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
   nav b{ font-size:13.5px; font-weight:400; color:var(--t3); cursor:pointer;
          padding:6px 0; border-bottom:2px solid transparent; user-select:none;
          white-space:nowrap; }
   nav b:hover{ color:var(--t2); }
-  nav b.on{ color:var(--t1); font-weight:600; border-bottom-color:var(--acento); }
+  nav b.on{ color:var(--t1); font-weight:600; border-bottom-color:#E10C8C; }
   nav b.grupoLabel{ font-weight:700; color:var(--t1); cursor:default; padding:6px 0; }
   nav b.grupoLabel:hover{ color:var(--t1); }
   nav .espaco{ width:14px; }
@@ -1074,7 +1076,7 @@ HTML = r'''<!DOCTYPE html>
 </style>
 
 <header><div class="topo">
-  <div class="marca">Nova Lima</div>
+  <div class="marca">Nova Lima<small>prefeitura</small></div>
   <nav id="abas">
     <b data-p="capa" class="on">Visão geral</b>
     <b data-p="cmd">Visão detalhada</b>
