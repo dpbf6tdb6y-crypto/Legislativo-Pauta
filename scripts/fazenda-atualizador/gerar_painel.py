@@ -2366,15 +2366,21 @@ function montaComando(){
     const stSaldo=rec-pagEx>=0?'ok':((rec-pagEx)/(rec||1)>-0.03?'at':'ruim');
     const ss=R.gauges.map(stat), todos=ss.concat([stSaldo]);
     const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
-    /* diz QUAIS indicadores estão fora do verde, em vez de uma frase genérica */
-    const nomes=[];
-    ss.forEach((s_,i)=>{ if(s_!=='ok') nomes.push(R.gauges[i].n+' ('+f1.format(R.gauges[i].v)+'%'+(s_==='ruim'?', fora do limite':'')+')'); });
-    if(stSaldo!=='ok') nomes.push('Receita x despesa paga');
-    const frase=pior==='ok'?'Tudo dentro dos limites legais e a receita cobre o que foi pago'
-      :((pior==='ruim'?'Fora do limite: ':'Em observação: ')+nomes.join(', '));
-    selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
-      +'<span style="font-size:17px">'+frase+' · '+P.rot+'</span>'
-      ;
+    /* a faixa de status em linguagem simples: uma frase por assunto que merece atenção */
+    const x_=i=>f1.format(R.gauges[i].v);
+    const FRASE=[
+      ()=>'A folha de pessoal está em '+x_(0)+'% da receita; o limite da lei é 60% (alerta a partir de 54%).',
+      ()=>'A Educação aplicou '+x_(1)+'% da receita de impostos; a lei exige no mínimo 25%. A conta é fechada em dezembro.',
+      ()=>'A Saúde aplicou '+x_(2)+'% da receita de impostos; a lei exige no mínimo 15%. A conta é fechada em dezembro.',
+      ()=>'O repasse à Câmara está em '+x_(3)+'% do teto permitido.'];
+    const linhas=[];
+    ss.forEach((s_,i)=>{ if(s_!=='ok') linhas.push(FRASE[i]()); });
+    if(stSaldo!=='ok') linhas.push('Neste ano, foi pago '+brlx(pagEx-rec)+' a mais do que se arrecadou'+(rpA?' (sem contar os restos a pagar de anos anteriores).':' (inclui restos a pagar de anos anteriores).'));
+    if(!linhas.length) linhas.push('Os limites da lei estão cumpridos e a receita cobre o que foi pago.');
+    selo.style.alignItems='flex-start';
+    selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+';margin-top:1px">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
+      +'<div style="font-size:14.5px;line-height:1.55;max-width:900px">'+linhas.map(l=>'<div>'+esc(l)+'</div>').join('')
+      +'<div style="font-size:12px;color:var(--t3)">Período: '+esc(P.rot)+' de '+eq.ano+'</div></div>';
     /* medidores */
     gradeG.innerHTML='';
     R.gauges.forEach((g,i)=>{ gradeG.appendChild(gaugeEl(g,ss[i])); });
