@@ -715,6 +715,10 @@ HTML = r'''<!DOCTYPE html>
                        font-weight:700; }
   .ano.on.parcial::after{ color:#FFE9B0; }
   .resumo{ margin-left:auto; font-size:12.5px; color:var(--t3); white-space:nowrap; }
+  /* filtros e resumo sempre numa linha só: o resumo encurta com reticências em vez de cair pra linha de baixo */
+  .filtros{ flex-wrap:nowrap; min-width:0; max-width:100%; }
+  .filtros .ano{ flex:none; }
+  .filtros .resumo{ min-width:0; flex:0 1 auto; overflow:hidden; text-overflow:ellipsis; }
   .resumo b{ color:var(--t2); font-weight:600; }
   .resumo u{ text-decoration:none; color:var(--acento); }
 
