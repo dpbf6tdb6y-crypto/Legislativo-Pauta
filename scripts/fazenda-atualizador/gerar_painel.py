@@ -2910,6 +2910,30 @@ function montaLoa(){
     sFun.insertAdjacentHTML('beforeend',h);
   }
 
+  /* 5b) do valor inicial ao valor atual: créditos adicionais líquidos por secretaria */
+  const sCre=bloco(grade,'Do valor inicial ao valor atual · créditos adicionais por secretaria'); sCre.classList.add('c12');
+  {
+    const dO=(DATA.despesas&&DATA.despesas.dot_orgaos)||{};
+    const linhas=Object.entries(dO).map(([n,[i,a]])=>({n:n.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''),i,a,c:a-i}))
+      .filter(r=>Math.abs(r.c)>0.005).sort((x,y)=>y.c-x.c);
+    const tI=Object.values(dO).reduce((s,[i])=>s+i,0), tA=Object.values(dO).reduce((s,[,a])=>s+a,0), tC=tA-tI;
+    if(!linhas.length){
+      sCre.insertAdjacentHTML('beforeend','<div class="vazio">Sem créditos adicionais no período.</div>');
+    } else {
+      const maxC=Math.max(...linhas.map(r=>Math.abs(r.c)));
+      let h='<table class="ltab"><thead><tr><th style="width:34%">Secretaria / órgão</th><th>Valor inicial</th><th>Créditos líquidos</th><th>Valor atual</th><th style="width:16%">Variação</th></tr></thead><tbody>';
+      linhas.forEach(r=>{
+        const nome=r.n.charAt(0)+r.n.slice(1).toLowerCase();
+        h+='<tr><td>'+esc(nome)+'</td><td>'+exato(r.i)+'</td><td style="color:'+(r.c>=0?'var(--acento)':'var(--baixa)')+'">'+(r.c>=0?'+ ':'− ')+exato(Math.abs(r.c))+'</td><td>'+exato(r.a)+'</td>'
+          +'<td>'+(r.i?(r.c>=0?'+':'−')+f1.format(Math.abs(r.c)/r.i*100)+'%':'novo')+barra(Math.abs(r.c),maxC,r.c>=0?'var(--acento)':'#D92D20')+'</td></tr>';
+      });
+      h+='<tr class="tot"><td>Total do município</td><td>'+exato(tI)+'</td><td>'+(tC>=0?'+ ':'− ')+exato(Math.abs(tC))+'</td><td>'+exato(tA)+'</td><td>'+(tI?(tC>=0?'+':'−')+f1.format(Math.abs(tC)/tI*100)+'%':'—')+'</td></tr>';
+      h+='</tbody></table><div class="lnota">Crédito líquido = suplementações − anulações e reduções abertas no ano, por decreto ou lei. O portal informa as alterações mês a mês; o painel soma todos os meses de janeiro a '+mesNome+'. '
+        +'Crédito adicional autoriza gastar, mas não é receita nova: precisa de fonte de cobertura (superávit do ano anterior, excesso de arrecadação, anulação de outra dotação ou operação de crédito). A origem de cada decreto está com a Contabilidade.</div>';
+      sCre.insertAdjacentHTML('beforeend',h);
+    }
+  }
+
   /* 6) projeção de fechamento (estimativa) */
   const sPro=bloco(grade,'Projeção de fechamento da receita · estimativa'); sPro.classList.add('c12');
   {
