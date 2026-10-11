@@ -841,6 +841,15 @@ HTML = r'''<!DOCTYPE html>
   .pcard .pm u{ position:absolute; top:-3px; height:14px; width:2px; background:var(--t2); }
   .pgrid.p3{ grid-template-columns:repeat(3,minmax(0,1fr)); }
   .pgrid.p2{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .pgrid.p1{ grid-template-columns:minmax(0,1fr); }
+  .pgrid.p4{ grid-template-columns:repeat(4,minmax(0,1fr)); }
+  @media(max-width:1100px){ .pgrid.p4{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media(max-width:560px){ .pgrid.p4{ grid-template-columns:1fr; } }
+  .pcard.espera{ border-style:dashed; background:var(--sup); cursor:default; }
+  .pcard.espera .pb{ color:var(--t3); }
+  .faixaT{ font-size:11px; letter-spacing:.07em; text-transform:uppercase; font-weight:700; color:var(--t2); margin:0 0 8px; }
+  .faixaT small{ font-weight:400; letter-spacing:0; text-transform:none; color:var(--t3); margin-left:6px; }
+  .pcard .pb.peq{ font-size:20px; }
   @media(max-width:560px){ .pgrid.p2{ grid-template-columns:1fr; } }
   @media(max-width:900px){ .pgrid.p3{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media(max-width:560px){ .pgrid.p3{ grid-template-columns:1fr; } }
@@ -2213,9 +2222,9 @@ function montaEquilibrio(){
 
 
 /* ---------------- cores e navegação do Painel de Comando ---------------- */
-const COR_ST={ ok:'var(--alta)', at:'var(--parcial)', ruim:'var(--baixa)', info:'var(--acento)' };
+const COR_ST={ ok:'var(--alta)', at:'var(--parcial)', ruim:'var(--baixa)', info:'var(--acento)', esp:'var(--t3)' };
 const TAG_LEI={ ok:'DENTRO DO LIMITE', at:'ATENÇÃO', ruim:'FORA DO LIMITE' };
-const TAG_ST={ ok:'OK', at:'ATENÇÃO', ruim:'ALERTA', info:'INFORMATIVO' };
+const TAG_ST={ ok:'OK', at:'ATENÇÃO', ruim:'ALERTA', info:'INFORMATIVO', esp:'AGUARDANDO' };
 function irPara(p){ pagina=p; render(); scrollTo({top:0,behavior:'smooth'}); }
 
 
@@ -2264,15 +2273,21 @@ function montaComando(){
   /* quadrantes em 2 colunas x 2 linhas, cada par com a mesma altura:
        [cartões] [execução do orçamento] / [receitas vinculadas] [vínculo e pessoal] */
   const colCards=el('div','c7 colcards'); linhaCards.appendChild(colCards);
-  const gradeC=el('div','pgrid p2'); colCards.appendChild(gradeC);
+  const tituloAno=el('div','faixaT'); colCards.appendChild(tituloAno);
+  const gradeC=el('div','pgrid p1'); colCards.appendChild(gradeC);
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
   const hostTab=el('div'); sTab.appendChild(hostTab);
+  /* caixa e anos anteriores: o que veio de antes, separado do ano corrente */
+  const sCaixa=bloco(linhaCards,'Caixa e anos anteriores'); sCaixa.classList.add('c12');
+  const gradeCx=el('div','pgrid p4'); sCaixa.appendChild(gradeCx);
   /* coluna da esquerda da 2ª linha: receitas vinculadas e, logo abaixo, "para onde vai o dinheiro"
      (ocupa o espaço que sobrava ao lado do quadrante de vínculo/pessoal) */
   const colEsq=el('div','c7 colbox colesq'); linhaCards.appendChild(colEsq);
   const sVi=bloco(colEsq,'Receitas vinculadas');
   const sOnde=bloco(colEsq,'Para onde vai o dinheiro');
-  const sVin=bloco(linhaCards,'Vínculo · servidores'); sVin.classList.add('c5');
+  const colDir=el('div','c5 colbox colesq'); linhaCards.appendChild(colDir);
+  const sAt=bloco(colDir,'Contratos e pessoal'); const gradeA=el('div','pgrid p2'); sAt.appendChild(gradeA);
+  const sVin=bloco(colDir,'Vínculo · servidores');
   const hostVin=el('div'); sVin.appendChild(hostVin);
 
   function calc(Pin){
@@ -2394,6 +2409,12 @@ function montaComando(){
     /* sobra de 2025 e restos a pagar: posição do último RREO (não mudam com o mês escolhido) */
     {
       const rr_=(DATA.rreo&&DATA.rreo.ultimo)||null;
+      if(rr_&&rr_.caixa&&rr_.caixa.caixa_liquida_ate!=null){
+        const c=rr_.caixa, a0=rr_.ano-1;
+        cards.push({tit:'Caixa disponível', st:'info', valor:brlx(c.caixa_liquida_ate),
+          sub:'em caixa em '+rr_.posicao+', já descontados restos a pagar processados e depósitos de terceiros.',
+          leg:'Em 31/12/'+a0+': '+brlx(c.caixa_liquida_ant)+(c.caixa_bruta_ant!=null?' (bruto '+brlx(c.caixa_bruta_ant)+')':'')+'. Em '+rr_.posicao+': '+brlx(c.caixa_liquida_ate)+(c.caixa_bruta_ate!=null?' (bruto '+brlx(c.caixa_bruta_ate)+')':'')+'. Fonte: RREO '+rr_.bimestre+'º bimestre/'+rr_.ano+', Anexo 06. Inclui dinheiro de fontes vinculadas.', ir:'loa'});
+      }
       if(rr_&&rr_.caixa&&rr_.caixa.superavit_utilizado!=null){
         const c=rr_.caixa, a0=rr_.ano-1;
         cards.push({tit:'Sobra de '+a0+' usada em '+rr_.ano, st:'info', valor:brlx(c.superavit_utilizado),
@@ -2409,6 +2430,9 @@ function montaComando(){
           leg:'Inscritos até 31/12/'+(rr_.ano-1)+': '+brlx(insc)+' ('+brlx(r.inscritos_ano_anterior)+' em '+(rr_.ano-1)+' e '+brlx(r.inscritos_anteriores)+' de anos anteriores). Pagos '+brlx(r.pagos)+', cancelados '+brlx(r.cancelados)+', saldo '+brlx(r.saldo_total)+'. Fonte: RREO '+rr_.bimestre+'º bimestre/'+rr_.ano+', Anexo 07, posição em '+rr_.posicao+'.', ir:'eq'});
       }
     }
+    cards.push({tit:'Caixa livre x vinculado', st:'esp', espera:true, valor:'—',
+      sub:'Aguardando informação: separar o caixa livre do que é vinculado (e de anos anteriores) exige o RGF ou a Contabilidade.',
+      leg:'O RREO traz só o caixa total. A separação por fonte de recurso consta do RGF (disponibilidade de caixa e restos a pagar) ou do Balanço Patrimonial.', ir:'loa'});
     /* tabela de total do município: valor inicial, valor atual, empenhado, liquidado e pago (acumulados até o mês) */
     {
       const opm=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{}, mapa=new Map();
@@ -2438,24 +2462,31 @@ function montaComando(){
         +'<td style="font-weight:700;color:var(--alta)">'+exato(rec)+'</td>'
         +'<td style="font-weight:700" title="Arrecadado dividido pelo pago">'+(tot.pag?f1.format(rec/tot.pag*100)+'% do pago':'—')+'</td></tr>'
         +'</tbody></table></div>';
-      sTab.querySelector('.rot').textContent='Execução do orçamento · '+P.rot;
+      sTab.querySelector('.rot').textContent='Execução do orçamento · exercício '+eq.ano+' · '+P.rot;
     }
     /* ordem dos cartões (2 colunas): receita x despesa e contratos em cima; orçamento executado e folha embaixo */
-    const ORDEM=['Receita x despesa paga','Contratos vencendo','Orçamento executado','Folha de pessoal · 12 meses'];
+    const ORDEM=['Receita x despesa paga','Orçamento executado','Caixa disponível','Contratos vencendo','Folha de pessoal · 12 meses'];
+    const ZONA=c=>(c.tit==='Receita x despesa paga'||c.tit==='Orçamento executado')?'ano':((c.tit==='Contratos vencendo'||c.tit.indexOf('Folha de pessoal')===0)?'atencao':'caixa');
     cards.forEach(c=>{ if(ORDEM.indexOf(c.tit)<0) ORDEM.push(c.tit); });   /* os cartões do RREO vêm depois, na ordem em que foram criados */
     cards.sort((x,y)=>ORDEM.indexOf(x.tit)-ORDEM.indexOf(y.tit));
-    gradeC.innerHTML='';
+    gradeC.innerHTML=''; gradeCx.innerHTML=''; gradeA.innerHTML='';
+    const rrT=(DATA.rreo&&DATA.rreo.ultimo)||null;
+    tituloAno.innerHTML='O ano de '+eq.ano+'<small>'+P.rot+' · só o que é deste exercício</small>';
+    sCaixa.querySelector('.rot').innerHTML='Caixa e anos anteriores <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--parcial)">· posição em '+(rrT?rrT.posicao:'—')+' · não é receita nem despesa de '+eq.ano+'</span>';
+    sAt.querySelector('.rot').textContent='Contratos e pessoal';
     cards.forEach(c=>{
-      const d=el('div','pcard'); d.style.setProperty('--cs',COR_ST[c.st]);
+      const d=el('div','pcard'+(c.espera?' espera':'')); d.style.setProperty('--cs',COR_ST[c.st]);
       d.innerHTML='<div class="pt"><span>'+esc(c.tit)+'</span><span class="tag">'+TAG_ST[c.st]+'</span></div>'
-        +'<div class="pb" style="font-size:'+(c.valor.length>12?'20':'25')+'px">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div><div class="pl">ver detalhe ›</div>';
+        +'<div class="pb" style="font-size:'+(c.valor.length>12?'20':'25')+'px">'+esc(c.valor)+'</div><div class="ps"'+(c.espera?' style="font-size:11.5px;color:var(--t3)"':'')+'>'+esc(c.sub)+'</div>'
+        +(c.espera?'':'<div class="pl">ver detalhe ›</div>');
       d.title=c.leg;
-      d.onclick=()=>irPara(c.ir); gradeC.appendChild(d);
+      if(!c.espera) d.onclick=()=>irPara(c.ir);
+      const z=ZONA(c); (z==='caixa'?gradeCx:(z==='atencao'?gradeA:gradeC)).appendChild(d);
     });
     /* receitas vinculadas: total, percentual da receita e quebra por área (de janeiro até o mês) */
     {
       sVi.querySelectorAll('.vbox').forEach(x=>x.remove());
-      sVi.querySelector('.rot').textContent='Receitas vinculadas · '+P.rot;
+      sVi.querySelector('.rot').textContent='Receitas vinculadas · exercício '+eq.ano+' · '+P.rot;
       const FUNC_DE={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
       const REGRA_DE={'Mineração (restrita)':'Lei 7.990/1989: não pode pagar folha do quadro permanente nem dívida.',
         'Serviço da taxa':'Só pode custear o serviço que a taxa remunera (CF art. 145).','Iluminação pública':'Só pode custear a iluminação pública (CF art. 149-A).',
@@ -2516,7 +2547,7 @@ function montaComando(){
     /* para onde vai o dinheiro (até o mês) */
     {
       sOnde.querySelectorAll('.rk').forEach(x=>x.remove());
-      sOnde.querySelector('.rot').textContent='Para onde vai o dinheiro';
+      sOnde.querySelector('.rot').textContent='Para onde vai o dinheiro · exercício '+eq.ano;
       const ac={}; let tt=0;
       ms.forEach(m=>Object.entries((pf.func_mes||{})[m]||{}).forEach(([f,v])=>{ if(v>0){ ac[f]=(ac[f]||0)+v; tt+=v; } }));
       const fun=Object.entries(ac).sort((x,y)=>y[1]-x[1]).slice(0,9);
