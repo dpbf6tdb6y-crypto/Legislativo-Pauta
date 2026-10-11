@@ -874,7 +874,9 @@ HTML = r'''<!DOCTYPE html>
   .colbox > .secao{ margin-top:14px; padding:14px 16px 16px; border:1px solid var(--linha); border-radius:var(--r); background:var(--bg); }
   .colbox > .secao > .rot{ margin-bottom:12px; color:var(--t2); font-weight:700; }
   .colcards{ display:flex; flex-direction:column; min-width:0; }
-  .colcards > .pgrid{ flex:1; margin:0; grid-auto-rows:1fr; }   /* cartões preenchem a altura do quadrante ao lado */
+  .colcards > .pgrid{ flex:1; margin:0; grid-auto-rows:1fr; }
+  .colcards .pcard{ display:flex; flex-direction:column; justify-content:center; }
+  .secao > .pgrid.p2{ margin:2px 0 14px; }   /* cartões preenchem a altura do quadrante ao lado */
   .c3{ grid-column:span 3; } .c4{ grid-column:span 4; } .c5{ grid-column:span 5; } .c6{ grid-column:span 6; } .c7{ grid-column:span 7; }
   @media(max-width:1100px){ .c3,.c4{ grid-column:span 6; } .c5,.c6,.c7{ grid-column:span 12; } }
   @media(max-width:700px){ .dgrid > .secao{ grid-column:span 12; } }
@@ -2274,8 +2276,10 @@ function montaComando(){
        [cartões] [execução do orçamento] / [receitas vinculadas] [vínculo e pessoal] */
   const colCards=el('div','c7 colcards'); linhaCards.appendChild(colCards);
   const tituloAno=el('div','faixaT'); colCards.appendChild(tituloAno);
-  const gradeC=el('div','pgrid p1'); colCards.appendChild(gradeC);
+  const gradeA=el('div','pgrid p1'); colCards.appendChild(gradeA);   /* contratos, pessoal e arrecadação */
+  const gradeC=el('div','pgrid p2');                                   /* cartões do ano: vão para o quadrante da direita */
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
+  sTab.appendChild(gradeC);
   const hostTab=el('div'); sTab.appendChild(hostTab);
   /* caixa e anos anteriores: o que veio de antes, separado do ano corrente */
   const sCaixa=bloco(linhaCards,'Caixa e anos anteriores'); sCaixa.classList.add('c12');
@@ -2286,7 +2290,6 @@ function montaComando(){
   const sVi=bloco(colEsq,'Receitas vinculadas');
   const sOnde=bloco(colEsq,'Para onde vai o dinheiro');
   const colDir=el('div','c5 colbox colesq'); linhaCards.appendChild(colDir);
-  const sAt=bloco(colDir,'Contratos e pessoal'); const gradeA=el('div','pgrid p2'); sAt.appendChild(gradeA);
   const sVin=bloco(colDir,'Vínculo · servidores');
   const hostVin=el('div'); sVin.appendChild(hostVin);
 
@@ -2406,6 +2409,23 @@ function montaComando(){
         sub:c30.length?'contrato(s) vencem nos próximos 30 dias ('+brlx(c30.reduce((s,r)=>s+r[6],0))+').':'Nenhum contrato vence nos próximos 30 dias.',
         leg:c90.length+' vencem em até 90 dias · '+c.length+' contratos vigentes', ir:'ctr'});
     }
+    /* arrecadação do ano contra a previsão atualizada, e o que 2025 indica para o fechamento */
+    {
+      const Lr=(DATA.loa&&DATA.loa.rec)||null, fl=(DATA.loa&&DATA.loa.fechado)||fech;
+      if(Lr&&Lr.rc){
+        const prevAt=Lr.rc.atual+Lr.cap.atual-Lr.ded.atual, real=Lr.rc.real+Lr.cap.real-Lr.ded.real;
+        const sr=(DATA.serie&&DATA.serie.rec)||{}, a25=(eq.ano-1)+'-', pad=m=>String(m).padStart(2,'0');
+        let ate=0, tot=0, ok=true;
+        for(let m=1;m<=12;m++){ const v=sr[a25+pad(m)]; if(v===undefined){ ok=false; break; } tot+=v; if(m<=fl) ate+=v; }
+        if(prevAt>0){
+          const pct=real/prevAt*100, frac=(ok&&tot)?ate/tot:null, proj=frac?real/frac/prevAt:null;
+          const stK=proj===null?'info':(proj>=1?'ok':(proj>=0.95?'at':'ruim'));
+          cards.push({tit:'Arrecadação x previsão', st:stK, valor:f1.format(pct)+'%',
+            sub:'da receita prevista para '+eq.ano+' já foi arrecadada'+(frac?' (em '+(eq.ano-1)+', '+f1.format(frac*100)+'% do ano já tinha entrado até '+MESNOME[fl]+').':'.'),
+            leg:'Receita líquida arrecadada '+brlx(real)+' de '+brlx(prevAt)+' previstos (previsão atualizada), até '+MESNOME[fl]+'.'+(proj?' Se '+eq.ano+' seguir o ritmo de '+(eq.ano-1)+', fecha em '+f1.format(proj*100)+'% da previsão (estimativa).':''), ir:'loa'});
+        }
+      }
+    }
     /* sobra de 2025 e restos a pagar: posição do último RREO (não mudam com o mês escolhido) */
     {
       const rr_=(DATA.rreo&&DATA.rreo.ultimo)||null;
@@ -2465,15 +2485,14 @@ function montaComando(){
       sTab.querySelector('.rot').textContent='Execução do orçamento · exercício '+eq.ano+' · '+P.rot;
     }
     /* ordem dos cartões (2 colunas): receita x despesa e contratos em cima; orçamento executado e folha embaixo */
-    const ORDEM=['Receita x despesa paga','Orçamento executado','Caixa disponível','Contratos vencendo','Folha de pessoal · 12 meses'];
-    const ZONA=c=>(c.tit==='Receita x despesa paga'||c.tit==='Orçamento executado')?'ano':((c.tit==='Contratos vencendo'||c.tit.indexOf('Folha de pessoal')===0)?'atencao':'caixa');
+    const ORDEM=['Contratos vencendo','Folha de pessoal · 12 meses','Arrecadação x previsão','Receita x despesa paga','Orçamento executado','Caixa disponível'];
+    const ZONA=c=>(c.tit==='Receita x despesa paga'||c.tit==='Orçamento executado')?'ano':((c.tit==='Contratos vencendo'||c.tit==='Arrecadação x previsão'||c.tit.indexOf('Folha de pessoal')===0)?'atencao':'caixa');
     cards.forEach(c=>{ if(ORDEM.indexOf(c.tit)<0) ORDEM.push(c.tit); });   /* os cartões do RREO vêm depois, na ordem em que foram criados */
     cards.sort((x,y)=>ORDEM.indexOf(x.tit)-ORDEM.indexOf(y.tit));
     gradeC.innerHTML=''; gradeCx.innerHTML=''; gradeA.innerHTML='';
     const rrT=(DATA.rreo&&DATA.rreo.ultimo)||null;
-    tituloAno.innerHTML='O ano de '+eq.ano+'<small>'+P.rot+' · só o que é deste exercício</small>';
+    tituloAno.innerHTML='Contratos, pessoal e arrecadação<small>contratos e folha: posição atual · arrecadação: '+eq.ano+' até '+MESNOME[fech]+'</small>';
     sCaixa.querySelector('.rot').innerHTML='Caixa e anos anteriores <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--parcial)">· posição em '+(rrT?rrT.posicao:'—')+' · não é receita nem despesa de '+eq.ano+'</span>';
-    sAt.querySelector('.rot').textContent='Contratos e pessoal';
     cards.forEach(c=>{
       const d=el('div','pcard'+(c.espera?' espera':'')); d.style.setProperty('--cs',COR_ST[c.st]);
       d.innerHTML='<div class="pt"><span>'+esc(c.tit)+'</span><span class="tag">'+TAG_ST[c.st]+'</span></div>'
