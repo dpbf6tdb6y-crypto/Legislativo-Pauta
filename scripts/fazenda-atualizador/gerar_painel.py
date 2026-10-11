@@ -603,7 +603,8 @@ HTML = r'''<!DOCTYPE html>
   @media (max-width:760px){ .topo{ padding:0 20px; gap:18px; height:auto;
                                    padding-top:12px; padding-bottom:12px; } }
   /* identidade: faixa nas cores do site da prefeitura (laranja, magenta, roxo, azul, verde) */
-  header{ border-top:4px solid transparent; border-image:linear-gradient(90deg,#FF5A00 0%,#E10C8C 28%,#6A3FBF 52%,#0077FF 76%,#00B85C 100%) 1; }
+  header::before{ content:''; display:block; height:4px; background:linear-gradient(90deg,#FF5A00 0%,#E10C8C 28%,#6A3FBF 52%,#0077FF 76%,#00B85C 100%); }
+  .marca img.logo{ height:46px; width:auto; display:block; }
   .marca{ font-size:17px; font-weight:800; letter-spacing:-.02em; white-space:nowrap; color:var(--t1); line-height:1; text-transform:uppercase; }
   .marca small{ display:block; font-size:11px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--t2); margin-top:2px; }
   nav{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
@@ -614,7 +615,7 @@ HTML = r'''<!DOCTYPE html>
   nav b.on{ color:var(--t1); font-weight:600; border-bottom-color:#E10C8C; }
   nav b.grupoLabel{ font-weight:700; color:var(--t1); cursor:default; padding:6px 0; }
   nav b.grupoLabel:hover{ color:var(--t1); }
-  nav .espaco{ width:14px; }
+  nav .espaco{ display:none; }
   #btnAuditoria{ display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:#fff; cursor:pointer;
                  padding:7px 16px; border:1px solid var(--acento); border-radius:100px; background:var(--acento); white-space:nowrap; user-select:none; }
   #btnAuditoria:hover{ background:#1757C2; border-color:#1757C2; }
@@ -875,7 +876,10 @@ HTML = r'''<!DOCTYPE html>
   .ltab td{ padding:7px 8px !important; border-bottom:1px solid var(--linha); text-align:right; white-space:normal !important;
             overflow:visible !important; text-overflow:clip !important; font-variant-numeric:tabular-nums; color:var(--t1); }
   .ltab td:first-child{ font-weight:600; }
-  .ltab tr.tot td{ font-weight:800; border-top:2px solid var(--linha); }
+  .ltab tr.tot td{ font-weight:700; border-top:2px solid var(--linha); }
+  .ltab td{ white-space:nowrap !important; padding-left:5px !important; padding-right:5px !important; }
+  .ltab td:first-child{ white-space:normal !important; }
+  .rs{ color:var(--t3); font-weight:400; font-size:.86em; }
   .ltab tr.sub td:first-child{ padding-left:20px !important; font-weight:400; color:var(--t2); }
   .lbar{ display:inline-block; width:100%; height:7px; background:var(--trilho); border-radius:4px; overflow:hidden; vertical-align:middle; }
   .lbar i{ display:block; height:100%; border-radius:4px; background:var(--acento); }
@@ -1055,23 +1059,6 @@ HTML = r'''<!DOCTYPE html>
 
   .vazio{ color:var(--t3); font-size:13px; padding:26px 0; }
   .pg{ display:none; } .pg.on{ display:block; }
-  .capaG{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin:14px 0 22px; }
-  @media(max-width:900px){ .capaG{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-  .capaG .cg{ display:flex; flex-direction:column; align-items:center; padding:16px 10px 16px; cursor:pointer; }
-  .capaG .cg svg{ width:100%; max-width:240px; display:block; overflow:visible; }
-  .capaG .cl{ font-size:15px; font-weight:700; color:var(--t1); margin-top:6px; text-align:center; }
-  .capaG .csub{ font-size:12.5px; color:var(--t3); text-align:center; margin-top:2px; }
-  .capaDuo{ display:grid; grid-template-columns:1.5fr 1fr; gap:30px; align-items:start; }
-  @media(max-width:1000px){ .capaDuo{ grid-template-columns:1fr; } }
-  .capaAl{ display:grid; gap:14px; }
-  .capaAl .al{ border:1px solid var(--linha); border-left:6px solid var(--cs); border-radius:var(--r); padding:15px 20px; cursor:pointer; background:var(--bg); }
-  .capaAl .al:hover{ box-shadow:0 3px 14px rgba(20,22,26,.10); }
-  .capaAl .al small{ display:block; font-size:12px; letter-spacing:.07em; text-transform:uppercase; color:var(--t3); font-weight:700; }
-  .capaAl .al b{ display:block; font-size:30px; line-height:1.15; color:var(--cs); margin:4px 0 2px; }
-  .capaAl .al span{ font-size:15px; color:var(--t1); line-height:1.4; }
-  .capaBanner{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:6px 0 4px; }
-  .capaBanner b{ font-size:20px; }
-  .btnAud{ margin-left:auto; background:#175CD3; color:#fff; border-radius:8px; padding:9px 16px; font-weight:700; font-size:14px; cursor:pointer; }
   .subrec{ display:flex; gap:6px; margin:0 0 18px; border-bottom:1px solid var(--linha); }
   .subrec b{ cursor:pointer; padding:8px 14px; font-size:13.5px; font-weight:600; color:var(--t3); border-bottom:2px solid transparent; margin-bottom:-1px; }
   .subrec b:hover{ color:var(--t1); }
@@ -1080,10 +1067,9 @@ HTML = r'''<!DOCTYPE html>
 </style>
 
 <header><div class="topo">
-  <div class="marca">Nova Lima<small>prefeitura</small></div>
+  <div class="marca">__LOGO__</div>
   <nav id="abas">
-    <b data-p="capa" class="on">Visão geral</b>
-    <b data-p="cmd">Visão detalhada</b>
+    <b data-p="cmd" class="on">Painel de Comando</b>
     <span class="espaco"></span>
     <b data-p="rc">Receita</b>
     <span class="espaco"></span>
@@ -1107,8 +1093,7 @@ HTML = r'''<!DOCTYPE html>
 </div>
 
 <div class="env">
-  <div class="pg on" id="pg-capa"></div>
-  <div class="pg" id="pg-cmd"></div>
+  <div class="pg on" id="pg-cmd"></div>
   <div class="pg" id="pg-rc"></div>
   <div class="pg" id="pg-cap"></div>
   <div class="pg" id="pg-ded"></div>
@@ -1133,7 +1118,7 @@ const PAGS = {
         tipos:false, rot:'Itens', vinc:false},
 };
 
-let pagina='capa';
+let pagina='cmd';
 const estado={ rc:{anos:new Set([PARCIAL]),tipo:null,mes:null}, cap:{anos:new Set([PARCIAL]),tipo:null,mes:null},
                ded:{anos:new Set([PARCIAL]),tipo:null,mes:null}, pes:{busca:'',corte:null},
                ctr:{sit:'vigente', tipo:null, busca:''} };
@@ -2243,7 +2228,7 @@ function montaComando(){
   const topopag=el('div','topopag cmdtop'); host.appendChild(topopag);
   const colTit=el('div','coltit'); topopag.appendChild(colTit);
   const cab=el('div','cab');
-  cab.innerHTML='<div><h1>Visão detalhada</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
+  cab.innerHTML='<div><h1>Painel de Comando</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
     +'indicadores gerenciais, não substituem o RREO/RGF'+(DATA.coleta?' · <b>Atualizado em '+DATA.coleta.split('-').reverse().join('/')+'</b> · fonte: Portal da Transparência':'')+'</p></div>';
   colTit.appendChild(cab);
   if(!meses.length||!eq.ano){
@@ -2933,70 +2918,11 @@ function montaLoa(){
 }
 
 
-/* ---------------- Visão geral (capa de apresentação) ---------------- */
-function montaCapa(){
-  const host=document.getElementById('pg-capa');
-  const SER2=[{chave:'receita',nome:'Receita líquida',cor:'var(--acento)'},{chave:'pag',nome:'Pago',cor:'#B8860B'}];
-  return function(){
-    host.innerHTML='';
-    const A=window.__cmdApi;
-    if(!A){ host.innerHTML='<div class="vazio">Sem dados suficientes ainda pra montar a visão geral.</div>'; return; }
-    const P=A.periodo(), R=A.calc(P), eq=A.eq, rr=(DATA.rreo&&DATA.rreo.ultimo)||null;
-    const em=(eq.meses||[]).filter(m=>P.ms.includes(m[0])), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
-    const stSaldo=rec-pag>=0?'ok':((rec-pag)/(rec||1)>-0.03?'at':'ruim');
-    const ss=R.gauges.map(g=>A.stat(g,P.M)), todos=ss.concat([stSaldo]);
-    const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
-
-    const top=el('div','topopag'); host.appendChild(top);
-    const cab=el('div','cab');
-    cab.innerHTML='<div><h1>Visão geral</h1><p>Prefeitura de Nova Lima · '+(eq.ano||'')+' · '+P.rot
-      +(DATA.coleta?' · <b>Atualizado em '+DATA.coleta.split('-').reverse().join('/')+'</b>':'')+' · fonte: Portal da Transparência</p></div>';
-    top.appendChild(cab);
-    const ban=el('div','capaBanner'); host.appendChild(ban);
-    const soSaldo=pior!=='ok'&&!ss.includes(pior);
-    const frase=soSaldo?'Limites legais acompanhados, mas o pago passou da receita':pior==='ok'?'Limites legais em dia e a receita cobre o que foi pago'
-      :(pior==='ruim'?'Há indicador fora do limite':'Limites legais acompanhados; há pontos de atenção');
-    ban.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span><b>'+frase+'</b>';
-
-    const g4=el('div','capaG'); host.appendChild(g4);
-    R.gauges.forEach((g,i)=>{ const w=A.gaugeEl(g,ss[i]); const sb=el('div','csub'); sb.textContent=g.sub; w.appendChild(sb); g4.appendChild(w); });
-
-    const duo=el('div','capaDuo'); host.appendChild(duo);
-    const esq=el('div'); duo.appendChild(esq);
-    const rot=el('div','rot'); rot.style.marginBottom='12px'; rot.textContent='Receita líquida x pago · mês a mês'; esq.appendChild(rot);
-    const leg=el('div'); leg.style.cssText='display:flex;gap:16px;margin-bottom:6px';
-    SER2.forEach(s_=>{ const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t2)';
-      it.innerHTML='<span style="width:11px;height:11px;border-radius:3px;background:'+s_.cor+';display:inline-block"></span>'+s_.nome; leg.appendChild(it); });
-    esq.appendChild(leg);
-    const gh=el('div'); esq.appendChild(gh);
-    const nt=el('div','nota'); nt.style.paddingTop='8px';
-    nt.textContent='O pago inclui restos a pagar de exercícios anteriores. Indicadores gerenciais; não substituem o RREO/RGF.'; esq.appendChild(nt);
-    colunasMesTrio(gh,(eq.meses||[]).map(([m,receita,emp,pg])=>({k:MESES[m-1],receita,pag:pg})),SER2);
-
-    const dir=el('div','capaAl'); duo.appendChild(dir);
-    const al=(st,tag,valor,txt,ir)=>{ const d=el('div','al'); d.style.setProperty('--cs',COR_ST[st]);
-      d.innerHTML='<small>'+esc(tag)+'</small><b>'+esc(valor)+'</b><span>'+esc(txt)+'</span>'; d.onclick=()=>irPara(ir); dir.appendChild(d); };
-    if(rr){
-      const ok=rr.mde.pct>=rr.mde.minimo;
-      al(ok?'ok':'at','Educação · apuração oficial',f1.format(rr.mde.pct)+'%',
-        'RREO '+rr.bimestre+'º bimestre/'+rr.ano+' (posição em '+rr.posicao+'). Mínimo de '+f1.format(rr.mde.minimo)+'%'
-        +(ok?': cumprido até aqui.':': abaixo hoje; a verificação é anual (dezembro).'),'eq');
-    }
-    al(stSaldo,'Receita líquida x pago',(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
-      rec-pag>=0?'A receita cobriu o que foi pago no período.':'O pago (com restos a pagar) superou a receita do período; não é resultado orçamentário.','eq');
-    const c30=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0&&r[8]<=30);
-    al(c30.length?'at':'ok','Contratos vencendo em 30 dias',String(c30.length),
-      c30.length?'Contratos a renovar, prorrogar ou licitar. Valor contratado somado: '+brlx(c30.reduce((s,r)=>s+r[6],0))+'.':'Nenhum contrato vence nos próximos 30 dias.','ctr');
-    const a=el('div','nota'); a.style.paddingTop='18px';
-    a.textContent='Clique em qualquer indicador para ver o detalhe. A aba "Visão detalhada" traz a execução do orçamento, as receitas vinculadas, a folha e os vínculos.';
-    host.appendChild(a);
-  };
-}
 
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
-                desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando(), capa:montaCapa(), loa:montaLoa() };
+                desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando(), loa:montaLoa() };
 function render(){
   document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina||(b.dataset.p==='rc'&&(pagina==='cap'||pagina==='ded'))||(b.dataset.p==='desp'&&pagina==='pes')));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
@@ -3016,6 +2942,31 @@ document.getElementById('btnLimpar').onclick=()=>{ if(window.__limparCmd) window
   m.addEventListener('click',e=>{ if(e.target===m) fecha(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') fecha(); });
 })();
+
+/* "R$" mais claro e leve, pra nao poluir os numeros: envolve o simbolo em <span class="rs"> (so texto HTML, nunca SVG) */
+(function(){
+  function suaviza(root){
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
+      if(n.nodeValue.indexOf('R$')<0) return NodeFilter.FILTER_REJECT;
+      const p=n.parentElement;
+      if(!p||p.closest('svg,script,style,.rs,.pb,textarea')) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT; }});
+    const lista=[]; while(w.nextNode()) lista.push(w.currentNode);
+    lista.forEach(n=>{
+      const partes=n.nodeValue.split(/(R\$\s?)/), f=document.createDocumentFragment();
+      partes.forEach(t=>{
+        if(/^R\$\s?$/.test(t)){ const s=document.createElement('span'); s.className='rs'; s.textContent=t; f.appendChild(s); }
+        else if(t) f.appendChild(document.createTextNode(t)); });
+      n.parentNode.replaceChild(f,n); });
+  }
+  let agendado=false;
+  const obs=new MutationObserver(()=>{
+    if(agendado) return; agendado=true;
+    requestAnimationFrame(()=>{ agendado=false; obs.disconnect(); suaviza(document.body);
+      obs.observe(document.body,{childList:true,subtree:true,characterData:true}); }); });
+  suaviza(document.body);
+  obs.observe(document.body,{childList:true,subtree:true,characterData:true});
+})();
 let t=null;
 addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(render,120); });
 render();
@@ -3024,6 +2975,14 @@ render();
 
 out = HTML.replace('__DATA__', json.dumps(DATA, ensure_ascii=False, separators=(',', ':')))
 out = out.replace('__ANO_EQ__', str(EQUILIBRIO['ano']))
+# marca da prefeitura: usa o logotipo se o arquivo estiver ao lado deste script; senão, só o texto
+_logo = os.path.join(BASE, 'logo_nova_lima.png')
+if os.path.exists(_logo):
+    import base64
+    out = out.replace('__LOGO__', '<img class="logo" alt="Prefeitura de Nova Lima" src="data:image/png;base64,'
+                      + base64.b64encode(open(_logo, 'rb').read()).decode() + '">')
+else:
+    out = out.replace('__LOGO__', 'Nova Lima<small>prefeitura</small>')
 
 dest = os.path.abspath(os.path.join(BASE, '..', 'Painel_Receita_Despesas.html'))
 with open(dest, 'w', encoding='utf-8') as f:
