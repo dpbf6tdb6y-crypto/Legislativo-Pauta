@@ -179,8 +179,8 @@ try:
             continue
         if not _dot_t[0]:
             _dot_t[0] = _dot_t[1] = _v['ini']
-        else:
-            _dot_t[1] += _v['atual'] - _v['ini']
+        # os créditos de TODOS os meses entram, o primeiro inclusive (valor atual = inicial + soma das alterações)
+        _dot_t[1] += _v['atual'] - _v['ini']
         for _o in _v['orgaos']:
             _d = _dot_o.setdefault(_o[0], [_o[1], _o[1]])
             _d[1] += _o[2] - _o[1]
@@ -189,7 +189,7 @@ try:
         _v = _dp['anos'][_ano_desp][_m]
         if not _v.get('orgaos'):
             continue
-        _acum = _v['ini'] if _acum is None else _acum + (_v['atual'] - _v['ini'])
+        _acum = (_v['ini'] if _acum is None else _acum) + (_v['atual'] - _v['ini'])
         _dm[_m] = [round(_v['ini'], 2), round(_acum, 2)]
     DESPESAS['dot_mes'] = _dm        # mês -> [valor inicial, valor atual acumulado até o mês]
     DESPESAS['dot_orgaos'] = {k: [round(a, 2), round(b, 2)] for k, (a, b) in _dot_o.items()}
