@@ -41,6 +41,37 @@ def texto_paginas(caminho):
 TRIPLA = re.compile(r'(\d{1,3}(?:\.\d{3})*,\d{2})\s+(\d{1,3},\d{2})\s+(\d{1,3},\d{2})')
 
 
+NUM = r'(\d{1,3}(?:\.\d{3})*,\d{2})'
+CAMPOS_RP = ['ant_proc', 'insc_proc', 'pagos_proc', 'canc_proc', 'saldo_proc',
+             'ant_nproc', 'insc_nproc', 'liq_nproc', 'pagos_nproc', 'canc_nproc', 'saldo_nproc', 'saldo_total']
+
+
+def extrai_rp(paginas):
+    """Anexo 07: linha TOTAL (III) com os 12 valores de restos a pagar. Devolve None se o layout não bater."""
+    pg = next((p for p in paginas if 'Tabela 7.0' in p and 'TOTAL (III)' in p), None)
+    if not pg:
+        return None
+    m = re.search(r'TOTAL \(III\)[^\n]*?((?:\s*' + NUM + r'){12})\s*$', pg, re.M)
+    if not m:
+        return None
+    v = [num(x) for x in re.findall(NUM, m.group(1))]
+    if len(v) != 12:
+        return None
+    r = dict(zip(CAMPOS_RP, v))
+    tol = 0.05
+    if abs((r['ant_proc'] + r['insc_proc']) - (r['pagos_proc'] + r['canc_proc']) - r['saldo_proc']) > tol:
+        return None
+    if abs((r['ant_nproc'] + r['insc_nproc']) - (r['pagos_nproc'] + r['canc_nproc']) - r['saldo_nproc']) > tol:
+        return None
+    if abs(r['saldo_proc'] + r['saldo_nproc'] - r['saldo_total']) > tol:
+        return None
+    r['inscritos_ano_anterior'] = round(r['insc_proc'] + r['insc_nproc'], 2)
+    r['inscritos_anteriores'] = round(r['ant_proc'] + r['ant_nproc'], 2)
+    r['pagos'] = round(r['pagos_proc'] + r['pagos_nproc'], 2)
+    r['cancelados'] = round(r['canc_proc'] + r['canc_nproc'], 2)
+    return {k: round(x, 2) for k, x in r.items()}
+
+
 def extrai(paginas):
     tudo = '\n'.join(paginas)
     ano = re.search(r'Exerc[ií]cio:\s*(\d{4})', tudo)
@@ -67,6 +98,9 @@ def extrai(paginas):
             raise ValueError('%s: mínimo %.2f diferente do esperado %.2f — layout mudou?' % (nome, minimo, mn))
         out[nome] = {'valor': round(v, 2), 'minimo': minimo, 'pct': pct}
     fim = {1: '28/02', 2: '30/04', 3: '30/06', 4: '31/08', 5: '31/10', 6: '31/12'}[bim]
+    rp = extrai_rp(paginas)
+    if rp:
+        out['rp'] = rp
     out.update({'ano': ano, 'bimestre': bim, 'posicao': '%s/%d' % (fim, ano),
                 'fonte': 'RREO · Tabela 14.0 (Demonstrativo Simplificado)'})
     return out
@@ -112,6 +146,8 @@ def main():
     atual['ultimo'] = dados
     atual['coletado_em'] = datetime.date.today().isoformat()
     json.dump(atual, open(DEST, 'w', encoding='utf-8'), ensure_ascii=False, indent=1, sort_keys=True)
+    if 'rp' not in dados:
+        log('AVISO: Anexo 07 (restos a pagar) nao encontrado ou nao fechou a conta')
     log('gravado: %s | MDE %.2f%% | FUNDEB %.2f%% | ASPS %.2f%% (%dº bimestre/%d)'
         % (DEST, dados['mde']['pct'], dados['fundeb70']['pct'], dados['asps']['pct'], dados['bimestre'], dados['ano']))
     return 0

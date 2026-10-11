@@ -20,7 +20,25 @@
     "pct": 24.62,
     "valor": 138643652.36
    },
-   "posicao": "30/06/2026"
+   "posicao": "30/06/2026",
+   "rp": {
+    "ant_nproc": 8106435.33,
+    "ant_proc": 2292488.77,
+    "canc_nproc": 16519121.9,
+    "canc_proc": 6005.55,
+    "cancelados": 16525127.45,
+    "insc_nproc": 91294315.56,
+    "insc_proc": 38995534.63,
+    "inscritos_ano_anterior": 130289850.19,
+    "inscritos_anteriores": 10398924.1,
+    "liq_nproc": 62699552.06,
+    "pagos": 100883103.24,
+    "pagos_nproc": 62551177.84,
+    "pagos_proc": 38331925.4,
+    "saldo_nproc": 20330451.15,
+    "saldo_proc": 2950092.45,
+    "saldo_total": 23280543.6
+   }
   }
  },
  "ultimo": {
@@ -42,6 +60,24 @@
    "pct": 24.62,
    "valor": 138643652.36
   },
-  "posicao": "30/06/2026"
+  "posicao": "30/06/2026",
+  "rp": {
+   "ant_nproc": 8106435.33,
+   "ant_proc": 2292488.77,
+   "canc_nproc": 16519121.9,
+   "canc_proc": 6005.55,
+   "cancelados": 16525127.45,
+   "insc_nproc": 91294315.56,
+   "insc_proc": 38995534.63,
+   "inscritos_ano_anterior": 130289850.19,
+   "inscritos_anteriores": 10398924.1,
+   "liq_nproc": 62699552.06,
+   "pagos": 100883103.24,
+   "pagos_nproc": 62551177.84,
+   "pagos_proc": 38331925.4,
+   "saldo_nproc": 20330451.15,
+   "saldo_proc": 2950092.45,
+   "saldo_total": 23280543.6
+  }
  }
 }
