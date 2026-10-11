@@ -827,7 +827,7 @@ HTML = r'''<!DOCTYPE html>
   .pcard .pb{ font-size:30px; font-weight:700; line-height:1.1; margin:9px 0 3px; color:var(--cs);
               font-variant-numeric:tabular-nums; }
   .pcard .ps{ font-size:13px; color:var(--t1); line-height:1.45; }
-  .pcard .pl{ font-size:11.5px; color:var(--t3); margin-top:7px; line-height:1.45; }
+  .pcard .pl{ font-size:12.5px; color:var(--t3); margin-top:7px; line-height:1.45; }
   .pcard .pm{ position:relative; height:8px; background:var(--trilho); border-radius:5px; margin:10px 0 2px; }
   .pcard .pm i{ position:absolute; left:0; top:0; height:100%; background:var(--cs); border-radius:5px; }
   .pcard .pm u{ position:absolute; top:-3px; height:14px; width:2px; background:var(--t2); }
@@ -1049,25 +1049,43 @@ HTML = r'''<!DOCTYPE html>
 
   .vazio{ color:var(--t3); font-size:13px; padding:26px 0; }
   .pg{ display:none; } .pg.on{ display:block; }
+  .capaG{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin:14px 0 22px; }
+  @media(max-width:900px){ .capaG{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  .capaG .cg{ display:flex; flex-direction:column; align-items:center; padding:16px 10px 16px; cursor:pointer; }
+  .capaG .cg svg{ width:100%; max-width:240px; display:block; overflow:visible; }
+  .capaG .cl{ font-size:15px; font-weight:700; color:var(--t1); margin-top:6px; text-align:center; }
+  .capaG .csub{ font-size:12.5px; color:var(--t3); text-align:center; margin-top:2px; }
+  .capaDuo{ display:grid; grid-template-columns:1.5fr 1fr; gap:30px; align-items:start; }
+  @media(max-width:1000px){ .capaDuo{ grid-template-columns:1fr; } }
+  .capaAl{ display:grid; gap:14px; }
+  .capaAl .al{ border:1px solid var(--linha); border-left:6px solid var(--cs); border-radius:var(--r); padding:15px 20px; cursor:pointer; background:var(--bg); }
+  .capaAl .al:hover{ box-shadow:0 3px 14px rgba(20,22,26,.10); }
+  .capaAl .al small{ display:block; font-size:12px; letter-spacing:.07em; text-transform:uppercase; color:var(--t3); font-weight:700; }
+  .capaAl .al b{ display:block; font-size:30px; line-height:1.15; color:var(--cs); margin:4px 0 2px; }
+  .capaAl .al span{ font-size:15px; color:var(--t1); line-height:1.4; }
+  .capaBanner{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin:6px 0 4px; }
+  .capaBanner b{ font-size:20px; }
+  .btnAud{ margin-left:auto; background:#175CD3; color:#fff; border-radius:8px; padding:9px 16px; font-weight:700; font-size:14px; cursor:pointer; }
   .subrec{ display:flex; gap:6px; margin:0 0 18px; border-bottom:1px solid var(--linha); }
   .subrec b{ cursor:pointer; padding:8px 14px; font-size:13.5px; font-weight:600; color:var(--t3); border-bottom:2px solid transparent; margin-bottom:-1px; }
   .subrec b:hover{ color:var(--t1); }
   .subrec b.on{ color:var(--acento); border-bottom-color:var(--acento); }
-  .nota{ color:var(--t3); font-size:11.5px; padding-top:26px; }
+  .nota{ color:var(--t3); font-size:12.5px; padding-top:26px; }
 </style>
 
 <header><div class="topo">
   <div class="marca">Nova Lima</div>
   <nav id="abas">
-    <b data-p="cmd" class="on">Painel de Comando</b>
+    <b data-p="capa" class="on">Visão geral</b>
+    <b data-p="cmd">Visão detalhada</b>
     <span class="espaco"></span>
     <b data-p="rc">Receita</b>
     <span class="espaco"></span>
     <b data-p="desp">Despesas</b>
     <b data-p="ctr">Contratos</b>
     <span class="espaco"></span>
-    <b data-p="eq">__ANO_EQ__ · Gestão Fiscal</b>
-    <b data-p="loa">LOA · Previsto x Executado</b>
+    <b data-p="eq">Limites legais</b>
+    <b data-p="loa">Orçamento (LOA)</b>
   </nav>
   <div class="acoes"><div id="btnAuditoria" title="Auditoria interna: pontos de atenção" role="button">🛡️ Auditoria interna</div><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️ Limpar</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
 </div></header>
@@ -1083,7 +1101,8 @@ HTML = r'''<!DOCTYPE html>
 </div>
 
 <div class="env">
-  <div class="pg on" id="pg-cmd"></div>
+  <div class="pg on" id="pg-capa"></div>
+  <div class="pg" id="pg-cmd"></div>
   <div class="pg" id="pg-rc"></div>
   <div class="pg" id="pg-cap"></div>
   <div class="pg" id="pg-ded"></div>
@@ -1108,7 +1127,7 @@ const PAGS = {
         tipos:false, rot:'Itens', vinc:false},
 };
 
-let pagina='cmd';
+let pagina='capa';
 const estado={ rc:{anos:new Set([PARCIAL]),tipo:null,mes:null}, cap:{anos:new Set([PARCIAL]),tipo:null,mes:null},
                ded:{anos:new Set([PARCIAL]),tipo:null,mes:null}, pes:{busca:'',corte:null},
                ctr:{sit:'vigente', tipo:null, busca:''} };
@@ -2144,7 +2163,7 @@ function montaEquilibrio(){
   const meses=eq.meses||[];
   const topopag=el('div','topopag'); host.appendChild(topopag);
   const cab=el('div','cab');
-  cab.innerHTML='<div><h1>'+(eq.ano||'')+' · Gestão Fiscal</h1>'
+  cab.innerHTML='<div><h1>'+(eq.ano||'')+' · Limites legais</h1>'
     +'<p>Receita x despesa, limites legais e gastos obrigatórios · Receita Orçamentária Líquida Total (Corrente + Capital − Deduções)</p></div>';
   topopag.appendChild(cab);
   const kpis=el('div','kpis'); host.appendChild(kpis);
@@ -2218,8 +2237,8 @@ function montaComando(){
   const topopag=el('div','topopag cmdtop'); host.appendChild(topopag);
   const colTit=el('div','coltit'); topopag.appendChild(colTit);
   const cab=el('div','cab');
-  cab.innerHTML='<div><h1>Painel de Comando</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
-    +'indicadores gerenciais, não substituem o RREO/RGF</p></div>';
+  cab.innerHTML='<div><h1>Visão detalhada</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
+    +'indicadores gerenciais, não substituem o RREO/RGF'+(DATA.coleta?' · <b>Atualizado em '+DATA.coleta.split('-').reverse().join('/')+'</b> · fonte: Portal da Transparência':'')+'</p></div>';
   colTit.appendChild(cab);
   if(!meses.length||!eq.ano){
     const d=el('div','vazio'); d.textContent='Sem dados suficientes ainda pra montar o painel.'; host.appendChild(d);
@@ -2274,10 +2293,13 @@ function montaComando(){
     pes*=1+st.rf/100; rcl*=fr;
     const cam=meses.filter(m=>m<=M).reduce((s,m)=>s+((a29.camara_mes||{})[m]||0),0);   // Câmara: acumulado até o fim do período, contra o teto anual
     const pPes=rcl?pes/rcl*100:0, pEdu=rit?edu/rit*100:0, pSau=rit?sau/rit*100:0, pCam=a29.teto_2026?cam/a29.teto_2026*100:0;
+    /* Educação e Saúde: o número que vale é o do RREO (apuração oficial); a aproximação pelo liquidado fica só no balão */
+    const vEdu=rr?rr.mde.pct:pEdu, vSau=rr?rr.asps.pct:pSau;
+    const subOf=rr?'apuração oficial · RREO '+rr.bimestre+'º bim/'+rr.ano:'aproximação pelo liquidado';
     return {falt,pes,rcl,rit,gauges:[
       {n:'Folha de pessoal', c:'Folha · 12 meses', v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
-      {n:'Educação', c:'Educação · mín. 25%', v:pEdu, lim:25, max:50, tipo:'min', sub:'da receita de impostos', x:'Mínimo 25% (CF art. 212)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+'): '+f1.format(rr.mde.pct)+'%':'')},
-      {n:'Saúde', c:'Saúde · mín. 15%', v:pSau, lim:15, max:40, tipo:'min', sub:'da receita de impostos', x:'Mínimo 15% (LC 141/2012)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+'): '+f1.format(rr.asps.pct)+'%':'')},
+      {n:'Educação', c:'Educação · mín. 25%', v:vEdu, aprox:pEdu, lim:25, max:50, tipo:'min', sub:subOf, x:'Mínimo 25% (CF art. 212)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pEdu)+'%':'')},
+      {n:'Saúde', c:'Saúde · mín. 15%', v:vSau, aprox:pSau, lim:15, max:40, tipo:'min', sub:subOf, x:'Mínimo 15% (LC 141/2012)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pSau)+'%':'')},
       {n:'Repasse à Câmara', c:'Câmara · do teto', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
   }
   function stat(g,Mref){
@@ -2290,6 +2312,24 @@ function montaComando(){
   const arc=(cx,cy,r,p0,p1)=>{ const a=pt(cx,cy,r,p0), b=pt(cx,cy,r,p1);
     return 'M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+' A'+r+' '+r+' 0 0 1 '+b[0].toFixed(1)+' '+b[1].toFixed(1); };
 
+  function gaugeEl(g,ssI){
+      const c=COR_ST[ssI], f=Math.min(g.v/g.max,1), l=g.lim/g.max, m1=pt(60,62,47,l), m2=pt(60,62,34,l);
+      /* arco em cor viva, com brilho; o número fica na cor mais escura, que lê melhor no branco */
+      const cb=({ok:'#009C3B',at:'#E3A008',ruim:'#D92D20'})[ssI], cn=({ok:'#007A2E',at:'#9A6B00',ruim:'#B42318'})[ssI];
+      const d=el('div','cg'); d.style.setProperty('--cs',c);
+      d.title=g.n+' · '+g.sub+' · '+g.x;
+      /* a meta: traço branco por baixo (contorno), traço escuro por cima e uma bolinha na ponta, pra destacar no arco */
+      const m3=pt(60,62,54,l);
+      d.innerHTML='<svg viewBox="0 -10 120 88" role="img" aria-label="'+g.n+'"><g transform="translate(0,62) scale(1,1.2) translate(0,-62)">'
+        +'<path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="11"/>'
+        +'<path d="'+arc(60,62,41,0,Math.max(f,0.002))+'" fill="none" stroke="'+cb+'" stroke-width="11"/>'
+        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m3[0].toFixed(1)+'" y2="'+m3[1].toFixed(1)+'" stroke="#fff" stroke-width="7"/>'
+        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m3[0].toFixed(1)+'" y2="'+m3[1].toFixed(1)+'" stroke="#111827" stroke-width="3.6"/>'
+        +'<circle cx="'+m3[0].toFixed(1)+'" cy="'+m3[1].toFixed(1)+'" r="3.4" fill="#111827" stroke="#fff" stroke-width="1.5"/></g>'
+        +'<text x="60" y="58" text-anchor="middle" style="font-size:21px;font-weight:700;fill:'+cn+'">'+f1.format(g.v)+'%</text></svg>'
+        +'<div class="cl">'+g.c+'</div>';
+      d.onclick=()=>irPara('eq'); return d;
+  }
   function desenha_(){
     const P=periodo(), M=P.M, R=calc();
     /* meses */
@@ -2319,31 +2359,14 @@ function montaComando(){
       ;
     /* medidores */
     gradeG.innerHTML='';
-    R.gauges.forEach((g,i)=>{
-      const c=COR_ST[ss[i]], f=Math.min(g.v/g.max,1), l=g.lim/g.max, m1=pt(60,62,47,l), m2=pt(60,62,34,l);
-      /* arco em cor viva, com brilho; o número fica na cor mais escura, que lê melhor no branco */
-      const cb=({ok:'#009C3B',at:'#E3A008',ruim:'#D92D20'})[ss[i]], cn=({ok:'#007A2E',at:'#9A6B00',ruim:'#B42318'})[ss[i]];
-      const d=el('div','cg'); d.style.setProperty('--cs',c);
-      d.title=g.n+' · '+g.sub+' · '+g.x;
-      /* a meta: traço branco por baixo (contorno), traço escuro por cima e uma bolinha na ponta, pra destacar no arco */
-      const m3=pt(60,62,54,l);
-      d.innerHTML='<svg viewBox="0 -10 120 88" role="img" aria-label="'+g.n+'"><g transform="translate(0,62) scale(1,1.2) translate(0,-62)">'
-        +'<path d="'+arc(60,62,41,0,1)+'" fill="none" stroke="var(--trilho)" stroke-width="11"/>'
-        +'<path d="'+arc(60,62,41,0,Math.max(f,0.002))+'" fill="none" stroke="'+cb+'" stroke-width="11"/>'
-        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m3[0].toFixed(1)+'" y2="'+m3[1].toFixed(1)+'" stroke="#fff" stroke-width="7"/>'
-        +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m3[0].toFixed(1)+'" y2="'+m3[1].toFixed(1)+'" stroke="#111827" stroke-width="3.6"/>'
-        +'<circle cx="'+m3[0].toFixed(1)+'" cy="'+m3[1].toFixed(1)+'" r="3.4" fill="#111827" stroke="#fff" stroke-width="1.5"/></g>'
-        +'<text x="60" y="58" text-anchor="middle" style="font-size:21px;font-weight:700;fill:'+cn+'">'+f1.format(g.v)+'%</text></svg>'
-        +'<div class="cl">'+g.c+'</div>';
-      d.onclick=()=>irPara('eq'); gradeG.appendChild(d);
-    });
+    R.gauges.forEach((g,i)=>{ gradeG.appendChild(gaugeEl(g,ss[i])); });
     /* painel de cartões (reagem ao mês escolhido) */
     const pad=m=>String(m).padStart(2,'0'), ms=P.ms, pf=DATA.prefeito||{}, VI=DATA.vinculadas||{mes:{},bruta_mes:{}};
     const cards=[];
     // receita x despesa paga (saldo do ano)
     cards.push({tit:'Receita x despesa paga', st:stSaldo, valor:(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
-      sub:rec-pag>=0?'A receita cobriu tudo o que foi pago.':'Foi pago mais do que o município arrecadou.',
-      leg:'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+' (o pago inclui restos a pagar de anos anteriores)', ir:'eq'});
+      sub:rec-pag>=0?'A receita cobriu tudo o que foi pago.':'O pago no período (com restos a pagar) superou a receita arrecadada.',
+      leg:'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+(rec-pag>=0?'':' · não é resultado orçamentário: o pago inclui restos a pagar de exercícios anteriores, que o portal não separa'), ir:'eq'});
     // orçamento executado
     if(pf.dot_atual>0){
       const emp=em.reduce((s,m)=>s+m[2],0), pe=emp/pf.dot_atual*100, dl=pf.dot_atual-pf.dot_ini;
@@ -2358,7 +2381,7 @@ function montaComando(){
     // contratos
     {
       const c=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0), c30=c.filter(r=>r[8]<=30), c90=c.filter(r=>r[8]<=90);
-      cards.push({tit:'Contratos vencendo', st:c30.length===0?'ok':(c30.length<=20?'at':'ruim'), valor:String(c30.length),
+      cards.push({tit:'Contratos vencendo', st:c30.length===0?'ok':'at', valor:String(c30.length),
         sub:c30.length?'contrato(s) vencem nos próximos 30 dias ('+brlx(c30.reduce((s,r)=>s+r[6],0))+').':'Nenhum contrato vence nos próximos 30 dias.',
         leg:c90.length+' vencem em até 90 dias · '+c.length+' contratos vigentes', ir:'ctr'});
     }
@@ -2400,7 +2423,8 @@ function montaComando(){
     cards.forEach(c=>{
       const d=el('div','pcard'); d.style.setProperty('--cs',COR_ST[c.st]);
       d.innerHTML='<div class="pt"><span>'+esc(c.tit)+'</span><span class="tag">'+TAG_ST[c.st]+'</span></div>'
-        +'<div class="pb" style="font-size:'+(c.valor.length>12?'22':'28')+'px">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div><div class="pl">'+esc(c.leg)+'</div>';
+        +'<div class="pb" style="font-size:'+(c.valor.length>12?'22':'28')+'px">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div><div class="pl">ver detalhe ›</div>';
+      d.title=c.leg;
       d.onclick=()=>irPara(c.ir); gradeC.appendChild(d);
     });
     /* receitas vinculadas: total, percentual da receita e quebra por área (de janeiro até o mês) */
@@ -2503,8 +2527,8 @@ function montaComando(){
         add('Limites legais',aprox>=minimo?'l':'l',nome+': '+p1(aprox)+' (aproximação, sem RREO)','O RREO oficial ainda não foi coletado; o painel só tem uma aproximação pelo liquidado. '+art,p1(aprox),'eq');
       }
     };
-    lim('Educação (MDE)',25,R.gauges[1].v,rr?rr.mde.pct:null,'', 'CF art. 212.');
-    lim('Saúde (ASPS)',15,R.gauges[2].v,rr?rr.asps.pct:null,'', 'LC 141/2012, art. 7º.');
+    lim('Educação (MDE)',25,R.gauges[1].aprox,rr?rr.mde.pct:null,'', 'CF art. 212.');
+    lim('Saúde (ASPS)',15,R.gauges[2].aprox,rr?rr.asps.pct:null,'', 'LC 141/2012, art. 7º.');
     if(rr){
       const f=rr.fundeb70.pct;
       add('Limites legais',f>=70?'o':'l','FUNDEB: '+p2(f)+' na remuneração dos profissionais da educação básica (mínimo 70%)',
@@ -2724,7 +2748,7 @@ function montaComando(){
         const efeito=sub.replace(/<[^>]+>/g,'').trim();
         cel+='<tr class="'+(dentro?'on':'')+'" title="'+esc(efeito)+'"><td class="m">'+MESES[m-1]+'/'+String(y).slice(2)+'</td>'
           +'<td class="p">'+chip+'</td>'
-          +'<td class="s">'+(sv?f0.format(sv.servidores):'<span style="color:var(--t3)">—</span>')+'</td>'
+          +'<td class="s">'+(sv?f0.format(sv.servidores):'<span style="color:var(--t3);font-size:11px" title="A coleta mensal de servidores começou em junho/2026">sem coleta</span>')+'</td>'
           +'<td class="v">'+(v===undefined?'—':exato(v))+'</td></tr>';
       });
       const media=(12-falt)?soma12/(12-falt):0;
@@ -2764,6 +2788,7 @@ function montaComando(){
         +'<br>'+f0.format(o.n)+' servidores · vencimentos '+exato(o.venc)+'<br>média por servidor: '+exato(o.n?o.venc/o.n:0));
     });
   }
+  window.__cmdApi={calc,stat,periodo,gaugeEl,eq,meses,fech};
   desenha_();
   return function(){};
 }
@@ -2901,10 +2926,71 @@ function montaLoa(){
   return function(){};
 }
 
+
+/* ---------------- Visão geral (capa de apresentação) ---------------- */
+function montaCapa(){
+  const host=document.getElementById('pg-capa');
+  const SER2=[{chave:'receita',nome:'Receita líquida',cor:'var(--acento)'},{chave:'pag',nome:'Pago',cor:'#B8860B'}];
+  return function(){
+    host.innerHTML='';
+    const A=window.__cmdApi;
+    if(!A){ host.innerHTML='<div class="vazio">Sem dados suficientes ainda pra montar a visão geral.</div>'; return; }
+    const P=A.periodo(), R=A.calc(P), eq=A.eq, rr=(DATA.rreo&&DATA.rreo.ultimo)||null;
+    const em=(eq.meses||[]).filter(m=>P.ms.includes(m[0])), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
+    const stSaldo=rec-pag>=0?'ok':((rec-pag)/(rec||1)>-0.03?'at':'ruim');
+    const ss=R.gauges.map(g=>A.stat(g,P.M)), todos=ss.concat([stSaldo]);
+    const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
+
+    const top=el('div','topopag'); host.appendChild(top);
+    const cab=el('div','cab');
+    cab.innerHTML='<div><h1>Visão geral</h1><p>Prefeitura de Nova Lima · '+(eq.ano||'')+' · '+P.rot
+      +(DATA.coleta?' · <b>Atualizado em '+DATA.coleta.split('-').reverse().join('/')+'</b>':'')+' · fonte: Portal da Transparência</p></div>';
+    top.appendChild(cab);
+    const ban=el('div','capaBanner'); host.appendChild(ban);
+    const soSaldo=pior!=='ok'&&!ss.includes(pior);
+    const frase=soSaldo?'Limites legais acompanhados, mas o pago passou da receita':pior==='ok'?'Limites legais em dia e a receita cobre o que foi pago'
+      :(pior==='ruim'?'Há indicador fora do limite':'Limites legais acompanhados; há pontos de atenção');
+    ban.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span><b>'+frase+'</b>';
+
+    const g4=el('div','capaG'); host.appendChild(g4);
+    R.gauges.forEach((g,i)=>{ const w=A.gaugeEl(g,ss[i]); const sb=el('div','csub'); sb.textContent=g.sub; w.appendChild(sb); g4.appendChild(w); });
+
+    const duo=el('div','capaDuo'); host.appendChild(duo);
+    const esq=el('div'); duo.appendChild(esq);
+    const rot=el('div','rot'); rot.style.marginBottom='12px'; rot.textContent='Receita líquida x pago · mês a mês'; esq.appendChild(rot);
+    const leg=el('div'); leg.style.cssText='display:flex;gap:16px;margin-bottom:6px';
+    SER2.forEach(s_=>{ const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t2)';
+      it.innerHTML='<span style="width:11px;height:11px;border-radius:3px;background:'+s_.cor+';display:inline-block"></span>'+s_.nome; leg.appendChild(it); });
+    esq.appendChild(leg);
+    const gh=el('div'); esq.appendChild(gh);
+    const nt=el('div','nota'); nt.style.paddingTop='8px';
+    nt.textContent='O pago inclui restos a pagar de exercícios anteriores. Indicadores gerenciais; não substituem o RREO/RGF.'; esq.appendChild(nt);
+    colunasMesTrio(gh,(eq.meses||[]).map(([m,receita,emp,pg])=>({k:MESES[m-1],receita,pag:pg})),SER2);
+
+    const dir=el('div','capaAl'); duo.appendChild(dir);
+    const al=(st,tag,valor,txt,ir)=>{ const d=el('div','al'); d.style.setProperty('--cs',COR_ST[st]);
+      d.innerHTML='<small>'+esc(tag)+'</small><b>'+esc(valor)+'</b><span>'+esc(txt)+'</span>'; d.onclick=()=>irPara(ir); dir.appendChild(d); };
+    if(rr){
+      const ok=rr.mde.pct>=rr.mde.minimo;
+      al(ok?'ok':'at','Educação · apuração oficial',f1.format(rr.mde.pct)+'%',
+        'RREO '+rr.bimestre+'º bimestre/'+rr.ano+' (posição em '+rr.posicao+'). Mínimo de '+f1.format(rr.mde.minimo)+'%'
+        +(ok?': cumprido até aqui.':': abaixo hoje; a verificação é anual (dezembro).'),'eq');
+    }
+    al(stSaldo,'Receita líquida x pago',(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
+      rec-pag>=0?'A receita cobriu o que foi pago no período.':'O pago (com restos a pagar) superou a receita do período; não é resultado orçamentário.','eq');
+    const c30=(DATA.contratos||[]).filter(r=>r[7]==='vigente'&&r[8]>=0&&r[8]<=30);
+    al(c30.length?'at':'ok','Contratos vencendo em 30 dias',String(c30.length),
+      c30.length?'Contratos a renovar, prorrogar ou licitar. Valor contratado somado: '+brlx(c30.reduce((s,r)=>s+r[6],0))+'.':'Nenhum contrato vence nos próximos 30 dias.','ctr');
+    const a=el('div','nota'); a.style.paddingTop='18px';
+    a.textContent='Clique em qualquer indicador para ver o detalhe. A aba "Visão detalhada" traz a execução do orçamento, as receitas vinculadas, a folha e os vínculos.';
+    host.appendChild(a);
+  };
+}
+
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
-                desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando(), loa:montaLoa() };
+                desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando(), capa:montaCapa(), loa:montaLoa() };
 function render(){
   document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina||(b.dataset.p==='rc'&&(pagina==='cap'||pagina==='ded'))||(b.dataset.p==='desp'&&pagina==='pes')));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
