@@ -2942,31 +2942,31 @@ document.getElementById('btnLimpar').onclick=()=>{ if(window.__limparCmd) window
   m.addEventListener('click',e=>{ if(e.target===m) fecha(); });
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') fecha(); });
 })();
-
-/* "R$" mais claro e leve, pra nao poluir os numeros: envolve o simbolo em <span class="rs"> (so texto HTML, nunca SVG) */
-(function(){
-  function suaviza(root){
-    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
-      if(n.nodeValue.indexOf('R$')<0) return NodeFilter.FILTER_REJECT;
-      const p=n.parentElement;
-      if(!p||p.closest('svg,script,style,.rs,.pb,textarea')) return NodeFilter.FILTER_REJECT;
-      return NodeFilter.FILTER_ACCEPT; }});
-    const lista=[]; while(w.nextNode()) lista.push(w.currentNode);
-    lista.forEach(n=>{
-      const partes=n.nodeValue.split(/(R\$\s?)/), f=document.createDocumentFragment();
-      partes.forEach(t=>{
-        if(/^R\$\s?$/.test(t)){ const s=document.createElement('span'); s.className='rs'; s.textContent=t; f.appendChild(s); }
-        else if(t) f.appendChild(document.createTextNode(t)); });
-      n.parentNode.replaceChild(f,n); });
-  }
-  let agendado=false;
-  const obs=new MutationObserver(()=>{
-    if(agendado) return; agendado=true;
-    requestAnimationFrame(()=>{ agendado=false; obs.disconnect(); suaviza(document.body);
-      obs.observe(document.body,{childList:true,subtree:true,characterData:true}); }); });
-  suaviza(document.body);
-  obs.observe(document.body,{childList:true,subtree:true,characterData:true});
-})();
+
+/* "R$" mais claro e leve, pra nao poluir os numeros: envolve o simbolo em <span class="rs"> (so texto HTML, nunca SVG) */
+(function(){
+  function suaviza(root){
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
+      if(n.nodeValue.indexOf('R$')<0) return NodeFilter.FILTER_REJECT;
+      const p=n.parentElement;
+      if(!p||p.closest('svg,script,style,.rs,.pb,textarea')) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT; }});
+    const lista=[]; while(w.nextNode()) lista.push(w.currentNode);
+    lista.forEach(n=>{
+      const partes=n.nodeValue.split(/(R\$\s?)/), f=document.createDocumentFragment();
+      partes.forEach(t=>{
+        if(/^R\$\s?$/.test(t)){ const s=document.createElement('span'); s.className='rs'; s.textContent=t; f.appendChild(s); }
+        else if(t) f.appendChild(document.createTextNode(t)); });
+      n.parentNode.replaceChild(f,n); });
+  }
+  let agendado=false;
+  const obs=new MutationObserver(()=>{
+    if(agendado) return; agendado=true;
+    requestAnimationFrame(()=>{ agendado=false; obs.disconnect(); suaviza(document.body);
+      obs.observe(document.body,{childList:true,subtree:true,characterData:true}); }); });
+  suaviza(document.body);
+  obs.observe(document.body,{childList:true,subtree:true,characterData:true});
+})();
 let t=null;
 addEventListener('resize',()=>{ clearTimeout(t); t=setTimeout(render,120); });
 render();
