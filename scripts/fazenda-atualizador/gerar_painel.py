@@ -2366,10 +2366,12 @@ function montaComando(){
     const stSaldo=rec-pagEx>=0?'ok':((rec-pagEx)/(rec||1)>-0.03?'at':'ruim');
     const ss=R.gauges.map(stat), todos=ss.concat([stSaldo]);
     const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
-    const soSaldo=pior!=='ok'&&!ss.includes(pior);
+    /* diz QUAIS indicadores estão fora do verde, em vez de uma frase genérica */
+    const nomes=[];
+    ss.forEach((s_,i)=>{ if(s_!=='ok') nomes.push(R.gauges[i].n+' ('+f1.format(R.gauges[i].v)+'%'+(s_==='ruim'?', fora do limite':'')+')'); });
+    if(stSaldo!=='ok') nomes.push('Receita x despesa paga');
     const frase=pior==='ok'?'Tudo dentro dos limites legais e a receita cobre o que foi pago'
-      :(soSaldo?'Limites legais em dia, mas o pago passou da receita'
-      :(pior==='ruim'?'Há indicador fora do limite':'Indicador perto do limite'));
+      :((pior==='ruim'?'Fora do limite: ':'Em observação: ')+nomes.join(', '));
     selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+'">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
       +'<span style="font-size:17px">'+frase+' · '+P.rot+'</span>'
       ;
