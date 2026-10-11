@@ -881,7 +881,7 @@ HTML = r'''<!DOCTYPE html>
   .ltab td:first-child{ white-space:normal !important; }
   .rs{ color:var(--t3); font-weight:400; font-size:.86em; }
   .ltab tr.sub td:first-child{ padding-left:20px !important; font-weight:400; color:var(--t2); }
-  .lbar{ display:inline-block; width:100%; height:7px; background:var(--trilho); border-radius:4px; overflow:hidden; vertical-align:middle; }
+  .lbar{ display:block; width:100%; margin-top:5px; height:7px; background:var(--trilho); border-radius:4px; overflow:hidden; vertical-align:middle; }
   .lbar i{ display:block; height:100%; border-radius:4px; background:var(--acento); }
   .leq{ display:grid; grid-template-columns:230px 1fr 150px; gap:12px; align-items:center; padding:6px 0; font-size:13px; }
   .leq .bt{ height:14px; background:var(--trilho); border-radius:7px; overflow:hidden; }
