@@ -2229,7 +2229,7 @@ function montaComando(){
   const topopag=el('div','topopag cmdtop'); host.appendChild(topopag);
   const colTit=el('div','coltit'); topopag.appendChild(colTit);
   const cab=el('div','cab');
-  cab.innerHTML='<div><h1>Painel de Comando</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
+  cab.innerHTML='<div><h1>Painel de Controle Fiscal e Orçamentário</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
     +'indicadores gerenciais, não substituem o RREO/RGF'+(DATA.coleta?' · <b>Atualizado em '+DATA.coleta.split('-').reverse().join('/')+'</b> · fonte: Portal da Transparência':'')+'</p></div>';
   colTit.appendChild(cab);
   if(!meses.length||!eq.ano){
