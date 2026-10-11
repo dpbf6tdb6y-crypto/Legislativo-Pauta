@@ -9,6 +9,15 @@
     "valor": 100354009.56
    },
    "bimestre": 3,
+   "caixa": {
+    "caixa_bruta_ant": 508843607.79,
+    "caixa_bruta_ate": 376671197.46,
+    "caixa_liquida_ant": 457337820.43,
+    "caixa_liquida_ate": 362423119.82,
+    "rp_proc_ant": 41238348.92,
+    "rp_proc_ate": 3048792.19,
+    "superavit_utilizado": 104756754.03
+   },
    "fonte": "RREO · Tabela 14.0 (Demonstrativo Simplificado)",
    "fundeb70": {
     "minimo": 70.0,
@@ -49,6 +58,15 @@
    "valor": 100354009.56
   },
   "bimestre": 3,
+  "caixa": {
+   "caixa_bruta_ant": 508843607.79,
+   "caixa_bruta_ate": 376671197.46,
+   "caixa_liquida_ant": 457337820.43,
+   "caixa_liquida_ate": 362423119.82,
+   "rp_proc_ant": 41238348.92,
+   "rp_proc_ate": 3048792.19,
+   "superavit_utilizado": 104756754.03
+  },
   "fonte": "RREO · Tabela 14.0 (Demonstrativo Simplificado)",
   "fundeb70": {
    "minimo": 70.0,

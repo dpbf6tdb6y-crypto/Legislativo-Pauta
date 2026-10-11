@@ -826,7 +826,7 @@ HTML = r'''<!DOCTYPE html>
   .pfrase b{ color:var(--cs); }
   .pgrid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(255px,1fr)); gap:14px; margin:4px 0 6px; }
   .pcard{ border:1px solid var(--linha); border-left:5px solid var(--cs); border-radius:var(--r);
-          padding:14px 18px 15px; background:var(--bg); cursor:pointer; transition:box-shadow .15s; }
+          padding:9px 16px 10px; background:var(--bg); cursor:pointer; transition:box-shadow .15s; }
   .pcard:hover{ box-shadow:0 3px 14px rgba(20,22,26,.10); }
   .pcard .pt{ font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--t3);
               display:flex; justify-content:space-between; align-items:center; gap:8px; }
@@ -2391,6 +2391,24 @@ function montaComando(){
         sub:c30.length?'contrato(s) vencem nos próximos 30 dias ('+brlx(c30.reduce((s,r)=>s+r[6],0))+').':'Nenhum contrato vence nos próximos 30 dias.',
         leg:c90.length+' vencem em até 90 dias · '+c.length+' contratos vigentes', ir:'ctr'});
     }
+    /* sobra de 2025 e restos a pagar: posição do último RREO (não mudam com o mês escolhido) */
+    {
+      const rr_=(DATA.rreo&&DATA.rreo.ultimo)||null;
+      if(rr_&&rr_.caixa&&rr_.caixa.superavit_utilizado!=null){
+        const c=rr_.caixa, a0=rr_.ano-1;
+        cards.push({tit:'Sobra de '+a0+' usada em '+rr_.ano, st:'info', valor:brlx(c.superavit_utilizado),
+          sub:'do superávit financeiro de '+a0+' já foi usado para abrir créditos.',
+          leg:(c.caixa_liquida_ant!=null?'Caixa disponível em 31/12/'+a0+': '+brlx(c.caixa_liquida_ant)+(c.caixa_bruta_ant!=null?' (bruto '+brlx(c.caixa_bruta_ant)+', menos restos a pagar processados e depósitos)':'')+'. ':'')
+            +(c.caixa_liquida_ate!=null?'Em '+rr_.posicao+': '+brlx(c.caixa_liquida_ate)+'. ':'')
+            +'Fonte: RREO '+rr_.bimestre+'º bimestre/'+rr_.ano+', Anexo 06. O superávit apurado no Balanço de '+a0+' pode ser maior; este é o valor já utilizado.', ir:'loa'});
+      }
+      if(rr_&&rr_.rp){
+        const r=rr_.rp, insc=r.inscritos_ano_anterior+r.inscritos_anteriores;
+        cards.push({tit:'Restos a pagar', st:'info', valor:brlx(r.pagos),
+          sub:'de restos a pagar já foram pagos em '+rr_.ano+'. Saldo ainda a pagar: '+brlx(r.saldo_total)+'.',
+          leg:'Inscritos até 31/12/'+(rr_.ano-1)+': '+brlx(insc)+' ('+brlx(r.inscritos_ano_anterior)+' em '+(rr_.ano-1)+' e '+brlx(r.inscritos_anteriores)+' de anos anteriores). Pagos '+brlx(r.pagos)+', cancelados '+brlx(r.cancelados)+', saldo '+brlx(r.saldo_total)+'. Fonte: RREO '+rr_.bimestre+'º bimestre/'+rr_.ano+', Anexo 07, posição em '+rr_.posicao+'.', ir:'eq'});
+      }
+    }
     /* tabela de total do município: valor inicial, valor atual, empenhado, liquidado e pago (acumulados até o mês) */
     {
       const opm=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{}, mapa=new Map();
@@ -2424,12 +2442,13 @@ function montaComando(){
     }
     /* ordem dos cartões (2 colunas): receita x despesa e contratos em cima; orçamento executado e folha embaixo */
     const ORDEM=['Receita x despesa paga','Contratos vencendo','Orçamento executado','Folha de pessoal · 12 meses'];
+    cards.forEach(c=>{ if(ORDEM.indexOf(c.tit)<0) ORDEM.push(c.tit); });   /* os cartões do RREO vêm depois, na ordem em que foram criados */
     cards.sort((x,y)=>ORDEM.indexOf(x.tit)-ORDEM.indexOf(y.tit));
     gradeC.innerHTML='';
     cards.forEach(c=>{
       const d=el('div','pcard'); d.style.setProperty('--cs',COR_ST[c.st]);
       d.innerHTML='<div class="pt"><span>'+esc(c.tit)+'</span><span class="tag">'+TAG_ST[c.st]+'</span></div>'
-        +'<div class="pb" style="font-size:'+(c.valor.length>12?'22':'28')+'px">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div><div class="pl">ver detalhe ›</div>';
+        +'<div class="pb" style="font-size:'+(c.valor.length>12?'20':'25')+'px">'+esc(c.valor)+'</div><div class="ps">'+esc(c.sub)+'</div><div class="pl">ver detalhe ›</div>';
       d.title=c.leg;
       d.onclick=()=>irPara(c.ir); gradeC.appendChild(d);
     });

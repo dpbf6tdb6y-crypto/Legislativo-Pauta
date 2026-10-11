@@ -72,6 +72,32 @@ def extrai_rp(paginas):
     return {k: round(x, 2) for k, x in r.items()}
 
 
+def extrai_caixa(paginas):
+    """Anexo 06 (Tabela 6.3): caixa em 31/12 do ano anterior e até o bimestre, restos processados deduzidos
+    e o superávit financeiro já utilizado para abrir créditos. Devolve None se não achar o essencial."""
+    pg = next((p for p in paginas if 'Tabela 6.3' in p and 'Disponibilidade de Caixa' in p), None)
+    sup = None
+    for p in paginas:
+        m = re.search(r'Super[aá]vit Financeiro Utilizado[^\n]*?' + NUM, p)
+        if m:
+            sup = num(m.group(1))
+            break
+    out = {}
+    if pg:
+        m = re.search(r'Disponibilidade de Caixa\s+' + NUM + r'\s+' + NUM, pg)
+        if m:
+            out['caixa_liquida_ant'], out['caixa_liquida_ate'] = num(m.group(1)), num(m.group(2))
+        m = re.search(r'Disponibilidade de Caixa Bruta\s+' + NUM + r'\s+' + NUM, pg)
+        if m:
+            out['caixa_bruta_ant'], out['caixa_bruta_ate'] = num(m.group(1)), num(m.group(2))
+        m = re.search(r'Restos a Pagar Processados \(XLI\)\s+' + NUM + r'\s+' + NUM, pg)
+        if m:
+            out['rp_proc_ant'], out['rp_proc_ate'] = num(m.group(1)), num(m.group(2))
+    if sup is not None:
+        out['superavit_utilizado'] = sup
+    return out or None
+
+
 def extrai(paginas):
     tudo = '\n'.join(paginas)
     ano = re.search(r'Exerc[ií]cio:\s*(\d{4})', tudo)
@@ -101,6 +127,9 @@ def extrai(paginas):
     rp = extrai_rp(paginas)
     if rp:
         out['rp'] = rp
+    cx = extrai_caixa(paginas)
+    if cx:
+        out['caixa'] = cx
     out.update({'ano': ano, 'bimestre': bim, 'posicao': '%s/%d' % (fim, ano),
                 'fonte': 'RREO · Tabela 14.0 (Demonstrativo Simplificado)'})
     return out
