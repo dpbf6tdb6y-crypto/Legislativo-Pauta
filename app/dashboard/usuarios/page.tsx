@@ -224,71 +224,69 @@ export default function UsuariosPage() {
 
       {modal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
-            <h2 className="text-lg font-bold text-gray-800 mb-5">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 max-h-[94vh] overflow-y-auto">
+            <h2 className="text-base font-bold text-gray-800 mb-3">
               {isNovo ? "Novo Usuário" : `Editar: ${u?.nome}`}
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                  Nome Completo <span className="text-red-400">*</span>
-                </label>
-                <input name="nome" required defaultValue={u?.nome ?? ""}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40" />
-              </div>
-
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-0.5">
+                    Nome Completo <span className="text-red-400">*</span>
+                  </label>
+                  <input name="nome" required defaultValue={u?.nome ?? ""}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-0.5">
                     E-mail {isNovo && <span className="text-red-400">*</span>}
                   </label>
                   <input name="email" type="email" required={isNovo} disabled={!isNovo} defaultValue={u?.email ?? ""}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40 disabled:bg-gray-50 disabled:text-gray-500" />
+                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40 disabled:bg-gray-50 disabled:text-gray-500" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Perfil</label>
+                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-0.5">Perfil</label>
                   <select name="perfil" defaultValue={u?.perfil ?? "operador"}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40 bg-white text-gray-800">
+                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40 bg-white text-gray-800">
                     {u?.perfil === "master" && <option value="master">👑 Master</option>}
                     <option value="admin">Administrador</option>
                     <option value="operador">Operador</option>
                     <option value="leitor">Leitor (somente leitura)</option>
                   </select>
                 </div>
+                {!isNovo && (
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-0.5">Status</label>
+                    <select name="ativo" defaultValue={u?.ativo ? "true" : "false"}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40 bg-white text-gray-800">
+                      <option value="true">Ativo</option>
+                      <option value="false">Inativo</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
-              {!isNovo && (
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Status</label>
-                  <select name="ativo" defaultValue={u?.ativo ? "true" : "false"}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40 bg-white text-gray-800">
-                    <option value="true">Ativo</option>
-                    <option value="false">Inativo</option>
-                  </select>
-                </div>
-              )}
-
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Acesso aos menus</label>
-                <p className="text-xs text-gray-400 mb-2">
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-0.5">Acesso aos menus</label>
+                <p className="text-[11px] text-gray-400 mb-1">
                   <b>Visualizar</b>: a pessoa vê o menu e consulta, sem botões de cadastro. <b>Cadastrar</b>: também cria e edita.
                   Master e Administrador têm acesso total.
                 </p>
                 <div className="border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="grid grid-cols-[1fr_90px_90px] bg-gray-50 text-[11px] font-semibold text-gray-500 uppercase tracking-wide px-3 py-1.5">
+                  <div className="grid grid-cols-[1fr_80px_80px] bg-gray-50 text-[10px] font-semibold text-gray-500 uppercase tracking-wide px-3 py-1">
                     <span>Menu</span><span className="text-center">Visualizar</span><span className="text-center">Cadastrar</span>
                   </div>
                   {MENUS.map(m => {
                     const a = acc[m.chave] ?? { ver: false, cad: false };
                     return (
-                      <div key={m.chave} className="border-t border-gray-100 px-3 py-1.5">
-                        <div className="grid grid-cols-[1fr_90px_90px] items-center">
-                          <span className="text-sm text-gray-700">{m.chave === "indicacoes" ? "🔒 " : ""}{m.label}</span>
+                      <div key={m.chave} className="border-t border-gray-100 px-3 py-0.5">
+                        <div className="grid grid-cols-[1fr_80px_80px] items-center">
+                          <span className="text-[13px] text-gray-700">{m.chave === "indicacoes" ? "🔒 " : ""}{m.label}</span>
                           <label className="flex justify-center">
                             <input type="checkbox" checked={a.ver || a.cad}
                               onChange={e => setAcc(s => ({ ...s, [m.chave]: { ver: e.target.checked, cad: e.target.checked ? s[m.chave]?.cad ?? false : false } }))}
-                              className="w-4 h-4 accent-purple-600" />
+                              className="w-3.5 h-3.5 accent-purple-600" />
                           </label>
                           <label className="flex justify-center">
                             <input type="checkbox" checked={a.cad}
@@ -300,7 +298,7 @@ export default function UsuariosPage() {
                           <label className="flex items-center gap-2 mt-1 ml-1 text-xs text-gray-600 cursor-pointer">
                             <input type="checkbox" checked={fluxoResumido} onChange={e => setFluxoResumido(e.target.checked)}
                               className="w-3.5 h-3.5 accent-purple-600" />
-                            Mostrar somente o fluxo resumido nas proposições (sem a opção de ver o detalhado)
+                            Mostrar só o fluxo resumido (sem a opção de ver o detalhado)
                           </label>
                         )}
                         {m.chave === "indicacoes" && (a.ver || a.cad) && (
@@ -317,14 +315,14 @@ export default function UsuariosPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Outras permissões</label>
-                <div className="grid grid-cols-2 gap-2">
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-0.5">Outras permissões</label>
+                <div className="grid grid-cols-3 gap-1.5">
                   {PERMISSOES.filter(p => p.chave !== "podeCriar" && p.chave !== "podeEditar").map(p => (
                     <label key={p.chave} title={p.descricao}
-                      className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-50">
+                      className="flex items-center gap-2 border border-gray-200 rounded-lg px-2.5 py-1 cursor-pointer hover:bg-gray-50">
                       <input type="checkbox" name={p.chave} defaultChecked={(u as any)?.[p.chave] ?? true}
                         className="w-4 h-4 accent-purple-600" />
-                      <span className="text-sm text-gray-700">{p.label}</span>
+                      <span className="text-xs text-gray-700">{p.label}</span>
                     </label>
                   ))}
                 </div>
