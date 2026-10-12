@@ -27,7 +27,7 @@ const configItems = [
 
 const auditoriaItem = { href: "/dashboard/auditoria", label: "Auditoria", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" };
 const indicacoesItem = { href: "/dashboard/indicacoes", label: "Ind.", icon: "M12 15a3 3 0 100-6 3 3 0 000 6z M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" };
-const fazendaItem = { href: "/dashboard/fazenda", label: "Controles da Gestão", icon: "M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1c1.657 0 3 .672 3 1.5M12 15v1m0-1c-1.657 0-3-.672-3-1.5M3 12a9 9 0 1018 0 9 9 0 00-18 0z" };
+const fazendaItem = { href: "/dashboard/fazenda", label: "Gestão - $$$", icon: "M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1c1.657 0 3 .672 3 1.5M12 15v1m0-1c-1.657 0-3-.672-3-1.5M3 12a9 9 0 1018 0 9 9 0 00-18 0z" };
 // Verde-esmeralda pra destacar Fazenda das outras seções — pedido do
 // usuário pra ficar "de outra cor", sempre (não só quando ativa).
 const FAZENDA_COLOR = "#10b981";

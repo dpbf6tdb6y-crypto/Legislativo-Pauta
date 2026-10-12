@@ -10,7 +10,7 @@ export const MENUS = [
   { chave: "tags", label: "TAG", rota: "/dashboard/tags" },
   { chave: "sessoes", label: "Sessões & Pautas", rota: "/dashboard/sessoes" },
   { chave: "indicacoes", label: "Ind.", rota: "/dashboard/indicacoes" },
-  { chave: "gestao", label: "Controles da Gestão", rota: "/dashboard/fazenda" },
+  { chave: "gestao", label: "Gestão - $$$", rota: "/dashboard/fazenda" },
 ] as const
 
 export type ChaveMenu = (typeof MENUS)[number]["chave"]
