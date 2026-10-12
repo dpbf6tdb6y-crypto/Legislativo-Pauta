@@ -43,7 +43,7 @@ def bloco(pre):
     for ano, reg in D['anos'].items():
         for cod, v in reg.items():
             if cod.startswith(pre):
-                # [ano, tipo, nome, valor, % vinculada por lei (100/0/null), lei]
+                # [ano, tipo, nome, valor, % vinculante por lei (100/0/null), lei]
                 pct, lei = classifica(cod, D['tipos'].get(cod, ''), D['nomes'].get(cod, ''))
                 out.append([int(ano), D['tipos'].get(cod, ''), nome(cod), v['ate_per'], pct, lei,
                             area_vinc(cod, D['tipos'].get(cod, ''), D['nomes'].get(cod, ''))])
@@ -492,7 +492,7 @@ try:
         _a['recebido'] = round(_a['recebido'], 2)
     PREFEITO['func_all'] = {k: round(v, 2) for k, v in _fx.items() if v > 0}
 except Exception as _e:
-    print('receitas vinculadas não calculadas:', _e)
+    print('receitas vinculantes não calculadas:', _e)
 
 # ---------------------------------------------------------------- LOA: previsto x executado
 LOA = {'ano': int(ANO_EQUILIBRIO), 'rec': {}, 'tipos': [], 'funcoes': [], 'fechado': LEI.get('fechado')}
@@ -1329,8 +1329,8 @@ function linha(nome,valor,frac,pct,opt){
   if(opt.click) d.onclick=opt.click;
   return d;
 }
-/* três colunas de vinculação legal: % vinculada · valor vinculado · lei.
-   Vermelho = vinculada por lei; cinza = sem vinculação legal; âmbar = nenhuma
+/* três colunas de vinculação legal: % vinculante · valor vinculante · lei.
+   Vermelho = vinculante por lei; cinza = sem vinculação legal; âmbar = nenhuma
    das regras cobre a linha (a classificar — nada é estimado). */
 function vincHtml(v){
   if(v.pct===null) return '<span class="vp ac">—</span><span class="vv ac">—</span><span class="va ac">—</span><span class="vl ac">a classificar</span>';
@@ -1341,7 +1341,7 @@ function vincHtml(v){
 function cabecaLista(a,b,c,d,vinc){
   const h=el('div','cabl'+(vinc?' vinc':''));
   h.innerHTML='<span>'+a+'</span><span>'+(b||'')+'</span><span>'+(d||'')+'</span><span>'+c+'</span>'
-    +(vinc?'<span>% Vinc.</span><span>Valor vinculado (R$)</span><span>Destinação</span><span>Lei</span>':'');
+    +(vinc?'<span>% Vinc.</span><span>Valor vinculante (R$)</span><span>Destinação</span><span>Lei</span>':'');
   return h;
 }
 
@@ -1527,7 +1527,7 @@ function montaReceita(id){
     for(const r of rows){ m.set(r[i],(m.get(r[i])||0)+r[3]); }
     return [...m].map(([k,v])=>({k,v}));
   }
-  /* agrupa por nome somando também o que é vinculado por lei (100%), o que
+  /* agrupa por nome somando também o que é vinculante por lei (100%), o que
      não é (0%) e o que nenhuma regra cobre (null) — sem rateio: cada linha
      de origem entra inteira numa das três. */
   function agrupaDet(rows){
@@ -1652,13 +1652,13 @@ function montaReceita(id){
       }
       const l=linha(d.k, exato(d.v), d.v/mx, f1.format(d.v/total*100)+'%', {vinc});
       dica(l, d.k, '<em>'+exato(d.v)+'</em><br>'+f2.format(d.v/total*100)+'% do total'
-        +(vinc&&vinc.pct!==null&&vinc.pct>0 ? '<br>vinculada por lei: '+exato(vinc.valor)+' · '+esc(vinc.area||'')+' · '+esc(vinc.lei||'') : ''));
+        +(vinc&&vinc.pct!==null&&vinc.pct>0 ? '<br>vinculante por lei: '+exato(vinc.valor)+' · '+esc(vinc.area||'')+' · '+esc(vinc.lei||'') : ''));
       listaDet.appendChild(l);
     });
     if(cfg.vinc){
       const tv=det.reduce((s,d)=>s+d.vv,0), t0=det.reduce((s,d)=>s+d.v0,0), tn=det.reduce((s,d)=>s+d.vn,0);
       const pc=x=>f1.format(total?x/total*100:0)+'%';
-      resumoVinc.innerHTML='<b style="color:var(--baixa)">Vinculado por lei: '+exato(tv)+' ('+pc(tv)+' do total)</b>'
+      resumoVinc.innerHTML='<b style="color:var(--baixa)">Vinculante por lei: '+exato(tv)+' ('+pc(tv)+' do total)</b>'
         +' · sem vinculação legal: '+exato(t0)+' ('+pc(t0)+')'
         +(tn>0.005 ? ' · <span style="color:var(--parcial)">a classificar: '+exato(tn)+' ('+pc(tn)
             +') — nenhuma das regras de vinculação cobre essas linhas</span>' : '')
@@ -2471,7 +2471,7 @@ function montaComando(){
   host.appendChild(selo);
   const linhaCards=el('div','dgrid'); host.appendChild(linhaCards);
   /* quadrantes em 2 colunas x 2 linhas, cada par com a mesma altura:
-       [cartões] [execução do orçamento] / [receitas vinculadas] [vínculo e pessoal] */
+       [cartões] [execução do orçamento] / [receitas vinculantes] [vínculo e pessoal] */
   const colCards=el('div','c7 colcards'); linhaCards.appendChild(colCards);
   const gradeC=el('div','pgrid p2'); colCards.appendChild(gradeC);   /* cartões do ano: receita x despesa, contratos, orçamento e um espaço reservado */
   const sTab=bloco(linhaCards,'Execução do orçamento'); sTab.classList.add('c5');
@@ -2479,10 +2479,10 @@ function montaComando(){
   /* caixa e anos anteriores: o que veio de antes, separado do ano corrente */
   const sCaixa=bloco(linhaCards,'Caixa e anos anteriores'); sCaixa.classList.add('c12');
   const gradeCx=el('div','pgrid p4'); sCaixa.appendChild(gradeCx);
-  /* coluna da esquerda da 2ª linha: receitas vinculadas e, logo abaixo, "para onde vai o dinheiro"
+  /* coluna da esquerda da 2ª linha: receitas vinculantes e, logo abaixo, "para onde vai o dinheiro"
      (ocupa o espaço que sobrava ao lado do quadrante de vínculo/pessoal) */
   const colEsq=el('div','c7 colbox colesq'); linhaCards.appendChild(colEsq);
-  const sVi=bloco(colEsq,'Receitas vinculadas');
+  const sVi=bloco(colEsq,'Receitas vinculantes');
   const sOnde=bloco(colEsq,'Para onde vai o dinheiro');
   const colDir=el('div','c5 colbox colesq'); linhaCards.appendChild(colDir);
   const sPes=bloco(colDir,'Pessoal · folha dos últimos 12 meses'); const gradeP=el('div','pgrid p1'); sPes.appendChild(gradeP);
@@ -2623,7 +2623,7 @@ function montaComando(){
         const c=rr_.caixa, a0=rr_.ano-1;
         cards.push({tit:'Caixa disponível', st:'info', valor:brlx(c.caixa_liquida_ate),
           sub:'em caixa em '+rr_.posicao+', já descontados restos a pagar processados e depósitos de terceiros.',
-          leg:'Em 31/12/'+a0+': '+brlx(c.caixa_liquida_ant)+(c.caixa_bruta_ant!=null?' (bruto '+brlx(c.caixa_bruta_ant)+')':'')+'. Em '+rr_.posicao+': '+brlx(c.caixa_liquida_ate)+(c.caixa_bruta_ate!=null?' (bruto '+brlx(c.caixa_bruta_ate)+')':'')+'. Fonte: RREO '+rr_.bimestre+'º bimestre/'+rr_.ano+', Anexo 06. Inclui dinheiro de fontes vinculadas.', ir:'loa'});
+          leg:'Em 31/12/'+a0+': '+brlx(c.caixa_liquida_ant)+(c.caixa_bruta_ant!=null?' (bruto '+brlx(c.caixa_bruta_ant)+')':'')+'. Em '+rr_.posicao+': '+brlx(c.caixa_liquida_ate)+(c.caixa_bruta_ate!=null?' (bruto '+brlx(c.caixa_bruta_ate)+')':'')+'. Fonte: RREO '+rr_.bimestre+'º bimestre/'+rr_.ano+', Anexo 06. Inclui dinheiro de fontes vinculantes.', ir:'loa'});
       }
       if(rr_&&rr_.caixa&&rr_.caixa.superavit_utilizado!=null){
         const c=rr_.caixa, a0=rr_.ano-1;
@@ -2641,8 +2641,8 @@ function montaComando(){
       }
     }
     cards.push({tit:'Evolução no ano', st:'info', chart:true, valor:'', sub:'', leg:'', ir:'eq'});
-    cards.push({tit:'Caixa livre x vinculado', st:'esp', espera:true, valor:'—',
-      sub:'Aguardando informação: separar o caixa livre do que é vinculado (e de anos anteriores) exige o RGF ou a Contabilidade.',
+    cards.push({tit:'Caixa livre x vinculante', st:'esp', espera:true, valor:'—',
+      sub:'Aguardando informação: separar o caixa livre do que é vinculante (e de anos anteriores) exige o RGF ou a Contabilidade.',
       leg:'O RREO traz só o caixa total. A separação por fonte de recurso consta do RGF (disponibilidade de caixa e restos a pagar) ou do Balanço Patrimonial.', ir:'loa'});
     /* tabela de total do município: valor inicial, valor atual, empenhado, liquidado e pago (acumulados até o mês) */
     {
@@ -2708,10 +2708,10 @@ function montaComando(){
       if(!c.espera) d.onclick=()=>irPara(c.ir);
       const z=ZONA(c); (z==='caixa'?gradeCx:(z==='pessoal'?gradeP:gradeC)).appendChild(d);
     });
-    /* receitas vinculadas: total, percentual da receita e quebra por área (de janeiro até o mês) */
+    /* receitas vinculantes: total, percentual da receita e quebra por área (de janeiro até o mês) */
     {
       sVi.querySelectorAll('.vbox').forEach(x=>x.remove());
-      sVi.querySelector('.rot').textContent='Receitas vinculadas · exercício '+eq.ano+' · '+P.rot;
+      sVi.querySelector('.rot').textContent='Receitas vinculantes · exercício '+eq.ano+' · '+P.rot;
       const FUNC_DE={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
       const REGRA_DE={'Mineração (restrita)':'Lei 7.990/1989: não pode pagar folha do quadro permanente nem dívida.',
         'Serviço da taxa':'Só pode custear o serviço que a taxa remunera (CF art. 145).','Iluminação pública':'Só pode custear a iluminação pública (CF art. 149-A).',
@@ -2729,7 +2729,7 @@ function montaComando(){
         .sort((x,y)=>y.v-x.v);
       const tv=lv.reduce((s,l)=>s+l.v,0), pc=x=>f1.format(tb?x/tb*100:0)+'%', mi=x=>(x/1e6).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
       const box=el('div','vbox'); sVi.appendChild(box);
-      if(!tv){ box.innerHTML='<div class="vazio">Sem receita vinculada nos meses coletados.</div>'; }
+      if(!tv){ box.innerHTML='<div class="vazio">Sem receita vinculante nos meses coletados.</div>'; }
       else {
         const livre=tb-tv-tn;
         let h='<div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:2px 0 10px">'
@@ -2738,13 +2738,13 @@ function montaComando(){
           +'<div class="vbar"><div style="width:'+(tb?tv/tb*100:0).toFixed(2)+'%;background:var(--acento)"></div>'
           +'<div style="width:'+(tb?livre/tb*100:0).toFixed(2)+'%;background:#C9D1DC"></div>'
           +'<div style="width:'+(tb?tn/tb*100:0).toFixed(2)+'%;background:#E3A008"></div></div>'
-          +'<div class="vleg"><span><i style="background:var(--acento)"></i>Vinculada '+brlx(tv)+' · '+pc(tv)+'</span>'
+          +'<div class="vleg"><span><i style="background:var(--acento)"></i>Vinculante '+brlx(tv)+' · '+pc(tv)+'</span>'
           +'<span><i style="background:#C9D1DC"></i>Livre '+brlx(livre)+' · '+pc(livre)+'</span>'
           +(tn>0.005?'<span><i style="background:#E3A008"></i>Sem regra definida '+brlx(tn)+' · '+pc(tn)+'</span>':'')+'</div>'
-          +'<div class="vlegd"><span><i style="background:var(--acento)"></i>Receita vinculada recebida</span>'
+          +'<div class="vlegd"><span><i style="background:var(--acento)"></i>Receita vinculante recebida</span>'
           +'<span><i style="background:#8A94A6"></i>Despesa total da função de governo <b>(não é só a parte paga com esta receita: o portal não informa a fonte de recurso)</b></span></div>'
           +'<div class="vrow cab"><span>Área</span><span>Recebido x gasto</span><span style="text-align:right">Recebido</span><span style="text-align:right">Gasto na função</span><span style="text-align:right">% receita</span></div>';
-        /* a tabela traz TODAS as receitas vinculadas; onde não há despesa identificada, a própria linha avisa */
+        /* a tabela traz TODAS as receitas vinculantes; onde não há despesa identificada, a própria linha avisa */
         const mxb=Math.max(...lv.map(l=>Math.max(l.v,l.gasto||0)),1);
         lv.forEach(l=>{
           const temG=l.gasto!==null;
@@ -2757,7 +2757,7 @@ function montaComando(){
           if(st.area===l.area){
             const cob=l.gasto===null?'':(l.v>l.gasto
               ?'<br><b style="color:var(--parcial)">Recebeu mais do que gastou na função — conferir.</b> Gasto na função: '+exato(l.gasto)+'.'
-              :'<br><b style="color:var(--parcial)">Aplicação na finalidade não confirmável.</b> A despesa total da função é '+exato(l.gasto)+', mas o portal não informa qual parte foi paga com esta receita vinculada.');
+              :'<br><b style="color:var(--parcial)">Aplicação na finalidade não confirmável.</b> A despesa total da função é '+exato(l.gasto)+', mas o portal não informa qual parte foi paga com esta receita vinculante.');
             h+='<div class="vdet"><b>Base legal:</b> '+esc(l.lei||'—')+'<br>'+esc(REGRA_DE[l.area]||'')+'<br>Recebido: '+exato(l.v)+cob+'</div>';
           }
         });
@@ -2765,7 +2765,7 @@ function montaComando(){
         box.querySelectorAll('.vrow[data-a]').forEach(r=>{ r.onclick=()=>{ st.area=(st.area===r.dataset.a?null:r.dataset.a); desenha_(); }; });
       }
       const nt=el('div','nota'); nt.style.paddingTop='10px';
-      nt.textContent='Receita bruta = Corrente + Capital, antes das deduções. "Sem regra definida" são linhas de receita que ainda não têm regra de vinculação e ficam fora do vinculado. '
+      nt.textContent='Receita bruta = Corrente + Capital, antes das deduções. "Sem regra definida" são linhas de receita que ainda não têm regra de vinculação e ficam fora do vinculante. '
         +'O portal não separa a despesa por fonte de recurso; a comparação com o gasto na função é aproximada.';
       box.appendChild(nt);
     }
@@ -2841,7 +2841,7 @@ function montaComando(){
       add('Equilíbrio das contas',Math.abs(rl)>5?'l':'o','Remanejamento do orçamento em relação à LOA',
         'LOA '+brlx(pf.dot_ini)+' · atualizado '+brlx(pf.dot_atual)+'. Créditos adicionais precisam de lei/decreto e de fonte de recurso.',(dl>=0?'+':'−')+p1(Math.abs(rl)),'desp');
     }
-    // ---- receitas vinculadas
+    // ---- receitas vinculantes
     {
       const rec_={}; let tb=0, tn=0; const fg={};
       Pb.ms.forEach(m=>{ tb+=(VI.bruta_mes||{})[m]||0; tn+=(VI.nc_mes||{})[m]||0;
@@ -2849,17 +2849,17 @@ function montaComando(){
         Object.entries((pf.func_mes||{})[m]||{}).forEach(([f,v])=>{ fg[f]=(fg[f]||0)+v; }); });
       const FUNC={'Educação':'EDUCAÇÃO','Saúde':'SAÚDE','Assistência social':'ASSISTÊNCIA SOCIAL'};
       const sem=Object.entries(rec_).filter(([a])=>!FUNC[a]), vs=sem.reduce((s,[,v])=>s+v,0);
-      if(vs>0) add('Receitas vinculadas','l','Receita vinculada sem despesa identificada',
+      if(vs>0) add('Receitas vinculantes','l','Receita vinculante sem despesa identificada',
         sem.map(([a,v])=>a+' '+brlx(v)).join(' · ')+'. O portal não separa a despesa por fonte de recurso; não dá para confirmar a aplicação na finalidade.',brlx(vs)+' ('+p1(tb?vs/tb*100:0)+')','pre');
       Object.entries(rec_).filter(([a])=>FUNC[a]).forEach(([a,v])=>{
         const g=fg[FUNC[a]]||0;
-        add('Receitas vinculadas',v>g?'v':'l',v>g?a+': receita vinculada recebida maior que toda a despesa da função':a+': aplicação da receita vinculada não confirmável',
-          'Recebido '+brlx(v)+' · despesa total da função '+brlx(g)+'. O portal não informa a fonte de recurso, então não dá para saber quanto da despesa foi paga com a receita vinculada.',brlx(v),'pre');
+        add('Receitas vinculantes',v>g?'v':'l',v>g?a+': receita vinculante recebida maior que toda a despesa da função':a+': aplicação da receita vinculante não confirmável',
+          'Recebido '+brlx(v)+' · despesa total da função '+brlx(g)+'. O portal não informa a fonte de recurso, então não dá para saber quanto da despesa foi paga com a receita vinculante.',brlx(v),'pre');
       });
-      if(rec_['Mineração (restrita)']) add('Receitas vinculadas','l','CFEM: vedado pagar quadro permanente de pessoal e dívida',
+      if(rec_['Mineração (restrita)']) add('Receitas vinculantes','l','CFEM: vedado pagar quadro permanente de pessoal e dívida',
         'Lei 7.990/1989. Recebido '+brlx(rec_['Mineração (restrita)'])+'. Não é verificável com os dados do portal.',brlx(rec_['Mineração (restrita)']),'pre');
-      add('Receitas vinculadas',tb&&tn/tb>0.02?'l':'o','Receita sem regra de vinculação definida',
-        'Linhas de receita que ainda não têm regra e ficam fora do vinculado.',brlx(tn)+' ('+p1(tb?tn/tb*100:0)+')','rc');
+      add('Receitas vinculantes',tb&&tn/tb>0.02?'l':'o','Receita sem regra de vinculação definida',
+        'Linhas de receita que ainda não têm regra e ficam fora do vinculante.',brlx(tn)+' ('+p1(tb?tn/tb*100:0)+')','rc');
     }
     // ---- contratos e pessoal
     {
@@ -2912,8 +2912,8 @@ function montaComando(){
       [/^Receita x despesa paga/,'LRF art. 1º, §1º e art. 9º','Verificar o fluxo de caixa e a origem dos restos a pagar pagos; se o desequilíbrio persistir, avaliar a limitação de empenho (LRF art. 9º).'],
       [/^Empenhado sobre o orçamento/,'Lei 4.320/1964, arts. 58 a 60','Acompanhar o ritmo de empenho contra o calendário e a arrecadação, para não comprometer o fim do exercício.'],
       [/^Remanejamento do orçamento/,'CF art. 167, V; Lei 4.320/1964, arts. 40 a 46','Conferir se os créditos adicionais têm lei ou decreto e fonte de recurso indicada.'],
-      [/^Receita vinculada sem despesa/,'CF art. 167, IV; LRF art. 8º, parágrafo único','Solicitar à Contabilidade o balancete da despesa por fonte/destinação de recursos e conciliar mensalmente receita vinculada e despesa paga.'],
-      [/aplicação da receita vinculada|receita vinculada recebida maior/,'CF art. 167, IV; LRF art. 8º, parágrafo único','Conciliar, por fonte de recurso, a receita vinculada recebida com a despesa que a consumiu.'],
+      [/^Receita vinculante sem despesa/,'CF art. 167, IV; LRF art. 8º, parágrafo único','Solicitar à Contabilidade o balancete da despesa por fonte/destinação de recursos e conciliar mensalmente receita vinculante e despesa paga.'],
+      [/aplicação da receita vinculante|receita vinculante recebida maior/,'CF art. 167, IV; LRF art. 8º, parágrafo único','Conciliar, por fonte de recurso, a receita vinculante recebida com a despesa que a consumiu.'],
       [/^CFEM/,'Lei 7.990/1989, art. 8º; Lei 13.540/2017','Conferir na contabilidade que a fonte CFEM não pagou folha do quadro permanente nem dívida.'],
       [/^Receita sem regra/,'—','Definir a regra de vinculação das linhas de receita ainda sem classificação.'],
       [/^Contratos vencendo/,'Lei 14.133/2021','Priorizar prorrogações ou novos processos licitatórios dos contratos com vencimento próximo, evitando contratação sem cobertura.'],
@@ -2942,7 +2942,7 @@ function montaComando(){
       +'<tr><td>Natureza</td><td>Pontos de controle gerenciais, calculados a partir dos dados públicos do Portal da Transparência</td></tr></table>';
 
     h+='<div class="relH">1. Objetivo e escopo</div>'
-      +'<p class="relP">Apresentar, de forma objetiva, os pontos de atenção da gestão fiscal e orçamentária do município no exercício, cobrindo: limites constitucionais e da Lei de Responsabilidade Fiscal; equilíbrio das contas; aplicação das receitas vinculadas; contratos e pessoal; e a confiabilidade dos dados utilizados.</p>';
+      +'<p class="relP">Apresentar, de forma objetiva, os pontos de atenção da gestão fiscal e orçamentária do município no exercício, cobrindo: limites constitucionais e da Lei de Responsabilidade Fiscal; equilíbrio das contas; aplicação das receitas vinculantes; contratos e pessoal; e a confiabilidade dos dados utilizados.</p>';
 
     h+='<div class="relH">2. Resumo executivo</div>'
       +'<p class="relP">Foram avaliados <b>'+it.length+' pontos de controle</b>: <b style="color:#D92D20">'+n.v+' crítico'+(n.v===1?'':'s')+'</b>, '
@@ -2968,7 +2968,7 @@ function montaComando(){
     recs.forEach((x,k)=>{ h+='<div class="relLi"><b>R'+(k+1)+'.</b> '+(x.r?esc(x.r):'Acompanhar.')+' <span style="color:#64748B">(achado '+x.i+' · '+NOME[x.n].toLowerCase()+')</span></div>'; });
 
     h+='<div class="relH">5. Limitações do trabalho</div>'
-      +'<div class="relLi">O portal não informa a <b>fonte (destinação) de recurso</b> da despesa: a aplicação das receitas vinculadas não pode ser confirmada, apenas indicada por função de governo.</div>'
+      +'<div class="relLi">O portal não informa a <b>fonte (destinação) de recurso</b> da despesa: a aplicação das receitas vinculantes não pode ser confirmada, apenas indicada por função de governo.</div>'
       +'<div class="relLi">Os percentuais de pessoal usam a despesa liquidada e a receita corrente líquida aproximada (corrente menos deduções, sem excluir a contribuição previdenciária do servidor).</div>'
       +'<div class="relLi">Os limites de Educação e Saúde seguem o RREO oficial (posição do último bimestre publicado); entre uma publicação e outra, o painel traz apenas aproximações.</div>'
       +'<div class="relLi">Restos a pagar e despesas fora do portal não entram nos cálculos. Este relatório não substitui a auditoria do controle interno, o parecer do Tribunal de Contas nem o RREO/RGF oficiais.</div>';
@@ -3574,7 +3574,7 @@ function montaBusca(){
       const c=rr&&rr.caixa; if(!c) return nao('Ainda não tenho o caixa do RREO coletado.');
       return {ok:true,entendi:'caixa disponível (RREO)',titulo:'Caixa disponível',destaque:R$(c.caixa_liquida_ate),
         linhas:[['Posição',rr.posicao],['Em 31/12/'+(rr.ano-1),R$(c.caixa_liquida_ant)],['Superávit de '+(rr.ano-1)+' já usado',R$(c.superavit_utilizado)]],
-        nota:'Já descontados restos a pagar processados e depósitos de terceiros. Inclui dinheiro de fontes vinculadas.',fonte:'RREO '+rr.bimestre+'º bimestre/'+rr.ano+', Anexo 06',ir:'cmd',
+        nota:'Já descontados restos a pagar processados e depósitos de terceiros. Inclui dinheiro de fontes vinculantes.',fonte:'RREO '+rr.bimestre+'º bimestre/'+rr.ano+', Anexo 06',ir:'cmd',
         fala:'O caixa disponível em '+rr.posicao+' é de '+falado(c.caixa_liquida_ate)+'.'};
     }
     if(tem(q,/restos/)){
@@ -3608,6 +3608,25 @@ function montaBusca(){
       fala:(sd>=0?'A receita cobriu o pago, com sobra de ':'O pago superou a receita em ')+falado(Math.abs(sd))+'.'};
   }
 
+  /* RECEITA VINCULANTE (que só pode ser gasta na finalidade fixada em lei) */
+  function respVinculante(q){
+    const V=DATA.vinculadas; if(!V||!V.bruta_mes) return nao('Ainda não tenho a receita vinculante calculada.');
+    const per=periodoMensal(q), meses=Object.keys(V.bruta_mes).map(Number).sort((a,b)=>a-b);
+    const usar=per.mes?[per.mes]:meses;
+    if(per.mes&&!meses.includes(per.mes)) return nao('Não há receita de '+MESN[per.mes-1]+' coletada ainda.');
+    let bruta=0, livre=0, nc=0; const areas={};
+    usar.forEach(m=>{ bruta+=V.bruta_mes[m]||0; livre+=(V.livre_mes||{})[m]||0; nc+=(V.nc_mes||{})[m]||0;
+      Object.entries((V.mes||{})[m]||{}).forEach(([a,v])=>{ areas[a]=(areas[a]||0)+v; }); });
+    const vinc=Object.values(areas).reduce((s,x)=>s+x,0);
+    const rot=per.mes?MESN[per.mes-1]+'/'+V.ano:'janeiro a '+MESN[usar[usar.length-1]-1]+'/'+V.ano;
+    const linhas=Object.entries(areas).sort((a,b)=>b[1]-a[1]).map(([a,v])=>['• '+a,R$(v)+' ('+pct(bruta?v/bruta*100:0)+')']);
+    linhas.push(['Livre',R$(livre)+' ('+pct(bruta?livre/bruta*100:0)+')'],['Sem regra definida',R$(nc)],['Receita bruta do período',R$(bruta)]);
+    return {ok:true,entendi:'receita vinculante em '+rot,titulo:'Receita vinculante · '+rot,destaque:R$(vinc),linhas,
+      nota:'É a que só pode ser gasta na finalidade fixada em lei. "Recebida" não é "gasta": o portal não informa a despesa por fonte de recurso.',
+      fonte:FONTE_PORTAL(),ir:'cmd',
+      fala:'A receita vinculante em '+rot.replace('/',' de ')+' foi de '+falado(vinc)+', '+f1.format(bruta?vinc/bruta*100:0).replace('.',',')+' por cento da receita bruta.'};
+  }
+
   /* MAIORES RECEITAS / SECRETARIAS */
   function respMaiores(q){
     if(tem(q,/receita|arrecad/)){
@@ -3635,6 +3654,7 @@ function montaBusca(){
     if(tem(q,/servidor|funcionari|folha|pessoal|salario|vencimento/)&&!tem(q,/limite|acima|abaixo/)) return respPessoal(q);
     if(tem(q,/caixa|superavit|restos|limite|acima de|abaixo de|minimo|fundeb|camara|duodecimo|educacao.*(25|%)|saude.*(15|%)|folha.*(60|%)/)) return respLimites(q);
     if(tem(q,/receita.*(contra|versus|x|e).*despesa|despesa.*(contra|versus|x).*receita|saldo|equilibrio|deficit|superavit do ano/)) return respSaldo(q);
+    if(tem(q,/vinculad|vinculant/)) return respVinculante(q);
     if(tem(q,/despesa|gast|empenh|liquid|pag(o|ou|amento)|custo|secretaria/)) return respDesp(q);
     if(tem(q,/receita|arrecad|entrou|imposto|taxa|iptu|iss|itbi|ipva|icms|fpm|irrf|cosip|cfem|multa|divida ativa/)) return respRec(q);
     if(tem(q,/educacao|saude/)) return respLimites(q);
