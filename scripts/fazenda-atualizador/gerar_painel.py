@@ -630,8 +630,9 @@ HTML = r'''<!DOCTYPE html>
   .audBtns button{ font:inherit; font-size:12.5px; font-weight:600; padding:8px 14px; border-radius:100px; border:1px solid var(--linha); background:var(--bg); color:var(--t2); cursor:pointer; }
   .audBtns button:hover{ border-color:#B9BFC9; color:var(--t1); }
   #audCorpo{ background:#fff; color:#111827; }
-  .relCab{ text-align:center; border-top:4px solid #0F2A5C; border-bottom:1px solid #0F2A5C; padding:16px 0 12px; margin:6px 0 14px; }
-  .relLogo{ height:70px; width:auto; display:block; margin:0 auto 8px; }
+  .relCab{ display:flex; align-items:center; gap:20px; text-align:left; border-top:4px solid #0F2A5C; border-bottom:1px solid #0F2A5C; padding:16px 0 12px; margin:6px 0 14px; }
+  .relLogo{ height:72px; width:auto; display:block; flex:none; }
+  .relTit{ flex:1; min-width:0; }
   .relBras{ font-size:11.5px; letter-spacing:.16em; color:#0F2A5C; font-weight:700; }
   .relT{ font-size:23px; font-weight:800; letter-spacing:.04em; color:#0F2A5C; margin:6px 0 2px; }
   .relST{ font-size:12.5px; color:#475569; }
@@ -2824,9 +2825,9 @@ function montaComando(){
     document.getElementById('audSub').innerHTML='Relatório pronto para impressão · gerado em '+dt;
 
     let h='<div class="relCab">'+(LOGO_SRC?'<img class="relLogo" src="'+LOGO_SRC+'" alt="Prefeitura de Nova Lima">':'')
-      +'<div class="relBras">PREFEITURA MUNICIPAL DE NOVA LIMA · MINAS GERAIS</div>'
+      +'<div class="relTit"><div class="relBras">PREFEITURA MUNICIPAL DE NOVA LIMA · MINAS GERAIS</div>'
       +'<div class="relT">RELATÓRIO DE AUDITORIA INTERNA</div>'
-      +'<div class="relST">Acompanhamento da gestão fiscal e orçamentária · exercício '+eq.ano+'</div></div>'
+      +'<div class="relST">Acompanhamento da gestão fiscal e orçamentária · exercício '+eq.ano+'</div></div></div>'
       +'<table class="relMeta"><tr><td>Exercício</td><td>'+eq.ano+'</td></tr>'
       +'<tr><td>Posição dos dados</td><td>'+esc(P.rot)+' de '+eq.ano+' (último mês fechado)</td></tr>'
       +'<tr><td>Referência oficial</td><td>'+(rr?'RREO do '+rr.bimestre+'º bimestre/'+rr.ano+', posição em '+esc(rr.posicao):'RREO não coletado')+'</td></tr>'
