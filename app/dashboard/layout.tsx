@@ -52,6 +52,17 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   // é lembrada neste navegador.
   const [fixado, setFixado] = useState(false);
   const [sobre, setSobre] = useState(false);
+  // celular: o menu vira uma gaveta que abre por cima da tela (botão no cabeçalho) e fecha ao navegar
+  const [movel, setMovel] = useState(false);
+  const [menuMovel, setMenuMovel] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const atualiza = () => setMovel(mq.matches);
+    atualiza();
+    mq.addEventListener("change", atualiza);
+    return () => mq.removeEventListener("change", atualiza);
+  }, []);
+  useEffect(() => { setMenuMovel(false); }, [pathname]);
   useEffect(() => {
     try { setFixado(localStorage.getItem("segov_menu_fixado") === "1"); } catch {}
   }, []);
@@ -62,7 +73,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       return novo;
     });
   };
-  const sidebarOpen = fixado || sobre;
+  const sidebarOpen = movel ? menuMovel : (fixado || sobre);
   const perfilAtual = (session?.user as any)?.perfil;
   const isAdminOuMaster = perfilAtual === "admin" || perfilAtual === "master";
   const usuarioSessao = session?.user as any;
@@ -116,14 +127,19 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const somenteLeitura = !!acessoAtual && acessoAtual.ver && !acessoAtual.cad;
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex h-[100dvh] bg-gray-100 overflow-hidden">
       {/* Sidebar: a coluna reserva só 4rem (ou 16rem se fixado); aberto por hover, o menu se sobrepõe ao conteúdo */}
       <div
-        className={`${fixado ? "w-64" : "w-16"} relative flex-shrink-0 h-screen transition-all duration-300`}
-        onMouseEnter={() => setSobre(true)}
+        className={`${movel ? "w-0" : fixado ? "w-64" : "w-16"} relative flex-shrink-0 h-[100dvh] transition-all duration-300`}
+        onMouseEnter={() => { if (!movel) setSobre(true); }}
         onMouseLeave={() => setSobre(false)}>
+      {movel && menuMovel && (
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setMenuMovel(false)} aria-hidden="true" />
+      )}
       <aside
-        className={`${sidebarOpen ? "w-64" : "w-16"} absolute left-0 top-0 z-40 flex flex-col transition-all duration-300 shadow-xl h-screen`}
+        className={`${movel
+          ? `fixed w-64 z-50 ${menuMovel ? "translate-x-0" : "-translate-x-full"}`
+          : `${sidebarOpen ? "w-64" : "w-16"} absolute z-40`} left-0 top-0 flex flex-col transition-all duration-300 shadow-xl h-[100dvh]`}
         style={{ background: SIDEBAR_BG }}>
 
         {/* Header */}
@@ -151,7 +167,15 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
               </svg>
             </div>
           )}
-          {sidebarOpen && (
+          {sidebarOpen && movel && (
+            <button onClick={() => setMenuMovel(false)} aria-label="Fechar menu"
+              className="p-1.5 rounded-lg ml-auto" style={{ color: NAV_INACTIVE }}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+          {sidebarOpen && !movel && (
             <button
               onClick={alternaFixado}
               title={fixado ? "Soltar o menu (recolher)" : "Fixar o menu aberto"}
@@ -314,7 +338,13 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
       {/* Conteúdo principal */}
       <div className="flex-1 flex flex-col overflow-auto">
-        <header className="bg-white shadow-sm px-5 py-2 flex items-center justify-between flex-shrink-0 sticky top-0 z-40 will-change-transform">
+        <header className="bg-white shadow-sm px-3 sm:px-5 py-2 flex items-center justify-between flex-shrink-0 sticky top-0 z-40 will-change-transform">
+          <button onClick={() => setMenuMovel(true)} aria-label="Abrir menu"
+            className="md:hidden mr-2 p-2 -ml-1 rounded-lg text-gray-600 hover:bg-gray-100 flex-shrink-0">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
           <TopbarLeft />
           <TopbarRight />
           {/* Escondido quando a própria página já tem seu botão equivalente
@@ -329,13 +359,13 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                Atualizar
+                <span className="hidden sm:inline">Atualizar</span>
               </button>
             </div>
           )}
         </header>
 
-        <main className="flex-1 px-5 pt-3 pb-0">
+        <main className="flex-1 px-3 sm:px-5 pt-3 pb-0 min-w-0">
           {semAcesso ? (
             <div className="max-w-md mx-auto mt-24 bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
               <p className="font-bold text-gray-800 mb-1">Sem acesso a esta tela</p>

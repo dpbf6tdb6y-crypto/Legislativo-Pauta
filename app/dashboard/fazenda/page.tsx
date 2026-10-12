@@ -15,7 +15,7 @@ export default function FazendaPage() {
   return (
     // Desfaz o padding do <main> do layout (px-5 pt-3) pra o painel ocupar a
     // tela toda até embaixo do cabeçalho, igual ao relatório original.
-    <div className="h-[calc(100vh-16px)] -mx-5 -mt-3">
+    <div className="h-[calc(100dvh-16px)] -mx-3 sm:-mx-5 -mt-3">
       <iframe
         src="/api/fazenda/painel"
         title="Painel Receita e Despesas"

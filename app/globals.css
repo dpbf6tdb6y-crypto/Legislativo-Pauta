@@ -23,3 +23,16 @@ body {
     text-wrap: balance;
   }
 }
+
+/* ---------- celular (Android e iPhone) ---------- */
+html { -webkit-text-size-adjust: 100%; }
+
+@media (max-width: 767px) {
+  /* campos com 16px: o iPhone não dá zoom automático ao tocar neles */
+  input, select, textarea { font-size: 16px !important; }
+  /* tabelas largas rolam para o lado em vez de estourar a tela */
+  main table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  main { overflow-x: hidden; }
+  /* áreas de toque confortáveis */
+  main button, main a { min-height: 32px; }
+}

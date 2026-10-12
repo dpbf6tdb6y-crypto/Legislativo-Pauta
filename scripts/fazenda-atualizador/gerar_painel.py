@@ -1085,6 +1085,48 @@ HTML = r'''<!DOCTYPE html>
 
   .vazio{ color:var(--t3); font-size:13px; padding:26px 0; }
   .pg{ display:none; } .pg.on{ display:block; }
+  /* ---------- celular: tudo numa coluna, menu rola para o lado, tabelas rolam em vez de estourar ---------- */
+  html{ -webkit-text-size-adjust:100%; }
+  @media (max-width:760px){
+    header .topo{ height:auto; flex-wrap:wrap; gap:8px; padding:8px 14px; }
+    .marca img.logo{ height:38px; }
+    header .topo nav{ order:3; width:100%; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:6px; gap:2px; }
+    header .topo nav::-webkit-scrollbar{ display:none; }
+    header .topo nav b{ white-space:nowrap; flex:none; padding:7px 11px; font-size:12.5px; }
+    .acoes{ margin-left:auto; }
+    #btnAuditoria{ padding:8px 12px; font-size:12px; }
+    .env{ padding:0 12px 40px; }
+    .topopag{ padding-top:14px; gap:10px; }
+    .cmdtop{ flex-direction:column; align-items:stretch; }
+    .coltit{ min-width:0 !important; }
+    h1{ font-size:19px; }
+    .cab > div{ display:block; }
+    .cgrid.inl{ flex-wrap:wrap; justify-content:center; gap:6px; margin:10px 0 0; }
+    .cgrid.inl svg{ width:92px; }
+    .cbar .ano{ font-size:9.5px; padding:6px 0; }
+    .dgrid{ grid-template-columns:minmax(0,1fr); }
+    .dgrid > *{ grid-column:auto !important; }
+    .pgrid.p2, .pgrid.p3, .pgrid.p4{ grid-template-columns:minmax(0,1fr); }
+    .kpis{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .duplo{ grid-template-columns:minmax(0,1fr) !important; gap:22px; }
+    .rolatab, .relTab, .lcaixa{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .ltab, .relTab{ min-width:560px; }
+    table{ font-size:12px; }
+    #audModal{ padding:0; }
+    .audCaixa{ border-radius:0; max-width:none; }
+    .capaG{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    /* nada de reticências no celular: o texto quebra e aparece inteiro */
+    .lin .n, .rk .n, .rv .n, .kpi *, .pcard *, .vrow *{ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; overflow-wrap:anywhere; }
+    .lin, .rk, .rv{ align-items:start; }
+    .secao, .dgrid > .secao{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .filtros{ flex-wrap:wrap !important; row-gap:8px; }
+    .filtros .resumo{ flex-basis:100%; white-space:normal; margin-left:0; }
+    .pjtab td, .pjtab th{ overflow:visible !important; text-overflow:clip !important; }
+    .pjtab .vr{ white-space:nowrap; }
+    .pcard{ padding:12px 14px; }
+    .pcard .pb{ font-size:24px !important; }
+    .lcaixa, .lnota{ overflow-wrap:anywhere; }
+  }
   /* Contratos: sem reticências — o texto quebra em mais linhas para aparecer inteiro */
   #pg-ctr .alerta{ align-items:start; }
   #pg-ctr .alerta .cr, #pg-ctr .alerta .ds{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
