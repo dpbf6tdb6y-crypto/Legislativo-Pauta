@@ -3276,7 +3276,7 @@ function montaBusca(){
     /* o reconhecimento de voz soletra siglas: "i p t u" -> iptu */
     [['i p t u','iptu'],['i s s','iss'],['i t b i','itbi'],['i p v a','ipva'],['i c m s','icms'],['f p m','fpm'],
      ['r r e o','rreo'],['r g f','rgf'],['l o a','loa'],['hipetu','iptu'],['ipetu','iptu'],['ipe tu','iptu'],
-     ['vendem','vencem'],['vende','vence'],['fundeb','fundeb'],['cfem','cfem'],['cosip','cosip']].forEach(([a,b])=>{ t=t.replace(new RegExp('\\b'+a+'\\b','g'),b); });
+     ['vendem','vencem'],['vende','vence'],['fundeb','fundeb'],['cfem','cfem'],['cefem','cfem'],['cefen','cfem'],['sfem','cfem'],['c f e m','cfem'],['c e f e m','cfem'],['cosip','cosip']].forEach(([a,b])=>{ t=t.replace(new RegExp('\\b'+a+'\\b','g'),b); });
     return t.replace(/\s+/g,' ').trim();
   }
   const tem=(q,re)=>re.test(q);
@@ -4040,7 +4040,14 @@ function montaBusca(){
   function fala(txt){
     if(!('speechSynthesis' in window)||!txt) return;
     try{
-      txt=String(txt).replace(/R\$\s*([\d.,]+)\s*mi\b/g,'$1 milhões de reais').replace(/R\$\s*([\d.,]+)\s*bi\b/g,'$1 bilhões de reais')
+      /* fala mais natural: siglas soletradas e frases menos de relatório */
+      const SIG={CFEM:'cê éfe ê ême',IPTU:'i pê tê u',ISSQN:'i esse esse quê ene',ISS:'i esse esse',ITBI:'i tê bê i',IPVA:'i pê vê a',ICMS:'i cê ême esse',
+        FPM:'éfe pê ême',IRRF:'i érre érre éfe',LRF:'éle érre éfe',RCL:'érre cê éle',LOA:'éle ó a',LDO:'éle dê ó',PPA:'pê pê a',RREO:'érre érre ê ó',RGF:'érre gê éfe',
+        MDE:'ême dê ê',ASPS:'a esse pê esse',COSIP:'cósip',FUNDEB:'fundéb'};
+      txt=String(txt).replace(new RegExp('\\b('+Object.keys(SIG).join('|')+')\\b','gi'),m=>SIG[m.toUpperCase()]||m)
+        .replace(/em ano de (\d{4})/g,'em $1').replace(/ano de (\d{4})/g,'$1').replace(/até o último mês com dado/g,'até agora')
+        .replace(/\bfoi de\b/g,'foi');
+      txt=txt.replace(/R\$\s*([\d.,]+)\s*mi\b/g,'$1 milhões de reais').replace(/R\$\s*([\d.,]+)\s*bi\b/g,'$1 bilhões de reais')
         .replace(/R\$\s*([\d.,]+)/g,'$1 reais').replace(/%/g,' por cento').replace(/−/g,'menos ').replace(/\+(\d)/g,'mais $1').replace(/\s+/g,' ').trim();
       const partes=[];
       txt.replace(/([.!?;:])\s+/g,'$1\n').split('\n').forEach(fr=>{
@@ -4053,7 +4060,7 @@ function montaBusca(){
       const v=escolheVoz(); let i=0;
       const prox=()=>{
         if(i>=partes.length){ if(_tmrKeep){ clearInterval(_tmrKeep); _tmrKeep=null; } return; }
-        const u=new SpeechSynthesisUtterance(partes[i++]); u.lang='pt-BR'; u.rate=.95; u.pitch=1; u.volume=1; if(v) u.voice=v;
+        const u=new SpeechSynthesisUtterance(partes[i++]); u.lang='pt-BR'; u.rate=1.04; u.pitch=1.06; u.volume=1; if(v) u.voice=v;
         u.onend=prox; u.onerror=prox; speechSynthesis.speak(u);
       };
       setTimeout(prox,180);
