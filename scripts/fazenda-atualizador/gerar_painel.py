@@ -3776,11 +3776,20 @@ function montaBusca(){
         nota:crit.length?'':'Não há ponto crítico: este é o principal ponto de atenção.',fonte:'Auditoria interna do painel · abra o botão "Auditoria interna" para o relatório completo',ir:'cmd',
         fala:(x.n==='v'?'O ponto mais crítico é: ':'Não há ponto crítico. O principal ponto de atenção é: ')+x.t+'. Resultado: '+String(x.v||'')+'.'};
     }
-    const top=lista.slice(0,6);
-    return {ok:true,entendi:'pontos críticos e de atenção da auditoria',titulo:'Auditoria interna',destaque:crit.length+' crítico'+(crit.length===1?'':'s')+' · '+aten.length+' de atenção',
-      linhas:top.map(x=>[nivel(x)+' · '+x.t,String(x.v||'')]).concat(lista.length>6?[['… e mais '+(lista.length-6),'veja o relatório']]:[]),
-      nota:ord.length+' pontos estão em ordem.',fonte:'Auditoria interna do painel',ir:'cmd',
-      fala:'Há '+crit.length+' pontos críticos e '+aten.length+' de atenção. '+(crit[0]?'O principal é: '+crit[0].t+'.':'O principal é: '+aten[0].t+'.')};
+    const soAten=tem(q,/atencao/)&&!tem(q,/critic/);
+    const base=soAten?aten:lista;
+    const plural=(n,s,p)=>n+' '+(n===1?s:p);
+    const falaItem=(x,k)=>(k+1)+'. '+x.t+(x.v?'. Resultado: '+x.v:'')+'.';
+    const falaTxt=(soAten
+        ? 'Há '+plural(aten.length,'ponto de atenção','pontos de atenção')+'. '
+        : 'Há '+plural(crit.length,'ponto crítico','pontos críticos')+' e '+plural(aten.length,'ponto de atenção','pontos de atenção')+'. ')
+      +(!soAten&&crit.length?'Crítico: '+crit.map((x,k)=>falaItem(x,k)).join(' ')+' ':'')
+      +(aten.length?'Pontos de atenção: '+aten.map((x,k)=>falaItem(x,k)).join(' '):'');
+    return {ok:true,entendi:soAten?'pontos de atenção da auditoria':'pontos críticos e de atenção da auditoria',titulo:'Auditoria interna',
+      destaque:soAten?plural(aten.length,'ponto de atenção','pontos de atenção'):crit.length+' crítico'+(crit.length===1?'':'s')+' · '+aten.length+' de atenção',
+      linhas:base.map(x=>[nivel(x)+' · '+x.t,String(x.v||'')]),
+      nota:ord.length+' pontos estão em ordem. O relatório completo (com base legal e recomendação) está no botão "Auditoria interna".',fonte:'Auditoria interna do painel',ir:'cmd',
+      fala:falaTxt};
   }
 
   /* MAIORES RECEITAS / SECRETARIAS */
@@ -3828,6 +3837,8 @@ function montaBusca(){
     if(!('speechSynthesis' in window)||!txt) return;
     try{
       speechSynthesis.cancel();
+      txt=String(txt).replace(/R\$\s*([\d.,]+)\s*mi/g,'$1 milhões de reais').replace(/R\$\s*([\d.,]+)\s*bi/g,'$1 bilhões de reais')
+        .replace(/R\$\s*([\d.,]+)/g,'$1 reais').replace(/%/g,' por cento').replace(/−/g,'menos ').replace(/\+(\d)/g,'mais $1');
       const u=new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; u.rate=1;
       const v=(speechSynthesis.getVoices()||[]).find(x=>/pt[-_]BR/i.test(x.lang)); if(v) u.voice=v;
       speechSynthesis.speak(u);
