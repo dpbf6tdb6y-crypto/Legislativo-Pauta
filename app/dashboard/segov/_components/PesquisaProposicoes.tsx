@@ -54,9 +54,10 @@ export default function PesquisaProposicoes({ itens, vereadores, statusList, tot
         if (f) partes.push(f)
       })
       speechSynthesis.cancel()
-      const vs = speechSynthesis.getVoices()
-      const voz = vs.find(x => /pt[-_]BR/i.test(x.lang) && /natural|neural|online|google|francisca|antonio|luciana/i.test(x.name))
-        || vs.find(x => /pt[-_]BR/i.test(x.lang)) || vs.find(x => /^pt/i.test(x.lang))
+      // prefere as vozes neurais/naturais (soam como gente conversando); as de computador ficam por último
+      const nota = (x: SpeechSynthesisVoice) => (/pt[-_]BR/i.test(x.lang) ? 20 : 0) + (/natural|neural/i.test(x.name) ? 100 : 0) + (/online/i.test(x.name) ? 60 : 0)
+        + (/francisca|thalita|vitoria|camila|luciana|maria|google/i.test(x.name) ? 30 : 0) - (/antonio|daniel|felipe|ricardo/i.test(x.name) ? 10 : 0) - (/desktop|espeak|compact/i.test(x.name) ? 40 : 0)
+      const voz = speechSynthesis.getVoices().filter(x => /^pt/i.test(x.lang)).sort((a, b) => nota(b) - nota(a))[0]
       let i = 0
       const prox = () => {
         if (i >= partes.length) return

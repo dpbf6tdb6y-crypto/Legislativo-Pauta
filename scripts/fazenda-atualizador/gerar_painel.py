@@ -1118,6 +1118,7 @@ HTML = r'''<!DOCTYPE html>
   .bsAcoes{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:14px; }
   .bsAcoes button{ border:1px solid var(--linha); background:var(--bg); border-radius:18px; padding:8px 14px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
   .bsAcoes #bsOuvir{ background:var(--acento); border-color:var(--acento); color:#fff; }
+  .bsTroca{ font-size:12px; font-weight:600; color:var(--t3); background:none; border:0; text-decoration:underline; cursor:pointer; padding:0 4px; }
   .bsVoz{ font-size:12px; color:var(--t3); display:flex; align-items:center; gap:6px; margin-left:auto; }
   @media (max-width:760px){
     .buscaWrap{ padding:0 12px 8px; }
@@ -3683,6 +3684,102 @@ function montaBusca(){
       fala:'Na folha de '+rotMes.replace('/',' de ')+', os servidores '+g[0]+' são '+linhas.length+', com valor bruto total de '+falado(bruto)+'.'};
   }
 
+  /* FOLHA POR COLUNA: nome, cargo, secretaria (lotação), vencimentos, bruto e líquido — remuneração é informação pública (LAI) */
+  function respFolha(q){
+    const rh=DATA.rh||[]; if(!rh.length) return null;
+    const ref=(DATA.rh_ref||'').replace('referência','').trim(), refF=ref.replace('/',' de ');
+    if(tem(q,/receita|arrecad|despesa|empenh|contrat|fornecedor|licitac|auditoria|critic|limite|rcl|fundeb|caixa|superavit|deficit|imposto|iptu|iss|itbi|ipva|icms|fpm|proposic|vereador|camara|parecer|sessao|pauta/)) return null;
+    if(tem(q,/comissao|comissionad|tempor|estagiari|eletiv|carreira|efetiv/)) return null;   /* vínculo: outro responder */
+    const SERV=tem(q,/servidor|funcionari|salari|remunera|ganha|recebe|contracheque|holerite|vencimento|cargo|lotad|trabalha|folha|pessoal|quem e |quem sao|nomes?\b/);
+    const AGG=tem(q,/quant|numero de|medi[ao]|mediana|maior|menor|mais alto|mais baixo|total|soma|gast|custo|custa|teto|piso/);
+    const FILL=new Set(('quantos quantas quanto tem tinha existem existe ha hoje agora atualmente momento atual total servidor servidores servidora funcionario funcionarios funcionaria '+
+      'pessoa pessoas trabalham trabalha trabalhando lotados lotadas lotado lotacao secretaria secretarias setor departamento diretoria area orgao prefeitura municipio nova lima folha mes ano '+
+      'sao quais qual possui possuem temos tenho cargo cargos funcao funcoes salario salarios salarial remuneracao remuneracoes liquido liquidos bruto brutos vencimento vencimentos '+
+      'media medio mediana maior maiores menor menores mais alto altos baixo total soma gasta gasto gastam custa custo ganha ganham recebe recebem teto piso quem lista liste mostre nomes nome '+
+      'fala diga informe informar saber gostaria pessoal contracheque holerite pago paga pagos pagas mensal mensais').split(' '));
+    const tk=palavras(q).filter(w=>!FILL.has(w)&&!MESL.some(m=>w===m));
+    if(!tk.length) return null;
+    const rz=w=>w.length>4?w.replace(/(oes|aes|es|as|os|a|o|s)$/,''):w;
+    const rs=tk.map(rz);
+    /* casa por começo de palavra: "saude" não pega "subsecretario", "angela" não pega "angelita" */
+    const dentro=(txt,ks)=>{ const x=' '+txt; return (ks||rs).every(k=>x.indexOf(' '+k)>=0); };
+    const eSecretario=tk.some(w=>/^secretari/.test(w));
+    let sel=[], tier='';
+    if(tk.length>=2){ sel=rh.filter(r=>dentro(norm(r[0]),tk)); tier='nome'; }
+    if(!sel.length||(sel.length>5&&!SERV)){
+      const alt=[];
+      const cex=rh.filter(r=>{ const c=norm(r[1]).replace(/ municipal$/,'').replace(/ \(a\)$/,''); return c===tk.join(' ')||c===rs.join(' '); });
+      if(cex.length) alt.push([cex,'cargo']);
+      if(!eSecretario){ const l=rh.filter(r=>dentro(norm(r[4]))); if(l.length) alt.push([l,'lotacao']); }
+      const c=rh.filter(r=>dentro(norm(r[1]))); if(c.length) alt.push([c,'cargo']);
+      const cl=rh.filter(r=>dentro(norm(r[1]+' '+r[4]))&&(!eSecretario||/(^| )secretario( |$)/.test(norm(r[1])))); if(cl.length) alt.push([cl,'cargo+lotacao']);
+      const g=rh.filter(r=>dentro(norm(r[0]+' '+r[1]+' '+r[4]+' '+r[2]))&&(!eSecretario||/(^| )secretario( |$)/.test(norm(r[1])))); if(g.length) alt.push([g,'geral']);
+      if(alt.length){ sel=alt[0][0]; tier=alt[0][1]; }
+      else if(tk.length===1){ sel=rh.filter(r=>dentro(norm(r[0]),tk)); tier='nome'; }
+      else { sel=[]; }
+    }
+    if(!sel.length){
+      if(SERV) return nao('Não encontrei servidor, cargo ou secretaria com "'+tk.join(' ')+'" na folha de '+ref+'. Tente o nome completo, o cargo ou a secretaria.');
+      return null;
+    }
+    if(tier!=='nome'&&!SERV&&!AGG) return null;
+    const metLiq=tem(q,/liquido/), metVen=tem(q,/vencimento/)&&!tem(q,/salari|bruto|remunera/);
+    const M=metLiq?7:metVen?5:6, mrot=metLiq?'líquido':metVen?'vencimentos':'bruto';
+    const val=r=>r[M]||0;
+    const pedCargo=tem(q,/\bcargo|funcao|ocupa/)&&tier==='nome';
+    const pedLot=tem(q,/secretaria|lotad|lotacao|trabalha|onde|setor|orgao/)&&tier==='nome';
+    /* poucas pessoas: mostra uma a uma, com todas as colunas */
+    if(sel.length<=5&&(tier==='nome'||tier==='cargo+lotacao'||tier==='cargo'||tier==='geral'||sel.length<=3)){
+      const fraseVal=r=>metLiq?'líquido de '+falado(r[7]||0):metVen?'vencimentos de '+falado(r[5]||0):'remuneração bruta de '+falado(r[6]||0)+' e líquido de '+falado(r[7]||0);
+      if(sel.length===1){
+        const r=sel[0];
+        const partes=[];
+        if(pedCargo) partes.push('O cargo de '+r[0]+' é '+r[1].toLowerCase()+'.');
+        if(pedLot) partes.push(r[0]+' trabalha em '+r[4].toLowerCase()+'.');
+        if(!pedCargo&&!pedLot) partes.push('Na folha de '+refF+', '+r[0]+', '+r[1].toLowerCase()+', '+r[4].toLowerCase()+', tem '+fraseVal(r)+'.');
+        else if(metLiq||metVen||tem(q,/salari|remunera|ganha|bruto/)) partes.push('Na folha de '+refF+', '+fraseVal(r)+'.');
+        return {ok:true,entendi:'dados de '+r[0]+' na folha de '+ref,titulo:r[0],
+          destaque:pedCargo&&!pedLot?r[1]:pedLot&&!pedCargo?r[4]:R$(val(r)),
+          linhas:[['Cargo',r[1]],['Secretaria',r[4]],['Vínculo',r[2]],['Situação',r[3]],['Vencimentos',R$(r[5]||0)],['Bruto',R$(r[6]||0)],['Líquido',R$(r[7]||0)]],
+          nota:'Vencimentos = valor-base; bruto = vencimentos + vantagens; líquido = após descontos. Remuneração de servidor é informação pública (LAI).',
+          fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',fala:partes.join(' ')};
+      }
+      const ord=sel.slice().sort((a,b)=>val(b)-val(a));
+      return {ok:true,entendi:sel.length+' servidores ('+tk.join(' ')+') na folha de '+ref,titulo:'Folha · '+tk.join(' '),destaque:sel.length+' servidores',
+        linhas:ord.map(r=>[r[0]+' · '+r[1]+' · '+r[4],R$(val(r))+' ('+mrot+')']),
+        nota:'Valor mostrado: '+mrot+'.',fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',
+        fala:'Encontrei '+sel.length+' servidores. '+ord.map((r,k)=>(k+1)+', '+r[0]+', '+r[1].toLowerCase()+', '+r[4].toLowerCase()+', '+mrot+' de '+falado(val(r))).join('. ')+'.'};
+    }
+    /* grupo (secretaria, cargo): estatísticas */
+    const vs=sel.map(r=>({r,v:val(r)})).filter(x=>x.v>0).sort((a,b)=>a.v-b.v);
+    const soma=vs.reduce((s,x)=>s+x.v,0), med=soma/(vs.length||1), mediana=vs.length?vs[Math.floor(vs.length/2)].v:0;
+    const menor=vs[0], maior=vs[vs.length-1];
+    const dist=(ix)=>{ const m=new Map(); sel.forEach(r=>m.set(r[ix],(m.get(r[ix])||0)+1)); return [...m].sort((a,b)=>b[1]-a[1]); };
+    const lots=dist(4), cars=dist(1), vincs=dist(2);
+    const nomeGrupo=tier==='lotacao'&&lots.length===1?lots[0][0].toLowerCase():(tier==='cargo'&&cars.length===1?cars[0][0].toLowerCase():'"'+tk.join(' ')+'"');
+    const pM=tem(q,/medi[ao]|mediana/), pMax=tem(q,/maior|mais alto|teto|mais ganha/), pMin=tem(q,/menor|mais baixo|piso/), pSoma=tem(q,/total|soma|gast|custo|custa|folha/);
+    const pCargos=tem(q,/cargos|funcoes|ocupacoes/), pTop=tem(q,/maiores|mais altos|ranking|quais|liste|lista/);
+    const linhas=[['Servidores',f0.format(sel.length)],['Total ('+mrot+')',R$(soma)],['Média ('+mrot+')',R$(med)],['Mediana ('+mrot+')',R$(mediana)]];
+    if(menor) linhas.push(['Menor',R$(menor.v)+' · '+menor.r[0]]);
+    if(maior) linhas.push(['Maior',R$(maior.v)+' · '+maior.r[0]+' ('+maior.r[1]+')']);
+    linhas.push(['Por vínculo',vincs.map(([k,n])=>k+' '+f0.format(n)).join(' · ')]);
+    if(lots.length>1) linhas.push(['Secretarias',lots.slice(0,4).map(([k,n])=>k.replace(/^SECRETARIA MUNICIPAL DE /i,'')+' '+f0.format(n)).join(' · ')+(lots.length>4?' · +'+(lots.length-4):'')]);
+    if(pCargos) cars.slice(0,10).forEach(([k,n])=>linhas.push(['• '+k,f0.format(n)]));
+    const top=vs.slice().reverse().slice(0,5);
+    if(pTop&&(pMax||tem(q,/maiores|mais altos|ranking/))) top.forEach(x=>linhas.push(['▸ '+x.r[0]+' · '+x.r[1],R$(x.v)]));
+    const dest=pMax?R$(maior?maior.v:0):pMin?R$(menor?menor.v:0):pM?R$(med):pSoma&&!tem(q,/quant/)?R$(soma):f0.format(sel.length);
+    const f=['Na folha de '+refF+', '+nomeGrupo+' tem '+sel.length+' servidores.'];
+    if(pSoma||pM||pMax||pMin||metLiq||metVen||tem(q,/salari|remunera|ganha/)) f.push('Total de '+mrot+': '+falado(soma)+'. Média de '+falado(med)+'.');
+    if(pMax&&maior) f.push('O maior é '+maior.r[0]+', '+maior.r[1].toLowerCase()+', com '+falado(maior.v)+'.');
+    if(pMin&&menor) f.push('O menor é '+menor.r[0]+', com '+falado(menor.v)+'.');
+    if(pCargos) f.push('Cargos: '+cars.slice(0,10).map(([k,n],i)=>(i+1)+', '+k.toLowerCase()+', '+n).join('. ')+'.');
+    else f.push('Por vínculo: '+vincs.map(([k,n])=>n+' '+k.toLowerCase()).join(', ')+'.');
+    if(pTop&&pMax) f.push('Os maiores: '+top.map((x,i)=>(i+1)+', '+x.r[0]+', '+falado(x.v)).join('. ')+'.');
+    return {ok:true,entendi:'folha de '+ref+' · '+(tier==='lotacao'?'secretaria':tier==='cargo'?'cargo':'filtro')+' '+nomeGrupo,titulo:'Folha · '+nomeGrupo,destaque:dest,
+      linhas,nota:'Valor considerado: '+mrot+' (bruto = vencimentos + vantagens, antes dos descontos). Média e extremos ignoram valores zerados.',
+      fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',fala:f.join(' ')};
+  }
+
   /* SALÁRIO DE SERVIDOR (por nome, cargo ou lotação) — remuneração é informação pública (LAI) */
   function respSalario(q){
     const rh=DATA.rh||[]; const ref=(DATA.rh_ref||'').replace('referência','').trim();
@@ -3861,6 +3958,7 @@ function montaBusca(){
     const q=norm(texto);
     if(!q) return nao('Digite ou fale uma pergunta.');
     if(tem(q,/auditoria|critic|ponto de atencao|pontos de atencao|riscos?|irregularidade|inconsistencia/)) return respAuditoria(q);
+    { const rf=respFolha(q); if(rf) return rf; }
     if(tem(q,/salari|remunera|ganha|recebe|contracheque|holerite/)) return respSalario(q);
     if(tem(q,/comissao|comissionad|tempor|estagiari|eletiv|carreira|efetiv/)&&tem(q,/funcionari|servidor|pessoa|folha|gast|valor|quant|custo|total/)) return respVinculo(q);
     if(tem(q,/maiores|principais|onde (mais )?(se )?gasta|para onde vai/)&&!tem(q,/contrat|fornecedor/)) return respMaiores(q);
@@ -3881,10 +3979,31 @@ function montaBusca(){
   let ultima=null;
   /* voz: o navegador corta falas longas e engole o começo logo após cancelar; por isso a fala é
      quebrada em frases curtas, enfileirada e começa um instante depois do cancelamento */
-  function escolheVoz(){
+  /* voz: prefere as neurais/naturais (soam como gente conversando); as antigas, de computador, ficam por último */
+  function notaVoz(x){
+    const n=x.name||''; let p=0;
+    if(!/^pt/i.test(x.lang)) return -999;
+    if(/pt[-_]BR/i.test(x.lang)) p+=20;
+    if(/natural|neural/i.test(n)) p+=100;
+    if(/online/i.test(n)) p+=60;
+    if(/francisca|thalita|vitoria|camila|luciana|maria|google/i.test(n)) p+=30;
+    if(/antonio|daniel|felipe|ricardo|heloisa|helia/i.test(n)) p-=10;
+    if(/desktop|espeak|compact/i.test(n)) p-=40;
+    return p;
+  }
+  function vozesPt(){
     const vs=(window.speechSynthesis&&speechSynthesis.getVoices())||[];
-    return vs.find(x=>/pt[-_]BR/i.test(x.lang)&&/natural|neural|online|google|francisca|antonio|luciana/i.test(x.name))
-      ||vs.find(x=>/pt[-_]BR/i.test(x.lang))||vs.find(x=>/^pt/i.test(x.lang))||null;
+    return vs.filter(x=>/^pt/i.test(x.lang)).sort((a,b)=>notaVoz(b)-notaVoz(a));
+  }
+  function escolheVoz(){
+    const l=vozesPt(); let nome=''; try{ nome=localStorage.getItem('busca_voz_nome')||''; }catch(e){}
+    return (nome&&l.find(x=>x.name===nome))||l[0]||null;
+  }
+  function trocaVoz(){
+    const l=vozesPt(); if(!l.length) return;
+    const atual=escolheVoz(); const k=(l.findIndex(x=>atual&&x.name===atual.name)+1)%l.length;
+    try{ localStorage.setItem('busca_voz_nome',l[k].name); }catch(e){}
+    fala('Olá! Esta é a voz '+l[k].name.replace(/Microsoft|Online|\(Natural\)|Portuguese|Brazil|\(.*?\)/g,'').replace(/\s+/g,' ').trim()+'. Posso responder com ela?');
   }
   if('speechSynthesis' in window){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{ speechSynthesis.getVoices(); }; }catch(e){} }
   let _tmrKeep=null;
@@ -3939,7 +4058,8 @@ function montaBusca(){
         +'<div class="bsFonte">Fonte: '+esc(r.fonte)+'</div>'
         +'<div class="bsAcoes"><button type="button" id="bsOuvir">🔊 Ouvir</button>'
         +(r.ir?'<button type="button" id="bsVer">Ver na tela ›</button>':'')
-        +'<label class="bsVoz"><input type="checkbox" id="bsVoz"'+(voz?' checked':'')+'> responder em voz alta</label></div>';
+        +'<label class="bsVoz"><input type="checkbox" id="bsVoz"'+(voz?' checked':'')+'> responder em voz alta</label>'
+          +'<button type="button" class="bsTroca" id="bsTroca" title="Alterna entre as vozes do seu aparelho">trocar voz</button></div>';
     }
     pnl.innerHTML=h;
     const x=document.getElementById('bsFechar'); if(x) x.onclick=fecha;
@@ -3947,6 +4067,7 @@ function montaBusca(){
     const falaCompleta=()=>{ const f=(saudPend?saudPend+' ':'')+r.fala; saudPend=''; return f; };
     const o=document.getElementById('bsOuvir'); if(o) o.onclick=()=>fala(falaCompleta());
     const v=document.getElementById('bsVer'); if(v) v.onclick=()=>{ fecha(); irPara(r.ir); };
+    const tv=document.getElementById('bsTroca'); if(tv) tv.onclick=trocaVoz;
     const c=document.getElementById('bsVoz'); if(c) c.onchange=()=>{ voz=c.checked; try{ localStorage.setItem('busca_voz',voz?'1':'0'); }catch(e){} if(voz) fala(falaCompleta()); };
     if(r.ok&&voz&&porVoz) fala(falaCompleta());
   }
