@@ -306,11 +306,11 @@ export default function UsuariosPage() {
                             Mostrar só o fluxo resumido (sem a opção de ver o detalhado)
                           </label>
                         )}
-                        {m.chave === "gestao" && (a.ver || a.cad) && (
+                        {m.chave === "gestao" && (
                           <label className="flex items-center gap-2 mt-1 ml-1 text-xs text-gray-600 cursor-pointer">
                             <input type="checkbox" checked={podeUsarMicrofone} onChange={e => setPodeUsarMicrofone(e.target.checked)}
                               className="w-3.5 h-3.5 accent-purple-600" />
-                            Pode usar a pesquisa por pergunta e o microfone (voz)
+                            🎤 Pode usar a pesquisa por pergunta e o microfone (voz) no Painel de Gestão
                           </label>
                         )}
                         {m.chave === "indicacoes" && (a.ver || a.cad) && (
