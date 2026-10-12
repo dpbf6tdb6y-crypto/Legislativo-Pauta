@@ -11,6 +11,7 @@ import FiltroPoder, { Poder } from '@/app/components/FiltroPoder'
 import PasswordInput from '@/app/components/PasswordInput'
 import { usePermissao } from '@/lib/usePermissao'
 import { useSession } from 'next-auth/react'
+import PesquisaProposicoes, { type FiltrosPesquisa } from './_components/PesquisaProposicoes'
 
 const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
@@ -173,6 +174,8 @@ export default function SeggovPage() {
   const [colAno, setColAno] = useState('')
   const [filtroSituacaoAutor, setFiltroSituacaoAutor] = useState<SituacaoAutor>('ativos')
   const [filtroPoder, setFiltroPoder] = useState<Poder>('')
+  // vem da pesquisa por pergunta: só proposições sem movimentação há N dias (0 = sem esse filtro)
+  const [paradoDias, setParadoDias] = useState(0)
 
   const vereadoresParaFiltro = useMemo(() => vereadores.filter(v =>
     filtroSituacaoAutor === 'todos' ? true : filtroSituacaoAutor === 'ativos' ? v.ativo !== false : v.ativo === false
@@ -300,6 +303,10 @@ export default function SeggovPage() {
     if (exceto !== 'status' && colStatus.size > 0 && !colStatus.has(item.status)) return false
     if (exceto !== 'tipo' && colTipo && item.tipo !== colTipo) return false
     if (colAno && String(item.ano) !== colAno) return false
+    if (paradoDias > 0) {
+      const ref = new Date(item.updatedAt || item.createdAt || Date.now()).getTime()
+      if ((Date.now() - ref) / 86400000 < paradoDias) return false
+    }
     return true
   }
 
@@ -309,24 +316,24 @@ export default function SeggovPage() {
   )
 
   const itensExibidos = useMemo(() => itens.filter(item => passaFiltrosBase(item)),
-    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo, colAno, filtroSituacaoAutor, filtroPoder, vereadores])
+    [itens, colProposicao, colEmenta, colVereador, colStatus, colTipo, colAno, filtroSituacaoAutor, filtroPoder, paradoDias, vereadores])
 
   const contagemPorStatus = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(item => { if (passaFiltrosBase(item, 'status')) mapa[item.status] = (mapa[item.status] || 0) + 1 })
     return mapa
-  }, [itens, colProposicao, colEmenta, colVereador, colTipo, colAno, filtroSituacaoAutor, filtroPoder, vereadores])
+  }, [itens, colProposicao, colEmenta, colVereador, colTipo, colAno, filtroSituacaoAutor, filtroPoder, paradoDias, vereadores])
 
   const contagemPorTipo = useMemo(() => {
     const mapa: Record<string, number> = {}
     itens.forEach(item => { if (passaFiltrosBase(item, 'tipo')) mapa[item.tipo] = (mapa[item.tipo] || 0) + 1 })
     return mapa
-  }, [itens, colProposicao, colEmenta, colVereador, colStatus, colAno, filtroSituacaoAutor, filtroPoder, vereadores])
+  }, [itens, colProposicao, colEmenta, colVereador, colStatus, colAno, filtroSituacaoAutor, filtroPoder, paradoDias, vereadores])
 
-  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus.size > 0 || colTipo || colAno || filtroSituacaoAutor !== 'ativos' || filtroPoder
+  const filtrosColunaAtivos = colProposicao || colEmenta || colVereador || colStatus.size > 0 || colTipo || colAno || filtroSituacaoAutor !== 'ativos' || filtroPoder || paradoDias > 0
 
   function limparFiltrosColuna() {
-    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(new Set()); setColTipo(''); setColAno(''); setFiltroSituacaoAutor('ativos'); setFiltroPoder('')
+    setColProposicao(''); setColEmenta(''); setColVereador(''); setColStatus(new Set()); setColTipo(''); setColAno(''); setFiltroSituacaoAutor('ativos'); setFiltroPoder(''); setParadoDias(0)
   }
 
   function toggleStatus(s: string) {
@@ -422,6 +429,19 @@ export default function SeggovPage() {
 
   return (
     <div className="space-y-2">
+
+      <PesquisaProposicoes
+        itens={itens}
+        vereadores={vereadores}
+        statusList={STATUS_LIST}
+        total={itensExibidos.length}
+        aplicar={(f: FiltrosPesquisa) => {
+          setColProposicao(f.proposicao || ''); setColEmenta(f.ementa || ''); setColVereador(f.vereadorId || '')
+          setColStatus(new Set(f.status || [])); setColTipo(f.tipo || ''); setColAno(f.ano ? String(f.ano) : '')
+          setParadoDias(f.paradoDias || 0); setFiltroPoder((f.poder as Poder) || ''); setFiltroSituacaoAutor('todos')
+        }}
+        limpar={limparFiltrosColuna}
+      />
 
       {/* Barra de filtros + facetas de status: um único bloco fixo logo abaixo
           do cabeçalho do sistema (48px), enquanto rola só a lista de

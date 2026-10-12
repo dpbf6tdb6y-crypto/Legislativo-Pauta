@@ -1,0 +1,149 @@
+"use client"
+import { useEffect, useMemo, useRef, useState } from "react"
+
+// Pesquisa por pergunta (texto ou voz) na lista de proposições. Não calcula nada por conta própria:
+// traduz a frase em filtros da própria lista, e a lista mostra o resultado. Funciona por regras.
+
+import { interpreta, type FiltrosPesquisa } from "@/lib/pesquisa-proposicoes"
+export type { FiltrosPesquisa }
+
+type Props = {
+  itens: any[]
+  vereadores: any[]
+  statusList: string[]
+  total: number
+  aplicar: (f: FiltrosPesquisa) => void
+  limpar: () => void
+}
+
+const SUGESTOES = [
+  "Proposições em análise",
+  "Projetos de lei aprovados este ano",
+  "Proposições paradas há mais de 30 dias",
+  "Proposições do vereador Gliverson",
+  "PL 2758 de 2026",
+]
+
+export default function PesquisaProposicoes({ itens, vereadores, statusList, total, aplicar, limpar }: Props) {
+  const [texto, setTexto] = useState("")
+  const [resumo, setResumo] = useState<{ ok: boolean; partes: string[] } | null>(null)
+  const [ouvindo, setOuvindo] = useState(false)
+  const [voz, setVoz] = useState(false)
+  const [sugestoes, setSugestoes] = useState(false)
+  const falarDepois = useRef(false)
+  const recRef = useRef<any>(null)
+  const SR = typeof window !== "undefined" ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null
+
+  useEffect(() => { try { setVoz(localStorage.getItem("busca_voz") === "1") } catch {} }, [])
+
+  function falar(t: string) {
+    try {
+      if (!("speechSynthesis" in window)) return
+      speechSynthesis.cancel()
+      const u = new SpeechSynthesisUtterance(t)
+      u.lang = "pt-BR"
+      const v = speechSynthesis.getVoices().find(x => /pt[-_]BR/i.test(x.lang))
+      if (v) u.voice = v
+      speechSynthesis.speak(u)
+    } catch {}
+  }
+
+  const frase = useMemo(() => {
+    if (!resumo || !resumo.ok) return ""
+    return `Encontrei ${total} ${total === 1 ? "proposição" : "proposições"}. Filtros: ${resumo.partes.join(", ")}.`
+  }, [resumo, total])
+
+  // fala depois que a lista já recalculou com os novos filtros
+  useEffect(() => {
+    if (falarDepois.current && resumo?.ok) { falarDepois.current = false; falar(frase) }
+  }, [total, frase, resumo])
+
+  function perguntar(t: string, porVoz: boolean) {
+    const s = t.trim()
+    if (!s) return
+    setSugestoes(false)
+    const r = interpreta(s, itens, vereadores, statusList)
+    setResumo({ ok: r.entendeu, partes: r.partes })
+    if (r.entendeu) { aplicar(r.f); falarDepois.current = porVoz && voz }
+    else if (porVoz && voz) falar("Não entendi a pergunta. Tente falar o tipo, a situação ou o nome do vereador.")
+  }
+
+  function microfone() {
+    if (!SR) { setResumo({ ok: false, partes: [] }); return }
+    if (ouvindo) { try { recRef.current?.stop() } catch {} return }
+    const rec = new SR()
+    recRef.current = rec
+    rec.lang = "pt-BR"; rec.interimResults = true; rec.continuous = false
+    let ultimo = ""
+    rec.onstart = () => setOuvindo(true)
+    rec.onresult = (ev: any) => {
+      let t = ""
+      for (let i = ev.resultIndex; i < ev.results.length; i++) t += ev.results[i][0].transcript
+      ultimo = t; setTexto(t)
+    }
+    rec.onerror = () => setOuvindo(false)
+    rec.onend = () => { setOuvindo(false); if (ultimo.trim()) perguntar(ultimo, true) }
+    try { rec.start() } catch {}
+  }
+
+  function limparTudo() { setTexto(""); setResumo(null); limpar() }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-3">
+      <div className="flex gap-2 items-center">
+        <input
+          value={texto}
+          onChange={e => setTexto(e.target.value)}
+          onFocus={() => { if (!texto) setSugestoes(true) }}
+          onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); perguntar(texto, false) } if (e.key === "Escape") setSugestoes(false) }}
+          enterKeyHint="search"
+          placeholder={ouvindo ? "Ouvindo… fale a pergunta" : "Pergunte: proposições em análise do vereador Gliverson · PL 2758 de 2026"}
+          aria-label="Pesquisa inteligente de proposições"
+          className="flex-1 min-w-0 border border-gray-300 rounded-full px-4 py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+        />
+        <button type="button" onClick={microfone} aria-label="Falar a pergunta" title={SR ? "Falar a pergunta" : "Este navegador não reconhece voz: use o microfone do teclado"}
+          className={`flex-shrink-0 w-11 h-11 rounded-full border text-lg ${ouvindo ? "bg-pink-600 border-pink-600 text-white animate-pulse" : "bg-white border-gray-300 hover:border-gray-400"} ${SR ? "" : "opacity-50"}`}>
+          🎤
+        </button>
+        <button type="button" onClick={() => perguntar(texto, false)}
+          className="hidden sm:block flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700">
+          Perguntar
+        </button>
+      </div>
+
+      {sugestoes && !texto && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {SUGESTOES.map(s => (
+            <button key={s} type="button" onMouseDown={e => e.preventDefault()} onClick={() => { setTexto(s); perguntar(s, false) }}
+              className="text-xs px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-blue-400 hover:text-blue-700 text-left">
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {resumo && (
+        <div className="mt-2 text-sm">
+          {resumo.ok ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className="text-gray-500">Entendi:</span>
+              {resumo.partes.map(p => <span key={p} className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 text-xs font-semibold">{p}</span>)}
+              <span className="font-semibold text-gray-800">→ {total} {total === 1 ? "proposição" : "proposições"}</span>
+              <button type="button" onClick={() => falar(frase)} className="text-xs font-semibold text-blue-700 hover:underline">🔊 Ouvir</button>
+              <button type="button" onClick={limparTudo} className="text-xs font-semibold text-gray-500 hover:underline">limpar pesquisa</button>
+              <label className="ml-auto text-xs text-gray-500 flex items-center gap-1.5">
+                <input type="checkbox" checked={voz} onChange={e => { setVoz(e.target.checked); try { localStorage.setItem("busca_voz", e.target.checked ? "1" : "0") } catch {} }} />
+                responder em voz alta
+              </label>
+            </div>
+          ) : (
+            <p className="text-amber-700">
+              {SR ? "Não entendi a pergunta. Diga o tipo, a situação ou o vereador (ex.: “projetos de lei aprovados do vereador Gliverson”)."
+                : "Este navegador não reconhece voz. Toque no campo e use o microfone do teclado do celular, ou digite a pergunta."}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
