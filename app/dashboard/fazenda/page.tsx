@@ -19,6 +19,7 @@ export default function FazendaPage() {
       <iframe
         src="/api/fazenda/painel"
         title="Painel Receita e Despesas"
+        allow="microphone; autoplay"
         className="w-full h-full border-0"
       />
     </div>
