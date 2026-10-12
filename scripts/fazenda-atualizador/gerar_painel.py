@@ -4098,7 +4098,7 @@ function montaBusca(){
   if(!SR){
     mic.title='Este navegador não reconhece voz. Use o microfone do teclado do celular ou digite.';
     mic.classList.add('semVoz');
-    mic.onclick=()=>{ pnl.hidden=false; pnl.innerHTML='<div class="bsMsg">Este navegador não reconhece voz. Toque no campo e use o <b>microfone do teclado</b> do celular, ou digite a pergunta. (No Chrome, Edge e Safari o botão funciona.)</div>'; };
+    mic.onclick=()=>{ semMic(); };
   } else {
     function parar(){ try{ rec&&rec.stop(); }catch(e){} }
     mic.onclick=()=>{
@@ -4108,11 +4108,22 @@ function montaBusca(){
       rec.onstart=()=>{ ouvindo=true; mic.classList.add('on'); inp.placeholder='Ouvindo… fale a pergunta'; };
       rec.onresult=ev=>{ let t=''; for(let i=ev.resultIndex;i<ev.results.length;i++){ t+=ev.results[i][0].transcript; if(ev.results[i].isFinal) final=t; } inp.value=t; };
       rec.onerror=ev=>{ ouvindo=false; mic.classList.remove('on'); inp.placeholder=PH;
-        if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){ pnl.hidden=false; pnl.innerHTML='<div class="bsMsg">O navegador não liberou o microfone. Permita o acesso ao microfone nas configurações do site e tente de novo.</div>'; }
+        if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){ semMic(); }
         else if(ev.error!=='no-speech'&&ev.error!=='aborted'){ pnl.hidden=false; pnl.innerHTML='<div class="bsMsg">Não consegui ouvir ('+esc(ev.error)+'). Tente de novo ou digite.</div>'; } };
       rec.onend=()=>{ ouvindo=false; mic.classList.remove('on'); inp.placeholder=PH; if(inp.value.trim()) pergunta_(inp.value,true); };
       try{ rec.start(); }catch(e){}
     };
+  }
+  /* celular: o microfone do reconhecimento de voz costuma ser barrado dentro do quadro (iframe) ou no navegador do iPhone.
+     Saídas: abrir o painel em tela cheia (pede a permissão ali) ou usar o microfone do teclado do celular. */
+  function semMic(){
+    const noQuadro=window.top!==window, ios=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+    pnl.hidden=false;
+    pnl.innerHTML='<div class="bsMsg">O microfone não foi liberado aqui.'
+      +(noQuadro?'<br><br><b>1.</b> <a href="'+location.pathname+'" target="_top" style="font-weight:700;color:#1d4ed8">Abrir o painel em tela cheia</a> e tocar no microfone de novo — o navegador vai pedir a permissão.':'')
+      +'<br><br><b>'+(noQuadro?'2.':'1.')+'</b> <button type="button" id="bsDitar" style="font-weight:700;color:#1d4ed8;background:none;border:0;padding:0;text-decoration:underline">Tocar no campo</button> e usar o <b>microfone do teclado</b> do celular (ao lado da barra de espaço)'
+      +(ios?' — se não aparecer, ative o Ditado em Ajustes › Geral › Teclado.':'.')+'</div>';
+    const d=document.getElementById('bsDitar'); if(d) d.onclick=()=>{ fecha(); inp.focus(); };
   }
   const PH=inp.placeholder;
   document.addEventListener('keydown',e=>{
