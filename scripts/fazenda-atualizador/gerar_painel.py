@@ -3382,6 +3382,18 @@ function montaBusca(){
   }
   function mesesComDado(ano){ return Object.keys((((DATA.mensal||{}).rc||{})[String(ano)])||{}).map(Number).sort((a,b)=>a-b); }
 
+  /* quantos itens o usuário pediu: "3 maiores", "cinco maiores", "os dez principais" */
+  function quantosPediu(q,padrao){
+    const NUM={um:1,dois:2,tres:3,quatro:4,cinco:5,seis:6,sete:7,oito:8,nove:9,dez:10};
+    let n=padrao; const md=q.match(/\b(\d{1,2})\s+(maiores?|principais|fontes?|receitas?|secretarias?|contratos?|fornecedores?|itens?)|\b(maiores?|principais)\s+(\d{1,2})\b/);
+    if(md) n=Number(md[1]||md[4]); else { const mw=q.match(/\b(um|dois|tres|quatro|cinco|seis|sete|oito|nove|dez)\s+(maiores?|principais|fontes?|receitas?|secretarias?|contratos?|fornecedores?|itens?)/); if(mw) n=NUM[mw[1]]; }
+    return Math.max(1,Math.min(15,n));
+  }
+  /* fala a lista inteira: "1, Imposto, R$ 316 mi. 2, ..." (o navegador troca R$ por "reais") */
+  function falaLinhas(linhas,n){
+    return linhas.slice(0,n).map((l,k)=>(k+1)+', '+String(l[0]).replace(/^[•\s\d+º·.]+/,'')+', '+String(l[1]).replace(/\s*\(.*$/,'')).join('. ')+'.';
+  }
+
   /* ---------- respostas: sempre { entendi, titulo, destaque, linhas, nota, fonte, fala, ir } ---------- */
   const FONTE_PORTAL=()=>'Portal da Transparência de Nova Lima'+(DATA.coleta?' · atualizado em '+DATA.coleta.split('-').reverse().join('/'):'');
   function falado(v){
@@ -3560,7 +3572,8 @@ function montaBusca(){
         linhas:lista.slice(0,6).map(c=>[c[2]+' · '+c[3],R$(c[6])]).concat(lista.length>6?[['… e mais '+(lista.length-6),'veja na aba Contratos']]:[]),
         nota:lista.length?'Valor contratado somado: '+R$(soma)+'.':'Nenhum contrato vence nesse período.',
         fonte:'Portal da Transparência · contratos'+(DATA.ct_coleta?' · coletado em '+DATA.ct_coleta.split('-').reverse().join('/'):''),ir:'ctr',
-        fala:lista.length?(lista.length+(lista.length===1?' contrato vence ':' contratos vencem ')+iv.rot.replace(/\s*\(.*\)/,'')+', somando '+falado(soma)+'.'):'Nenhum contrato vence '+iv.rot.replace(/\s*\(.*\)/,'')+'.'};
+        fala:lista.length?(lista.length+(lista.length===1?' contrato vence ':' contratos vencem ')+iv.rot.replace(/\s*\(.*\)/,'')+', somando '+falado(soma)+'.'
+          +(tem(q,/quais|liste|lista|quem|mostre|detalh/)?' São: '+lista.slice(0,8).map((c,k)=>(k+1)+', '+c[3]+', vence em '+c[2]+', valor de '+falado(c[6])).join('. ')+'.':'')):'Nenhum contrato vence '+iv.rot.replace(/\s*\(.*\)/,'')+'.'};
     }
     const ter=palavras(q).filter(w=>!/^contrat/.test(w)&&!/^vigent/.test(w)&&!/^empresa/.test(w));
     if(ter.length){
@@ -3688,7 +3701,7 @@ function montaBusca(){
       return {ok:true,entendi:achados.length+' servidores com "'+livre+'" na folha de '+ref,titulo:'Servidores encontrados',destaque:achados.length+' servidores',
         linhas:achados.map(x=>['• '+x.nome+' · '+x.cargo+' · '+x.lotacao,R$(x.bruto)+' bruto · '+R$(x.liq)+' líquido']),
         nota:'Para ver só um, acrescente o nome completo ou o cargo à pergunta.',fonte:FONTE,ir:'cmd',
-        fala:'Encontrei '+achados.length+' servidores. O de maior remuneração bruta é '+achados[0].nome+', com '+falado(achados[0].bruto)+'.'};
+        fala:'Encontrei '+achados.length+' servidores: '+achados.map((x,k)=>(k+1)+', '+x.nome+', '+x.cargo.toLowerCase()+', remuneração bruta de '+falado(x.bruto)).join('. ')+'.'};
     }
     const soma=achados.reduce((s,x)=>s+x.bruto,0), med=soma/achados.length;
     const ord=achados.map(x=>x.bruto).sort((a,b)=>a-b);
@@ -3756,7 +3769,8 @@ function montaBusca(){
     return {ok:true,entendi:'receita vinculante em '+rot,titulo:'Receita vinculante · '+rot,destaque:R$(vinc),linhas,
       nota:'É a que só pode ser gasta na finalidade fixada em lei. "Recebida" não é "gasta": o portal não informa a despesa por fonte de recurso.',
       fonte:FONTE_PORTAL(),ir:'cmd',
-      fala:'A receita vinculante em '+rot.replace('/',' de ')+' foi de '+falado(vinc)+', '+f1.format(bruta?vinc/bruta*100:0).replace('.',',')+' por cento da receita bruta.'};
+      fala:'A receita vinculante em '+rot.replace('/',' de ')+' foi de '+falado(vinc)+', '+f1.format(bruta?vinc/bruta*100:0).replace('.',',')+' por cento da receita bruta. Por área: '
+        +Object.entries(areas).sort((a,b)=>b[1]-a[1]).map(([a,v])=>a+', '+falado(v)).join('; ')+'.'};
   }
 
   /* AUDITORIA: pontos críticos e de atenção (os mesmos do relatório de Auditoria interna) */
@@ -3794,18 +3808,24 @@ function montaBusca(){
 
   /* MAIORES RECEITAS / SECRETARIAS */
   function respMaiores(q){
-    if(tem(q,/receita|arrecad/)){
+    const n=quantosPediu(q,5);
+    if(tem(q,/receita|arrecad|fonte/)){
       const per=periodoMensal(q), mp=new Map();
       idxRec().filter(x=>x.tipo!=='ded').forEach(x=>{ const v=valorRec(x.cod,x.tipo,per.ano,per.mes); mp.set(x.nome,(mp.get(x.nome)||0)+v); });
-      const top=[...mp].sort((a,b)=>b[1]-a[1]).slice(0,6);
-      return {ok:true,entendi:'maiores receitas em '+per.rot,titulo:'Maiores receitas · '+top[0][0],destaque:R$(top[0][1]),linhas:top.map(([n,v])=>[n,R$(v)]),
-        fonte:FONTE_PORTAL(),ir:'rc',fala:'A maior receita é '+top[0][0]+', com '+falado(top[0][1])+'.'};
+      const top=[...mp].filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,n);
+      const total=top.reduce((s,x)=>s+x[1],0);
+      return {ok:true,entendi:'as '+n+' maiores fontes de receita em '+per.rot,titulo:'As '+n+' maiores fontes de receita',destaque:R$(total),
+        linhas:top.map(([nm,v],k)=>[(k+1)+'º · '+nm,R$(v)]),nota:'Destaque: soma das '+n+'. Receita bruta arrecadada no período.',
+        fonte:FONTE_PORTAL(),ir:'rc',
+        fala:'As '+n+' maiores fontes de receita em '+per.rot.replace('/',' de ')+' são: '+falaLinhas(top.map(([nm,v],k)=>[nm,R$(v)]),n)};
     }
     const opm=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{}, mp=new Map();
     Object.keys(opm).forEach(m=>opm[m].forEach(r=>mp.set(r[0],(mp.get(r[0])||0)+r[3])));
-    const top=[...mp].sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,v])=>[n.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''),v]);
-    return {ok:true,entendi:'maiores secretarias em despesa empenhada no ano',titulo:'Onde mais se gasta · '+top[0][0],destaque:R$(top[0][1]),linhas:top.map(([n,v])=>[n,R$(v)]),
-      fonte:'Portal da Transparência · despesas por órgão',ir:'desp',fala:'A secretaria que mais gasta é '+top[0][0]+', com '+falado(top[0][1])+' empenhados.'};
+    const top=[...mp].sort((a,b)=>b[1]-a[1]).slice(0,n).map(([nm,v])=>[nm.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''),v]);
+    return {ok:true,entendi:'as '+n+' secretarias com mais despesa empenhada no ano',titulo:'Onde mais se gasta · '+n+' maiores',destaque:R$(top.reduce((s,x)=>s+x[1],0)),
+      linhas:top.map(([nm,v],k)=>[(k+1)+'º · '+nm,R$(v)]),nota:'Destaque: soma das '+n+'.',
+      fonte:'Portal da Transparência · despesas por órgão',ir:'desp',
+      fala:'As '+n+' secretarias com mais despesa empenhada são: '+falaLinhas(top.map(([nm,v])=>[nm,R$(v)]),n)};
   }
 
   /* ---------- roteador ---------- */
