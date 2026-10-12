@@ -37,6 +37,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     acessos: acessos ? JSON.stringify(acessos) : null,
     fluxoResumido: !!body.fluxoResumido,
     senhaAreaRestrita: body.senhaAreaRestrita !== false,
+    podeUsarMicrofone: body.podeUsarMicrofone !== false,
     podeCriar: acessos ? algumCadastro : !!body.podeCriar,
     podeEditar: acessos ? algumCadastro : !!body.podeEditar,
     podeExcluir: !!body.podeExcluir,

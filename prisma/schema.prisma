@@ -18,6 +18,7 @@ model User {
   acessos                  String?
   fluxoResumido            Boolean  @default(false)
   senhaAreaRestrita        Boolean  @default(true)
+  podeUsarMicrofone        Boolean  @default(true)
   podeCriar                Boolean  @default(true)
   podeEditar               Boolean  @default(true)
   podeExcluir              Boolean  @default(true)

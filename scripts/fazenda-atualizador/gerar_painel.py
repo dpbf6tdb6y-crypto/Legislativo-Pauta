@@ -4183,7 +4183,9 @@ function montaBusca(){
     document.body.appendChild(v);
   }
   const wrapB=document.querySelector('.buscaWrap'), btnB=document.getElementById('btnBusca');
+  if(window.__SEM_PESQUISA){ btnB.style.display='none'; wrapB.style.display='none'; }   /* sem a permissão do cadastro do usuário */
   function abreBusca(){
+    if(window.__SEM_PESQUISA) return;
     const r=btnB.getBoundingClientRect(); wrapB.style.top=Math.round(r.bottom+8)+'px';
     wrapB.classList.add('aberta'); btnB.classList.add('on'); setTimeout(()=>{ try{ inp.focus(); }catch(e){} },30);
   }

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { readFile } from "fs/promises";
 import path from "path";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 // Entrega o painel Fazenda só pra quem está logado. O HTML gerado embute
 // nome e salário de cada servidor — por isso fica em private/ (fora de
@@ -16,7 +17,15 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   try {
-    const html = await readFile(ARQUIVO, "utf-8");
+    let html = await readFile(ARQUIVO, "utf-8");
+    // pesquisa por pergunta/microfone: Master e Admin sempre; os demais conforme a permissão do cadastro
+    const perfil = (session.user as any)?.perfil;
+    let pode = perfil === "master" || perfil === "admin";
+    if (!pode) {
+      const u = await prisma.user.findUnique({ where: { id: (session.user as any).id }, select: { podeUsarMicrofone: true } });
+      pode = u?.podeUsarMicrofone !== false;
+    }
+    if (!pode) html = html.replace("</head>", "<script>window.__SEM_PESQUISA=1</script></head>");
     return new NextResponse(html, {
       headers: {
         "Content-Type": "text/html; charset=utf-8",

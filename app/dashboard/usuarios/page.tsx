@@ -23,6 +23,7 @@ type Usuario = {
   acessos?: string | null;
   fluxoResumido?: boolean;
   senhaAreaRestrita?: boolean;
+  podeUsarMicrofone?: boolean;
   createdAt: string;
 };
 
@@ -42,6 +43,7 @@ export default function UsuariosPage() {
   const [acc, setAcc] = useState<Record<string, { ver: boolean; cad: boolean }>>({});
   const [fluxoResumido, setFluxoResumido] = useState(false);
   const [senhaAreaRestrita, setSenhaAreaRestrita] = useState(true);
+  const [podeUsarMicrofone, setPodeUsarMicrofone] = useState(true);
 
   async function carregar() {
     setCarregando(true);
@@ -70,6 +72,7 @@ export default function UsuariosPage() {
       setAcc(inicial);
       setFluxoResumido(alvo === "novo" ? false : !!(alvo as any).fluxoResumido);
       setSenhaAreaRestrita(alvo === "novo" ? true : (alvo as any).senhaAreaRestrita !== false);
+      setPodeUsarMicrofone(alvo === "novo" ? true : (alvo as any).podeUsarMicrofone !== false);
     }
     setModal(alvo);
     setErro("");
@@ -97,6 +100,7 @@ export default function UsuariosPage() {
             acessos: acc,
             fluxoResumido,
             senhaAreaRestrita,
+            podeUsarMicrofone,
             ...permissoes,
           }),
         });
@@ -115,6 +119,7 @@ export default function UsuariosPage() {
             acessos: acc,
             fluxoResumido,
             senhaAreaRestrita,
+            podeUsarMicrofone,
             ...permissoes,
           }),
         });
@@ -299,6 +304,13 @@ export default function UsuariosPage() {
                             <input type="checkbox" checked={fluxoResumido} onChange={e => setFluxoResumido(e.target.checked)}
                               className="w-3.5 h-3.5 accent-purple-600" />
                             Mostrar só o fluxo resumido (sem a opção de ver o detalhado)
+                          </label>
+                        )}
+                        {m.chave === "gestao" && (a.ver || a.cad) && (
+                          <label className="flex items-center gap-2 mt-1 ml-1 text-xs text-gray-600 cursor-pointer">
+                            <input type="checkbox" checked={podeUsarMicrofone} onChange={e => setPodeUsarMicrofone(e.target.checked)}
+                              className="w-3.5 h-3.5 accent-purple-600" />
+                            Pode usar a pesquisa por pergunta e o microfone (voz)
                           </label>
                         )}
                         {m.chave === "indicacoes" && (a.ver || a.cad) && (
