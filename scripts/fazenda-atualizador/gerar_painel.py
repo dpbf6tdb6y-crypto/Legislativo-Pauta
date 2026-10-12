@@ -1101,6 +1101,7 @@ HTML = r'''<!DOCTYPE html>
   .bsTopo{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
   .bsPerg{ font-size:12.5px; color:var(--t3); }
   .bsX{ border:0; background:none; font-size:16px; color:var(--t3); cursor:pointer; padding:0 4px; }
+  .bsSaud{ font-size:17px; font-weight:700; color:var(--acento); margin:8px 0 2px; }
   .bsEnt{ font-size:12.5px; color:var(--t2); margin:8px 0 10px; padding:6px 10px; background:var(--sup); border-radius:8px; }
   .bsTit{ font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); font-weight:700; }
   .bsVal{ font-size:30px; font-weight:700; line-height:1.15; margin:2px 0 10px; color:var(--t1); overflow-wrap:anywhere; }
@@ -3853,21 +3854,56 @@ function montaBusca(){
   /* ---------- interface ---------- */
   let voz=false; try{ voz=localStorage.getItem('busca_voz')==='1'; }catch(e){}
   let ultima=null;
+  /* voz: o navegador corta falas longas e engole o começo logo após cancelar; por isso a fala é
+     quebrada em frases curtas, enfileirada e começa um instante depois do cancelamento */
+  function escolheVoz(){
+    const vs=(window.speechSynthesis&&speechSynthesis.getVoices())||[];
+    return vs.find(x=>/pt[-_]BR/i.test(x.lang)&&/natural|neural|online|google|francisca|antonio|luciana/i.test(x.name))
+      ||vs.find(x=>/pt[-_]BR/i.test(x.lang))||vs.find(x=>/^pt/i.test(x.lang))||null;
+  }
+  if('speechSynthesis' in window){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{ speechSynthesis.getVoices(); }; }catch(e){} }
+  let _tmrKeep=null;
   function fala(txt){
     if(!('speechSynthesis' in window)||!txt) return;
     try{
+      txt=String(txt).replace(/R\$\s*([\d.,]+)\s*mi\b/g,'$1 milhões de reais').replace(/R\$\s*([\d.,]+)\s*bi\b/g,'$1 bilhões de reais')
+        .replace(/R\$\s*([\d.,]+)/g,'$1 reais').replace(/%/g,' por cento').replace(/−/g,'menos ').replace(/\+(\d)/g,'mais $1').replace(/\s+/g,' ').trim();
+      const partes=[];
+      txt.replace(/([.!?;:])\s+/g,'$1\n').split('\n').forEach(fr=>{
+        fr=fr.trim();
+        while(fr.length>160){ let k=fr.lastIndexOf(',',160); if(k<50) k=fr.lastIndexOf(' ',160); if(k<20) k=160; partes.push(fr.slice(0,k+1).trim()); fr=fr.slice(k+1).trim(); }
+        if(fr) partes.push(fr);
+      });
       speechSynthesis.cancel();
-      txt=String(txt).replace(/R\$\s*([\d.,]+)\s*mi/g,'$1 milhões de reais').replace(/R\$\s*([\d.,]+)\s*bi/g,'$1 bilhões de reais')
-        .replace(/R\$\s*([\d.,]+)/g,'$1 reais').replace(/%/g,' por cento').replace(/−/g,'menos ').replace(/\+(\d)/g,'mais $1');
-      const u=new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; u.rate=1;
-      const v=(speechSynthesis.getVoices()||[]).find(x=>/pt[-_]BR/i.test(x.lang)); if(v) u.voice=v;
-      speechSynthesis.speak(u);
+      if(_tmrKeep){ clearInterval(_tmrKeep); _tmrKeep=null; }
+      const v=escolheVoz(); let i=0;
+      const prox=()=>{
+        if(i>=partes.length){ if(_tmrKeep){ clearInterval(_tmrKeep); _tmrKeep=null; } return; }
+        const u=new SpeechSynthesisUtterance(partes[i++]); u.lang='pt-BR'; u.rate=.95; u.pitch=1; u.volume=1; if(v) u.voice=v;
+        u.onend=prox; u.onerror=prox; speechSynthesis.speak(u);
+      };
+      setTimeout(prox,180);
+      /* alguns Chrome pausam sozinhos depois de ~15 s: um "resume" periódico evita o corte */
+      _tmrKeep=setInterval(()=>{ if(speechSynthesis.speaking&&!speechSynthesis.paused){ speechSynthesis.pause(); speechSynthesis.resume(); } },10000);
     }catch(e){}
   }
+  /* na primeira pergunta de cada período (manhã, tarde, noite) o sistema cumprimenta antes de responder */
+  let saudPend='';
+  function saudacaoDaVez(){
+    try{
+      const h=new Date(), hr=h.getHours();
+      const per=hr>=5&&hr<12?'dia':(hr<18?'tarde':'noite');
+      const chave=iso(h)+':'+per;
+      if(localStorage.getItem('busca_saud')===chave) return '';
+      localStorage.setItem('busca_saud',chave);
+      return 'Olá, '+(per==='dia'?'bom dia':(per==='tarde'?'boa tarde':'boa noite'))+'!';
+    }catch(e){ return ''; }
+  }
   function fecha(){ pnl.hidden=true; pnl.innerHTML=''; try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }
-  function mostra(r,pergunta,porVoz){
-    ultima=r; pnl.hidden=false;
-    let h='<div class="bsTopo"><span class="bsPerg">'+esc(pergunta)+'</span><button type="button" class="bsX" aria-label="Fechar" id="bsFechar">✕</button></div>';
+  function mostra(r,pergunta,porVoz,saud){
+    ultima=r; pnl.hidden=false; saudPend=saud||'';
+    let h='<div class="bsTopo"><span class="bsPerg">'+esc(pergunta)+'</span><button type="button" class="bsX" aria-label="Fechar" id="bsFechar">✕</button></div>'
+      +(saud?'<div class="bsSaud">'+esc(saud)+'</div>':'');
     if(!r.ok){
       h+='<div class="bsMsg">'+esc(r.msg)+'</div><div class="bsSug">Experimente:</div><div class="bsChips">'+SUGEST.slice(0,5).map(s=>'<button type="button" class="bsChip">'+esc(s)+'</button>').join('')+'</div>';
     } else {
@@ -3883,15 +3919,16 @@ function montaBusca(){
     pnl.innerHTML=h;
     const x=document.getElementById('bsFechar'); if(x) x.onclick=fecha;
     pnl.querySelectorAll('.bsChip').forEach(b=>{ b.onclick=()=>{ inp.value=b.textContent; pergunta_(b.textContent,false); }; });
-    const o=document.getElementById('bsOuvir'); if(o) o.onclick=()=>fala(r.fala);
+    const falaCompleta=()=>{ const f=(saudPend?saudPend+' ':'')+r.fala; saudPend=''; return f; };
+    const o=document.getElementById('bsOuvir'); if(o) o.onclick=()=>fala(falaCompleta());
     const v=document.getElementById('bsVer'); if(v) v.onclick=()=>{ fecha(); irPara(r.ir); };
-    const c=document.getElementById('bsVoz'); if(c) c.onchange=()=>{ voz=c.checked; try{ localStorage.setItem('busca_voz',voz?'1':'0'); }catch(e){} if(voz) fala(r.fala); };
-    if(r.ok&&voz&&porVoz) fala(r.fala);
+    const c=document.getElementById('bsVoz'); if(c) c.onchange=()=>{ voz=c.checked; try{ localStorage.setItem('busca_voz',voz?'1':'0'); }catch(e){} if(voz) fala(falaCompleta()); };
+    if(r.ok&&voz&&porVoz) fala(falaCompleta());
   }
   function pergunta_(texto,porVoz){
     texto=(texto||'').trim(); if(!texto) return;
     let r; try{ r=responde(texto); }catch(e){ r=nao('Algo deu errado ao buscar. Tente reformular a pergunta.'); }
-    mostra(r,texto,porVoz);
+    mostra(r,texto,porVoz,saudacaoDaVez());
   }
   go.onclick=()=>pergunta_(inp.value,false);
   inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); pergunta_(inp.value,false); } if(e.key==='Escape'){ fecha(); inp.blur(); } });

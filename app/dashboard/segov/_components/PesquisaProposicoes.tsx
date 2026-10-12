@@ -36,22 +36,57 @@ export default function PesquisaProposicoes({ itens, vereadores, statusList, tot
 
   useEffect(() => { try { setVoz(localStorage.getItem("busca_voz") === "1") } catch {} }, [])
 
+  // voz: o navegador corta falas longas e engole o começo depois de cancelar. Por isso a fala é
+  // quebrada em frases curtas, enfileirada e começa um instante depois do cancelamento.
   function falar(t: string) {
     try {
-      if (!("speechSynthesis" in window)) return
+      if (!("speechSynthesis" in window) || !t) return
+      const texto = t.replace(/R\$\s*([\d.,]+)/g, "$1 reais").replace(/%/g, " por cento").replace(/\s+/g, " ").trim()
+      const partes: string[] = []
+      texto.replace(/([.!?;:])\s+/g, "$1\n").split("\n").forEach(fr => {
+        let f = fr.trim()
+        while (f.length > 160) {
+          let k = f.lastIndexOf(",", 160)
+          if (k < 50) k = f.lastIndexOf(" ", 160)
+          if (k < 20) k = 160
+          partes.push(f.slice(0, k + 1).trim()); f = f.slice(k + 1).trim()
+        }
+        if (f) partes.push(f)
+      })
       speechSynthesis.cancel()
-      const u = new SpeechSynthesisUtterance(t)
-      u.lang = "pt-BR"
-      const v = speechSynthesis.getVoices().find(x => /pt[-_]BR/i.test(x.lang))
-      if (v) u.voice = v
-      speechSynthesis.speak(u)
+      const vs = speechSynthesis.getVoices()
+      const voz = vs.find(x => /pt[-_]BR/i.test(x.lang) && /natural|neural|online|google|francisca|antonio|luciana/i.test(x.name))
+        || vs.find(x => /pt[-_]BR/i.test(x.lang)) || vs.find(x => /^pt/i.test(x.lang))
+      let i = 0
+      const prox = () => {
+        if (i >= partes.length) return
+        const u = new SpeechSynthesisUtterance(partes[i++])
+        u.lang = "pt-BR"; u.rate = 0.95; u.volume = 1
+        if (voz) u.voice = voz
+        u.onend = prox; u.onerror = prox
+        speechSynthesis.speak(u)
+      }
+      setTimeout(prox, 180)
     } catch {}
+  }
+
+  // na primeira pergunta de cada período (manhã, tarde, noite) cumprimenta antes de responder
+  const [saudacao, setSaudacao] = useState("")
+  const saudacaoDaVez = () => {
+    try {
+      const h = new Date(), hr = h.getHours()
+      const per = hr >= 5 && hr < 12 ? "dia" : hr < 18 ? "tarde" : "noite"
+      const chave = `${h.getFullYear()}-${h.getMonth() + 1}-${h.getDate()}:${per}`
+      if (localStorage.getItem("busca_saud") === chave) return ""
+      localStorage.setItem("busca_saud", chave)
+      return "Olá, " + (per === "dia" ? "bom dia" : per === "tarde" ? "boa tarde" : "boa noite") + "!"
+    } catch { return "" }
   }
 
   const frase = useMemo(() => {
     if (!resumo || !resumo.ok) return ""
-    return `Encontrei ${total} ${total === 1 ? "proposição" : "proposições"}. Filtros: ${resumo.partes.join(", ")}.`
-  }, [resumo, total])
+    return `${saudacao ? saudacao + " " : ""}Encontrei ${total} ${total === 1 ? "proposição" : "proposições"}. Filtros: ${resumo.partes.join(", ")}.`
+  }, [resumo, total, saudacao])
 
   // fala depois que a lista já recalculou com os novos filtros
   useEffect(() => {
@@ -63,6 +98,7 @@ export default function PesquisaProposicoes({ itens, vereadores, statusList, tot
     if (!s) return
     setSugestoes(false)
     const r = interpreta(s, itens, vereadores, statusList)
+    setSaudacao(saudacaoDaVez())
     setResumo({ ok: r.entendeu, partes: r.partes })
     if (r.entendeu) { aplicar(r.f); falarDepois.current = porVoz && voz }
     else if (porVoz && voz) falar("Não entendi a pergunta. Tente falar o tipo, a situação ou o nome do vereador.")
@@ -126,10 +162,11 @@ export default function PesquisaProposicoes({ itens, vereadores, statusList, tot
         <div className="mt-2 text-sm">
           {resumo.ok ? (
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              {saudacao && <span className="font-bold text-blue-700 w-full">{saudacao}</span>}
               <span className="text-gray-500">Entendi:</span>
               {resumo.partes.map(p => <span key={p} className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 text-xs font-semibold">{p}</span>)}
               <span className="font-semibold text-gray-800">→ {total} {total === 1 ? "proposição" : "proposições"}</span>
-              <button type="button" onClick={() => falar(frase)} className="text-xs font-semibold text-blue-700 hover:underline">🔊 Ouvir</button>
+              <button type="button" onClick={() => { falar(frase); setSaudacao("") }} className="text-xs font-semibold text-blue-700 hover:underline">🔊 Ouvir</button>
               <button type="button" onClick={limparTudo} className="text-xs font-semibold text-gray-500 hover:underline">limpar pesquisa</button>
               <label className="ml-auto text-xs text-gray-500 flex items-center gap-1.5">
                 <input type="checkbox" checked={voz} onChange={e => { setVoz(e.target.checked); try { localStorage.setItem("busca_voz", e.target.checked ? "1" : "0") } catch {} }} />
