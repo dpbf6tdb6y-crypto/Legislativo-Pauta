@@ -982,6 +982,7 @@ HTML = r'''<!DOCTYPE html>
   .cgrid.inl .cg:hover{ box-shadow:none; background:var(--sup); }
   .cgrid.inl svg{ width:clamp(101px,7.7vw,132px); flex:none; display:block; overflow:visible; }
   .cgrid.inl .cg{ padding:0 8px; }
+  .cgrid.inl .cp{ font-size:10.5px; color:var(--t3); text-align:center; line-height:1.25; margin-top:1px; max-width:150px; }
   .cgrid.inl .cl{ font-size:11px; font-weight:600; color:var(--t2); line-height:1.15; white-space:nowrap; margin-top:0; }
   .cmdtop{ padding-top:10px !important; align-items:flex-start; }
   .coltit{ min-width:0; flex:1; }
@@ -2311,11 +2312,14 @@ function montaComando(){
     /* Educação e Saúde: o número que vale é o do RREO (apuração oficial); a aproximação pelo liquidado fica só no balão */
     const vEdu=rr?rr.mde.pct:pEdu, vSau=rr?rr.asps.pct:pSau;
     const subOf=rr?'apuração oficial · RREO '+rr.bimestre+'º bim/'+rr.ano:'aproximação pelo liquidado';
+    /* período a que cada medidor se refere (aparece sob o nome) */
+    const mesRR=rr?(MESNOME[+String(rr.posicao).split('/')[1]]||''):'';
+    const perOficial=rr?'jan a '+mesRR+'/'+rr.ano+' · relatório oficial (RREO)':'aproximação · jan a '+MESNOME[M];
     return {falt,pes,rcl,rit,gauges:[
-      {n:'Folha de pessoal', c:'Folha · 12 meses', v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
-      {n:'Educação', c:'Educação · mín. 25%', v:vEdu, aprox:pEdu, lim:25, max:50, tipo:'min', sub:subOf, x:'Mínimo 25% (CF art. 212)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pEdu)+'%':'')},
-      {n:'Saúde', c:'Saúde · mín. 15%', v:vSau, aprox:pSau, lim:15, max:40, tipo:'min', sub:subOf, x:'Mínimo 15% (LC 141/2012)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pSau)+'%':'')},
-      {n:'Repasse à Câmara', c:'Câmara · do teto', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
+      {n:'Folha de pessoal', c:'Folha de pessoal', per:'últimos 12 meses até '+MESNOME[M]+'/'+eq.ano, v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
+      {n:'Educação', c:'Educação · mín. 25%', per:perOficial, v:vEdu, aprox:pEdu, lim:25, max:50, tipo:'min', sub:subOf, x:'Mínimo 25% (CF art. 212)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pEdu)+'%':'')},
+      {n:'Saúde', c:'Saúde · mín. 15%', per:perOficial, v:vSau, aprox:pSau, lim:15, max:40, tipo:'min', sub:subOf, x:'Mínimo 15% (LC 141/2012)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pSau)+'%':'')},
+      {n:'Repasse à Câmara', c:'Câmara · do teto', per:'jan a '+MESNOME[M]+'/'+eq.ano+' · empenhado', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
   }
   function stat(g,Mref){
     /* o mínimo é anual: abaixo dele antes de dezembro é só observação, não descumprimento */
@@ -2342,7 +2346,7 @@ function montaComando(){
         +'<line x1="'+m2[0].toFixed(1)+'" y1="'+m2[1].toFixed(1)+'" x2="'+m3[0].toFixed(1)+'" y2="'+m3[1].toFixed(1)+'" stroke="#111827" stroke-width="3.6"/>'
         +'<circle cx="'+m3[0].toFixed(1)+'" cy="'+m3[1].toFixed(1)+'" r="3.4" fill="#111827" stroke="#fff" stroke-width="1.5"/></g>'
         +'<text x="60" y="58" text-anchor="middle" style="font-size:21px;font-weight:700;fill:'+cn+'">'+f1.format(g.v)+'%</text></svg>'
-        +'<div class="cl">'+g.c+'</div>';
+        +'<div class="cl">'+g.c+'</div>'+(g.per?'<div class="cp">'+g.per+'</div>':'');
       d.onclick=()=>irPara('eq'); return d;
   }
   function desenha_(){
