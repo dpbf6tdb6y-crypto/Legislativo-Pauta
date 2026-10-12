@@ -2159,6 +2159,52 @@ function donutObrigatorias(host, ateMes){
   host.innerHTML=svg+'<div style="margin-top:8px">'+leg+'</div>';
 }
 
+/* linhas acumuladas no ano (receita, empenhado, pago) com uma referência tracejada */
+function linhasAcum(host,meses,series,ref){
+  host.innerHTML='';
+  const W=host.clientWidth||900, H=270, ml=64, mr=150, mt=14, mb=30, base=H-mb, topo=mt;
+  const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
+  const ate=Math.max(...meses.map(r=>r[0]));
+  const acum={}; series.forEach(se=>{ let c=0; acum[se.chave]=meses.slice().sort((a,b)=>a[0]-b[0]).map(r=>({m:r[0],v:(c+=r[se.i])})); });
+  const maxV=Math.max(ref?ref.v:0,...series.map(se=>acum[se.chave].length?acum[se.chave][acum[se.chave].length-1].v:0))*1.06||1;
+  const X=m=>ml+(W-ml-mr)*(m-1)/11, Y=v=>base-(v/maxV)*(base-topo);
+  for(let k=0;k<=4;k++){
+    const v=maxV*k/4, y=Y(v);
+    svg.appendChild(S('line',{x1:ml,x2:W-mr,y1:y,y2:y,stroke:'var(--linha)','stroke-width':1}));
+    const tx=S('text',{x:ml-8,y:y+4,'text-anchor':'end',class:'cc'}); tx.textContent=k?(v>=1e9?(v/1e9).toFixed(2).replace('.',',')+' bi':Math.round(v/1e6)+' mi'):'0'; svg.appendChild(tx);
+  }
+  for(let m=1;m<=12;m++){ const tx=S('text',{x:X(m),y:base+18,'text-anchor':'middle',class:'cc'}); tx.textContent=MESES[m-1]; svg.appendChild(tx); }
+  if(ref){
+    svg.appendChild(S('line',{x1:ml,x2:W-mr,y1:Y(ref.v),y2:Y(ref.v),stroke:'#98A2B3','stroke-width':1.5,'stroke-dasharray':'6 5'}));
+    const tx=S('text',{x:ml+6,y:Y(ref.v)-6,class:'cc'}); tx.textContent=ref.rot; svg.appendChild(tx);
+  }
+  series.forEach(se=>{
+    const pts=acum[se.chave]; if(!pts.length) return;
+    svg.appendChild(S('path',{d:pts.map((q,i)=>(i?'L':'M')+X(q.m).toFixed(1)+','+Y(q.v).toFixed(1)).join(' '),fill:'none',stroke:se.cor,'stroke-width':2.6,'stroke-linejoin':'round'}));
+    pts.forEach(q=>{ const c=S('circle',{cx:X(q.m),cy:Y(q.v),r:4,fill:se.cor,stroke:'#fff','stroke-width':1.5});
+      dica(c,se.nome+' acumulado até '+MESES[q.m-1],'<em>'+exato(q.v)+'</em>'); svg.appendChild(c); });
+    const u=pts[pts.length-1], tx=S('text',{x:X(u.m)+10,y:Y(u.v)+4,class:'cv',fill:se.cor}); tx.textContent=se.nome+' '+extenso(u.v); svg.appendChild(tx);
+  });
+}
+
+/* saldo acumulado (receita − pago): verde quando a receita cobre, vermelho quando não */
+function barrasSaldo(host,meses){
+  host.innerHTML='';
+  const W=host.clientWidth||900, H=190, ml=64, mr=20, mt=22, mb=28;
+  const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
+  let c=0; const pts=meses.slice().sort((a,b)=>a[0]-b[0]).map(r=>({m:r[0],v:(c+=r[1]-r[3])}));
+  const alto=H-mt-mb, vmax=Math.max(...pts.map(q=>q.v),0)*1.15, vmin=Math.min(...pts.map(q=>q.v),0)*1.15, esc_=alto/((vmax-vmin)||1);
+  const Y=v=>mt+(vmax-v)*esc_, slot=(W-ml-mr)/12, bw=Math.min(46,slot*0.55);
+  svg.appendChild(S('line',{x1:ml,x2:W-mr,y1:Y(0),y2:Y(0),stroke:'var(--t3)','stroke-width':1}));
+  for(let m=1;m<=12;m++){ const tx=S('text',{x:ml+slot*(m-1)+slot/2,y:H-8,'text-anchor':'middle',class:'cc'}); tx.textContent=MESES[m-1]; svg.appendChild(tx); }
+  pts.forEach(q=>{
+    const cx=ml+slot*(q.m-1)+slot/2, y0=Y(0), y1=Y(q.v), top=Math.min(y0,y1), h=Math.max(2,Math.abs(y1-y0));
+    const r=S('rect',{x:cx-bw/2,y:top,width:bw,height:h,rx:3,fill:q.v>=0?'#12805C':'#C4272D'});
+    dica(r,'Saldo acumulado até '+MESES[q.m-1],'<em>'+(q.v>=0?'+':'−')+exato(Math.abs(q.v))+'</em><br>receita acumulada − pago acumulado'); svg.appendChild(r);
+    const tx=S('text',{x:cx,y:q.v>=0?top-5:top+h+13,'text-anchor':'middle',class:'cv'}); tx.textContent=(q.v>=0?'+':'−')+extenso(Math.abs(q.v)); svg.appendChild(tx);
+  });
+}
+
 /* ---------------- página de equilíbrio (Gestão Fiscal) ---------------- */
 function montaEquilibrio(){
   const host=document.getElementById('pg-eq');
@@ -2178,20 +2224,17 @@ function montaEquilibrio(){
     return function(){};
   }
 
-  const sMes=bloco(host,'Mês a mês · R$');
-  const leg=el('div'); leg.style.cssText='display:flex;gap:20px;margin:-6px 0 14px;flex-wrap:wrap';
+  const sMes=bloco(host,'Acumulado no ano · receita, empenhado e pago');
   const SERIES=[
-    {chave:'receita', nome:'Receita', cor:'var(--acento)'},
-    {chave:'emp',     nome:'Empenhado', cor:'#5B6472'},
-    {chave:'pag',     nome:'Pago', cor:'#B8860B'},
+    {chave:'receita', nome:'Receita', cor:'var(--acento)', i:1},
+    {chave:'emp',     nome:'Empenhado', cor:'#5B6472', i:2},
+    {chave:'pag',     nome:'Pago', cor:'#B8860B', i:3},
   ];
-  SERIES.forEach(s=>{
-    const it=el('div'); it.style.cssText='display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)';
-    it.innerHTML='<span style="width:10px;height:10px;border-radius:3px;background:'+s.cor+';display:inline-block"></span>'+s.nome;
-    leg.appendChild(it);
-  });
-  sMes.appendChild(leg);
   const mesG=el('div'); sMes.appendChild(mesG);
+  const nMes=el('div','nota'); nMes.style.paddingTop='8px'; sMes.appendChild(nMes);
+  const sSal=bloco(host,'Saldo acumulado do ano · receita menos pago');
+  const salG=el('div'); sSal.appendChild(salG);
+  const nSal=el('div','nota'); nSal.style.paddingTop='8px'; sSal.appendChild(nSal);
 
   const sLim=bloco(host,'Limites legais');
   const rolaLim=el('div','rolatab'); sLim.appendChild(rolaLim);
@@ -2201,7 +2244,9 @@ function montaEquilibrio(){
 
   const totReceita=meses.reduce((s,m)=>s+m[1],0), totEmp=meses.reduce((s,m)=>s+m[2],0),
         totPag=meses.reduce((s,m)=>s+m[3],0);
-  const saldo=totReceita-totPag;
+  const rpEq=(DATA.rreo&&DATA.rreo.ultimo&&DATA.rreo.ultimo.rp)||null, posRP=(DATA.rreo&&DATA.rreo.ultimo&&DATA.rreo.ultimo.posicao)||'';
+  const pagEx=rpEq?totPag-rpEq.pagos:totPag;       /* pago do exercício: sem os restos a pagar de anos anteriores */
+  const saldo=totReceita-pagEx;
   const rclTotal=Object.values((DATA.lei&&DATA.lei.meses)||{}).reduce((s,m)=>s+(m.rcl||0),0);
 
   return function(){
@@ -2209,14 +2254,21 @@ function montaEquilibrio(){
     [['Receita líquida total', brlx(totReceita), 'Corrente + Capital − Deduções · RCL (sem capital): '+exato(rclTotal), totReceita, null],
      ['Empenhado', brlx(totEmp), 'comprometido no período', totEmp, null],
      ['Pago', brlx(totPag), 'efetivamente desembolsado', totPag, null],
-     ['Saldo', brlx(saldo), saldo>=0?'receita cobriu o pago':'pago passou da receita', saldo,
+     ['Saldo do exercício', brlx(saldo), rpEq?(saldo>=0?'receita cobriu o pago, sem os restos a pagar (R$ '+extenso(rpEq.pagos)+' até '+posRP+')':'pago acima da receita, mesmo sem os restos a pagar (R$ '+extenso(rpEq.pagos)+' até '+posRP+')')
+        :(saldo>=0?'receita cobriu o pago':'pago passou da receita (inclui restos a pagar de anos anteriores)'), saldo,
        saldo>=0?'var(--alta)':'var(--baixa)'],
     ].forEach(([r,v,s,x,cor])=>{
       const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x,cor); kpis.appendChild(d);
     });
 
-    const dados=meses.map(([m,receita,emp,pag])=>({k:MESES[m-1], receita, emp, pag}));
-    colunasMesTrio(mesG, dados, SERIES);
+    const L_=DATA.loa&&DATA.loa.rec, refV=(L_&&L_.rc)?(L_.rc.atual+L_.cap.atual-L_.ded.atual):0;
+    const mAt=meses.filter(r=>r[1]||r[2]||r[3]);   /* só os meses que já têm dado */
+    linhasAcum(mesG, mAt, SERIES, refV>0?{v:refV,rot:'Previsão da receita do ano: '+extenso(refV)}:null);
+    nMes.textContent='Cada linha soma os meses desde janeiro. A linha tracejada é a receita líquida prevista para o ano (previsão atualizada). Passe o mouse nos pontos para ver o valor.';
+    barrasSaldo(salG, mAt);
+    const ultSal=meses.reduce((c,r)=>c+r[1]-r[3],0);
+    nSal.textContent='Cada barra é a receita acumulada menos o pago acumulado até o mês. O pago inclui restos a pagar de anos anteriores'
+      +(rpEq?' (R$ '+extenso(rpEq.pagos)+' pagos até '+posRP+', pelo RREO); sem eles, o saldo do ano é '+(saldo>=0?'+':'−')+brlx(Math.abs(saldo))+'.':'.');
 
     limitesLegais(sLim.querySelector('.rot'), rolaLim, notaLim);
     barraObrigatorias(hostObr);
