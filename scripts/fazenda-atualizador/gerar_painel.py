@@ -4176,6 +4176,12 @@ function montaBusca(){
     const d=document.getElementById('bsDitar'); if(d) d.onclick=()=>{ fecha(); inp.focus(); };
   }
   const PH=inp.placeholder;
+  /* aberto direto (tela cheia, fora do sistema): sem o menu do SEGOV — mostra um botão discreto para voltar */
+  if(window.top===window&&/\/api\/fazenda\/painel/.test(location.pathname)){
+    const v=document.createElement('a'); v.href='/dashboard/fazenda'; v.id='btnVoltaSistema'; v.textContent='☰ Menu do sistema';
+    v.setAttribute('style','position:fixed;left:8px;bottom:12px;z-index:80;font:600 12.5px system-ui,sans-serif;color:#1F2937;background:#fff;border:1px solid #D1D5DB;border-radius:20px;padding:8px 12px;text-decoration:none;box-shadow:0 2px 10px rgba(0,0,0,.15)');
+    document.body.appendChild(v);
+  }
   const wrapB=document.querySelector('.buscaWrap'), btnB=document.getElementById('btnBusca');
   function abreBusca(){
     const r=btnB.getBoundingClientRect(); wrapB.style.top=Math.round(r.bottom+8)+'px';
