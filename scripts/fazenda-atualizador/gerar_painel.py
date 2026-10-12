@@ -3087,7 +3087,7 @@ function montaComando(){
         +'<br>'+f0.format(o.n)+' servidores · vencimentos '+exato(o.venc)+'<br>média por servidor: '+exato(o.n?o.venc/o.n:0));
     });
   }
-  window.__cmdApi={calc,stat,periodo,gaugeEl,eq,meses,fech};
+  window.__cmdApi={calc,stat,periodo,gaugeEl,eq,meses,fech,auditoria};
   desenha_();
   return function(){};
 }
@@ -3495,12 +3495,27 @@ function montaBusca(){
   /* CONTRATOS */
   function respContratos(q){
     const C=(DATA.contratos||[]).filter(c=>c[7]==='vigente');
-    if(tem(q,/maiores? (fornecedor|empresa|contrat)/)||tem(q,/principais (fornecedor|empresa|contrat)/)){
-      const mp=new Map(); C.forEach(c=>mp.set(c[3],(mp.get(c[3])||0)+c[6]));
-      const top=[...mp].sort((a,b)=>b[1]-a[1]).slice(0,5);
-      return {ok:true,entendi:'maiores fornecedores entre os contratos vigentes',titulo:'Maiores fornecedores',destaque:R$(top[0][1]),
-        linhas:top.map(([n,v])=>[n,R$(v)]),nota:'Valor contratado, não o pago.',fonte:'Portal da Transparência · contratos'+(DATA.ct_coleta?' · coletado em '+DATA.ct_coleta.split('-').reverse().join('/'):''),ir:'ctr',
-        fala:'O maior fornecedor é '+top[0][0]+', com '+falado(top[0][1])+' contratados.'};
+    if(tem(q,/(maiores?|principais|mais caros?|mais valiosos?)/)&&tem(q,/fornecedor|empresa|contrat/)){
+      /* quantos o usuário pediu: "3 maiores", "cinco maiores", "os dez principais" */
+      const NUM={um:1,dois:2,tres:3,quatro:4,cinco:5,seis:6,sete:7,oito:8,nove:9,dez:10};
+      let n=5; const md=q.match(/\b(\d{1,2})\s+(maiores?|principais)|\b(maiores?|principais)\s+(\d{1,2})\b/);
+      if(md) n=Number(md[1]||md[4]); else { const mw=q.match(/\b(um|dois|tres|quatro|cinco|seis|sete|oito|nove|dez)\s+(maiores?|principais)/); if(mw) n=NUM[mw[1]]; }
+      n=Math.max(1,Math.min(15,n));
+      const ORD=['primeiro','segundo','terceiro','quarto','quinto','sexto','sétimo','oitavo','nono','décimo','11º','12º','13º','14º','15º'];
+      const nomeFalado=nm=>/^X+$/.test(String(nm).replace(/\s/g,''))?'um fornecedor cujo nome está ocultado no portal':nm;
+      const FONTE_C='Portal da Transparência · contratos'+(DATA.ct_coleta?' · coletado em '+DATA.ct_coleta.split('-').reverse().join('/'):'');
+      if(tem(q,/fornecedor|empresa/)&&!tem(q,/contrat/)){
+        const mp=new Map(); C.forEach(c=>mp.set(c[3],(mp.get(c[3])||0)+c[6]));
+        const top=[...mp].sort((a,b)=>b[1]-a[1]).slice(0,n);
+        return {ok:true,entendi:'os '+n+' maiores fornecedores entre os contratos vigentes',titulo:'Os '+n+' maiores fornecedores',destaque:R$(top.reduce((s,x)=>s+x[1],0)),
+          linhas:top.map(([nm,v],k)=>[(k+1)+'º · '+nm,R$(v)]),nota:'Destaque: soma dos '+n+'. Valor contratado, não o pago.',fonte:FONTE_C,ir:'ctr',
+          fala:'Os '+n+' maiores fornecedores são: '+top.map(([nm,v],k)=>'o '+ORD[k]+', '+nomeFalado(nm)+', com '+falado(v)).join('; ')+'.'};
+      }
+      const top=C.slice().sort((a,b)=>b[6]-a[6]).slice(0,n);
+      return {ok:true,entendi:'os '+n+' maiores contratos vigentes',titulo:'Os '+n+' maiores contratos',destaque:R$(top.reduce((s,c)=>s+c[6],0)),
+        linhas:top.map((c,k)=>[(k+1)+'º · '+c[0]+' · '+c[3]+' · vence '+c[2],R$(c[6])]),
+        nota:'Destaque: soma dos '+n+'. Valor contratado, não o pago. Objeto do 1º: '+top[0][4]+'.',fonte:FONTE_C,ir:'ctr',
+        fala:'Os '+n+' maiores contratos vigentes são: '+top.map((c,k)=>'o '+ORD[k]+', de '+nomeFalado(c[3])+', no valor de '+falado(c[6])).join('; ')+'.'};
     }
     /* contrato de uma empresa específica: valor e vencimento */
     {
@@ -3744,6 +3759,30 @@ function montaBusca(){
       fala:'A receita vinculante em '+rot.replace('/',' de ')+' foi de '+falado(vinc)+', '+f1.format(bruta?vinc/bruta*100:0).replace('.',',')+' por cento da receita bruta.'};
   }
 
+  /* AUDITORIA: pontos críticos e de atenção (os mesmos do relatório de Auditoria interna) */
+  function respAuditoria(q){
+    const api=window.__cmdApi; if(!api||!api.auditoria) return nao('A auditoria ainda não está disponível.');
+    let it=[]; try{ it=api.auditoria().it; }catch(e){ return nao('Não consegui montar a auditoria agora.'); }
+    const crit=it.filter(x=>x.n==='v'), aten=it.filter(x=>x.n==='l'), ord=it.filter(x=>x.n==='o');
+    const um=tem(q,/mais critic|principal|maior|pior|qual ponto|qual o ponto/)&&!tem(q,/pontos|quais/);
+    const lista=crit.concat(aten);
+    if(!lista.length) return {ok:true,entendi:'pontos críticos da auditoria',titulo:'Auditoria interna',destaque:'Nenhum ponto crítico',
+      linhas:[['Em ordem',ord.length+' pontos']],fonte:'Auditoria interna do painel',ir:'cmd',fala:'Não há pontos críticos nem de atenção na auditoria.'};
+    const nivel=x=>x.n==='v'?'Crítico':'Atenção';
+    if(um){
+      const x=lista[0];
+      return {ok:true,entendi:'ponto mais crítico da auditoria',titulo:(x.n==='v'?'Ponto crítico: ':'Ponto de atenção: ')+x.t,destaque:String(x.v||nivel(x)),
+        linhas:[['Grupo',x.g],['Situação',nivel(x)],['Detalhe',x.d],['Além deste',(lista.length-1)+' pontos ('+(crit.length-(x.n==='v'?1:0))+' críticos e '+(aten.length-(x.n==='l'?1:0))+' de atenção)']],
+        nota:crit.length?'':'Não há ponto crítico: este é o principal ponto de atenção.',fonte:'Auditoria interna do painel · abra o botão "Auditoria interna" para o relatório completo',ir:'cmd',
+        fala:(x.n==='v'?'O ponto mais crítico é: ':'Não há ponto crítico. O principal ponto de atenção é: ')+x.t+'. Resultado: '+String(x.v||'')+'.'};
+    }
+    const top=lista.slice(0,6);
+    return {ok:true,entendi:'pontos críticos e de atenção da auditoria',titulo:'Auditoria interna',destaque:crit.length+' crítico'+(crit.length===1?'':'s')+' · '+aten.length+' de atenção',
+      linhas:top.map(x=>[nivel(x)+' · '+x.t,String(x.v||'')]).concat(lista.length>6?[['… e mais '+(lista.length-6),'veja o relatório']]:[]),
+      nota:ord.length+' pontos estão em ordem.',fonte:'Auditoria interna do painel',ir:'cmd',
+      fala:'Há '+crit.length+' pontos críticos e '+aten.length+' de atenção. '+(crit[0]?'O principal é: '+crit[0].t+'.':'O principal é: '+aten[0].t+'.')};
+  }
+
   /* MAIORES RECEITAS / SECRETARIAS */
   function respMaiores(q){
     if(tem(q,/receita|arrecad/)){
@@ -3766,6 +3805,7 @@ function montaBusca(){
   function responde(texto){
     const q=norm(texto);
     if(!q) return nao('Digite ou fale uma pergunta.');
+    if(tem(q,/auditoria|critic|ponto de atencao|pontos de atencao|riscos?|irregularidade|inconsistencia/)) return respAuditoria(q);
     if(tem(q,/salari|remunera|ganha|recebe|contracheque|holerite/)) return respSalario(q);
     if(tem(q,/comissao|comissionad|tempor|estagiari|eletiv|carreira|efetiv/)&&tem(q,/funcionari|servidor|pessoa|folha|gast|valor|quant|custo|total/)) return respVinculo(q);
     if(tem(q,/maiores|principais|onde (mais )?(se )?gasta|para onde vai/)&&!tem(q,/contrat|fornecedor/)) return respMaiores(q);
