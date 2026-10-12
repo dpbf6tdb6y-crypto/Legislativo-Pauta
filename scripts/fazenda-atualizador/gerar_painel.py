@@ -3598,6 +3598,31 @@ function montaBusca(){
     if(tem(q,/servidor|funcionari|quantas pessoas|pessoas/)){
       const rh=DATA.rh||[]; const ref=(DATA.rh_ref||'').replace('referência','').trim();
       if(!rh.length) return nao('Ainda não tenho a folha dos servidores coletada.');
+      /* "quantos funcionários tem na secretaria de saúde": filtra por lotação ou cargo */
+      const FILL=new Set(('quantos quantas quanto tem tinha existem existe ha hoje agora atualmente momento atual total servidor servidores servidora funcionario funcionarios funcionaria '+
+        'pessoa pessoas trabalham trabalha trabalhando lotados lotadas lotado secretaria secretarias setor departamento diretoria area orgao prefeitura municipio nova lima folha mes ano pela pelo '+
+        'sao quais qual existem possui possuem temos tenho cargo cargos de da do das dos na no nas nos em para por com').split(' '));
+      const tk=palavras(q).filter(w=>!FILL.has(w)&&!/^\d+$/.test(w)&&!MESL.some(m=>w===m));
+      if(tk.length){
+        const rz=w=>w.length>4?w.replace(/(as|os|a|o|s)$/,''):w;
+        const rs2=tk.map(rz);
+        const porLot=rh.filter(r=>{ const tx=norm(r[4]); return rs2.every(x=>tx.indexOf(x)>=0); });
+        const porCargo=rh.filter(r=>{ const tx=norm(r[1]); return rs2.every(x=>tx.indexOf(x)>=0); });
+        const sel=porLot.length?porLot:porCargo, onde=porLot.length?'na lotação':'no cargo';
+        if(!sel.length) return nao('Não encontrei servidores com "'+tk.join(' ')+'" na lotação ou no cargo, na folha de '+ref+'. Tente o nome da secretaria ou do cargo.');
+        const m2=new Map(); sel.forEach(r=>m2.set(r[2],(m2.get(r[2])||0)+1));
+        const t2=[...m2].sort((a,b)=>b[1]-a[1]);
+        const lots=new Map(); sel.forEach(r=>lots.set(r[4],(lots.get(r[4])||0)+1));
+        const tl=[...lots].sort((a,b)=>b[1]-a[1]);
+        const bruto=sel.reduce((s,r)=>s+(r[6]||0),0);
+        const linhas=t2.map(([k,n])=>[k,f0.format(n)+' ('+pct(n/sel.length*100)+')']);
+        if(tl.length>1) linhas.push(['Lotações encontradas',tl.slice(0,3).map(([k,n])=>k+' ('+f0.format(n)+')').join(' · ')+(tl.length>3?' · +'+(tl.length-3):'')]);
+        linhas.push(['Valor bruto na folha',R$(bruto)]);
+        return {ok:true,entendi:'quantidade de servidores '+onde+' "'+tk.join(' ')+'" na folha de '+ref,titulo:'Servidores · '+tk.join(' '),destaque:f0.format(sel.length),
+          linhas,nota:'Contagem por lotação (secretaria/órgão) conforme a folha; bruto antes dos descontos.',fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',
+          fala:'Na folha de '+ref.replace('/',' de ')+', '+(porLot.length?'a lotação ':'o cargo ')+(porLot.length&&tl.length===1?tl[0][0].toLowerCase():tk.join(' '))+' tem '+sel.length+' servidores, com valor bruto de '+falado(bruto)+'.'
+            +(t2.length>1?' Por vínculo: '+t2.map(([k,n])=>n+' '+k.toLowerCase()).join(', ')+'.':'')};
+      }
       const mp=new Map(); rh.forEach(r=>mp.set(r[2],(mp.get(r[2])||0)+1));
       const top=[...mp].sort((a,b)=>b[1]-a[1]);
       const temp=top.find(([k])=>/tempor/i.test(k));
