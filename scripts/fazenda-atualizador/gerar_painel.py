@@ -2162,7 +2162,7 @@ function donutObrigatorias(host, ateMes){
 /* linhas acumuladas no ano (receita, empenhado, pago) com uma referência tracejada */
 function linhasAcum(host,meses,series,ref){
   host.innerHTML='';
-  const W=host.clientWidth||900, H=270, ml=64, mr=150, mt=14, mb=30, base=H-mb, topo=mt;
+  const W=host.clientWidth||900, H=135, ml=64, mr=150, mt=8, mb=24, base=H-mb, topo=mt;
   const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
   const ate=Math.max(...meses.map(r=>r[0]));
   const acum={}; series.forEach(se=>{ let c=0; acum[se.chave]=meses.slice().sort((a,b)=>a[0]-b[0]).map(r=>({m:r[0],v:(c+=r[se.i])})); });
@@ -2178,25 +2178,29 @@ function linhasAcum(host,meses,series,ref){
     svg.appendChild(S('line',{x1:ml,x2:W-mr,y1:Y(ref.v),y2:Y(ref.v),stroke:'#98A2B3','stroke-width':1.5,'stroke-dasharray':'6 5'}));
     const tx=S('text',{x:ml+6,y:Y(ref.v)-6,class:'cc'}); tx.textContent=ref.rot; svg.appendChild(tx);
   }
+  const fins=[];
   series.forEach(se=>{
     const pts=acum[se.chave]; if(!pts.length) return;
     svg.appendChild(S('path',{d:pts.map((q,i)=>(i?'L':'M')+X(q.m).toFixed(1)+','+Y(q.v).toFixed(1)).join(' '),fill:'none',stroke:se.cor,'stroke-width':2.6,'stroke-linejoin':'round'}));
     pts.forEach(q=>{ const c=S('circle',{cx:X(q.m),cy:Y(q.v),r:4,fill:se.cor,stroke:'#fff','stroke-width':1.5});
       dica(c,se.nome+' acumulado até '+MESES[q.m-1],'<em>'+exato(q.v)+'</em>'); svg.appendChild(c); });
-    const u=pts[pts.length-1], tx=S('text',{x:X(u.m)+10,y:Y(u.v)+4,class:'cv',fill:se.cor}); tx.textContent=se.nome+' '+extenso(u.v); svg.appendChild(tx);
+    fins.push({y:Y(pts[pts.length-1].v), x:X(pts[pts.length-1].m)+10, cor:se.cor, txt:se.nome+' '+extenso(pts[pts.length-1].v)});
   });
+  /* rótulos do fim das linhas: afasta os que ficariam um em cima do outro */
+  fins.sort((a,b)=>a.y-b.y).forEach((f,i,arr)=>{ if(i&&f.y<arr[i-1].y+12) f.y=arr[i-1].y+12;
+    const tx=S('text',{x:f.x,y:f.y+4,class:'cv',fill:f.cor}); tx.textContent=f.txt; svg.appendChild(tx); });
 }
 
 /* saldo acumulado (receita − pago): verde quando a receita cobre, vermelho quando não */
 function barrasSaldo(host,meses){
   host.innerHTML='';
-  const W=host.clientWidth||900, H=190, ml=64, mr=20, mt=22, mb=28;
+  const W=host.clientWidth||900, H=108, ml=64, mr=20, mt=16, mb=34;
   const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
   let c=0; const pts=meses.slice().sort((a,b)=>a[0]-b[0]).map(r=>({m:r[0],v:(c+=r[1]-r[3])}));
   const alto=H-mt-mb, vmax=Math.max(...pts.map(q=>q.v),0)*1.15, vmin=Math.min(...pts.map(q=>q.v),0)*1.15, esc_=alto/((vmax-vmin)||1);
   const Y=v=>mt+(vmax-v)*esc_, slot=(W-ml-mr)/12, bw=Math.min(46,slot*0.55);
   svg.appendChild(S('line',{x1:ml,x2:W-mr,y1:Y(0),y2:Y(0),stroke:'var(--t3)','stroke-width':1}));
-  for(let m=1;m<=12;m++){ const tx=S('text',{x:ml+slot*(m-1)+slot/2,y:H-8,'text-anchor':'middle',class:'cc'}); tx.textContent=MESES[m-1]; svg.appendChild(tx); }
+  for(let m=1;m<=12;m++){ const tx=S('text',{x:ml+slot*(m-1)+slot/2,y:H-4,'text-anchor':'middle',class:'cc'}); tx.textContent=MESES[m-1]; svg.appendChild(tx); }
   pts.forEach(q=>{
     const cx=ml+slot*(q.m-1)+slot/2, y0=Y(0), y1=Y(q.v), top=Math.min(y0,y1), h=Math.max(2,Math.abs(y1-y0));
     const r=S('rect',{x:cx-bw/2,y:top,width:bw,height:h,rx:3,fill:q.v>=0?'#12805C':'#C4272D'});
