@@ -3274,7 +3274,7 @@ function montaBusca(){
     /* o reconhecimento de voz soletra siglas: "i p t u" -> iptu */
     [['i p t u','iptu'],['i s s','iss'],['i t b i','itbi'],['i p v a','ipva'],['i c m s','icms'],['f p m','fpm'],
      ['r r e o','rreo'],['r g f','rgf'],['l o a','loa'],['hipetu','iptu'],['ipetu','iptu'],['ipe tu','iptu'],
-     ['fundeb','fundeb'],['cfem','cfem'],['cosip','cosip']].forEach(([a,b])=>{ t=t.replace(new RegExp('\\b'+a+'\\b','g'),b); });
+     ['vendem','vencem'],['vende','vence'],['fundeb','fundeb'],['cfem','cfem'],['cosip','cosip']].forEach(([a,b])=>{ t=t.replace(new RegExp('\\b'+a+'\\b','g'),b); });
     return t.replace(/\s+/g,' ').trim();
   }
   const tem=(q,re)=>re.test(q);
@@ -3353,7 +3353,8 @@ function montaBusca(){
     'este esse essa esta neste nesse nesta passado anterior proximo proxima com contra comparado comparada comparando diferenca entre valor total municipio prefeitura '+
     'me diga digo por favor ate agora ja tem temos tenho sobre para pra que se ha houve teve ficou esta estao esta sera foram '+
     'janeiro fevereiro marco abril maio junho julho agosto setembro outubro novembro dezembro jan fev mar abr mai jun jul ago set out nov dez '+
-    'hoje amanha semana dias trimestre semestre primeiro segundo ultimo ultimos maiores maior menor principais principal lista listar mostre mostra ver').split(' '));
+    'hoje amanha semana dias trimestre semestre primeiro segundo ultimo ultimos maiores maior menor principais principal lista listar mostre mostra ver '+
+    'momento atual atualmente data vez totalmente somente apenas so ainda').split(' '));
   function palavras(q){
     return q.split(' ').filter(w=>w&&!PARADAS.has(w)&&!/^\d+$/.test(w)&&w.length>1);
   }
@@ -3450,7 +3451,7 @@ function montaBusca(){
   /* DESPESA (por secretaria ou função) */
   function respDesp(q){
     const per=periodoMensal(q), ms=mesesCitados(q);
-    const ter=palavras(q).filter(w=>!/^(despesa|gast|custo|secretaria|mais|se)/.test(w));
+    let ter=palavras(q).filter(w=>!/^(despesa|gast|custo|secretaria|mais|se)/.test(w));
     const opm=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{}, fm=(DATA.prefeito&&DATA.prefeito.func_mes)||{};
     const metrica=tem(q,/pag(o|ou|amento)/)?'pago':(tem(q,/liquid/)?'liquidado':'empenhado');
     const ix={empenhado:3,liquidado:4,pago:5};
@@ -3460,6 +3461,10 @@ function montaBusca(){
     const ehAnoCorr=!per.ano||per.ano===(DATA.despesas.ano||per.ano);
     if(!ehAnoCorr) return nao('Só tenho a despesa de '+DATA.despesas.ano+' coletada por secretaria.');
     if(per.mes&&!meses.includes(per.mes)) return nao('Não há despesa de '+MESN[per.mes-1]+' coletada ainda.');
+    /* palavras que não aparecem em nenhuma secretaria ou função são ignoradas (ex.: "até o momento") */
+    const nomesAlvo=[]; usar.forEach(m=>{ (opm[m]||[]).forEach(r=>nomesAlvo.push(norm(r[0]))); Object.keys(fm[m]||{}).forEach(f=>nomesAlvo.push(norm(f))); });
+    const usadas=ter.filter(w=>nomesAlvo.some(n=>n.indexOf(w)>=0));
+    if(usadas.length&&usadas.length<ter.length) ter.splice(0,ter.length,...usadas);
     const termo=ter.join(' ');
     let alvo=null, tipo='total';
     if(termo){
@@ -3496,6 +3501,38 @@ function montaBusca(){
       return {ok:true,entendi:'maiores fornecedores entre os contratos vigentes',titulo:'Maiores fornecedores',destaque:R$(top[0][1]),
         linhas:top.map(([n,v])=>[n,R$(v)]),nota:'Valor contratado, não o pago.',fonte:'Portal da Transparência · contratos'+(DATA.ct_coleta?' · coletado em '+DATA.ct_coleta.split('-').reverse().join('/'):''),ir:'ctr',
         fala:'O maior fornecedor é '+top[0][0]+', com '+falado(top[0][1])+' contratados.'};
+    }
+    /* contrato de uma empresa específica: valor e vencimento */
+    {
+      const ruido=/^(contrat|vigent|empresa|vence|vencem|vencimento|venc|termin|acab|expir|quando|data|prazo|fim|valor|quanto|firma|fornecedor)/;
+      let tk=palavras(q).filter(w=>!ruido.test(w));
+      const todos=(DATA.contratos||[]);
+      const tem1=w=>todos.some(c=>norm(c[3]).indexOf(w)>=0);
+      const usados=tk.filter(tem1);
+      if(usados.length) tk=usados;
+      if(tk.length&&!intervalo(q)||tk.length&&usados.length){
+        let L=todos.filter(c=>tk.every(w=>norm(c[3]).indexOf(w)>=0));
+        if(!L.length) L=todos.filter(c=>tk.every(w=>norm(c[3]+' '+c[4]).indexOf(w)>=0));
+        if(L.length){
+          L=L.slice().sort((a,b)=>(a[7]==='vigente'?0:1)-(b[7]==='vigente'?0:1)||b[6]-a[6]);
+          const h0=new Date(); const hoje0=new Date(h0.getFullYear(),h0.getMonth(),h0.getDate());
+          const dias=c=>{ const d=parseData(c[2]); return d?Math.round((d-hoje0)/86400000):null; };
+          const quando=c=>{ const n=dias(c); return c[2]+(n===null?'':(n<0?' (encerrado há '+(-n)+' dias)':n===0?' (hoje)':' (em '+n+' dias)')); };
+          const FONTE_C='Portal da Transparência · contratos'+(DATA.ct_coleta?' · coletado em '+DATA.ct_coleta.split('-').reverse().join('/'):'');
+          if(L.length===1){
+            const c=L[0];
+            return {ok:true,entendi:'contrato de '+c[3]+': valor e vencimento',titulo:c[3],destaque:R$(c[6]),
+              linhas:[['Contrato',c[0]],['Objeto',c[4]],['Início',c[1]],['Vence em',quando(c)],['Situação',c[7]]],
+              nota:'Valor contratado, não o pago.',fonte:FONTE_C,ir:'ctr',
+              fala:'O contrato '+c[0]+' de '+c[3]+' tem valor de '+falado(c[6])+' e '+(dias(c)!==null&&dias(c)<0?'encerrou em ':'vence em ')+c[2]+'.'};
+          }
+          const soma=L.reduce((s,c)=>s+c[6],0);
+          return {ok:true,entendi:L.length+' contratos de "'+tk.join(' ')+'"',titulo:'Contratos · '+tk.join(' '),destaque:L.length+' contratos',
+            linhas:L.slice(0,6).map(c=>[c[0]+' · '+c[3]+' · vence '+quando(c),R$(c[6])]).concat(L.length>6?[['… e mais '+(L.length-6),'veja na aba Contratos']]:[]),
+            nota:'Valor contratado somado: '+R$(soma)+'.',fonte:FONTE_C,ir:'ctr',
+            fala:'Encontrei '+L.length+' contratos, somando '+falado(soma)+'.'};
+        }
+      }
     }
     const it=intervalo(q);
     const venc=tem(q,/venc|termin|acab|expir|prazo|fim/)||!!it;
@@ -3565,6 +3602,86 @@ function montaBusca(){
     return {ok:true,entendi:'despesa com pessoal em '+MESN[mes-1]+'/'+ano,titulo:'Folha de pessoal',destaque:R$(v),linhas,
       nota:'Despesa com pessoal liquidada, a que entra no limite da LRF.',fonte:'Portal da Transparência · despesa por natureza',ir:'pes',
       fala:'A despesa com pessoal de '+MESN[mes-1]+' foi de '+falado(v)+'.'};
+  }
+
+  /* QUANTIDADE E VALOR POR VÍNCULO (comissão, temporários, carreira...) — só os totais */
+  function respVinculo(q){
+    const rh=DATA.rh||[]; if(!rh.length) return nao('Ainda não tenho a folha dos servidores coletada.');
+    const refTxt=(DATA.rh_ref||'').replace('referência','').trim();               /* ex.: setembro/2026 */
+    const refMes=MESL.findIndex(m=>refTxt.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').indexOf(m)===0)+1;
+    const ms=mesesCitados(q), pedido=ms.length?ms[0].mes:null;
+    const GRUPOS=[
+      ['carreira/comissão',/carreira.*comissao|comissao.*carreira/,r=>/CARREIRA\/COMISS/i.test(r[2])],
+      ['comissão',/comissao|comissionad/,r=>/^COMISS/i.test(r[2])],
+      ['contratados temporários',/tempor/,r=>/TEMPOR/i.test(r[2])],
+      ['estagiários',/estagiari/,r=>/ESTAGI/i.test(r[2])],
+      ['eletivos',/eletiv/,r=>/ELETIV/i.test(r[2])],
+      ['carreira (efetivos)',/carreira|efetiv/,r=>/^CARREIRA$/i.test(r[2])]];
+    const g=GRUPOS.find(x=>x[1].test(q)); if(!g) return nao('Não identifiquei o vínculo.');
+    const linhas=rh.filter(g[2]);
+    const bruto=linhas.reduce((s,r)=>s+(r[6]||0),0);
+    const rotMes=refTxt||'último mês coletado';
+    const aviso=(pedido&&refMes&&pedido!==refMes)?'Só tenho a folha detalhada por vínculo de '+rotMes+'; o mês perguntado ('+MESN[pedido-1]+') não está disponível separado por vínculo.':'';
+    return {ok:true,entendi:'quantidade e valor bruto dos servidores '+g[0]+' na folha de '+rotMes,titulo:'Servidores · '+g[0],destaque:R$(bruto),
+      linhas:[['Quantidade',f0.format(linhas.length)+' servidores'],['Valor bruto total',R$(bruto)]],
+      nota:(aviso?aviso+' ':'')+'Bruto = vencimentos mais vantagens, antes dos descontos; não inclui encargos patronais.',
+      fonte:'Folha de '+rotMes+' · Portal da Transparência',ir:'cmd',
+      fala:'Na folha de '+rotMes.replace('/',' de ')+', os servidores '+g[0]+' são '+linhas.length+', com valor bruto total de '+falado(bruto)+'.'};
+  }
+
+  /* SALÁRIO DE SERVIDOR (por nome, cargo ou lotação) — remuneração é informação pública (LAI) */
+  function respSalario(q){
+    const rh=DATA.rh||[]; const ref=(DATA.rh_ref||'').replace('referência','').trim();
+    if(!rh.length) return nao('Ainda não tenho a folha dos servidores coletada.');
+    const GER=new Set(('salario salarios salarial remuneracao remuneracoes ganha ganham recebe recebem servidor servidora servidores funcionario funcionaria funcionarios '+
+      'pessoa pessoas vence vencimento vencimentos liquido bruto contracheque holerite media mais alto altos maior maiores menor menores cargo cargos').split(' '));
+    const toks=palavras(q).filter(w=>!GER.has(w));
+    const raiz=w=>w.length>4?w.replace(/(as|os|a|o)$/,''):w;
+    const linhaTxt=r=>norm(r[0]+' '+r[1]+' '+r[4]+' '+r[2]);
+    const fmt=r=>({nome:r[0],cargo:r[1],vinculo:r[2],situacao:r[3],lotacao:r[4],venc:r[5]||0,bruto:r[6]||0,liq:r[7]||0});
+    const FONTE='Folha de '+ref+' · Portal da Transparência (remuneração de servidor público é informação pública, Lei de Acesso à Informação)';
+    const maiores=tem(q,/maiores|mais alto|maior salario|mais ganha/);
+    if(!toks.length){
+      const v=rh.map(fmt).filter(x=>x.bruto>0).sort((a,b)=>b.bruto-a.bruto);
+      const med=v.reduce((s,x)=>s+x.bruto,0)/(v.length||1);
+      const ordenada=v.map(x=>x.bruto).sort((a,b)=>a-b), mediana=ordenada.length?ordenada[Math.floor(ordenada.length/2)]:0;
+      const linhas=[['Servidores com remuneração',f0.format(v.length)],['Média (bruto)',R$(med)],['Mediana (bruto)',R$(mediana)],
+        ['Menor (bruto)',R$(ordenada[0]||0)],['Maior (bruto)',R$(ordenada[ordenada.length-1]||0)]];
+      if(maiores) v.slice(0,5).forEach(x=>linhas.push(['• '+x.nome+' · '+x.cargo,R$(x.bruto)]));
+      return {ok:true,entendi:'remuneração dos servidores na folha de '+ref,titulo:'Remuneração · todos os servidores',destaque:R$(med),
+        linhas,nota:'Destaque: média bruta.',fonte:FONTE,ir:'cmd',fala:'A remuneração média bruta dos servidores na folha de '+ref+' é de '+falado(med)+'.'};
+    }
+    const rs=toks.map(raiz);
+    /* do mais específico para o mais amplo: cargo exato -> nome ou cargo -> qualquer parte (inclui a lotação) */
+    const juntos=toks.join(' ');
+    let achados=rh.filter(r=>{ const c=norm(r[1]); return c===juntos||c===juntos+' municipal'||c===juntos.replace(/ (a|o)$/,'')+' municipal'; });
+    if(!achados.length) achados=rh.filter(r=>{ const tx=norm(r[0]+' '+r[1]); return rs.every(x=>tx.indexOf(x)>=0); });
+    if(!achados.length) achados=rh.filter(r=>{ const tx=linhaTxt(r); return rs.every(x=>tx.indexOf(x)>=0); });
+    achados=achados.map(fmt);
+    if(!achados.length) return nao('Não encontrei servidor com "'+toks.join(' ')+'" na folha de '+ref+'. Tente o nome, o cargo ou a secretaria.');
+    const livre=toks.join(' ');
+    if(achados.length===1){
+      const x=achados[0];
+      return {ok:true,entendi:'remuneração de '+x.nome+' ('+x.cargo.toLowerCase()+') na folha de '+ref,titulo:x.nome,destaque:R$(x.bruto),
+        linhas:[['Cargo',x.cargo],['Vínculo',x.vinculo],['Lotação',x.lotacao],['Situação',x.situacao.toLowerCase()],
+                ['Vencimentos',R$(x.venc)],['Bruto',R$(x.bruto)],['Líquido',R$(x.liq)]],
+        nota:'Destaque: remuneração bruta.',fonte:FONTE,ir:'cmd',
+        fala:'A remuneração bruta de '+x.nome+', '+x.cargo.toLowerCase()+', na folha de '+ref.replace('/',' de ')+', é de '+falado(x.bruto)+', e o líquido é de '+falado(x.liq)+'.'};
+    }
+    achados.sort((a,b)=>b.bruto-a.bruto);
+    if(achados.length<=8){
+      return {ok:true,entendi:achados.length+' servidores com "'+livre+'" na folha de '+ref,titulo:'Servidores encontrados',destaque:achados.length+' servidores',
+        linhas:achados.map(x=>['• '+x.nome+' · '+x.cargo+' · '+x.lotacao,R$(x.bruto)+' bruto · '+R$(x.liq)+' líquido']),
+        nota:'Para ver só um, acrescente o nome completo ou o cargo à pergunta.',fonte:FONTE,ir:'cmd',
+        fala:'Encontrei '+achados.length+' servidores. O de maior remuneração bruta é '+achados[0].nome+', com '+falado(achados[0].bruto)+'.'};
+    }
+    const soma=achados.reduce((s,x)=>s+x.bruto,0), med=soma/achados.length;
+    const ord=achados.map(x=>x.bruto).sort((a,b)=>a-b);
+    const linhas=[['Quantidade',f0.format(achados.length)],['Média (bruto)',R$(med)],['Menor (bruto)',R$(ord[0])],['Maior (bruto)',R$(ord[ord.length-1])]];
+    if(maiores) achados.slice(0,5).forEach(x=>linhas.push(['• '+x.nome,R$(x.bruto)]));
+    return {ok:true,entendi:achados.length+' servidores com "'+livre+'" na folha de '+ref,titulo:'Remuneração · '+livre,destaque:R$(med),linhas,
+      nota:'Destaque: média bruta do grupo.',fonte:FONTE,ir:'cmd',
+      fala:'Há '+achados.length+' servidores nesse grupo, com remuneração média bruta de '+falado(med)+'.'};
   }
 
   /* LIMITES, CAIXA, RESTOS */
@@ -3649,6 +3766,8 @@ function montaBusca(){
   function responde(texto){
     const q=norm(texto);
     if(!q) return nao('Digite ou fale uma pergunta.');
+    if(tem(q,/salari|remunera|ganha|recebe|contracheque|holerite/)) return respSalario(q);
+    if(tem(q,/comissao|comissionad|tempor|estagiari|eletiv|carreira|efetiv/)&&tem(q,/funcionari|servidor|pessoa|folha|gast|valor|quant|custo|total/)) return respVinculo(q);
     if(tem(q,/maiores|principais|onde (mais )?(se )?gasta|para onde vai/)&&!tem(q,/contrat|fornecedor/)) return respMaiores(q);
     if(tem(q,/contrat|fornecedor|licitac/)) return respContratos(q);
     if(tem(q,/servidor|funcionari|folha|pessoal|salario|vencimento/)&&!tem(q,/limite|acima|abaixo/)) return respPessoal(q);
