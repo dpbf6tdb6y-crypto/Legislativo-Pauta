@@ -846,6 +846,11 @@ HTML = r'''<!DOCTYPE html>
   @media(max-width:1100px){ .pgrid.p4{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media(max-width:560px){ .pgrid.p4{ grid-template-columns:1fr; } }
   .pcard.espera{ border-style:dashed; background:var(--sup); cursor:default; }
+  .pcard.grafico{ cursor:default; justify-content:flex-start !important; padding:9px 14px 7px; }
+  .pcard.grafico .gleg{ display:flex; gap:12px; flex-wrap:wrap; font-size:11px; color:var(--t2); margin:4px 0 2px; }
+  .pcard.grafico .gleg i{ display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
+  .pcard.grafico .gcorpo{ width:100%; }
+  .pcard.grafico .gnota{ font-size:10.5px; color:var(--t3); margin-top:1px; }
   .pcard.espera .pb{ color:var(--t3); }
   .faixaT{ font-size:11px; letter-spacing:.07em; text-transform:uppercase; font-weight:700; color:var(--t2); margin:0 0 8px; }
   .faixaT small{ font-weight:400; letter-spacing:0; text-transform:none; color:var(--t3); margin-left:6px; }
@@ -2191,6 +2196,31 @@ function linhasAcum(host,meses,series,ref){
     const tx=S('text',{x:f.x,y:f.y+4,class:'cv',fill:f.cor}); tx.textContent=f.txt; svg.appendChild(tx); });
 }
 
+/* linhas acumuladas compactas, para caber dentro de um cartão: receita, empenhado, liquidado e pago */
+function miniLinhas(host,w,h,meses,series){
+  host.innerHTML='';
+  const ml=34, mr=8, mt=6, mb=16, base=h-mb, topo=mt;
+  const svg=S('svg',{viewBox:'0 0 '+w+' '+h,width:w,height:h}); host.appendChild(svg);
+  const ord=meses.slice().sort((a,b)=>a[0]-b[0]);
+  const acum={}; series.forEach(se=>{ let c=0; acum[se.chave]=ord.map(r=>({m:r[0],v:(c+=r[se.i])})); });
+  const maxV=Math.max(1,...series.map(se=>{ const a=acum[se.chave]; return a.length?a[a.length-1].v:0; }))*1.05;
+  const X=m=>ml+(w-ml-mr)*(m-1)/11, Y=v=>base-(v/maxV)*(base-topo);
+  [0,0.5,1].forEach(k=>{
+    const y=Y(maxV*k);
+    svg.appendChild(S('line',{x1:ml,x2:w-mr,y1:y,y2:y,stroke:'var(--linha)','stroke-width':1}));
+    const tx=S('text',{x:ml-4,y:y+3,'text-anchor':'end',class:'cc'}); tx.style.fontSize='9px';
+    tx.textContent=k?(maxV*k>=1e9?(maxV*k/1e9).toFixed(1).replace('.',',')+' bi':Math.round(maxV*k/1e6)+' mi'):'0'; svg.appendChild(tx);
+  });
+  for(let m=1;m<=12;m++){ const tx=S('text',{x:X(m),y:h-3,'text-anchor':'middle',class:'cc'}); tx.style.fontSize='9px'; tx.textContent=MESES[m-1].charAt(0); svg.appendChild(tx); }
+  series.forEach(se=>{
+    const pts=acum[se.chave]; if(!pts.length) return;
+    svg.appendChild(S('path',{d:pts.map((q,i)=>(i?'L':'M')+X(q.m).toFixed(1)+','+Y(q.v).toFixed(1)).join(' '),fill:'none',stroke:se.cor,'stroke-width':2.2,'stroke-linejoin':'round'}));
+    pts.forEach(q=>{ const c=S('circle',{cx:X(q.m),cy:Y(q.v),r:2.6,fill:se.cor});
+      dica(c,se.nome+' acumulado até '+MESES[q.m-1],'<em>'+exato(q.v)+'</em>'); svg.appendChild(c); });
+  });
+  return acum;
+}
+
 /* saldo acumulado (receita − pago): verde quando a receita cobre, vermelho quando não */
 function barrasSaldo(host,meses){
   host.innerHTML='';
@@ -2500,7 +2530,7 @@ function montaComando(){
           leg:'Inscritos até 31/12/'+(rr_.ano-1)+': '+brlx(insc)+' ('+brlx(r.inscritos_ano_anterior)+' em '+(rr_.ano-1)+' e '+brlx(r.inscritos_anteriores)+' de anos anteriores). Pagos '+brlx(r.pagos)+', cancelados '+brlx(r.cancelados)+', saldo '+brlx(r.saldo_total)+'. Fonte: RREO '+rr_.bimestre+'º bimestre/'+rr_.ano+', Anexo 07, posição em '+rr_.posicao+'.', ir:'eq'});
       }
     }
-    cards.push({tit:'Espaço reservado', st:'esp', espera:true, blank:true, valor:'', sub:'', leg:'', ir:'cmd'});
+    cards.push({tit:'Evolução no ano', st:'info', chart:true, valor:'', sub:'', leg:'', ir:'eq'});
     cards.push({tit:'Caixa livre x vinculado', st:'esp', espera:true, valor:'—',
       sub:'Aguardando informação: separar o caixa livre do que é vinculado (e de anos anteriores) exige o RGF ou a Contabilidade.',
       leg:'O RREO traz só o caixa total. A separação por fonte de recurso consta do RGF (disponibilidade de caixa e restos a pagar) ou do Balanço Patrimonial.', ir:'loa'});
@@ -2536,8 +2566,8 @@ function montaComando(){
       sTab.querySelector('.rot').textContent='Execução do orçamento · exercício '+eq.ano+' · '+P.rot;
     }
     /* ordem dos cartões (2 colunas): receita x despesa e contratos em cima; orçamento executado e folha embaixo */
-    const ORDEM=['Receita x despesa paga','Contratos vencendo','Orçamento executado','Espaço reservado','Folha de pessoal · 12 meses','Caixa disponível'];
-    const ZONA=c=>(c.tit==='Receita x despesa paga'||c.tit==='Contratos vencendo'||c.tit==='Orçamento executado'||c.tit==='Espaço reservado')?'ano':(c.tit.indexOf('Folha de pessoal')===0?'pessoal':'caixa');
+    const ORDEM=['Receita x despesa paga','Contratos vencendo','Orçamento executado','Evolução no ano','Folha de pessoal · 12 meses','Caixa disponível'];
+    const ZONA=c=>(c.tit==='Receita x despesa paga'||c.tit==='Contratos vencendo'||c.tit==='Orçamento executado'||c.tit==='Evolução no ano')?'ano':(c.tit.indexOf('Folha de pessoal')===0?'pessoal':'caixa');
     cards.forEach(c=>{ if(ORDEM.indexOf(c.tit)<0) ORDEM.push(c.tit); });   /* os cartões do RREO vêm depois, na ordem em que foram criados */
     cards.sort((x,y)=>ORDEM.indexOf(x.tit)-ORDEM.indexOf(y.tit));
     gradeC.innerHTML=''; gradeCx.innerHTML=''; gradeP.innerHTML='';
@@ -2545,9 +2575,21 @@ function montaComando(){
     sCaixa.querySelector('.rot').innerHTML='Caixa e anos anteriores <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--parcial)">· posição em '+(rrT?rrT.posicao:'—')+' · não é receita nem despesa de '+eq.ano+'</span>';
     cards.forEach(c=>{
       const d=el('div','pcard'+(c.espera?' espera':'')); d.style.setProperty('--cs',COR_ST[c.st]);
-      if(c.blank){
-        d.innerHTML='<div class="ps" style="font-size:11.5px;color:var(--t3);text-align:center">Espaço reservado para um novo indicador</div>';
-        gradeC.appendChild(d); return;
+      if(c.chart){
+        d.classList.add('grafico');
+        const SG=[{chave:'rec',nome:'Receita',cor:'var(--acento)',i:1},{chave:'emp',nome:'Empenhado',cor:'#5B6472',i:2},
+                  {chave:'liq',nome:'Liquidado',cor:'#0E9384',i:3},{chave:'pag',nome:'Pago',cor:'#B8860B',i:4}];
+        const recM={}; (eq.meses||[]).forEach(r=>{ recM[r[0]]=r[1]; });
+        const dados=((DATA.despesas&&DATA.despesas.meses)||[]).filter(r=>r[0]<=M&&(r[1]||r[2]||r[3]))
+          .map(r=>[r[0],recM[r[0]]||0,r[1],r[2],r[3]]);
+        d.innerHTML='<div class="pt"><span>Receita, empenhado, liquidado e pago</span></div>'
+          +'<div class="gleg">'+SG.map(g=>'<span><i style="background:'+g.cor+'"></i>'+g.nome+'</span>').join('')+'</div><div class="gcorpo"></div>'
+          +'<div class="gnota">acumulado de janeiro a '+MESNOME[M]+' de '+eq.ano+'</div>';
+        gradeC.appendChild(d);
+        const gc=d.querySelector('.gcorpo'); gc.style.setProperty('height','92px');
+        miniLinhas(gc,Math.max(220,gc.clientWidth||300),92,dados,SG);
+        d.title='Passe o mouse nos pontos para ver o valor acumulado de cada mês.';
+        return;
       }
       d.innerHTML='<div class="pt"><span>'+esc(c.tit)+'</span><span class="tag">'+TAG_ST[c.st]+'</span></div>'
         +'<div class="pb" style="font-size:'+(c.valor.length>12?'20':'25')+'px">'+esc(c.valor)+'</div><div class="ps"'+(c.espera?' style="font-size:11.5px;color:var(--t3)"':'')+'>'+esc(c.sub)+'</div>'
