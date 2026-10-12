@@ -3686,18 +3686,39 @@ function montaBusca(){
 
   /* FOLHA POR COLUNA: nome, cargo, secretaria (lotação), vencimentos, bruto e líquido — remuneração é informação pública (LAI) */
   function respFolha(q){
-    const rh=DATA.rh||[]; if(!rh.length) return null;
+    const rh0=DATA.rh||[]; if(!rh0.length) return null;
     const ref=(DATA.rh_ref||'').replace('referência','').trim(), refF=ref.replace('/',' de ');
-    if(tem(q,/receita|arrecad|despesa|empenh|contrat|fornecedor|licitac|auditoria|critic|limite|rcl|fundeb|caixa|superavit|deficit|imposto|iptu|iss|itbi|ipva|icms|fpm|proposic|vereador|camara|parecer|sessao|pauta/)) return null;
-    if(tem(q,/comissao|comissionad|tempor|estagiari|eletiv|carreira|efetiv/)) return null;   /* vínculo: outro responder */
+    if(tem(q,/receita|arrecad|despesa|empenh|contrat|fornecedor|licitac|auditoria|critic|limite|rcl|fundeb|caixa|superavit|deficit|imposto|iptu|iss|itbi|ipva|icms|fpm|proposic|vereador|camara|parecer|sessao|pauta/)) return null;
+    /* vínculo (carreira, comissão, temporário…) combina com secretaria/cargo: "quantos comissionados na saúde" */
+    const VG=[['de carreira/comissão',/carreira.*comissao|comissao.*carreira/,r=>/CARREIRA\/COMISS/i.test(r[2])],
+      ['comissionados',/comissao|comissionad/,r=>/^COMISS/i.test(r[2])],['contratados temporários',/tempor/,r=>/TEMPOR/i.test(r[2])],
+      ['estagiários',/estagiari/,r=>/ESTAGI/i.test(r[2])],['eletivos',/eletiv/,r=>/ELETIV/i.test(r[2])],
+      ['de carreira (efetivos)',/carreira|efetiv/,r=>/^CARREIRA$/i.test(r[2])]];
+    const vg=VG.find(x=>x[1].test(q))||null;
+    const rh=vg?rh0.filter(vg[2]):rh0;
     const SERV=tem(q,/servidor|funcionari|salari|remunera|ganha|recebe|contracheque|holerite|vencimento|cargo|lotad|trabalha|folha|pessoal|quem e |quem sao|nomes?\b/);
-    const AGG=tem(q,/quant|numero de|medi[ao]|mediana|maior|menor|mais alto|mais baixo|total|soma|gast|custo|custa|teto|piso/);
+    const AGG=tem(q,/quant|numero de|medi[ao]|mediana|maior|menor|mais alto|mais baixo|total|soma|gast|custo|custa|custam|teto|piso/);
     const FILL=new Set(('quantos quantas quanto tem tinha existem existe ha hoje agora atualmente momento atual total servidor servidores servidora funcionario funcionarios funcionaria '+
       'pessoa pessoas trabalham trabalha trabalhando lotados lotadas lotado lotacao secretaria secretarias setor departamento diretoria area orgao prefeitura municipio nova lima folha mes ano '+
       'sao quais qual possui possuem temos tenho cargo cargos funcao funcoes salario salarios salarial remuneracao remuneracoes liquido liquidos bruto brutos vencimento vencimentos '+
       'media medio mediana maior maiores menor menores mais alto altos baixo total soma gasta gasto gastam custa custo ganha ganham recebe recebem teto piso quem lista liste mostre nomes nome '+
-      'fala diga informe informar saber gostaria pessoal contracheque holerite pago paga pagos pagas mensal mensais').split(' '));
+      'fala diga informe informar saber gostaria pessoal contracheque holerite pago paga pagos pagas mensal mensais '+
+      'custam custar custando gastam pagamos pagam '+
+      'comissao comissoes comissionado comissionados comissionada carreira carreiras efetivo efetivos efetiva temporario temporarios temporaria estagiario estagiarios eletivo eletivos').split(' '));
     const tk=palavras(q).filter(w=>!FILL.has(w)&&!MESL.some(m=>w===m));
+    if(!tk.length&&vg){
+      if(!rh.length) return nao('Não há servidores '+vg[0]+' na folha de '+ref+'.');
+      const br=rh.reduce((s,r)=>s+(r[6]||0),0), li=rh.reduce((s,r)=>s+(r[7]||0),0);
+      const ml=new Map(); rh.forEach(r=>ml.set(r[4],(ml.get(r[4])||0)+1));
+      const tl=[...ml].sort((a,b)=>b[1]-a[1]);
+      return {ok:true,entendi:'servidores '+vg[0]+' na folha de '+ref,titulo:'Servidores '+vg[0],destaque:f0.format(rh.length),
+        linhas:[['Quantidade',f0.format(rh.length)+' ('+pct(rh.length/rh0.length*100)+' da folha)'],['Bruto',R$(br)],['Líquido',R$(li)],
+          ...tl.slice(0,5).map(([k,n])=>['• '+k.replace(/^SECRETARIA MUNICIPAL DE /i,''),f0.format(n)])],
+        nota:'Para uma secretaria específica, pergunte: "quantos '+vg[0].replace(/^de /,'')+' na secretaria de saúde".',
+        fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',
+        fala:'Na folha de '+refF+', os servidores '+vg[0]+' são '+rh.length+', com valor bruto de '+falado(br)+'. As secretarias com mais: '+
+          tl.slice(0,3).map(([k,n])=>k.replace(/^SECRETARIA MUNICIPAL DE /i,'').toLowerCase()+', '+n).join('; ')+'.'};
+    }
     if(!tk.length){
       /* folha da prefeitura toda: soma das colunas da folha detalhada */
       if(!tem(q,/gast|custo|custa|total|soma|folha|paga|pagamos/)||tem(q,/quant(os|as)|lrf|limite|rcl|despesa/)||mesesCitados(q).length) return null;
@@ -3765,8 +3786,8 @@ function montaBusca(){
     const menor=vs[0], maior=vs[vs.length-1];
     const dist=(ix)=>{ const m=new Map(); sel.forEach(r=>m.set(r[ix],(m.get(r[ix])||0)+1)); return [...m].sort((a,b)=>b[1]-a[1]); };
     const lots=dist(4), cars=dist(1), vincs=dist(2);
-    const nomeGrupo=tier==='lotacao'&&lots.length===1?lots[0][0].toLowerCase():(tier==='cargo'&&cars.length===1?cars[0][0].toLowerCase():'"'+tk.join(' ')+'"');
-    const pM=tem(q,/medi[ao]|mediana/), pMax=tem(q,/maior|mais alto|teto|mais ganha/), pMin=tem(q,/menor|mais baixo|piso/), pSoma=tem(q,/total|soma|gast|custo|custa|folha/);
+    const nomeGrupo=(tier==='lotacao'&&lots.length===1?lots[0][0].toLowerCase():(tier==='cargo'&&cars.length===1?cars[0][0].toLowerCase():'"'+tk.join(' ')+'"'))+(vg?', só '+vg[0]:'');
+    const pM=tem(q,/medi[ao]|mediana/), pMax=tem(q,/maior|mais alto|teto|mais ganha/), pMin=tem(q,/menor|mais baixo|piso/), pSoma=tem(q,/total|soma|gast|custo|custa|custam|folha/);
     const pCargos=tem(q,/cargos|funcoes|ocupacoes/), pTop=tem(q,/maiores|mais altos|ranking|quais|liste|lista/);
     const linhas=[['Servidores',f0.format(sel.length)],['Total ('+mrot+')',R$(soma)],['Média ('+mrot+')',R$(med)],['Mediana ('+mrot+')',R$(mediana)]];
     if(menor) linhas.push(['Menor',R$(menor.v)+' · '+menor.r[0]]);
