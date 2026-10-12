@@ -130,6 +130,8 @@ export default function SeggovPage() {
   const podeImportar = usePermissao('podeImportar')
   const podeExportar = usePermissao('podeExportar')
   const podeExcluir = usePermissao('podeExcluir')
+  // quem só visualiza não abre a tela de edição ao clicar no cartão
+  const podeAbrirEdicao = usePermissao('podeEditar')
   const [itens, setItens] = useState<any[]>([])
   const [vereadores, setVereadores] = useState<any[]>([])
   const [tiposProposicao, setTiposProposicao] = useState<{ id: string; nome: string }[]>([])
@@ -787,7 +789,7 @@ export default function SeggovPage() {
                 className={`rounded-xl border-2 transition-all ${sel ? 'border-blue-400 bg-blue-50' : 'border-blue-200 bg-white hover:border-blue-300'}`}>
                 {/* Cabeçalho do card */}
                 <div className="flex items-start gap-3 p-4 cursor-pointer"
-                  onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
+                  onClick={() => { if (podeAbrirEdicao) router.push(`/dashboard/segov/${item.id}/editar`) }}>
                   <div onClick={e => e.stopPropagation()} className="mt-0.5 flex-shrink-0">
                     <input type="checkbox" checked={sel} onChange={() => toggleItem(item.id)}
                       className="w-4 h-4 accent-red-800 cursor-pointer" />
@@ -844,7 +846,7 @@ export default function SeggovPage() {
                 {marcados.length > 0 && !flowDetalhado && (
                   <div className="border-t border-blue-100 pr-4 pb-4 pt-5 cursor-pointer"
                     style={{ paddingLeft: '1cm' }}
-                    onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
+                    onClick={() => { if (podeAbrirEdicao) router.push(`/dashboard/segov/${item.id}/editar`) }}>
                     <div className="flex items-start">
                       {marcos.map((marco, mi) => {
                         // Situação especial (dispensa/vista/adiamento) é um
@@ -891,7 +893,7 @@ export default function SeggovPage() {
                 )}
                 {marcados.length > 0 && flowDetalhado && (
                   <div className="border-t border-blue-100 px-4 pb-4 pt-4 overflow-x-auto cursor-pointer"
-                    onClick={() => router.push(`/dashboard/segov/${item.id}/editar`)}>
+                    onClick={() => { if (podeAbrirEdicao) router.push(`/dashboard/segov/${item.id}/editar`) }}>
                     {/* flex-wrap em vez de rolagem horizontal — fluxos com muitas
                         fases (retirado de pauta mais de uma vez, emenda, etc.)
                         quebram pra linha de baixo em vez de precisar arrastar. */}

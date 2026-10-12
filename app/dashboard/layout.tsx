@@ -112,7 +112,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const menuAtual = menuDaRota(pathname);
   const acessoAtual = menuAtual ? acessoDoMenu(usuarioSessao, menuAtual) : null;
   // sem acesso ao menu, ou tela de cadastro (novo/importar) para quem só visualiza
-  const semAcesso = !!acessoAtual && (!acessoAtual.ver || (!acessoAtual.cad && rotaDeCadastro(pathname)));
+  const semAcesso = !!acessoAtual && (!acessoAtual.ver || (!acessoAtual.cad && (rotaDeCadastro(pathname) || rotaDeEdicao(pathname))));
   const somenteLeitura = !!acessoAtual && acessoAtual.ver && !acessoAtual.cad;
 
   return (

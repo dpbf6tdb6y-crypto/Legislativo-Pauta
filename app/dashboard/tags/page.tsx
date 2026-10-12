@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { usePermissao } from '@/lib/usePermissao'
 
 type Item = {
   id: string; referencia: string; data: string; pedido: string
@@ -24,6 +25,7 @@ const REL_CHIP: Record<string, string> = {
 }
 
 export default function TagsPage() {
+  const podeEditarTag = usePermissao('podeEditar')
   const router = useRouter()
   const [itens, setItens] = useState<Item[]>([])
   const [busca, setBusca] = useState('')
@@ -132,7 +134,7 @@ export default function TagsPage() {
               </div>
 
               <div className="flex gap-1 flex-shrink-0">
-                <button onClick={() => router.push(`/dashboard/tags/${item.id}/editar`)}
+                <button onClick={() => { if (podeEditarTag) router.push(`/dashboard/tags/${item.id}/editar`) }}
                   className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

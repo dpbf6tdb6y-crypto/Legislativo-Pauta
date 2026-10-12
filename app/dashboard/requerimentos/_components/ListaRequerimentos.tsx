@@ -359,7 +359,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
               <div key={item.id}
                 className={`bg-white rounded-xl border-2 transition ${sel ? 'border-blue-300' : 'border-gray-200 hover:border-gray-300'}`}>
                 <div className="flex items-start gap-4 px-5 py-4 cursor-pointer"
-                  onClick={() => router.push(`${editarHrefBase}/${item.id}/editar`)}>
+                  onClick={() => { if (podeEditar) router.push(`${editarHrefBase}/${item.id}/editar`) }}>
                   <input type="checkbox" checked={sel} onClick={e => e.stopPropagation()} onChange={() => toggleItem(item.id)}
                     className="w-4 h-4 mt-1 cursor-pointer flex-shrink-0" style={{ accentColor: corPrimaria }} />
                   <div className="flex-1 min-w-0">
@@ -394,7 +394,7 @@ export default function ListaRequerimentos({ titulo, subtitulo, modo, tiposFiltr
                   </div>
                   <div className="flex gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
                     {podeEditar && (
-                      <button onClick={() => router.push(`${editarHrefBase}/${item.id}/editar`)}
+                      <button onClick={() => { if (podeEditar) router.push(`${editarHrefBase}/${item.id}/editar`) }}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
