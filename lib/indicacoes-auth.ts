@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { acessoDoMenu } from "@/lib/acessos";
 
 export async function getUsuarioIndicacoes() {
   const session = await getServerSession(authOptions);
@@ -13,4 +14,11 @@ export async function getUsuarioIndicacoes() {
   if (!autorizado) return null;
 
   return user;
+}
+
+// quem só visualiza Ind. pode consultar, mas não cria, edita nem exclui
+export async function getUsuarioIndicacoesCadastro() {
+  const user = await getUsuarioIndicacoes();
+  if (!user) return null;
+  return acessoDoMenu(user as any, "indicacoes").cad ? user : null;
 }

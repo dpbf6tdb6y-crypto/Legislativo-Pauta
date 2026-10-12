@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUsuarioIndicacoes } from "@/lib/indicacoes-auth";
+import { getUsuarioIndicacoes, getUsuarioIndicacoesCadastro } from "@/lib/indicacoes-auth";
 import { registrarAuditoria } from "@/lib/auditoria";
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
@@ -16,7 +16,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const usuario = await getUsuarioIndicacoes();
+  const usuario = await getUsuarioIndicacoesCadastro();
   if (!usuario) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const body = await req.json();
@@ -49,7 +49,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  const usuario = await getUsuarioIndicacoes();
+  const usuario = await getUsuarioIndicacoesCadastro();
   if (!usuario) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const indicacao = await prisma.indicacaoCargo.delete({ where: { id: params.id } });

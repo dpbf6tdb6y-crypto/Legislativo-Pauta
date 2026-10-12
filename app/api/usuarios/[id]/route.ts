@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { registrarAuditoria } from "@/lib/auditoria";
+import { normalizaAcessos } from "@/lib/acessos-servidor";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -26,13 +27,17 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: "Apenas o Master pode definir perfil Administrador." }, { status: 403 });
   }
 
+  const acessos = normalizaAcessos(body.acessos);
+  const algumCadastro = !!(acessos && Object.values(acessos).some((a: any) => a?.cad));
   const data: any = {
     nome: body.nome,
     perfil: perfilSolicitado,
     ativo: !!body.ativo,
-    podeVerIndicacoes: !!body.podeVerIndicacoes,
-    podeCriar: !!body.podeCriar,
-    podeEditar: !!body.podeEditar,
+    podeVerIndicacoes: !!body.podeVerIndicacoes || !!(acessos && (acessos.indicacoes?.ver || acessos.indicacoes?.cad)),
+    acessos: acessos ? JSON.stringify(acessos) : null,
+    fluxoResumido: !!body.fluxoResumido,
+    podeCriar: acessos ? algumCadastro : !!body.podeCriar,
+    podeEditar: acessos ? algumCadastro : !!body.podeEditar,
     podeExcluir: !!body.podeExcluir,
     podeImportar: !!body.podeImportar,
     podeExportar: !!body.podeExportar,

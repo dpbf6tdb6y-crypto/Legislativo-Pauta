@@ -10,6 +10,7 @@ import FiltroVereadorSelect from '@/app/components/FiltroVereadorSelect'
 import FiltroPoder, { Poder } from '@/app/components/FiltroPoder'
 import PasswordInput from '@/app/components/PasswordInput'
 import { usePermissao } from '@/lib/usePermissao'
+import { useSession } from 'next-auth/react'
 
 const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
@@ -154,6 +155,10 @@ export default function SeggovPage() {
   // completo das comissões) quando ligado — vale pra todos os cartões de
   // uma vez, alternado pelo botão na barra de filtros.
   const [flowDetalhado, setFlowDetalhado] = useState(false)
+  // usuários com 'fluxo resumido' no cadastro veem sempre o fluxo resumido (sem o botão de alternar)
+  const { data: sessaoFluxo } = useSession()
+  const usuarioFluxo = sessaoFluxo?.user as any
+  const fluxoTravado = !!usuarioFluxo?.fluxoResumido && usuarioFluxo?.perfil !== 'master' && usuarioFluxo?.perfil !== 'admin'
 
   // Filtros por coluna (busca livre, aplicados sobre os itens já carregados)
   const [colProposicao, setColProposicao] = useState('')
@@ -513,7 +518,7 @@ export default function SeggovPage() {
             (pedido do usuário). Desligado é cinza escuro (não mais azul
             claro), pra ficar claro que é um "outro estado", não uma versão
             fraca do mesmo azul. */}
-        <button onClick={() => setFlowDetalhado(v => !v)}
+        {!fluxoTravado && <button onClick={() => setFlowDetalhado(v => !v)}
           className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition flex-shrink-0 whitespace-nowrap ${
             flowDetalhado ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-700 text-white hover:bg-gray-800'
           }`}>
@@ -521,7 +526,7 @@ export default function SeggovPage() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
           </svg>
           {flowDetalhado ? 'Fluxo detalhado' : 'Fluxo resumido'}
-        </button>
+        </button>}
       </div>
       </div>
 

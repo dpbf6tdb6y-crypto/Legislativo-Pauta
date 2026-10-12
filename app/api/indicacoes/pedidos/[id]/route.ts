@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUsuarioIndicacoes } from "@/lib/indicacoes-auth";
+import { getUsuarioIndicacoes, getUsuarioIndicacoesCadastro } from "@/lib/indicacoes-auth";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { STATUS_PEDIDO, STATUS_FECHADOS, referenciaValida } from "@/lib/pedidos";
 
@@ -25,7 +25,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 }
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const usuario = await getUsuarioIndicacoes();
+  const usuario = await getUsuarioIndicacoesCadastro();
   if (!usuario) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const atual = await prisma.pedidoVereador.findUnique({ where: { id: params.id } });
@@ -76,7 +76,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
 // exclui o pedido e todos os seus andamentos (cascata no banco)
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  const usuario = await getUsuarioIndicacoes();
+  const usuario = await getUsuarioIndicacoesCadastro();
   if (!usuario) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const existe = await prisma.pedidoVereador.findUnique({ where: { id: params.id } });

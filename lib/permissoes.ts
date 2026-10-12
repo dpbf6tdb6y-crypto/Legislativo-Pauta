@@ -1,3 +1,4 @@
+import { acessoDoMenu, type ChaveMenu } from './acessos'
 export const PERMISSOES = [
   { chave: 'podeCriar', label: 'Cadastrar', descricao: 'Criar proposições, requerimentos, moções, sessões, vereadores, etc.' },
   { chave: 'podeEditar', label: 'Editar', descricao: 'Editar dados e tramitação de matérias já cadastradas' },
@@ -12,6 +13,8 @@ export type ChavePermissao = typeof PERMISSOES[number]['chave']
 
 export type UsuarioPermissoes = {
   perfil: string
+  acessos?: string | null
+  podeVerIndicacoes?: boolean
   podeCriar?: boolean
   podeEditar?: boolean
   podeExcluir?: boolean
@@ -25,8 +28,10 @@ export type UsuarioPermissoes = {
  * Master e Admin sempre têm acesso total. Para os demais perfis (operador, leitor),
  * a permissão depende do flag específico do usuário.
  */
-export function temPermissao(usuario: UsuarioPermissoes | null | undefined, chave: ChavePermissao): boolean {
+export function temPermissao(usuario: UsuarioPermissoes | null | undefined, chave: ChavePermissao, menu?: ChaveMenu): boolean {
   if (!usuario) return false
   if (usuario.perfil === 'master' || usuario.perfil === 'admin') return true
+  // com o menu informado, quem só visualiza não cria, edita, exclui nem importa
+  if (menu && ['podeCriar', 'podeEditar', 'podeExcluir', 'podeImportar'].includes(chave) && !acessoDoMenu(usuario as any, menu).cad) return false
   return usuario[chave] === true
 }

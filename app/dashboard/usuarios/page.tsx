@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import PasswordInput from "../../components/PasswordInput";
 import { useToast } from "@/contexts/toast";
 import { PERMISSOES } from "@/lib/permissoes";
+import { MENUS, acessoDoMenu } from "@/lib/acessos";
 
 type Usuario = {
   id: string;
@@ -19,6 +20,8 @@ type Usuario = {
   podeExportar: boolean;
   podeGerenciarVereadores: boolean;
   podeVerAuditoria: boolean;
+  acessos?: string | null;
+  fluxoResumido?: boolean;
   createdAt: string;
 };
 
@@ -34,6 +37,9 @@ export default function UsuariosPage() {
   const [msgReset, setMsgReset] = useState("");
   const [enviandoReset, setEnviandoReset] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  // acesso por menu: visualizar / cadastrar (cadastrar implica visualizar)
+  const [acc, setAcc] = useState<Record<string, { ver: boolean; cad: boolean }>>({});
+  const [fluxoResumido, setFluxoResumido] = useState(false);
 
   async function carregar() {
     setCarregando(true);
@@ -52,6 +58,16 @@ export default function UsuariosPage() {
   const u = isNovo ? null : (modal as Usuario | null);
 
   function abrirModal(alvo: "novo" | Usuario | null) {
+    if (alvo) {
+      const inicial: Record<string, { ver: boolean; cad: boolean }> = {};
+      for (const m of MENUS) {
+        inicial[m.chave] = alvo === "novo"
+          ? { ver: m.chave !== "indicacoes", cad: false }
+          : acessoDoMenu({ ...(alvo as any), perfil: (alvo as any).perfil === "master" || (alvo as any).perfil === "admin" ? "operador" : (alvo as any).perfil }, m.chave);
+      }
+      setAcc(inicial);
+      setFluxoResumido(alvo === "novo" ? false : !!(alvo as any).fluxoResumido);
+    }
     setModal(alvo);
     setErro("");
     setMsgReset("");
@@ -74,7 +90,9 @@ export default function UsuariosPage() {
             email: fd.get("email"),
             perfil: fd.get("perfil"),
             senha: fd.get("senha"),
-            podeVerIndicacoes: fd.get("podeVerIndicacoes") === "on",
+            podeVerIndicacoes: !!(acc.indicacoes?.ver || acc.indicacoes?.cad),
+            acessos: acc,
+            fluxoResumido,
             ...permissoes,
           }),
         });
@@ -89,7 +107,9 @@ export default function UsuariosPage() {
             perfil: fd.get("perfil"),
             ativo: fd.get("ativo") === "true",
             novaSenha: fd.get("novaSenha") || undefined,
-            podeVerIndicacoes: fd.get("podeVerIndicacoes") === "on",
+            podeVerIndicacoes: !!(acc.indicacoes?.ver || acc.indicacoes?.cad),
+            acessos: acc,
+            fluxoResumido,
             ...permissoes,
           }),
         });
@@ -245,10 +265,52 @@ export default function UsuariosPage() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Permissões</label>
-                <p className="text-xs text-gray-400 mb-2">Master e Administrador têm acesso total automaticamente. Para o perfil Leitor, desmarque todas.</p>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Acesso aos menus</label>
+                <p className="text-xs text-gray-400 mb-2">
+                  <b>Visualizar</b>: a pessoa vê o menu e consulta, sem botões de cadastro. <b>Cadastrar</b>: também cria e edita.
+                  Master e Administrador têm acesso total.
+                </p>
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <div className="grid grid-cols-[1fr_90px_90px] bg-gray-50 text-[11px] font-semibold text-gray-500 uppercase tracking-wide px-3 py-1.5">
+                    <span>Menu</span><span className="text-center">Visualizar</span><span className="text-center">Cadastrar</span>
+                  </div>
+                  {MENUS.map(m => {
+                    const a = acc[m.chave] ?? { ver: false, cad: false };
+                    return (
+                      <div key={m.chave} className="border-t border-gray-100 px-3 py-1.5">
+                        <div className="grid grid-cols-[1fr_90px_90px] items-center">
+                          <span className="text-sm text-gray-700">{m.chave === "indicacoes" ? "🔒 " : ""}{m.label}</span>
+                          <label className="flex justify-center">
+                            <input type="checkbox" checked={a.ver || a.cad}
+                              onChange={e => setAcc(s => ({ ...s, [m.chave]: { ver: e.target.checked, cad: e.target.checked ? s[m.chave]?.cad ?? false : false } }))}
+                              className="w-4 h-4 accent-purple-600" />
+                          </label>
+                          <label className="flex justify-center">
+                            <input type="checkbox" checked={a.cad}
+                              onChange={e => setAcc(s => ({ ...s, [m.chave]: { ver: e.target.checked ? true : s[m.chave]?.ver ?? false, cad: e.target.checked } }))}
+                              className="w-4 h-4 accent-purple-600" />
+                          </label>
+                        </div>
+                        {m.chave === "proposicoes" && (a.ver || a.cad) && (
+                          <label className="flex items-center gap-2 mt-1 ml-1 text-xs text-gray-600 cursor-pointer">
+                            <input type="checkbox" checked={fluxoResumido} onChange={e => setFluxoResumido(e.target.checked)}
+                              className="w-3.5 h-3.5 accent-purple-600" />
+                            Mostrar somente o fluxo resumido nas proposições (sem a opção de ver o detalhado)
+                          </label>
+                        )}
+                        {m.chave === "indicacoes" && (a.ver || a.cad) && (
+                          <p className="text-[11px] text-amber-700 mt-1 ml-1">Dados sigilosos: o acesso continua exigindo a confirmação de senha.</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Outras permissões</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {PERMISSOES.map(p => (
+                  {PERMISSOES.filter(p => p.chave !== "podeCriar" && p.chave !== "podeEditar").map(p => (
                     <label key={p.chave} title={p.descricao}
                       className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-50">
                       <input type="checkbox" name={p.chave} defaultChecked={(u as any)?.[p.chave] ?? true}
@@ -258,12 +320,6 @@ export default function UsuariosPage() {
                   ))}
                 </div>
               </div>
-
-              <label className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 cursor-pointer">
-                <input type="checkbox" name="podeVerIndicacoes" defaultChecked={u?.podeVerIndicacoes ?? false}
-                  className="w-4 h-4 accent-amber-600" />
-                <span className="text-sm text-amber-800">🔒 Pode acessar Indicações de Cargos (dados sigilosos)</span>
-              </label>
 
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">

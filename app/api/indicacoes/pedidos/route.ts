@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUsuarioIndicacoes } from "@/lib/indicacoes-auth";
+import { getUsuarioIndicacoes, getUsuarioIndicacoesCadastro } from "@/lib/indicacoes-auth";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { STATUS_PEDIDO, STATUS_FECHADOS, referenciaValida } from "@/lib/pedidos";
 
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const usuario = await getUsuarioIndicacoes();
+  const usuario = await getUsuarioIndicacoesCadastro();
   if (!usuario) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const b = await req.json();

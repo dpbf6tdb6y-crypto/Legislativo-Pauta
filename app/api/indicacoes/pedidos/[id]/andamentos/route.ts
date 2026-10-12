@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUsuarioIndicacoes } from "@/lib/indicacoes-auth";
+import { getUsuarioIndicacoesCadastro } from "@/lib/indicacoes-auth";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { STATUS_PEDIDO, STATUS_FECHADOS } from "@/lib/pedidos";
 
 // novo andamento: gera uma linha no histórico e, se trouxer status, atualiza o status do pedido
 export async function POST(req: Request, { params }: { params: { id: string } }) {
-  const usuario = await getUsuarioIndicacoes();
+  const usuario = await getUsuarioIndicacoesCadastro();
   if (!usuario) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const pedido = await prisma.pedidoVereador.findUnique({ where: { id: params.id } });

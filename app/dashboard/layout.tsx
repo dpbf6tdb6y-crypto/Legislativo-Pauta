@@ -6,14 +6,16 @@ import Link from "next/link";
 import { TopbarProvider, useTopbar } from "@/contexts/topbar";
 import { ToastProvider } from "@/contexts/toast";
 import AprovacaoRelatorioListener from "./_components/AprovacaoRelatorioListener";
+import SomenteLeitura from "./_components/SomenteLeitura";
+import { acessoDoMenu, menuDaRota, rotaDeCadastro, rotaDeEdicao } from "@/lib/acessos";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
-  { href: "/dashboard/segov", label: "Proposições", icon: "M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" },
-  { href: "/dashboard/requerimentos", label: "Requerimentos", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" },
-  { href: "/dashboard/mocoes", label: "Moções", icon: "M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" },
-  { href: "/dashboard/tags", label: "TAG", icon: "M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" },
-  { href: "/dashboard/sessoes", label: "Sessões & Pautas", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
+  { href: "/dashboard", chave: "dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
+  { href: "/dashboard/segov", chave: "proposicoes", label: "Proposições", icon: "M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" },
+  { href: "/dashboard/requerimentos", chave: "requerimentos", label: "Requerimentos", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" },
+  { href: "/dashboard/mocoes", chave: "mocoes", label: "Moções", icon: "M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 4v-4z" },
+  { href: "/dashboard/tags", chave: "tags", label: "TAG", icon: "M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" },
+  { href: "/dashboard/sessoes", chave: "sessoes", label: "Sessões & Pautas", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
 ];
 
 const configItems = [
@@ -25,7 +27,7 @@ const configItems = [
 
 const auditoriaItem = { href: "/dashboard/auditoria", label: "Auditoria", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" };
 const indicacoesItem = { href: "/dashboard/indicacoes", label: "Ind.", icon: "M12 15a3 3 0 100-6 3 3 0 000 6z M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" };
-const fazendaItem = { href: "/dashboard/fazenda", label: "Fazenda", icon: "M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1c1.657 0 3 .672 3 1.5M12 15v1m0-1c-1.657 0-3-.672-3-1.5M3 12a9 9 0 1018 0 9 9 0 00-18 0z" };
+const fazendaItem = { href: "/dashboard/fazenda", label: "Controles da Gestão", icon: "M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1c1.657 0 3 .672 3 1.5M12 15v1m0-1c-1.657 0-3-.672-3-1.5M3 12a9 9 0 1018 0 9 9 0 00-18 0z" };
 // Verde-esmeralda pra destacar Fazenda das outras seções — pedido do
 // usuário pra ficar "de outra cor", sempre (não só quando ativa).
 const FAZENDA_COLOR = "#10b981";
@@ -63,7 +65,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const sidebarOpen = fixado || sobre;
   const perfilAtual = (session?.user as any)?.perfil;
   const isAdminOuMaster = perfilAtual === "admin" || perfilAtual === "master";
-  const podeVerIndicacoes = perfilAtual === "master" || !!(session?.user as any)?.podeVerIndicacoes;
+  const usuarioSessao = session?.user as any;
+  const podeVerIndicacoes = acessoDoMenu(usuarioSessao, "indicacoes").ver;
   const configItemsVisiveis = isAdminOuMaster ? [...configItems, usuariosItem, backupItem, auditoriaItem] : configItems;
   const [configAberto, setConfigAberto] = useState(
     configItemsVisiveis.some(i => pathname.startsWith(i.href))
@@ -91,6 +94,11 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   }
 
   const configAtiva = configItemsVisiveis.some(i => pathname.startsWith(i.href));
+  const menuAtual = menuDaRota(pathname);
+  const acessoAtual = menuAtual ? acessoDoMenu(usuarioSessao, menuAtual) : null;
+  // sem acesso ao menu, ou tela de cadastro (novo/importar) para quem só visualiza
+  const semAcesso = !!acessoAtual && (!acessoAtual.ver || (!acessoAtual.cad && rotaDeCadastro(pathname)));
+  const somenteLeitura = !!acessoAtual && acessoAtual.ver && !acessoAtual.cad;
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
@@ -148,7 +156,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
         {/* Navegação */}
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto mt-2">
-          {navItems.map((item) => {
+          {navItems.filter((i) => acessoDoMenu(usuarioSessao, i.chave as any).ver).map((item) => {
             const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
             return (
               <Link key={item.href} href={item.href}
@@ -184,7 +192,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
               </Link>
             )
           })()}
-          {(() => {
+          {acessoDoMenu(usuarioSessao, "gestao").ver && (() => {
             const active = pathname.startsWith(fazendaItem.href);
             return (
               <Link href={fazendaItem.href}
@@ -203,7 +211,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           })()}
         </nav>
 
-        {/* Configurações */}
+        {/* Configurações: só o Master vê */}
+        {perfilAtual === "master" && (
         <div className="px-2 pb-1 pt-2" style={{ borderTop: `1px solid ${BORDER_COLOR}` }}>
           <button
             onClick={() => { if (sidebarOpen) setConfigAberto(v => !v); }}
@@ -249,6 +258,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
             </div>
           )}
         </div>
+
+        )}
 
         {/* Footer */}
         <div className="p-3 space-y-2" style={{ borderTop: `1px solid ${BORDER_COLOR}` }}>
@@ -310,7 +321,16 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="flex-1 px-5 pt-3 pb-0">
-          {children}
+          {semAcesso ? (
+            <div className="max-w-md mx-auto mt-24 bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
+              <p className="font-bold text-gray-800 mb-1">Sem acesso a esta tela</p>
+              <p className="text-sm text-gray-500">Seu usuário não tem permissão para esta área. Fale com o Master para liberar.</p>
+            </div>
+          ) : somenteLeitura ? (
+            <SomenteLeitura bloqueiaCampos={rotaDeEdicao(pathname)}>{children}</SomenteLeitura>
+          ) : (
+            children
+          )}
         </main>
       </div>
 

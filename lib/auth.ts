@@ -22,6 +22,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user.id, name: user.nome, email: user.email, perfil: user.perfil,
           podeVerIndicacoes: user.podeVerIndicacoes,
+          acessos: user.acessos, fluxoResumido: user.fluxoResumido,
           podeCriar: user.podeCriar, podeEditar: user.podeEditar, podeExcluir: user.podeExcluir,
           podeImportar: user.podeImportar, podeExportar: user.podeExportar,
           podeGerenciarVereadores: user.podeGerenciarVereadores, podeVerAuditoria: user.podeVerAuditoria,
@@ -36,6 +37,8 @@ export const authOptions: AuthOptions = {
         token.id = u.id;
         token.perfil = u.perfil;
         token.podeVerIndicacoes = u.podeVerIndicacoes;
+        token.acessos = u.acessos ?? null;
+        token.fluxoResumido = !!u.fluxoResumido;
         token.podeCriar = u.podeCriar;
         token.podeEditar = u.podeEditar;
         token.podeExcluir = u.podeExcluir;
@@ -52,6 +55,8 @@ export const authOptions: AuthOptions = {
         su.id = token.id as string;
         su.perfil = token.perfil;
         su.podeVerIndicacoes = token.podeVerIndicacoes;
+        su.acessos = token.acessos ?? null;
+        su.fluxoResumido = !!token.fluxoResumido;
         su.podeCriar = token.podeCriar;
         su.podeEditar = token.podeEditar;
         su.podeExcluir = token.podeExcluir;

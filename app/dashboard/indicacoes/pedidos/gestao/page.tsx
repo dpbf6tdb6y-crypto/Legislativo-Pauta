@@ -1,5 +1,7 @@
 "use client"
 import { useEffect, useMemo, useState } from "react"
+import { useSession } from "next-auth/react"
+import { acessoDoMenu } from "@/lib/acessos"
 import IndicacoesGate from "../../_components/IndicacoesGate"
 import AbasIndicacoes from "../../_components/AbasIndicacoes"
 import { Pedido, STATUS_PEDIDO, STATUS_COR, STATUS_BORDA, fmtData, paraInputData } from "@/lib/pedidos"
@@ -20,6 +22,8 @@ const FORM_VAZIO = {
 }
 
 function GestaoConteudo() {
+  const { data: sessao } = useSession()
+  const podeCadastrar = acessoDoMenu(sessao?.user as any, "indicacoes").cad
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [vereadores, setVereadores] = useState<any[]>([])
   const [carregando, setCarregando] = useState(true)
@@ -197,6 +201,7 @@ function GestaoConteudo() {
         {/* editor */}
         <div className="lg:col-span-3 space-y-4">
           <form onSubmit={salvar} className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
+            <fieldset disabled={!podeCadastrar} className="min-w-0 border-0 p-0 m-0 space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-gray-800">{selecionado ? "Editar pedido" : "Novo pedido"}</h2>
               {atual && <span className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${STATUS_COR[atual.status] || ""}`}>{atual.status}</span>}
@@ -266,13 +271,14 @@ function GestaoConteudo() {
                 </button>
               )}
             </div>
+            </fieldset>
           </form>
 
           {/* andamentos */}
           {selecionado && atual && (
             <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
               <h2 className="font-bold text-gray-800">Andamentos</h2>
-              <form onSubmit={lancarAndamento} className="grid grid-cols-1 sm:grid-cols-6 gap-2 items-end bg-gray-50 rounded-lg p-3">
+              {podeCadastrar && <form onSubmit={lancarAndamento} className="grid grid-cols-1 sm:grid-cols-6 gap-2 items-end bg-gray-50 rounded-lg p-3">
                 <div className="sm:col-span-1">
                   <label className={rotulo}>Data</label>
                   <input type="date" value={andData} onChange={e => setAndData(e.target.value)} className={campo} />
@@ -291,7 +297,7 @@ function GestaoConteudo() {
                 <button type="submit" className="sm:col-span-1 px-3 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700">
                   Lançar
                 </button>
-              </form>
+              </form>}
               {andErro && <p className="text-sm text-red-600">{andErro}</p>}
 
               {atual.andamentos.length === 0 ? (
@@ -308,7 +314,7 @@ function GestaoConteudo() {
                         </p>
                         <p className="text-sm text-gray-800 mt-0.5">{a.descricao}</p>
                       </div>
-                      <button onClick={() => excluirAndamento(a.id)} className="text-xs text-red-600 hover:text-red-800 font-semibold">Excluir</button>
+                      {podeCadastrar && <button onClick={() => excluirAndamento(a.id)} className="text-xs text-red-600 hover:text-red-800 font-semibold">Excluir</button>}
                     </li>
                   ))}
                   <li className="text-xs text-gray-400 px-1">

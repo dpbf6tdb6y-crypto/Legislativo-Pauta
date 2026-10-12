@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { registrarAuditoria } from "@/lib/auditoria";
+import { normalizaAcessos } from "@/lib/acessos-servidor";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -14,6 +15,7 @@ export async function GET() {
     orderBy: { nome: "asc" },
     select: {
       id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true, createdAt: true,
+      acessos: true, fluxoResumido: true,
       podeCriar: true, podeEditar: true, podeExcluir: true, podeImportar: true, podeExportar: true,
       podeGerenciarVereadores: true, podeVerAuditoria: true,
     },
@@ -40,11 +42,15 @@ export async function POST(req: Request) {
   if (senha.length < 6) return NextResponse.json({ error: "A senha deve ter no mínimo 6 caracteres." }, { status: 400 });
 
   try {
-    const podeVerIndicacoes = !!body.podeVerIndicacoes;
+    const acessos = normalizaAcessos(body.acessos);
+    // Ind. liberada nos acessos por menu também libera a área de Indicações (dados sigilosos)
+    const podeVerIndicacoes = !!body.podeVerIndicacoes || !!(acessos && (acessos.indicacoes?.ver || acessos.indicacoes?.cad));
+    const algumCadastro = !!(acessos && Object.values(acessos).some((a: any) => a?.cad));
     const usuario = await prisma.user.create({
       data: {
         nome, email, perfil, senha: await bcrypt.hash(senha, 10), podeVerIndicacoes,
-        podeCriar: !!body.podeCriar, podeEditar: !!body.podeEditar, podeExcluir: !!body.podeExcluir,
+        acessos: acessos ? JSON.stringify(acessos) : null, fluxoResumido: !!body.fluxoResumido,
+        podeCriar: acessos ? algumCadastro : !!body.podeCriar, podeEditar: acessos ? algumCadastro : !!body.podeEditar, podeExcluir: !!body.podeExcluir,
         podeImportar: !!body.podeImportar, podeExportar: !!body.podeExportar,
         podeGerenciarVereadores: !!body.podeGerenciarVereadores, podeVerAuditoria: !!body.podeVerAuditoria,
       },

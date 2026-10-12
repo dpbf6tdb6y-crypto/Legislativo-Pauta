@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUsuarioIndicacoes } from "@/lib/indicacoes-auth";
+import { getUsuarioIndicacoesCadastro } from "@/lib/indicacoes-auth";
 import { registrarAuditoria } from "@/lib/auditoria";
 
 // remove um andamento lançado por engano (o status do pedido não é revertido automaticamente)
 export async function DELETE(_: Request, { params }: { params: { id: string; aid: string } }) {
-  const usuario = await getUsuarioIndicacoes();
+  const usuario = await getUsuarioIndicacoesCadastro();
   if (!usuario) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const a = await prisma.andamentoPedido.findFirst({ where: { id: params.aid, pedidoId: params.id } });

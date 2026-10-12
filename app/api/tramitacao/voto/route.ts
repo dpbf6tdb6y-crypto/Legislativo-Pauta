@@ -7,7 +7,7 @@ import { temPermissao } from "@/lib/permissoes";
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  if (!temPermissao(session.user as any, "podeEditar")) return NextResponse.json({ error: "Sem permissão para editar" }, { status: 403 });
+  if (!temPermissao(session.user as any, "podeEditar", "proposicoes")) return NextResponse.json({ error: "Sem permissão para editar" }, { status: 403 });
 
   const { proposicaoComissaoId, vereadorId, aprovado } = await req.json();
 
