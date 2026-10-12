@@ -631,6 +631,7 @@ HTML = r'''<!DOCTYPE html>
   .audBtns button:hover{ border-color:#B9BFC9; color:var(--t1); }
   #audCorpo{ background:#fff; color:#111827; }
   .relCab{ text-align:center; border-top:4px solid #0F2A5C; border-bottom:1px solid #0F2A5C; padding:16px 0 12px; margin:6px 0 14px; }
+  .relLogo{ height:70px; width:auto; display:block; margin:0 auto 8px; }
   .relBras{ font-size:11.5px; letter-spacing:.16em; color:#0F2A5C; font-weight:700; }
   .relT{ font-size:23px; font-weight:800; letter-spacing:.04em; color:#0F2A5C; margin:6px 0 2px; }
   .relST{ font-size:12.5px; color:#475569; }
@@ -1124,6 +1125,7 @@ HTML = r'''<!DOCTYPE html>
 
 <script>
 const DATA = __DATA__;
+const LOGO_SRC = '__LOGO_SRC__';   /* logotipo da prefeitura (data URI), vazio se o arquivo não existir */
 const ANOS = [...new Set(DATA.rc.map(r=>r[0]))].sort((a,b)=>a-b);
 const PARCIAL = Math.max(...ANOS);              /* exercício ainda em andamento */
 
@@ -2821,7 +2823,8 @@ function montaComando(){
     const crit=it.filter(x=>x.n==='v'), aten=it.filter(x=>x.n==='l'), ordem=it.filter(x=>x.n==='o');
     document.getElementById('audSub').innerHTML='Relatório pronto para impressão · gerado em '+dt;
 
-    let h='<div class="relCab"><div class="relBras">PREFEITURA MUNICIPAL DE NOVA LIMA · MINAS GERAIS</div>'
+    let h='<div class="relCab">'+(LOGO_SRC?'<img class="relLogo" src="'+LOGO_SRC+'" alt="Prefeitura de Nova Lima">':'')
+      +'<div class="relBras">PREFEITURA MUNICIPAL DE NOVA LIMA · MINAS GERAIS</div>'
       +'<div class="relT">RELATÓRIO DE AUDITORIA INTERNA</div>'
       +'<div class="relST">Acompanhamento da gestão fiscal e orçamentária · exercício '+eq.ano+'</div></div>'
       +'<table class="relMeta"><tr><td>Exercício</td><td>'+eq.ano+'</td></tr>'
@@ -2839,6 +2842,7 @@ function montaComando(){
       +'<div class="relKpi"><div><b style="color:#D92D20">'+n.v+'</b><span>Críticos</span></div><div><b style="color:#F79009">'+n.l+'</b><span>Atenção</span></div><div><b style="color:#12B76A">'+n.o+'</b><span>Em ordem</span></div></div>';
     if(crit.length){ h+='<p class="relP"><b>Pontos críticos (exigem providência):</b></p>'; crit.forEach(x=>{ h+='<div class="relLi">'+dot('v')+'<b>'+x.i+'.</b> '+esc(x.t)+' — <b>'+esc(x.v)+'</b></div>'; }); }
     if(aten.length){ h+='<p class="relP"><b>Pontos de atenção (acompanhar):</b></p>'; aten.forEach(x=>{ h+='<div class="relLi">'+dot('l')+'<b>'+x.i+'.</b> '+esc(x.t)+' — <b>'+esc(x.v)+'</b></div>'; }); }
+    if(ordem.length){ h+='<p class="relP"><b>O que está em ordem (manter o acompanhamento):</b></p>'; ordem.forEach(x=>{ h+='<div class="relLi">'+dot('o')+'<b>'+x.i+'.</b> '+esc(x.t)+' — <b>'+esc(x.v)+'</b></div>'; }); }
 
     h+='<div class="relH">3. Quadro de achados</div>'
       +'<table class="relTab"><thead><tr><th>Nº</th><th>Ponto de controle</th><th>Situação</th><th>Resultado</th><th>Base legal</th></tr></thead><tbody>';
@@ -3191,10 +3195,12 @@ out = out.replace('__ANO_EQ__', str(EQUILIBRIO['ano']))
 _logo = os.path.join(BASE, 'logo_nova_lima.png')
 if os.path.exists(_logo):
     import base64
-    out = out.replace('__LOGO__', '<img class="logo" alt="Prefeitura de Nova Lima" src="data:image/png;base64,'
-                      + base64.b64encode(open(_logo, 'rb').read()).decode() + '">')
+    _b64 = base64.b64encode(open(_logo, 'rb').read()).decode()
+    out = out.replace('__LOGO__', '<img class="logo" alt="Prefeitura de Nova Lima" src="data:image/png;base64,' + _b64 + '">')
+    out = out.replace('__LOGO_SRC__', 'data:image/png;base64,' + _b64)
 else:
     out = out.replace('__LOGO__', 'Nova Lima<small>prefeitura</small>')
+    out = out.replace('__LOGO_SRC__', '')
 
 dest = os.path.abspath(os.path.join(BASE, '..', 'Painel_Receita_Despesas.html'))
 with open(dest, 'w', encoding='utf-8') as f:
