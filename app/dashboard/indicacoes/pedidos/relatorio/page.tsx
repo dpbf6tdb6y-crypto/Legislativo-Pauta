@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import IndicacoesGate from "../../_components/IndicacoesGate"
 import { Pedido, STATUS_PEDIDO, STATUS_COR, fmtData } from "@/lib/pedidos"
 
@@ -12,6 +13,7 @@ export default function RelatorioPedidosPage() {
 }
 
 function RelatorioConteudo() {
+  const router = useRouter()
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [nome, setNome] = useState("")
   const [carregando, setCarregando] = useState(true)
@@ -36,6 +38,14 @@ function RelatorioConteudo() {
   return (
     <div className="max-w-4xl mx-auto bg-white p-6 print:p-0">
       <div className="flex items-center justify-between mb-4 print:hidden">
+        <button
+          onClick={() => (window.history.length > 1 ? router.back() : router.push("/dashboard/indicacoes/pedidos"))}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Voltar
+        </button>
         <p className="text-sm text-gray-500">Pré-visualização do relatório</p>
         <button onClick={() => window.print()}
           className="px-4 py-2 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50">

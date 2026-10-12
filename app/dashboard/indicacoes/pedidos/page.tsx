@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import IndicacoesGate from "../_components/IndicacoesGate"
 import AbasIndicacoes from "../_components/AbasIndicacoes"
 import { Pedido, STATUS_PEDIDO, STATUS_COR, STATUS_BORDA, fmtData } from "@/lib/pedidos"
@@ -14,6 +15,7 @@ export default function PainelPedidosPage() {
 }
 
 function PainelConteudo() {
+  const router = useRouter()
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [vereadores, setVereadores] = useState<any[]>([])
   const [carregando, setCarregando] = useState(true)
@@ -144,7 +146,7 @@ function PainelConteudo() {
           <button onClick={limpar} className="ml-2 px-3 py-1.5 rounded border border-gray-200 text-gray-600 hover:bg-gray-50">Limpar filtros</button>
           <button
             disabled={!vereadorId}
-            onClick={() => window.open(`/dashboard/indicacoes/pedidos/relatorio?vereadorId=${vereadorId}`, "_blank")}
+            onClick={() => router.push(`/dashboard/indicacoes/pedidos/relatorio?vereadorId=${vereadorId}`)}
             title={vereadorId ? "Relatório completo do vereador selecionado" : "Selecione um vereador para gerar o relatório"}
             className="ml-auto px-3 py-1.5 rounded text-white font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">
             Gerar relatório do vereador
