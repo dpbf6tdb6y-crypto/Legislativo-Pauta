@@ -176,6 +176,7 @@ export default function SeggovPage() {
   const [filtroPoder, setFiltroPoder] = useState<Poder>('')
   // vem da pesquisa por pergunta: só proposições sem movimentação há N dias (0 = sem esse filtro)
   const [paradoDias, setParadoDias] = useState(0)
+  const [mostrarFiltros, setMostrarFiltros] = useState(false) // celular: filtros extras recolhidos
 
   const vereadoresParaFiltro = useMemo(() => vereadores.filter(v =>
     filtroSituacaoAutor === 'todos' ? true : filtroSituacaoAutor === 'ativos' ? v.ativo !== false : v.ativo === false
@@ -451,8 +452,9 @@ export default function SeggovPage() {
           bloco pra própria camada de composição — sem isso, arrastar a
           barra de rolagem (diferente de rodinha do mouse) fazia o navegador
           repintar o sticky com atraso e ele "andava" junto por um instante. */}
-      <div className="sticky top-12 z-30 bg-gray-100 space-y-2 pb-2 will-change-transform">
-      <div className="bg-white rounded-xl border border-gray-200 p-3 flex gap-1.5 items-center flex-nowrap overflow-x-auto">
+      {/* celular: sem "grudar" no topo (o bloco ocupava metade da tela e a lista aparecia por trás) */}
+      <div className="md:sticky md:top-12 md:z-30 bg-gray-100 space-y-2 pb-2 md:will-change-transform">
+      <div className="bg-white rounded-xl border border-gray-200 p-3 flex flex-wrap md:flex-nowrap gap-1.5 items-center md:overflow-x-auto">
         {filtrosColunaAtivos && (
           <button onClick={limparFiltrosColuna}
             className="text-xs font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 hover:border-red-300 transition flex-shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg">
@@ -465,22 +467,27 @@ export default function SeggovPage() {
             visualmente qual filtro está com algo selecionado — antes todos
             os campos pareciam sempre "vazios", mesmo com filtro aplicado, e
             só dava pra saber pela contagem de itens. */}
-        <div className="relative flex-shrink-0">
+        <div className="relative flex-shrink-0 w-28 md:w-auto">
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
           </svg>
           <input value={colProposicao} onChange={e => setColProposicao(e.target.value)}
             placeholder="Buscar nº..."
-            className={`border-2 border-blue-200 rounded-lg pl-8 pr-3 py-2 text-sm font-medium focus:outline-none focus:border-blue-400 w-32 ${colProposicao ? 'ring-2 ring-blue-400' : ''}`} />
+            className={`border-2 border-blue-200 rounded-lg pl-8 pr-3 py-2 text-sm font-medium focus:outline-none focus:border-blue-400 w-full md:w-32 ${colProposicao ? 'ring-2 ring-blue-400' : ''}`} />
         </div>
-        <div className="relative flex-1 min-w-[160px]">
+        <div className="relative flex-1 min-w-0 md:min-w-[160px]">
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
           </svg>
           <input value={colEmenta} onChange={e => setColEmenta(e.target.value)}
-            placeholder="Buscar palavra na ementa..."
+            placeholder="Buscar palavra…"
             className={`border-2 border-blue-200 rounded-lg pl-8 pr-3 py-2 text-sm font-medium focus:outline-none focus:border-blue-400 w-full ${colEmenta ? 'ring-2 ring-blue-400' : ''}`} />
         </div>
+        <button type="button" onClick={() => setMostrarFiltros(v => !v)}
+          className={`md:hidden flex-shrink-0 text-xs font-semibold px-3 py-2 rounded-lg border ${mostrarFiltros || filtrosColunaAtivos ? 'border-blue-400 text-blue-700 bg-blue-50' : 'border-gray-200 text-gray-600 bg-white'}`}>
+          Filtros {mostrarFiltros ? '▴' : '▾'}
+        </button>
+        <div className={`${mostrarFiltros ? 'flex' : 'hidden'} md:contents flex-wrap gap-1.5 w-full`}>
         <FiltroPoder value={filtroPoder} onChange={setFiltroPoder} className="flex-shrink-0" />
         <FiltroVereadorSelect vereadores={vereadoresParaFiltro} value={colVereador} onChange={setColVereador}
           className={`w-32 flex-shrink-0 ${colVereador ? 'ring-2 ring-blue-400' : ''}`} />
@@ -495,6 +502,7 @@ export default function SeggovPage() {
           <option value="">Todos os tipos ({Object.values(contagemPorTipo).reduce((a, b) => a + b, 0)})</option>
           {tiposProposicao.map(t => <option key={t.id} value={t.nome}>{t.nome} ({contagemPorTipo[t.nome] || 0})</option>)}
         </select>
+        </div>
         <div className="ml-auto flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
           <input type="checkbox"
             checked={todosSelecionados}
@@ -517,9 +525,9 @@ export default function SeggovPage() {
           análise" + "Aprovado" ao mesmo tempo) — clique de novo pra
           desmarcar. "Todos" volta a mostrar tudo, limpando a seleção. Botões
           maiores (px-4 py-2, text-sm) a pedido do usuário. */}
-      <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-2 items-center flex-wrap">
+      <div className="bg-white rounded-xl border border-gray-200 px-3 py-2 flex gap-2 items-center flex-nowrap overflow-x-auto md:flex-wrap md:overflow-visible">
         <button onClick={() => setColStatus(new Set())}
-          className={`text-sm font-medium px-4 py-2 rounded-full border transition ${
+          className={`flex-shrink-0 whitespace-nowrap text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 md:py-2 rounded-full border transition ${
             colStatus.size === 0 ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
           }`}>
           Todos ({Object.values(contagemPorStatus).reduce((a, b) => a + b, 0)})
@@ -529,7 +537,7 @@ export default function SeggovPage() {
           const cor = STATUS_COR[s]
           return (
             <button key={s} onClick={() => toggleStatus(s)}
-              className={`text-sm font-medium px-4 py-2 rounded-full border transition ${
+              className={`flex-shrink-0 whitespace-nowrap text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 md:py-2 rounded-full border transition ${
                 ativo ? `${cor} border-transparent ring-2 ring-offset-1 ring-gray-300` : `${cor} border-transparent opacity-60 hover:opacity-100`
               }`}>
               {s} ({contagemPorStatus[s] || 0})
