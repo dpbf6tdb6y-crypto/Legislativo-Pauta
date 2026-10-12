@@ -205,10 +205,8 @@ function GestaoConteudo() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={rotulo}>Vereador</label>
-                <select value={form.vereadorId} onChange={e => set("vereadorId", e.target.value)} className={campo}>
-                  <option value="">— selecione —</option>
-                  {vereadores.map((v: any) => <option key={v.id} value={v.id}>{v.nome}</option>)}
-                </select>
+                <SeletorVereador vereadores={vereadores} valor={form.vereadorId}
+                  onChange={id => set("vereadorId", id)} className={campo} />
               </div>
               <div>
                 <label className={rotulo}>Tipo de pedido</label>
@@ -322,6 +320,53 @@ function GestaoConteudo() {
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+// semelhante a um <select>, mas deixa digitar para filtrar o nome (os vereadores já estão cadastrados)
+function semAcento(s: string) {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+}
+
+function SeletorVereador({ vereadores, valor, onChange, className }: {
+  vereadores: any[]; valor: string; onChange: (id: string) => void; className: string
+}) {
+  const [texto, setTexto] = useState("")
+  const [aberto, setAberto] = useState(false)
+  const selecionado = vereadores.find(v => v.id === valor)
+
+  // mostra o nome do vereador escolhido quando o campo não está sendo editado
+  useEffect(() => { if (!aberto) setTexto(selecionado?.nome || "") }, [valor, aberto, selecionado])
+
+  const q = semAcento(texto)
+  const opcoes = vereadores.filter(v => !q || (selecionado && texto === selecionado.nome) || semAcento(v.nome + " " + (v.apelido || "")).includes(q))
+
+  return (
+    <div className="relative">
+      <input
+        value={texto}
+        placeholder="Digite o nome para filtrar…"
+        className={className}
+        onFocus={e => { setAberto(true); e.currentTarget.select() }}
+        onChange={e => { setTexto(e.target.value); setAberto(true); if (valor) onChange("") }}
+        onBlur={() => setTimeout(() => setAberto(false), 150)}
+      />
+      {aberto && (
+        <ul className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg text-sm">
+          {opcoes.length === 0 ? (
+            <li className="px-3 py-2 text-gray-400">Nenhum vereador encontrado</li>
+          ) : opcoes.map(v => (
+            <li key={v.id}>
+              <button type="button"
+                onMouseDown={e => { e.preventDefault(); onChange(v.id); setTexto(v.nome); setAberto(false) }}
+                className={`w-full text-left px-3 py-1.5 hover:bg-red-50 ${v.id === valor ? "bg-red-50 font-semibold" : ""}`}>
+                {v.nome}{v.apelido ? <span className="text-xs text-gray-400"> · {v.apelido}</span> : null}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
