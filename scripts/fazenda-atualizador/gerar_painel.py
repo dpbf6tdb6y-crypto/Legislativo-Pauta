@@ -1184,6 +1184,28 @@ HTML = r'''<!DOCTYPE html>
   .subrec b:hover{ color:var(--t1); }
   .subrec b.on{ color:var(--acento); border-bottom-color:var(--acento); }
   .nota{ color:var(--t3); font-size:12.5px; padding-top:26px; }
+
+  /* pesquisa discreta: só um microfone ao lado da Auditoria; abre uma caixa pequena */
+  #btnBusca{ flex:none; width:34px; height:34px; border-radius:50%; border:1px solid var(--linha); background:var(--bg); display:flex; align-items:center;
+             justify-content:center; font-size:15px; cursor:pointer; line-height:1; opacity:.8; }
+  #btnBusca:hover, #btnBusca.on{ opacity:1; border-color:#B9BFC9; }
+  .buscaWrap{ display:none; position:fixed; top:70px; right:48px; left:auto; width:min(400px,92vw); max-width:none; margin:0; padding:10px 12px 8px;
+              background:var(--bg); border:1px solid var(--linha); border-radius:12px; box-shadow:0 12px 32px rgba(20,22,26,.18); z-index:70; }
+  .buscaWrap.aberta{ display:block; }
+  .buscaWrap #buscaQ{ font-size:13.5px; padding:8px 12px; }
+  .buscaWrap #buscaMic{ width:34px; height:34px; font-size:15px; }
+  .buscaWrap #buscaGo{ height:34px; padding:0 14px; font-size:13px; }
+  .buscaWrap .bsRes{ position:static; left:auto; right:auto; border:0; box-shadow:none; padding:10px 2px 2px; max-height:62vh; }
+  .buscaWrap .bsVal{ font-size:24px; }
+  .buscaWrap .bsLin b{ white-space:normal; text-align:right; overflow-wrap:anywhere; }
+  .buscaWrap .bsLin span{ flex:none; }
+  @media (max-width:760px){
+    .buscaWrap{ right:8px; left:8px; width:auto; padding:8px 10px; }
+    .buscaWrap #buscaQ{ font-size:16px; }
+    .buscaWrap #buscaMic{ width:40px; height:40px; }
+    .buscaWrap #buscaGo{ display:block; }
+    .buscaWrap .bsRes{ left:auto; right:auto; }
+  }
 </style>
 
 <header><div class="topo">
@@ -1199,7 +1221,7 @@ HTML = r'''<!DOCTYPE html>
     <b data-p="eq">Limites legais</b>
     <b data-p="loa">Orçamento (LOA)</b>
   </nav>
-  <div class="acoes"><div id="btnAuditoria" title="Auditoria interna: pontos de atenção" role="button">🛡️ Auditoria interna</div><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️ Limpar</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
+  <div class="acoes"><div id="btnAuditoria" title="Auditoria interna: pontos de atenção" role="button">🛡️ Auditoria interna</div><div id="btnBusca" title="Perguntar (texto ou voz)" aria-label="Abrir a pesquisa por pergunta" role="button">&#127908;</div><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️ Limpar</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
 </div>
   <div class="buscaWrap">
     <div class="buscaIn">
@@ -3805,7 +3827,7 @@ function montaBusca(){
     if(pCargos) f.push('Cargos: '+cars.slice(0,10).map(([k,n],i)=>(i+1)+', '+k.toLowerCase()+', '+n).join('. ')+'.');
     else f.push('Por vínculo: '+vincs.map(([k,n])=>n+' '+k.toLowerCase()).join(', ')+'.');
     if(pTop&&pMax) f.push('Os maiores: '+top.map((x,i)=>(i+1)+', '+x.r[0]+', '+falado(x.v)).join('. ')+'.');
-    return {ok:true,entendi:'folha de '+ref+' · '+(tier==='lotacao'?'secretaria':tier==='cargo'?'cargo':'filtro')+' '+nomeGrupo,titulo:'Folha · '+nomeGrupo,destaque:dest,
+    return {ok:true,entendi:'folha de '+ref+' · '+(tier==='lotacao'?'':tier==='cargo'?'cargo ':'filtro ')+nomeGrupo,titulo:'Folha · '+nomeGrupo,destaque:dest,
       linhas,nota:'Valor considerado: '+mrot+' (bruto = vencimentos + vantagens, antes dos descontos). Média e extremos ignoram valores zerados.',
       fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',fala:f.join(' ')};
   }
@@ -4114,7 +4136,7 @@ function montaBusca(){
     mostra(r,texto,porVoz,saudacaoDaVez());
   }
   go.onclick=()=>pergunta_(inp.value,false);
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); pergunta_(inp.value,false); } if(e.key==='Escape'){ fecha(); inp.blur(); } });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); pergunta_(inp.value,false); } if(e.key==='Escape'){ fechaBusca(); inp.blur(); } });
   inp.addEventListener('focus',()=>{ if(!inp.value&&pnl.hidden){ pnl.hidden=false;
     pnl.innerHTML='<div class="bsSug">Perguntas que posso responder:</div><div class="bsChips">'+SUGEST.map(s=>'<button type="button" class="bsChip">'+esc(s)+'</button>').join('')+'</div>';
     pnl.querySelectorAll('.bsChip').forEach(b=>{ b.onmousedown=ev=>ev.preventDefault(); b.onclick=()=>{ inp.value=b.textContent; pergunta_(b.textContent,false); }; }); } });
@@ -4154,9 +4176,17 @@ function montaBusca(){
     const d=document.getElementById('bsDitar'); if(d) d.onclick=()=>{ fecha(); inp.focus(); };
   }
   const PH=inp.placeholder;
+  const wrapB=document.querySelector('.buscaWrap'), btnB=document.getElementById('btnBusca');
+  function abreBusca(){
+    const r=btnB.getBoundingClientRect(); wrapB.style.top=Math.round(r.bottom+8)+'px';
+    wrapB.classList.add('aberta'); btnB.classList.add('on'); setTimeout(()=>{ try{ inp.focus(); }catch(e){} },30);
+  }
+  function fechaBusca(){ wrapB.classList.remove('aberta'); btnB.classList.remove('on'); fecha(); }
+  btnB.onclick=()=>{ wrapB.classList.contains('aberta')?fechaBusca():abreBusca(); };
+  document.addEventListener('mousedown',e=>{ if(wrapB.classList.contains('aberta')&&!e.target.closest('.buscaWrap')&&!e.target.closest('#btnBusca')) fechaBusca(); });
   document.addEventListener('keydown',e=>{
-    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); inp.focus(); mic.click(); }
-    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); inp.focus(); inp.select(); }
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); abreBusca(); mic.click(); }
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); abreBusca(); inp.select(); }
   });
 }
 
