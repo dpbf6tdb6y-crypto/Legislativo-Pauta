@@ -968,7 +968,7 @@ HTML = r'''<!DOCTYPE html>
   .rv .b i{ display:block; height:100%; background:var(--acento); border-radius:4px; }
   .rv .p{ text-align:right; color:var(--t3); font-variant-numeric:tabular-nums; }
   .rv .q{ text-align:right; color:var(--t1); font-variant-numeric:tabular-nums; }
-  .rk{ display:grid; grid-template-columns:92px 1fr 40px; gap:8px; align-items:center; font-size:12px; padding:5px 0; cursor:pointer; }
+  .rk{ display:grid; grid-template-columns:150px 1fr 44px; gap:8px; align-items:center; font-size:12px; padding:5px 0; cursor:pointer; }
   .rk:hover .n{ color:var(--acento); }
   .rk .n{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--t1); }
   .rk .b{ height:8px; background:var(--trilho); border-radius:4px; overflow:hidden; }
@@ -2563,8 +2563,8 @@ function montaComando(){
     }
     /* para onde vai o dinheiro (até o mês) */
     {
-      sOnde.querySelectorAll('.rk').forEach(x=>x.remove());
-      sOnde.querySelector('.rot').textContent='Para onde vai o dinheiro · exercício '+eq.ano;
+      sOnde.querySelectorAll('.rk,.ondeNota').forEach(x=>x.remove());
+      sOnde.querySelector('.rot').textContent='Para onde vai o dinheiro · exercício '+eq.ano+' · '+P.rot;
       const ac={}; let tt=0;
       ms.forEach(m=>Object.entries((pf.func_mes||{})[m]||{}).forEach(([f,v])=>{ if(v>0){ ac[f]=(ac[f]||0)+v; tt+=v; } }));
       const fun=Object.entries(ac).sort((x,y)=>y[1]-x[1]).slice(0,9);
@@ -2573,6 +2573,11 @@ function montaComando(){
         r.innerHTML='<span class="n">'+esc(n.charAt(0)+n.slice(1).toLowerCase())+'</span><span class="b"><i style="width:'+(v/fun[0][1]*100).toFixed(1)+'%"></i></span><span class="p">'+f1.format(tt?v/tt*100:0)+'%</span>';
         r.onclick=()=>irPara('desp'); sOnde.appendChild(r);
       });
+      const nt=el('div','nota ondeNota'); nt.style.paddingTop='12px';
+      nt.textContent='Cada barra é a parte de cada função de governo (Educação, Saúde, Urbanismo…) no total da despesa empenhada em '+eq.ano+', '
+        +'no período escolhido (total: '+brlx(tt)+'). Despesa empenhada é o valor já comprometido para pagar (a reserva de dinheiro feita para a compra ou o serviço), antes da entrega e do pagamento. '
+        +'A função é a finalidade do gasto; uma mesma secretaria pode gastar em mais de uma função. Fonte: Portal da Transparência, despesas por função.';
+      sOnde.appendChild(nt);
     }
     desenhaVinculo(P);
   }
