@@ -3698,7 +3698,16 @@ function montaBusca(){
       'media medio mediana maior maiores menor menores mais alto altos baixo total soma gasta gasto gastam custa custo ganha ganham recebe recebem teto piso quem lista liste mostre nomes nome '+
       'fala diga informe informar saber gostaria pessoal contracheque holerite pago paga pagos pagas mensal mensais').split(' '));
     const tk=palavras(q).filter(w=>!FILL.has(w)&&!MESL.some(m=>w===m));
-    if(!tk.length) return null;
+    if(!tk.length){
+      /* folha da prefeitura toda: soma das colunas da folha detalhada */
+      if(!tem(q,/gast|custo|custa|total|soma|folha|paga|pagamos/)||tem(q,/quant(os|as)|lrf|limite|rcl|despesa/)||mesesCitados(q).length) return null;
+      const sm=ix=>rh.reduce((s,r)=>s+(r[ix]||0),0), br=sm(6), li=sm(7), ve=sm(5);
+      return {ok:true,entendi:'soma da folha de todos os servidores em '+ref,titulo:'Folha da prefeitura · '+ref,destaque:R$(br),
+        linhas:[['Servidores',f0.format(rh.length)],['Vencimentos',R$(ve)],['Bruto (com vantagens)',R$(br)],['Líquido (após descontos)',R$(li)],['Média bruta por servidor',R$(br/rh.length)]],
+        nota:'Soma da folha detalhada do mês, sem encargos patronais. A despesa com pessoal da LRF (com encargos e outros itens) é maior: pergunte "despesa com pessoal".',
+        fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',
+        fala:'Na folha de '+refF+', a prefeitura paga '+falado(br)+' brutos a '+rh.length+' servidores. Os vencimentos somam '+falado(ve)+' e o líquido, depois dos descontos, é de '+falado(li)+'. Isso não inclui os encargos patronais.'};
+    }
     const rz=w=>w.length>4?w.replace(/(oes|aes|es|as|os|a|o|s)$/,''):w;
     const rs=tk.map(rz);
     /* casa por começo de palavra: "saude" não pega "subsecretario", "angela" não pega "angelita" */
