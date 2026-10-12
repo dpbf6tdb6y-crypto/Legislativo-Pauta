@@ -1085,6 +1085,49 @@ HTML = r'''<!DOCTYPE html>
 
   .vazio{ color:var(--t3); font-size:13px; padding:26px 0; }
   .pg{ display:none; } .pg.on{ display:block; }
+  /* ---------- pesquisa inteligente ---------- */
+  .buscaWrap{ position:relative; max-width:1680px; margin:0 auto; padding:0 48px 10px; }
+  .buscaIn{ display:flex; gap:8px; align-items:center; }
+  #buscaQ{ flex:1; min-width:0; font:inherit; font-size:14px; padding:9px 14px; border:1px solid var(--linha); border-radius:22px; background:var(--sup); color:var(--t1); outline:none; }
+  #buscaQ:focus{ border-color:var(--acento); background:var(--bg); box-shadow:0 0 0 3px var(--acento-fraco); }
+  #buscaMic{ flex:none; width:40px; height:40px; border-radius:50%; border:1px solid var(--linha); background:var(--bg); font-size:18px; cursor:pointer; line-height:1; }
+  #buscaMic:hover{ border-color:#B9BFC9; }
+  #buscaMic.on{ background:#E10C8C; border-color:#E10C8C; color:#fff; animation:buscaPulso 1.1s infinite; }
+  #buscaMic.semVoz{ opacity:.55; }
+  @keyframes buscaPulso{ 0%,100%{ box-shadow:0 0 0 0 rgba(225,12,140,.45); } 50%{ box-shadow:0 0 0 8px rgba(225,12,140,0); } }
+  #buscaGo{ flex:none; height:40px; padding:0 18px; border-radius:22px; border:0; background:var(--acento); color:#fff; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; }
+  .bsRes{ position:absolute; left:48px; right:48px; top:100%; z-index:60; background:var(--bg); border:1px solid var(--linha); border-radius:12px;
+          box-shadow:0 12px 32px rgba(20,22,26,.18); padding:16px 18px; max-height:68vh; overflow:auto; }
+  .bsTopo{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .bsPerg{ font-size:12.5px; color:var(--t3); }
+  .bsX{ border:0; background:none; font-size:16px; color:var(--t3); cursor:pointer; padding:0 4px; }
+  .bsEnt{ font-size:12.5px; color:var(--t2); margin:8px 0 10px; padding:6px 10px; background:var(--sup); border-radius:8px; }
+  .bsTit{ font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--t3); font-weight:700; }
+  .bsVal{ font-size:30px; font-weight:700; line-height:1.15; margin:2px 0 10px; color:var(--t1); overflow-wrap:anywhere; }
+  .bsLin > div{ display:flex; justify-content:space-between; gap:14px; padding:6px 0; border-top:1px solid var(--linha); font-size:13.5px; }
+  .bsLin span{ color:var(--t2); min-width:0; overflow-wrap:anywhere; }
+  .bsLin b{ white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .bsNota{ font-size:12.5px; color:var(--t2); margin-top:10px; line-height:1.5; }
+  .bsFonte{ font-size:11.5px; color:var(--t3); margin-top:8px; }
+  .bsMsg{ font-size:14px; margin:10px 0; line-height:1.5; }
+  .bsSug{ font-size:12px; color:var(--t3); margin:6px 0; }
+  .bsChips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .bsChip{ border:1px solid var(--linha); background:var(--sup); border-radius:18px; padding:7px 12px; font:inherit; font-size:12.5px; color:var(--t1); cursor:pointer; text-align:left; }
+  .bsChip:hover{ border-color:var(--acento); color:var(--acento); }
+  .bsAcoes{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:14px; }
+  .bsAcoes button{ border:1px solid var(--linha); background:var(--bg); border-radius:18px; padding:8px 14px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  .bsAcoes #bsOuvir{ background:var(--acento); border-color:var(--acento); color:#fff; }
+  .bsVoz{ font-size:12px; color:var(--t3); display:flex; align-items:center; gap:6px; margin-left:auto; }
+  @media (max-width:760px){
+    .buscaWrap{ padding:0 12px 8px; }
+    .bsRes{ left:12px; right:12px; max-height:72vh; }
+    #buscaQ{ font-size:16px; padding:11px 14px; }
+    #buscaMic{ width:46px; height:46px; }
+    #buscaGo{ display:none; }
+    .bsVal{ font-size:26px; }
+    .bsLin > div{ flex-direction:column; gap:2px; }
+    .bsLin b{ white-space:normal; }
+  }
   /* ---------- celular: tudo numa coluna, menu rola para o lado, tabelas rolam em vez de estourar ---------- */
   html{ -webkit-text-size-adjust:100%; }
   @media (max-width:760px){
@@ -1155,7 +1198,16 @@ HTML = r'''<!DOCTYPE html>
     <b data-p="loa">Orçamento (LOA)</b>
   </nav>
   <div class="acoes"><div id="btnAuditoria" title="Auditoria interna: pontos de atenção" role="button">🛡️ Auditoria interna</div><div id="btnLimpar" title="Limpar todos os filtros do painel" aria-label="Limpar filtros" role="button">🗑️ Limpar</div><div id="btnAtualizar" title="Atualizar" aria-label="Atualizar" role="button">↻</div></div>
-</div></header>
+</div>
+  <div class="buscaWrap">
+    <div class="buscaIn">
+      <input id="buscaQ" type="search" placeholder="Pergunte: receita de IPTU em julho de 2026 · quantos contratos vencem esta semana" autocomplete="off" enterkeyhint="search" aria-label="Pesquisa inteligente">
+      <button id="buscaMic" type="button" title="Falar a pergunta (Ctrl+M)" aria-label="Falar a pergunta">&#127908;</button>
+      <button id="buscaGo" type="button">Perguntar</button>
+    </div>
+    <div id="buscaRes" class="bsRes" hidden></div>
+  </div>
+</header>
 
 <div id="audModal" aria-hidden="true">
   <div class="audCaixa" role="dialog" aria-label="Auditoria interna">
@@ -3199,10 +3251,481 @@ function montaLoa(){
 
 
 
+/* BUSCA_JS_INICIO */
+/* ---------------- pesquisa inteligente: pergunta por texto ou voz ----------------
+   Funciona por regras sobre os dados que o painel já carrega (nenhum número é "inventado"):
+   reconhece o assunto (receita, despesa, contratos, pessoal, limites, caixa), o item (IPTU, Saúde...) e o
+   período (julho de 2026, esta semana, mês passado), e responde com valor, período e fonte. */
+function montaBusca(){
+  const inp=document.getElementById('buscaQ'), pnl=document.getElementById('buscaRes');
+  const mic=document.getElementById('buscaMic'), go=document.getElementById('buscaGo');
+  if(!inp||!pnl) return;
+
+  const MESL=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const MESA=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const MESN=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const R$=v=>exato(v);
+  const pct=v=>f1.format(v)+'%';
+
+  /* ---------- texto ---------- */
+  function norm(s){
+    let t=(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    t=t.replace(/r\s*\$/g,' ').replace(/[^a-z0-9%\/ ]+/g,' ');
+    /* o reconhecimento de voz soletra siglas: "i p t u" -> iptu */
+    [['i p t u','iptu'],['i s s','iss'],['i t b i','itbi'],['i p v a','ipva'],['i c m s','icms'],['f p m','fpm'],
+     ['r r e o','rreo'],['r g f','rgf'],['l o a','loa'],['hipetu','iptu'],['ipetu','iptu'],['ipe tu','iptu'],
+     ['fundeb','fundeb'],['cfem','cfem'],['cosip','cosip']].forEach(([a,b])=>{ t=t.replace(new RegExp('\\b'+a+'\\b','g'),b); });
+    return t.replace(/\s+/g,' ').trim();
+  }
+  const tem=(q,re)=>re.test(q);
+
+  /* ---------- tempo ---------- */
+  function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function fmtD(d){ return d.toLocaleDateString('pt-BR'); }
+  function addDias(d,n){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()+n); return x; }
+  function mesesCitados(q){
+    const re=/\b(janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)\b(?:\s*(?:de|do|\/)?\s*(20\d\d|\d\d)\b)?/g;
+    const out=[]; let m;
+    while((m=re.exec(q))){
+      let i=MESL.indexOf(m[1]); if(i<0) i=MESA.indexOf(m[1]);
+      let ano=null; if(m[2]) ano=m[2].length===2?2000+Number(m[2]):Number(m[2]);
+      out.push({mes:i+1,ano});
+    }
+    return out;
+  }
+  function anoCitado(q){ const m=q.match(/\b(20\d\d)\b/); return m?Number(m[1]):null; }
+  function relativo(q){
+    if(tem(q,/proxim[oa]s? (\d+) dias/)) return {tipo:'prox',n:Number(q.match(/proxim[oa]s? (\d+) dias/)[1])};
+    if(tem(q,/ultimos? (\d+) dias/)) return {tipo:'ult',n:Number(q.match(/ultimos? (\d+) dias/)[1])};
+    if(tem(q,/proxima semana|semana que vem/)) return {tipo:'semana+1'};
+    if(tem(q,/semana passada/)) return {tipo:'semana-1'};
+    if(tem(q,/(esta|essa|nesta|nessa) semana|semana atual/)) return {tipo:'semana'};
+    if(tem(q,/\bhoje\b/)) return {tipo:'hoje'};
+    if(tem(q,/\bamanha\b/)) return {tipo:'amanha'};
+    if(tem(q,/mes passado|mes anterior|ultimo mes/)) return {tipo:'mes-1'};
+    if(tem(q,/proximo mes|mes que vem/)) return {tipo:'mes+1'};
+    if(tem(q,/(este|esse|neste|nesse) mes|mes atual/)) return {tipo:'mes'};
+    if(tem(q,/ano passado|ano anterior/)) return {tipo:'ano-1'};
+    if(tem(q,/(este|esse|neste|nesse) ano|ano atual|no ano|do ano/)) return {tipo:'ano'};
+    if(tem(q,/ultimo trimestre|trimestre passado/)) return {tipo:'tri-1'};
+    if(tem(q,/(este|esse) trimestre/)) return {tipo:'tri'};
+    if(tem(q,/primeiro semestre/)) return {tipo:'sem1'};
+    if(tem(q,/segundo semestre/)) return {tipo:'sem2'};
+    return null;
+  }
+  /* período em (ano, mes) — para dados mensais. mes=null significa o ano todo até o último mês com dado */
+  function periodoMensal(q){
+    const h=new Date(), ms=mesesCitados(q), rel=relativo(q), a=anoCitado(q);
+    if(ms.length){ const ano=ms[0].ano||a||h.getFullYear(); return {ano,mes:ms[0].mes,rot:MESN[ms[0].mes-1]+'/'+ano}; }
+    if(rel&&rel.tipo==='mes') return {ano:h.getFullYear(),mes:h.getMonth()+1,rot:MESN[h.getMonth()]+'/'+h.getFullYear()};
+    if(rel&&rel.tipo==='mes-1'){ const d=new Date(h.getFullYear(),h.getMonth()-1,1); return {ano:d.getFullYear(),mes:d.getMonth()+1,rot:MESN[d.getMonth()]+'/'+d.getFullYear()}; }
+    if(rel&&rel.tipo==='ano-1') return {ano:h.getFullYear()-1,mes:null,rot:'ano de '+(h.getFullYear()-1)};
+    if(a) return {ano:a,mes:null,rot:'ano de '+a};
+    return {ano:h.getFullYear(),mes:null,rot:'ano de '+h.getFullYear()+' até o último mês com dado',padrao:true};
+  }
+  /* intervalo de datas — para vencimentos de contratos */
+  function intervalo(q){
+    const h=new Date(); const hoje0=new Date(h.getFullYear(),h.getMonth(),h.getDate());
+    const rel=relativo(q), ms=mesesCitados(q), a=anoCitado(q);
+    const fimSem=d=>addDias(d,(7-((d.getDay()+6)%7))-1);   /* domingo */
+    if(ms.length){ const ano=ms[0].ano||a||h.getFullYear(); return {de:new Date(ano,ms[0].mes-1,1),ate:new Date(ano,ms[0].mes,0),rot:MESN[ms[0].mes-1]+'/'+ano}; }
+    if(!rel) return null;
+    switch(rel.tipo){
+      case 'hoje': return {de:hoje0,ate:hoje0,rot:'hoje, '+fmtD(hoje0)};
+      case 'amanha': { const d=addDias(hoje0,1); return {de:d,ate:d,rot:'amanhã, '+fmtD(d)}; }
+      case 'semana': { const f=fimSem(hoje0); return {de:hoje0,ate:f,rot:'esta semana ('+fmtD(hoje0)+' a '+fmtD(f)+')'}; }
+      case 'semana+1': { const ini=addDias(fimSem(hoje0),1), f=addDias(ini,6); return {de:ini,ate:f,rot:'próxima semana ('+fmtD(ini)+' a '+fmtD(f)+')'}; }
+      case 'semana-1': { const f=addDias(fimSem(hoje0),-7), ini=addDias(f,-6); return {de:ini,ate:f,rot:'semana passada ('+fmtD(ini)+' a '+fmtD(f)+')'}; }
+      case 'prox': { const f=addDias(hoje0,rel.n); return {de:hoje0,ate:f,rot:'próximos '+rel.n+' dias (até '+fmtD(f)+')'}; }
+      case 'ult': { const ini=addDias(hoje0,-rel.n); return {de:ini,ate:hoje0,rot:'últimos '+rel.n+' dias'}; }
+      case 'mes': return {de:hoje0,ate:new Date(h.getFullYear(),h.getMonth()+1,0),rot:'o restante de '+MESN[h.getMonth()]+' (até '+fmtD(new Date(h.getFullYear(),h.getMonth()+1,0))+')'};
+      case 'mes-1': { const d=new Date(h.getFullYear(),h.getMonth()-1,1); return {de:d,ate:new Date(d.getFullYear(),d.getMonth()+1,0),rot:MESN[d.getMonth()]+'/'+d.getFullYear()}; }
+      case 'mes+1': { const d=new Date(h.getFullYear(),h.getMonth()+1,1); return {de:d,ate:new Date(d.getFullYear(),d.getMonth()+1,0),rot:MESN[d.getMonth()]+'/'+d.getFullYear()}; }
+      case 'ano': return {de:hoje0,ate:new Date(h.getFullYear(),11,31),rot:'até o fim de '+h.getFullYear()};
+      default: return null;
+    }
+  }
+  function parseData(s){ const m=(s||'').match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m?new Date(Number(m[3]),Number(m[2])-1,Number(m[1])):null; }
+
+  /* ---------- palavras do item (o que sobra depois de tirar o resto) ---------- */
+  const PARADAS=new Set(('receita receitas despesa despesas gasto gastos gastou gastar de do da dos das em no na nos nas quanto quantos quantas qual quais foi foram e o a os as um uma '+
+    'arrecadou arrecadacao arrecadado arrecadamos entrou entrada empenhou empenhado empenhados liquidou liquidado pago pagou pagamento pagamentos mes meses ano anos '+
+    'este esse essa esta neste nesse nesta passado anterior proximo proxima com contra comparado comparada comparando diferenca entre valor total municipio prefeitura '+
+    'me diga digo por favor ate agora ja tem temos tenho sobre para pra que se ha houve teve ficou esta estao esta sera foram '+
+    'janeiro fevereiro marco abril maio junho julho agosto setembro outubro novembro dezembro jan fev mar abr mai jun jul ago set out nov dez '+
+    'hoje amanha semana dias trimestre semestre primeiro segundo ultimo ultimos maiores maior menor principais principal lista listar mostre mostra ver').split(' '));
+  function palavras(q){
+    return q.split(' ').filter(w=>w&&!PARADAS.has(w)&&!/^\d+$/.test(w)&&w.length>1);
+  }
+
+  /* ---------- índice de receitas ---------- */
+  const SIN_REC=[
+    ['IPTU',/iptu|propriedade predial/],['ISS',/\biss(qn)?\b|servicos de qualquer natureza/],['ITBI',/itbi|transmissao/],
+    ['IPVA',/ipva|veiculos automotores/],['ICMS',/icms|circulacao de mercadorias/],['FPM',/\bfpm\b|fundo de participacao dos municipios/],
+    ['FUNDEB',/fundeb/],['IRRF',/\birrf\b|imposto de renda|renda retido/],['COSIP',/cosip|iluminacao publica/],['CFEM',/cfem|compensacao financeira/]];
+  let _idxRec=null;
+  function idxRec(){
+    if(_idxRec) return _idxRec;
+    _idxRec=[]; const meta=DATA.meta||{};
+    Object.keys(meta).forEach(cod=>{
+      const nome=String(meta[cod][0]||''), n=norm(nome);
+      const tipo=cod.charAt(0)==='9'?'ded':(cod.charAt(0)==='2'?'cap':'rc');
+      _idxRec.push({cod,nome,n,tipo,ded:/^(deducoes|restituicao)/.test(n)||cod.charAt(0)==='9'});
+    });
+    return _idxRec;
+  }
+  function valorRec(cod,tipo,ano,mes){
+    const M=(DATA.mensal||{})[tipo]||{}, A=M[String(ano)]||{};
+    if(mes) return ((A[String(mes)]||{})[cod])||0;
+    let s=0; Object.keys(A).forEach(m=>{ s+=(A[m]||{})[cod]||0; }); return s;
+  }
+  function mesesComDado(ano){ return Object.keys((((DATA.mensal||{}).rc||{})[String(ano)])||{}).map(Number).sort((a,b)=>a-b); }
+
+  /* ---------- respostas: sempre { entendi, titulo, destaque, linhas, nota, fonte, fala, ir } ---------- */
+  const FONTE_PORTAL=()=>'Portal da Transparência de Nova Lima'+(DATA.coleta?' · atualizado em '+DATA.coleta.split('-').reverse().join('/'):'');
+  function falado(v){
+    const a=Math.abs(v), s=v<0?'menos ':'';
+    if(a>=1e9){ const b=Math.floor(a/1e9), m=Math.round((a%1e9)/1e6); return s+b+(b===1?' bilhão':' bilhões')+(m?' e '+m+(m===1?' milhão':' milhões')+' de reais':' de reais'); }
+    if(a>=1e6){ const m=Math.floor(a/1e6), k=Math.round((a%1e6)/1e3); return s+m+(m===1?' milhão':' milhões')+(k?' e '+k+' mil reais':' de reais'); }
+    if(a>=1e3){ const k=Math.floor(a/1e3), r=Math.round(a%1e3); return s+k+' mil'+(r?' e '+r:'')+' reais'; }
+    return s+Math.round(a)+' reais';
+  }
+  const var_=(a,b)=>b?((a-b)/Math.abs(b)*100):null;
+  const sinal=v=>(v>=0?'+':'−')+R$(Math.abs(v));
+  const nao=(msg)=>({ok:false,msg});
+
+  /* RECEITA */
+  function respRec(q){
+    const per=periodoMensal(q), ms=mesesCitados(q);
+    let ter=palavras(q);
+    let alvos=[];  /* itens da receita que combinam */
+    const sin=SIN_REC.find(([,re])=>re.test(q));
+    const idx=idxRec().filter(x=>x.tipo!=='ded');
+    if(sin) alvos=idx.filter(x=>sin[1].test(x.n));
+    else if(ter.length) alvos=idx.filter(x=>ter.every(w=>x.n.indexOf(w)>=0));
+    const ehTotal=!sin&&!ter.length;
+    const tipoDe=c=>c.tipo;
+    function soma(lista,ano,mes){ return lista.reduce((s,c)=>s+valorRec(c.cod,tipoDe(c),ano,mes),0); }
+    const ultimo=mesesComDado(per.ano).slice(-1)[0]||null;
+    if(!ehTotal && !alvos.length) return nao('Não encontrei essa receita no portal. Tente o nome como aparece na tela Receita (IPTU, ISS, ITBI, taxas…).');
+    /* total do município */
+    const tot=(ano,mes)=>{
+      const rc=idxRec().filter(x=>x.tipo==='rc'||x.tipo==='cap'), dd=idxRec().filter(x=>x.tipo==='ded');
+      return soma(rc,ano,mes)-soma(dd,ano,mes);
+    };
+    const lista=ehTotal?null:alvos;
+    const val=(ano,mes)=>ehTotal?tot(ano,mes):soma(lista,ano,mes);
+    const nomeItem=ehTotal?'receita líquida total':(sin?sin[0]:[...new Set(alvos.map(a=>a.nome))].slice(0,2).join(' / '));
+    /* comparação entre dois meses citados */
+    if(ms.length>=2 || tem(q,/compar|contra|diferenca/)&&ms.length>=2){
+      const a=ms[0], b=ms[1], ano=a.ano||anoCitado(q)||new Date().getFullYear(), anoB=b.ano||ano;
+      const va=val(ano,a.mes), vb=val(anoB,b.mes);
+      return {ok:true,entendi:nomeItem+': '+MESN[a.mes-1]+'/'+ano+' contra '+MESN[b.mes-1]+'/'+anoB,
+        titulo:'Diferença de '+nomeItem,destaque:sinal(va-vb),
+        linhas:[[MESN[a.mes-1]+'/'+ano,R$(va)],[MESN[b.mes-1]+'/'+anoB,R$(vb)],['Variação',vb?pct(var_(va,vb)):'—']],
+        fonte:FONTE_PORTAL(),ir:'rc',
+        fala:'A diferença de '+nomeItem+' entre '+MESN[a.mes-1]+' e '+MESN[b.mes-1]+' foi de '+falado(va-vb)+(vb?', uma variação de '+f1.format(var_(va,vb)).replace('.',',')+' por cento.':'.')};
+    }
+    const v=val(per.ano,per.mes);
+    const linhas=[]; let nota='';
+    if(per.mes){
+      const vAnt=val(per.ano-1,per.mes);
+      linhas.push([MESN[per.mes-1]+'/'+per.ano,R$(v)]);
+      if(mesesComDado(per.ano-1).includes(per.mes)) linhas.push([MESN[per.mes-1]+'/'+(per.ano-1),R$(vAnt)],['Variação sobre o ano anterior',vAnt?pct(var_(v,vAnt)):'—']);
+      if(!mesesComDado(per.ano).includes(per.mes)) nota='Não há dado de '+MESN[per.mes-1]+'/'+per.ano+' no portal ainda.';
+    } else {
+      const m=mesesComDado(per.ano); const ate=m.length?m[m.length-1]:null;
+      linhas.push(['Acumulado '+per.ano+(ate?' (jan a '+MESN[ate-1]+')':''),R$(v)]);
+      if(ate){ const vAnt=lista?lista.reduce((s,c)=>{ let t=0; for(let mm=1;mm<=ate;mm++) t+=valorRec(c.cod,tipoDe(c),per.ano-1,mm); return t; },0)
+        :(()=>{ let t=0; for(let mm=1;mm<=ate;mm++) t+=tot(per.ano-1,mm); return t; })();
+        if(vAnt) linhas.push(['Mesmo período de '+(per.ano-1),R$(vAnt)],['Variação',pct(var_(v,vAnt))]); }
+    }
+    if(lista){ const nomes=[...new Set(lista.map(a=>a.nome))]; if(nomes.length>1 && !sin){
+      const por=nomes.map(n=>[n,soma(lista.filter(a=>a.nome===n),per.ano,per.mes)]).sort((x,y)=>y[1]-x[1]).slice(0,6);
+      por.forEach(([n,x])=>linhas.push(['• '+n,R$(x)])); } }
+    return {ok:true,entendi:(ehTotal?'':'receita de ')+nomeItem+' em '+per.rot,titulo:ehTotal?'Receita líquida total':'Receita de '+nomeItem,destaque:R$(v),linhas,nota,
+      fonte:FONTE_PORTAL(),ir:'rc',fala:'A receita de '+nomeItem+' em '+per.rot.replace('/',' de ')+' foi de '+falado(v)+'.'};
+  }
+
+  /* DESPESA (por secretaria ou função) */
+  function respDesp(q){
+    const per=periodoMensal(q), ms=mesesCitados(q);
+    const ter=palavras(q).filter(w=>!/^(despesa|gast|custo|secretaria|mais|se)/.test(w));
+    const opm=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{}, fm=(DATA.prefeito&&DATA.prefeito.func_mes)||{};
+    const metrica=tem(q,/pag(o|ou|amento)/)?'pago':(tem(q,/liquid/)?'liquidado':'empenhado');
+    const ix={empenhado:3,liquidado:4,pago:5};
+    const meses=Object.keys(opm).map(Number).sort((a,b)=>a-b);
+    if(!meses.length) return nao('Ainda não tenho a despesa coletada.');
+    const usar=per.mes?[per.mes]:meses;
+    const ehAnoCorr=!per.ano||per.ano===(DATA.despesas.ano||per.ano);
+    if(!ehAnoCorr) return nao('Só tenho a despesa de '+DATA.despesas.ano+' coletada por secretaria.');
+    if(per.mes&&!meses.includes(per.mes)) return nao('Não há despesa de '+MESN[per.mes-1]+' coletada ainda.');
+    const termo=ter.join(' ');
+    let alvo=null, tipo='total';
+    if(termo){
+      const acha=[]; usar.forEach(m=>(opm[m]||[]).forEach(r=>{ const n=norm(r[0]); if(ter.every(w=>n.indexOf(w)>=0)) acha.push(r[0]); }));
+      if(acha.length){ alvo=[...new Set(acha)]; tipo='orgao'; }
+      else { const fs=new Set(); usar.forEach(m=>Object.keys(fm[m]||{}).forEach(f=>{ const n=norm(f); if(ter.every(w=>n.indexOf(w)>=0)) fs.add(f); }));
+        if(fs.size){ alvo=[...fs]; tipo='funcao'; } }
+      if(!alvo) return nao('Não encontrei "'+termo+'" entre as secretarias nem as funções de governo.');
+    }
+    let emp=0,liq=0,pag=0;
+    if(tipo==='orgao'){ usar.forEach(m=>(opm[m]||[]).forEach(r=>{ if(alvo.includes(r[0])){ emp+=r[3]; liq+=r[4]; pag+=r[5]; } })); }
+    else if(tipo==='funcao'){ usar.forEach(m=>alvo.forEach(f=>{ emp+=((fm[m]||{})[f])||0; })); liq=null; pag=null; }
+    else { (DATA.despesas.meses||[]).filter(r=>usar.includes(r[0])).forEach(r=>{ emp+=r[1]; liq+=r[2]; pag+=r[3]; }); }
+    const principal=metrica==='pago'&&pag!==null?pag:(metrica==='liquidado'&&liq!==null?liq:emp);
+    const nome=tipo==='total'?'toda a prefeitura':alvo.map(a=>a.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,'').toLowerCase()).slice(0,2).join(' / ');
+    const rotP=per.mes?MESN[per.mes-1]+'/'+per.ano:'janeiro a '+MESN[meses[meses.length-1]-1]+'/'+(DATA.despesas.ano||per.ano);
+    const linhas=[['Empenhado',R$(emp)]];
+    if(liq!==null) linhas.push(['Liquidado',R$(liq)],['Pago',R$(pag)]);
+    else linhas.push(['Obs.','Por função, o portal traz só o empenhado']);
+    const notas=[];
+    if(tipo==='funcao') notas.push('Função de governo (finalidade do gasto), não a secretaria.');
+    if(per.mes&&liq!==null&&(liq>emp||pag>emp)) notas.push('No mês, o liquidado e o pago podem superar o empenhado porque incluem despesas empenhadas em meses anteriores.');
+    return {ok:true,entendi:metrica+' de '+nome+' em '+rotP,titulo:'Despesa · '+nome,destaque:R$(principal),linhas,
+      nota:notas.join(' '),fonte:'Portal da Transparência · despesas por órgão e função'+(DATA.dp_coleta?' · coletado em '+DATA.dp_coleta.split('-').reverse().join('/'):''),
+      ir:'desp',fala:'Em '+rotP+', o valor '+metrica+' de '+nome+' foi de '+falado(principal)+'.'};
+  }
+
+  /* CONTRATOS */
+  function respContratos(q){
+    const C=(DATA.contratos||[]).filter(c=>c[7]==='vigente');
+    if(tem(q,/maiores? (fornecedor|empresa|contrat)/)||tem(q,/principais (fornecedor|empresa|contrat)/)){
+      const mp=new Map(); C.forEach(c=>mp.set(c[3],(mp.get(c[3])||0)+c[6]));
+      const top=[...mp].sort((a,b)=>b[1]-a[1]).slice(0,5);
+      return {ok:true,entendi:'maiores fornecedores entre os contratos vigentes',titulo:'Maiores fornecedores',destaque:R$(top[0][1]),
+        linhas:top.map(([n,v])=>[n,R$(v)]),nota:'Valor contratado, não o pago.',fonte:'Portal da Transparência · contratos'+(DATA.ct_coleta?' · coletado em '+DATA.ct_coleta.split('-').reverse().join('/'):''),ir:'ctr',
+        fala:'O maior fornecedor é '+top[0][0]+', com '+falado(top[0][1])+' contratados.'};
+    }
+    const it=intervalo(q);
+    const venc=tem(q,/venc|termin|acab|expir|prazo|fim/)||!!it;
+    if(venc){
+      const iv=it||(()=>{ const h=new Date(), h0=new Date(h.getFullYear(),h.getMonth(),h.getDate()); return {de:h0,ate:addDias(h0,30),rot:'próximos 30 dias (até '+fmtD(addDias(h0,30))+')'}; })();
+      const lista=C.filter(c=>{ const d=parseData(c[2]); return d&&d>=iv.de&&d<=iv.ate; }).sort((a,b)=>parseData(a[2])-parseData(b[2]));
+      const soma=lista.reduce((s,c)=>s+c[6],0);
+      return {ok:true,entendi:'contratos vigentes que vencem · '+iv.rot,titulo:'Contratos que vencem · '+iv.rot,
+        destaque:String(lista.length)+(lista.length===1?' contrato':' contratos'),
+        linhas:lista.slice(0,6).map(c=>[c[2]+' · '+c[3],R$(c[6])]).concat(lista.length>6?[['… e mais '+(lista.length-6),'veja na aba Contratos']]:[]),
+        nota:lista.length?'Valor contratado somado: '+R$(soma)+'.':'Nenhum contrato vence nesse período.',
+        fonte:'Portal da Transparência · contratos'+(DATA.ct_coleta?' · coletado em '+DATA.ct_coleta.split('-').reverse().join('/'):''),ir:'ctr',
+        fala:lista.length?(lista.length+(lista.length===1?' contrato vence ':' contratos vencem ')+iv.rot.replace(/\s*\(.*\)/,'')+', somando '+falado(soma)+'.'):'Nenhum contrato vence '+iv.rot.replace(/\s*\(.*\)/,'')+'.'};
+    }
+    const ter=palavras(q).filter(w=>!/^contrat/.test(w)&&!/^vigent/.test(w)&&!/^empresa/.test(w));
+    if(ter.length){
+      const lista=C.filter(c=>{ const n=norm(c[3]+' '+c[4]); return ter.every(w=>n.indexOf(w)>=0); }).sort((a,b)=>b[6]-a[6]);
+      if(!lista.length) return nao('Não encontrei contrato vigente com "'+ter.join(' ')+'".');
+      const soma=lista.reduce((s,c)=>s+c[6],0);
+      return {ok:true,entendi:'contratos vigentes com "'+ter.join(' ')+'"',titulo:'Contratos · '+ter.join(' '),destaque:lista.length+(lista.length===1?' contrato':' contratos'),
+        linhas:lista.slice(0,6).map(c=>[c[0]+' · '+c[3],R$(c[6])]),nota:'Valor contratado somado: '+R$(soma)+'.',fonte:'Portal da Transparência · contratos',ir:'ctr',
+        fala:'Encontrei '+lista.length+' contratos, somando '+falado(soma)+'.'};
+    }
+    const soma=C.reduce((s,c)=>s+c[6],0);
+    return {ok:true,entendi:'contratos vigentes',titulo:'Contratos vigentes',destaque:C.length+' contratos',linhas:[['Valor contratado somado',R$(soma)]],
+      fonte:'Portal da Transparência · contratos',ir:'ctr',fala:'Há '+C.length+' contratos vigentes, somando '+falado(soma)+'.'};
+  }
+
+  /* PESSOAL */
+  function respPessoal(q){
+    const ms=mesesCitados(q), ser=(DATA.serie&&DATA.serie.pes)||{};
+    const chave=(a,m)=>a+'-'+String(m).padStart(2,'0');
+    const h=new Date(), anoPad=anoCitado(q)||h.getFullYear();
+    if(tem(q,/servidor|funcionari|quantas pessoas|pessoas/)){
+      const rh=DATA.rh||[]; const ref=(DATA.rh_ref||'').replace('referência','').trim();
+      if(!rh.length) return nao('Ainda não tenho a folha dos servidores coletada.');
+      const mp=new Map(); rh.forEach(r=>mp.set(r[2],(mp.get(r[2])||0)+1));
+      const top=[...mp].sort((a,b)=>b[1]-a[1]);
+      const temp=top.find(([k])=>/tempor/i.test(k));
+      if(tem(q,/tempor/)&&temp) return {ok:true,entendi:'servidores temporários na folha de '+ref,titulo:'Contratados temporários',destaque:f0.format(temp[1]),
+        linhas:[['Total de servidores',f0.format(rh.length)],['Peso na folha',pct(temp[1]/rh.length*100)]],fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',
+        fala:'São '+temp[1]+' servidores temporários, '+f1.format(temp[1]/rh.length*100).replace('.',',')+' por cento da folha.'};
+      return {ok:true,entendi:'quantidade de servidores na folha de '+ref,titulo:'Servidores',destaque:f0.format(rh.length),
+        linhas:top.map(([k,n])=>[k,f0.format(n)+' ('+pct(n/rh.length*100)+')']),fonte:'Folha de '+ref+' · Portal da Transparência',ir:'cmd',
+        fala:'A folha de '+ref+' tem '+rh.length+' servidores.'};
+    }
+    /* folha em reais: despesa com pessoal que entra no limite da LRF */
+    if(ms.length>=2){
+      const a=ms[0], b=ms[1], ano=a.ano||anoPad, anoB=b.ano||ano;
+      const va=ser[chave(ano,a.mes)], vb=ser[chave(anoB,b.mes)];
+      if(va===undefined||vb===undefined) return nao('Não tenho a despesa com pessoal de um dos dois meses.');
+      return {ok:true,entendi:'despesa com pessoal: '+MESN[a.mes-1]+'/'+ano+' contra '+MESN[b.mes-1]+'/'+anoB,titulo:'Diferença da folha',destaque:sinal(va-vb),
+        linhas:[[MESN[a.mes-1]+'/'+ano,R$(va)],[MESN[b.mes-1]+'/'+anoB,R$(vb)],['Variação',pct(var_(va,vb))]],
+        nota:'Despesa com pessoal liquidada (inclui encargos, inativos e terceirização). A planilha da folha dos servidores só existe a partir de junho/2026.',
+        fonte:'Portal da Transparência · despesa por natureza',ir:'pes',
+        fala:'A despesa com pessoal de '+MESN[a.mes-1]+' foi de '+falado(Math.abs(va-vb))+(va<vb?' abaixo':' acima')+' da de '+MESN[b.mes-1]+', variação de '+f1.format(var_(va,vb)).replace('.',',')+' por cento.'};
+    }
+    let ano=anoPad, mes=ms.length?ms[0].mes:null;
+    if(ms.length&&ms[0].ano) ano=ms[0].ano;
+    const rel=relativo(q);
+    if(!mes){ const ks=Object.keys(ser).sort(); const u=ks[ks.length-1]; if(rel&&rel.tipo==='mes-1'){ const d=new Date(h.getFullYear(),h.getMonth()-1,1); ano=d.getFullYear(); mes=d.getMonth()+1; } else if(u){ ano=Number(u.slice(0,4)); mes=Number(u.slice(5)); } }
+    const v=ser[chave(ano,mes)];
+    if(v===undefined) return nao('Não tenho a despesa com pessoal de '+MESN[mes-1]+'/'+ano+'.');
+    const dA=new Date(ano,mes-2,1), vA=ser[chave(dA.getFullYear(),dA.getMonth()+1)];
+    const linhas=[[MESN[mes-1]+'/'+ano,R$(v)]];
+    if(vA!==undefined) linhas.push([MESN[dA.getMonth()]+'/'+dA.getFullYear(),R$(vA)],['Variação sobre o mês anterior',pct(var_(v,vA))]);
+    return {ok:true,entendi:'despesa com pessoal em '+MESN[mes-1]+'/'+ano,titulo:'Folha de pessoal',destaque:R$(v),linhas,
+      nota:'Despesa com pessoal liquidada, a que entra no limite da LRF.',fonte:'Portal da Transparência · despesa por natureza',ir:'pes',
+      fala:'A despesa com pessoal de '+MESN[mes-1]+' foi de '+falado(v)+'.'};
+  }
+
+  /* LIMITES, CAIXA, RESTOS */
+  function respLimites(q){
+    const api=window.__cmdApi; const rr=(DATA.rreo&&DATA.rreo.ultimo)||null;
+    if(tem(q,/caixa|superavit|disponibilidade/)){
+      const c=rr&&rr.caixa; if(!c) return nao('Ainda não tenho o caixa do RREO coletado.');
+      return {ok:true,entendi:'caixa disponível (RREO)',titulo:'Caixa disponível',destaque:R$(c.caixa_liquida_ate),
+        linhas:[['Posição',rr.posicao],['Em 31/12/'+(rr.ano-1),R$(c.caixa_liquida_ant)],['Superávit de '+(rr.ano-1)+' já usado',R$(c.superavit_utilizado)]],
+        nota:'Já descontados restos a pagar processados e depósitos de terceiros. Inclui dinheiro de fontes vinculadas.',fonte:'RREO '+rr.bimestre+'º bimestre/'+rr.ano+', Anexo 06',ir:'cmd',
+        fala:'O caixa disponível em '+rr.posicao+' é de '+falado(c.caixa_liquida_ate)+'.'};
+    }
+    if(tem(q,/restos/)){
+      const r=rr&&rr.rp; if(!r) return nao('Ainda não tenho os restos a pagar do RREO coletados.');
+      return {ok:true,entendi:'restos a pagar pagos em '+rr.ano,titulo:'Restos a pagar',destaque:R$(r.pagos),
+        linhas:[['Pagos em '+rr.ano+' (até '+rr.posicao+')',R$(r.pagos)],['Inscritos até 31/12/'+(rr.ano-1),R$(r.inscritos_ano_anterior+r.inscritos_anteriores)],['Cancelados',R$(r.cancelados)],['Saldo a pagar',R$(r.saldo_total)]],
+        fonte:'RREO '+rr.bimestre+'º bimestre/'+rr.ano+', Anexo 07',ir:'cmd',fala:'Foram pagos '+falado(r.pagos)+' de restos a pagar em '+rr.ano+'. O saldo ainda a pagar é de '+falado(r.saldo_total)+'.'};
+    }
+    const out=[];
+    if(tem(q,/educa/)&&rr) out.push(['Educação (mínimo 25%)',pct(rr.mde.pct),rr.mde.pct>=25?'cumprido até aqui':'abaixo do mínimo na posição de '+rr.posicao]);
+    if(tem(q,/saude/)&&rr) out.push(['Saúde (mínimo 15%)',pct(rr.asps.pct),rr.asps.pct>=15?'cumprido':'abaixo do mínimo']);
+    if(tem(q,/fundeb/)&&rr) out.push(['FUNDEB na remuneração (mínimo 70%)',pct(rr.fundeb70.pct),rr.fundeb70.pct>=70?'cumprido':'abaixo do mínimo']);
+    if(api&&tem(q,/folha|pessoal|limite/)){ const g=api.calc(api.periodo()).gauges[0]; out.push(['Folha de pessoal (limite 60%)',pct(g.v),g.v>54?'em alerta':'dentro do limite']); }
+    if(api&&tem(q,/camara|duodecimo/)){ const g=api.calc(api.periodo()).gauges[3]; out.push(['Repasse à Câmara (teto)',pct(g.v),g.v>100?'acima do teto':'dentro do teto']); }
+    if(!out.length&&api){ const R=api.calc(api.periodo()); const g=R.gauges;
+      out.push(['Folha de pessoal',pct(g[0].v),'limite 60%'],['Educação',rr?pct(rr.mde.pct):pct(g[1].v),'mínimo 25%'],['Saúde',rr?pct(rr.asps.pct):pct(g[2].v),'mínimo 15%'],['Câmara',pct(g[3].v),'do teto']); }
+    if(!out.length) return nao('Não consegui montar os limites agora.');
+    return {ok:true,entendi:'limites legais',titulo:'Limites legais',destaque:out[0][1],linhas:out.map(o=>[o[0],o[1]+' · '+o[2]]),
+      nota:rr?'Educação e Saúde pelo relatório oficial (RREO), posição em '+rr.posicao+'. A verificação é anual, em dezembro.':'',fonte:'RREO e Portal da Transparência',ir:'eq',
+      fala:out.map(o=>o[0]+': '+o[1].replace('.',',').replace('%',' por cento')+', '+o[2]).join('. ')+'.'};
+  }
+
+  /* SALDO / EQUILÍBRIO */
+  function respSaldo(q){
+    const eq=DATA.equilibrio||{meses:[]}; if(!eq.meses.length) return nao('Ainda não tenho receita e despesa para comparar.');
+    const rec=eq.meses.reduce((s,m)=>s+m[1],0), pag=eq.meses.reduce((s,m)=>s+m[3],0);
+    const rr=DATA.rreo&&DATA.rreo.ultimo, rp=rr&&rr.rp; const pagEx=rp?pag-rp.pagos:pag, sd=rec-pagEx;
+    return {ok:true,entendi:'receita líquida contra despesa paga no ano',titulo:'Receita x despesa paga',destaque:sinal(sd),
+      linhas:[['Receita líquida',R$(rec)],['Pago total',R$(pag)]].concat(rp?[['(−) Restos a pagar pagos (até '+rr.posicao+')',R$(rp.pagos)],['Pago do exercício',R$(pagEx)]]:[]),
+      nota:sd>=0?'A receita cobre o que foi pago no exercício.':'O pago do exercício superou a receita do período.',fonte:'Portal da Transparência e RREO',ir:'eq',
+      fala:(sd>=0?'A receita cobriu o pago, com sobra de ':'O pago superou a receita em ')+falado(Math.abs(sd))+'.'};
+  }
+
+  /* MAIORES RECEITAS / SECRETARIAS */
+  function respMaiores(q){
+    if(tem(q,/receita|arrecad/)){
+      const per=periodoMensal(q), mp=new Map();
+      idxRec().filter(x=>x.tipo!=='ded').forEach(x=>{ const v=valorRec(x.cod,x.tipo,per.ano,per.mes); mp.set(x.nome,(mp.get(x.nome)||0)+v); });
+      const top=[...mp].sort((a,b)=>b[1]-a[1]).slice(0,6);
+      return {ok:true,entendi:'maiores receitas em '+per.rot,titulo:'Maiores receitas · '+top[0][0],destaque:R$(top[0][1]),linhas:top.map(([n,v])=>[n,R$(v)]),
+        fonte:FONTE_PORTAL(),ir:'rc',fala:'A maior receita é '+top[0][0]+', com '+falado(top[0][1])+'.'};
+    }
+    const opm=(DATA.despesas&&DATA.despesas.orgaos_por_mes)||{}, mp=new Map();
+    Object.keys(opm).forEach(m=>opm[m].forEach(r=>mp.set(r[0],(mp.get(r[0])||0)+r[3])));
+    const top=[...mp].sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,v])=>[n.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /,''),v]);
+    return {ok:true,entendi:'maiores secretarias em despesa empenhada no ano',titulo:'Onde mais se gasta · '+top[0][0],destaque:R$(top[0][1]),linhas:top.map(([n,v])=>[n,R$(v)]),
+      fonte:'Portal da Transparência · despesas por órgão',ir:'desp',fala:'A secretaria que mais gasta é '+top[0][0]+', com '+falado(top[0][1])+' empenhados.'};
+  }
+
+  /* ---------- roteador ---------- */
+  const SUGEST=['Receita de IPTU este mês','Quantos contratos vencem esta semana?','Folha de abril contra março','Quanto a Saúde empenhou este ano?',
+    'A Educação está acima de 25%?','Qual o caixa disponível?','Maiores fornecedores','Receita contra despesa no ano'];
+  function responde(texto){
+    const q=norm(texto);
+    if(!q) return nao('Digite ou fale uma pergunta.');
+    if(tem(q,/maiores|principais|onde (mais )?(se )?gasta|para onde vai/)&&!tem(q,/contrat|fornecedor/)) return respMaiores(q);
+    if(tem(q,/contrat|fornecedor|licitac/)) return respContratos(q);
+    if(tem(q,/servidor|funcionari|folha|pessoal|salario|vencimento/)&&!tem(q,/limite|acima|abaixo/)) return respPessoal(q);
+    if(tem(q,/caixa|superavit|restos|limite|acima de|abaixo de|minimo|fundeb|camara|duodecimo|educacao.*(25|%)|saude.*(15|%)|folha.*(60|%)/)) return respLimites(q);
+    if(tem(q,/receita.*(contra|versus|x|e).*despesa|despesa.*(contra|versus|x).*receita|saldo|equilibrio|deficit|superavit do ano/)) return respSaldo(q);
+    if(tem(q,/despesa|gast|empenh|liquid|pag(o|ou|amento)|custo|secretaria/)) return respDesp(q);
+    if(tem(q,/receita|arrecad|entrou|imposto|taxa|iptu|iss|itbi|ipva|icms|fpm|irrf|cosip|cfem|multa|divida ativa/)) return respRec(q);
+    if(tem(q,/educacao|saude/)) return respLimites(q);
+    return nao('Não entendi bem a pergunta.');
+  }
+  window.__buscaResponde=responde;   /* usado nos testes */
+
+  /* ---------- interface ---------- */
+  let voz=false; try{ voz=localStorage.getItem('busca_voz')==='1'; }catch(e){}
+  let ultima=null;
+  function fala(txt){
+    if(!('speechSynthesis' in window)||!txt) return;
+    try{
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(txt); u.lang='pt-BR'; u.rate=1;
+      const v=(speechSynthesis.getVoices()||[]).find(x=>/pt[-_]BR/i.test(x.lang)); if(v) u.voice=v;
+      speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  function fecha(){ pnl.hidden=true; pnl.innerHTML=''; try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }
+  function mostra(r,pergunta,porVoz){
+    ultima=r; pnl.hidden=false;
+    let h='<div class="bsTopo"><span class="bsPerg">'+esc(pergunta)+'</span><button type="button" class="bsX" aria-label="Fechar" id="bsFechar">✕</button></div>';
+    if(!r.ok){
+      h+='<div class="bsMsg">'+esc(r.msg)+'</div><div class="bsSug">Experimente:</div><div class="bsChips">'+SUGEST.slice(0,5).map(s=>'<button type="button" class="bsChip">'+esc(s)+'</button>').join('')+'</div>';
+    } else {
+      h+='<div class="bsEnt">Entendi: <b>'+esc(r.entendi)+'</b></div>'
+        +'<div class="bsTit">'+esc(r.titulo)+'</div><div class="bsVal">'+esc(r.destaque)+'</div>'
+        +(r.linhas&&r.linhas.length?'<div class="bsLin">'+r.linhas.map(l=>'<div><span>'+esc(l[0])+'</span><b>'+esc(l[1])+'</b></div>').join('')+'</div>':'')
+        +(r.nota?'<div class="bsNota">'+esc(r.nota)+'</div>':'')
+        +'<div class="bsFonte">Fonte: '+esc(r.fonte)+'</div>'
+        +'<div class="bsAcoes"><button type="button" id="bsOuvir">🔊 Ouvir</button>'
+        +(r.ir?'<button type="button" id="bsVer">Ver na tela ›</button>':'')
+        +'<label class="bsVoz"><input type="checkbox" id="bsVoz"'+(voz?' checked':'')+'> responder em voz alta</label></div>';
+    }
+    pnl.innerHTML=h;
+    const x=document.getElementById('bsFechar'); if(x) x.onclick=fecha;
+    pnl.querySelectorAll('.bsChip').forEach(b=>{ b.onclick=()=>{ inp.value=b.textContent; pergunta_(b.textContent,false); }; });
+    const o=document.getElementById('bsOuvir'); if(o) o.onclick=()=>fala(r.fala);
+    const v=document.getElementById('bsVer'); if(v) v.onclick=()=>{ fecha(); irPara(r.ir); };
+    const c=document.getElementById('bsVoz'); if(c) c.onchange=()=>{ voz=c.checked; try{ localStorage.setItem('busca_voz',voz?'1':'0'); }catch(e){} if(voz) fala(r.fala); };
+    if(r.ok&&voz&&porVoz) fala(r.fala);
+  }
+  function pergunta_(texto,porVoz){
+    texto=(texto||'').trim(); if(!texto) return;
+    let r; try{ r=responde(texto); }catch(e){ r=nao('Algo deu errado ao buscar. Tente reformular a pergunta.'); }
+    mostra(r,texto,porVoz);
+  }
+  go.onclick=()=>pergunta_(inp.value,false);
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); pergunta_(inp.value,false); } if(e.key==='Escape'){ fecha(); inp.blur(); } });
+  inp.addEventListener('focus',()=>{ if(!inp.value&&pnl.hidden){ pnl.hidden=false;
+    pnl.innerHTML='<div class="bsSug">Perguntas que posso responder:</div><div class="bsChips">'+SUGEST.map(s=>'<button type="button" class="bsChip">'+esc(s)+'</button>').join('')+'</div>';
+    pnl.querySelectorAll('.bsChip').forEach(b=>{ b.onmousedown=ev=>ev.preventDefault(); b.onclick=()=>{ inp.value=b.textContent; pergunta_(b.textContent,false); }; }); } });
+  document.addEventListener('click',e=>{ if(!e.target.closest('.buscaWrap')) { if(!pnl.hidden&&!ultima) fecha(); } });
+
+  /* ---------- voz (reconhecimento do navegador) ---------- */
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  let rec=null, ouvindo=false;
+  if(!SR){
+    mic.title='Este navegador não reconhece voz. Use o microfone do teclado do celular ou digite.';
+    mic.classList.add('semVoz');
+    mic.onclick=()=>{ pnl.hidden=false; pnl.innerHTML='<div class="bsMsg">Este navegador não reconhece voz. Toque no campo e use o <b>microfone do teclado</b> do celular, ou digite a pergunta. (No Chrome, Edge e Safari o botão funciona.)</div>'; };
+  } else {
+    function parar(){ try{ rec&&rec.stop(); }catch(e){} }
+    mic.onclick=()=>{
+      if(ouvindo){ parar(); return; }
+      rec=new SR(); rec.lang='pt-BR'; rec.interimResults=true; rec.maxAlternatives=1; rec.continuous=false;
+      let final='';
+      rec.onstart=()=>{ ouvindo=true; mic.classList.add('on'); inp.placeholder='Ouvindo… fale a pergunta'; };
+      rec.onresult=ev=>{ let t=''; for(let i=ev.resultIndex;i<ev.results.length;i++){ t+=ev.results[i][0].transcript; if(ev.results[i].isFinal) final=t; } inp.value=t; };
+      rec.onerror=ev=>{ ouvindo=false; mic.classList.remove('on'); inp.placeholder=PH;
+        if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){ pnl.hidden=false; pnl.innerHTML='<div class="bsMsg">O navegador não liberou o microfone. Permita o acesso ao microfone nas configurações do site e tente de novo.</div>'; }
+        else if(ev.error!=='no-speech'&&ev.error!=='aborted'){ pnl.hidden=false; pnl.innerHTML='<div class="bsMsg">Não consegui ouvir ('+esc(ev.error)+'). Tente de novo ou digite.</div>'; } };
+      rec.onend=()=>{ ouvindo=false; mic.classList.remove('on'); inp.placeholder=PH; if(inp.value.trim()) pergunta_(inp.value,true); };
+      try{ rec.start(); }catch(e){}
+    };
+  }
+  const PH=inp.placeholder;
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='m'){ e.preventDefault(); inp.focus(); mic.click(); }
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); inp.focus(); inp.select(); }
+  });
+}
+
+/* BUSCA_JS_FIM */
+
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
                 ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
                 desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando(), loa:montaLoa() };
+montaBusca();
 function render(){
   document.querySelectorAll('#abas b[data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pagina||(b.dataset.p==='rc'&&(pagina==='cap'||pagina==='ded'))||(b.dataset.p==='desp'&&pagina==='pes')));
   document.querySelectorAll('.pg').forEach(p=>p.classList.toggle('on',p.id==='pg-'+pagina));
