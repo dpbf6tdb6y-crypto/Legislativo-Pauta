@@ -76,6 +76,21 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     if (status === "unauthenticated") router.push("/login");
   }, [status, router]);
 
+  // quem não tem acesso ao Dashboard cai na primeira tela a que tem acesso
+  useEffect(() => {
+    if (status !== "authenticated" || pathname !== "/dashboard") return;
+    const u = session?.user as any;
+    if (acessoDoMenu(u, "dashboard").ver) return;
+    const ordem: [string, string][] = [
+      ["proposicoes", "/dashboard/segov"], ["requerimentos", "/dashboard/requerimentos"], ["mocoes", "/dashboard/mocoes"],
+      ["tags", "/dashboard/tags"], ["sessoes", "/dashboard/sessoes"], ["indicacoes", "/dashboard/indicacoes/pedidos"],
+      ["gestao", "/dashboard/fazenda"],
+    ];
+    const destino = ordem.find(([chave]) => acessoDoMenu(u, chave as any).ver);
+    if (destino) router.replace(destino[1]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, pathname]);
+
   useEffect(() => {
     if (configItemsVisiveis.some(i => pathname.startsWith(i.href))) setConfigAberto(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,7 +191,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           {podeVerIndicacoes && (() => {
             const active = pathname.startsWith(indicacoesItem.href);
             return (
-              <Link href={indicacoesItem.href}
+              <Link href="/dashboard/indicacoes/pedidos"
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all"
                 style={active
                   ? { background: ACCENT_GRADIENT, color: "#fff", fontWeight: 600 }

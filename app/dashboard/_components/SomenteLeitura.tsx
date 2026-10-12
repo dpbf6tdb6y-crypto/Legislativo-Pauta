@@ -18,7 +18,7 @@ export default function SomenteLeitura({ children, bloqueiaCampos }: { children:
         const texto = (el.textContent || "").trim()
         const rotulo = el.getAttribute("title") || el.getAttribute("aria-label") || ""
         const href = el.getAttribute("href") || ""
-        if (ROTA_CADASTRO.test(href) || ACAO.test(texto) || ACAO.test(rotulo) || (el instanceof HTMLButtonElement && el.type === "submit")) {
+        if (ROTA_CADASTRO.test(href) || ACAO.test(texto) || ACAO.test(rotulo) || (el instanceof HTMLButtonElement && el.getAttribute("type") === "submit")) {
           el.style.display = "none"
         }
       })
