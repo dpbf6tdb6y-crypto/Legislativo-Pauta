@@ -36,6 +36,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     podeVerIndicacoes: !!body.podeVerIndicacoes || !!(acessos && (acessos.indicacoes?.ver || acessos.indicacoes?.cad)),
     acessos: acessos ? JSON.stringify(acessos) : null,
     fluxoResumido: !!body.fluxoResumido,
+    senhaAreaRestrita: body.senhaAreaRestrita !== false,
     podeCriar: acessos ? algumCadastro : !!body.podeCriar,
     podeEditar: acessos ? algumCadastro : !!body.podeEditar,
     podeExcluir: !!body.podeExcluir,

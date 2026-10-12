@@ -22,6 +22,7 @@ type Usuario = {
   podeVerAuditoria: boolean;
   acessos?: string | null;
   fluxoResumido?: boolean;
+  senhaAreaRestrita?: boolean;
   createdAt: string;
 };
 
@@ -40,6 +41,7 @@ export default function UsuariosPage() {
   // acesso por menu: visualizar / cadastrar (cadastrar implica visualizar)
   const [acc, setAcc] = useState<Record<string, { ver: boolean; cad: boolean }>>({});
   const [fluxoResumido, setFluxoResumido] = useState(false);
+  const [senhaAreaRestrita, setSenhaAreaRestrita] = useState(true);
 
   async function carregar() {
     setCarregando(true);
@@ -67,6 +69,7 @@ export default function UsuariosPage() {
       }
       setAcc(inicial);
       setFluxoResumido(alvo === "novo" ? false : !!(alvo as any).fluxoResumido);
+      setSenhaAreaRestrita(alvo === "novo" ? true : (alvo as any).senhaAreaRestrita !== false);
     }
     setModal(alvo);
     setErro("");
@@ -93,6 +96,7 @@ export default function UsuariosPage() {
             podeVerIndicacoes: !!(acc.indicacoes?.ver || acc.indicacoes?.cad),
             acessos: acc,
             fluxoResumido,
+            senhaAreaRestrita,
             ...permissoes,
           }),
         });
@@ -110,6 +114,7 @@ export default function UsuariosPage() {
             podeVerIndicacoes: !!(acc.indicacoes?.ver || acc.indicacoes?.cad),
             acessos: acc,
             fluxoResumido,
+            senhaAreaRestrita,
             ...permissoes,
           }),
         });
@@ -299,7 +304,11 @@ export default function UsuariosPage() {
                           </label>
                         )}
                         {m.chave === "indicacoes" && (a.ver || a.cad) && (
-                          <p className="text-[11px] text-amber-700 mt-1 ml-1">Dados sigilosos: o acesso continua exigindo a confirmação de senha.</p>
+                          <label className="flex items-center gap-2 mt-1 ml-1 text-xs text-amber-800 cursor-pointer">
+                            <input type="checkbox" checked={senhaAreaRestrita} onChange={e => setSenhaAreaRestrita(e.target.checked)}
+                              className="w-3.5 h-3.5 accent-amber-600" />
+                            Pedir a senha de novo ao entrar na área restrita (dados sigilosos)
+                          </label>
                         )}
                       </div>
                     );

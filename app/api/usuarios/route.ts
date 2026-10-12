@@ -15,7 +15,7 @@ export async function GET() {
     orderBy: { nome: "asc" },
     select: {
       id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true, createdAt: true,
-      acessos: true, fluxoResumido: true,
+      acessos: true, fluxoResumido: true, senhaAreaRestrita: true,
       podeCriar: true, podeEditar: true, podeExcluir: true, podeImportar: true, podeExportar: true,
       podeGerenciarVereadores: true, podeVerAuditoria: true,
     },
@@ -50,6 +50,7 @@ export async function POST(req: Request) {
       data: {
         nome, email, perfil, senha: await bcrypt.hash(senha, 10), podeVerIndicacoes,
         acessos: acessos ? JSON.stringify(acessos) : null, fluxoResumido: !!body.fluxoResumido,
+        senhaAreaRestrita: body.senhaAreaRestrita !== false,
         podeCriar: acessos ? algumCadastro : !!body.podeCriar, podeEditar: acessos ? algumCadastro : !!body.podeEditar, podeExcluir: !!body.podeExcluir,
         podeImportar: !!body.podeImportar, podeExportar: !!body.podeExportar,
         podeGerenciarVereadores: !!body.podeGerenciarVereadores, podeVerAuditoria: !!body.podeVerAuditoria,

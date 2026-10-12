@@ -1,18 +1,23 @@
 "use client"
 import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 import PasswordInput from "../../../components/PasswordInput"
 
 const CHAVE_SESSAO = "indicacoes_desbloqueado"
 
 export default function IndicacoesGate({ children }: { children: React.ReactNode }) {
+  const { data: sessao, status: statusSessao } = useSession()
+  // o Master pode dispensar a senha de um usuário na área restrita (cadastro de usuários)
+  const semSenha = (sessao?.user as any)?.senhaAreaRestrita === false
   const [desbloqueado, setDesbloqueado] = useState<boolean | null>(null)
   const [senha, setSenha] = useState("")
   const [erro, setErro] = useState("")
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
-    setDesbloqueado(sessionStorage.getItem(CHAVE_SESSAO) === "1")
-  }, [])
+    if (statusSessao === "loading") return
+    setDesbloqueado(semSenha || sessionStorage.getItem(CHAVE_SESSAO) === "1")
+  }, [statusSessao, semSenha])
 
   async function confirmar(e: React.FormEvent) {
     e.preventDefault()
