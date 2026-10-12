@@ -992,7 +992,7 @@ HTML = r'''<!DOCTYPE html>
   .cgrid.inl .cp{ font-size:10.5px; color:var(--t3); text-align:center; line-height:1.25; margin-top:1px; max-width:150px; }
   .cgrid.inl .cl{ font-size:11px; font-weight:600; color:var(--t2); line-height:1.15; white-space:nowrap; margin-top:0; }
   .cmdtop{ padding-top:10px !important; align-items:flex-start; }
-  .coltit{ min-width:0; flex:1; }
+  .coltit{ min-width:min(100%,560px); flex:1; }   /* os meses precisam de espaço mínimo; sem ele, os medidores descem */
   .coltit .cbar{ margin:10px 0 4px; }
   .ano.ultimo{ border-color:#009C3B; color:#007A2E; background:#E9F7EE; font-weight:700; }
   .ano.ultimo.on{ background:var(--acento); color:#fff; border-color:#009C3B; box-shadow:0 0 0 2px #009C3B55; }
@@ -1011,6 +1011,12 @@ HTML = r'''<!DOCTYPE html>
   .cg .cx{ font-size:11px; color:var(--t3); line-height:1.4; margin-top:3px; }
   .cbar{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:4px 0 14px; }
   .cbar .ano.parcial{ font-style:italic; opacity:.7; }
+  /* os meses ficam sempre numa linha só: se aumentam, cada botão encolhe para caber no espaço */
+  .cbar{ flex-wrap:nowrap; gap:5px; min-width:0; }
+  .cbar .cbtodos{ flex:none; }
+  .cbar .ano{ flex:1 1 0; min-width:0; max-width:64px; padding:6px 2px; text-align:center; overflow:hidden;
+              font-size:clamp(10px,.85vw,12.5px); letter-spacing:-.01em; }
+  .cbar .ano.parcial::after{ margin-left:2px; }
   .csel{ display:inline-block; padding:5px 14px; border-radius:100px; font-size:13px; font-weight:700;
          color:#fff; background:var(--cs); }
   .csim{ border:1px solid var(--linha); border-radius:var(--r); background:var(--sup); padding:14px 18px 12px; margin-top:16px; }
