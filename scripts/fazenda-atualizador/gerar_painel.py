@@ -70,7 +70,7 @@ META = {cod: [nome(cod), D['tipos'].get(cod, '')] + list(classifica(cod, D['tipo
 
 try:
     _ct = json.load(open(os.path.join(BASE, 'dados_contratos.json'), encoding='utf-8'))
-    CONTRATOS = [[c['num'], c['ini'], c['fim'], c['credor'], c['desc'][:110],
+    CONTRATOS = [[c['num'], c['ini'], c['fim'], c['credor'], c['desc'][:600],
                   c['tipo'], round(c['valor'], 2), c['sit'], c['dias']]
                  for c in _ct['contratos']]
     CT_COLETA = _ct.get('coletado_em', '')
@@ -1085,6 +1085,13 @@ HTML = r'''<!DOCTYPE html>
 
   .vazio{ color:var(--t3); font-size:13px; padding:26px 0; }
   .pg{ display:none; } .pg.on{ display:block; }
+  /* Contratos: sem reticências — o texto quebra em mais linhas para aparecer inteiro */
+  #pg-ctr .alerta{ align-items:start; }
+  #pg-ctr .alerta .cr, #pg-ctr .alerta .ds{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
+  #pg-ctr .lin{ align-items:start; }
+  #pg-ctr .lin .n{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; line-height:1.3; }
+  #pg-ctr .rolatab table{ table-layout:fixed; }
+  #pg-ctr .rolatab td{ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; overflow-wrap:anywhere; vertical-align:top; line-height:1.35; }
   .subrec{ display:flex; gap:6px; margin:0 0 18px; border-bottom:1px solid var(--linha); }
   .subrec b{ cursor:pointer; padding:8px 14px; font-size:13.5px; font-weight:600; color:var(--t3); border-bottom:2px solid transparent; margin-bottom:-1px; }
   .subrec b:hover{ color:var(--t1); }
@@ -1697,12 +1704,12 @@ function montaContratos(){
     info.innerHTML='<b>'+f0.format(lista.length)+'</b> de '+f0.format(C.length);
     rola.innerHTML='';
     const t=el('table');
-    t.innerHTML='<thead><tr><th class="e" style="width:10%">Número</th>'
-      +'<th class="e" style="width:9%">Início</th><th class="e" style="width:9%">Fim</th>'
-      +'<th class="e" style="width:25%">Fornecedor</th>'
-      +'<th class="e" style="width:26%">Objeto</th>'
-      +'<th style="width:13%">Valor (R$)</th>'
-      +'<th class="e" style="width:8%">Situação</th></tr></thead>';
+    t.innerHTML='<thead><tr><th class="e" style="width:9%">Número</th>'
+      +'<th class="e" style="width:8%">Início</th><th class="e" style="width:8%">Fim</th>'
+      +'<th class="e" style="width:24%">Fornecedor</th>'
+      +'<th class="e" style="width:32%">Objeto</th>'
+      +'<th style="width:12%">Valor (R$)</th>'
+      +'<th class="e" style="width:7%">Situação</th></tr></thead>';
     const tb=el('tbody');
     lista.slice().sort(function(a,b){ return b[6]-a[6]; }).slice(0,600).forEach(function(c){
       const tr=el('tr');
@@ -2395,7 +2402,7 @@ function montaComando(){
     const fr=1+st.rr/100;
     const rit=S('rit')*fr;
     const edu=(S('edu')-S('edu_fed'))*(1+st.re/100), sau=(S('saude')-S('saude_fed'))*(1+st.rs/100);
-    let pes=0, rcl=0, falt=0, y=eq.ano, mm=M;
+    let pes=0, rcl=0, falt=0, y=eq.ano, mm=Math.min(M,fech);   /* mês em andamento fica de fora da janela */
     for(let i=0;i<12;i++){
       const k=y+'-'+String(mm).padStart(2,'0'), a=ser.pes[k], b=ser.rcl[k];
       if(a===undefined||b===undefined) falt++; else { pes+=a; rcl+=b; }
@@ -2411,7 +2418,7 @@ function montaComando(){
     const mesRR=rr?(MESNOME[+String(rr.posicao).split('/')[1]]||''):'';
     const perOficial=rr?'jan a '+mesRR+'/'+rr.ano+' · relatório oficial (RREO)':'aproximação · jan a '+MESNOME[M];
     return {falt,pes,rcl,rit,gauges:[
-      {n:'Folha de pessoal', c:'Folha de pessoal', per:'últimos 12 meses até '+MESNOME[M]+'/'+eq.ano, v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
+      {n:'Folha de pessoal', c:'Folha de pessoal', per:'últimos 12 meses até '+MESNOME[Math.min(M,fech)]+'/'+eq.ano, v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
       {n:'Educação', c:'Educação · mín. 25%', per:perOficial, v:vEdu, aprox:pEdu, lim:25, max:50, tipo:'min', sub:subOf, x:'Mínimo 25% (CF art. 212)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pEdu)+'%':'')},
       {n:'Saúde', c:'Saúde · mín. 15%', per:perOficial, v:vSau, aprox:pSau, lim:15, max:40, tipo:'min', sub:subOf, x:'Mínimo 15% (LC 141/2012)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pSau)+'%':'')},
       {n:'Repasse à Câmara', c:'Câmara · do teto', per:'jan a '+MESNOME[M]+'/'+eq.ano+' · empenhado', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
@@ -2904,7 +2911,7 @@ function montaComando(){
     /* despesa com pessoal: janela de 12 meses terminando no último mês do período */
     const nomes=[];
     {
-      let y=eq.ano, m=P.M; const lista=[];
+      const Mw=Math.min(P.M,fech); let y=eq.ano, m=Mw; const lista=[];
       for(let i=0;i<12;i++){ lista.push({y,m}); m--; if(!m){ m=12; y--; } }
       /* ordem decrescente: do mês mais recente para o mais antigo */
       let soma12=0, rcl12=0, falt=0, somaSel=0, nSel=0;
@@ -2914,6 +2921,14 @@ function montaComando(){
       const miv=v=>(v<0?'−':'+')+'R$ '+(Math.abs(v)/1e6).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+' mi';
       let cel='', maiorAlta=null, maiorQueda=null, nFora=0;
       /* a lista está do mais recente para o mais antigo: a variação é contra o mês seguinte da lista (o anterior no tempo) */
+      /* meses ainda em andamento: valores parciais, sem variação e fora das somas */
+      for(let mp=P.M; mp>Mw; mp--){
+        const kp=chave(eq.ano,mp), vpar=ser.pes[kp];
+        cel+='<tr class="parc" title="Mês em andamento: só o que já foi liquidado até agora; não entra nas médias nem nas variações"><td class="m">'
+          +MESES[mp-1]+'/'+String(eq.ano).slice(2)+' *</td><td class="p"><em class="vr n0">em andamento</em></td>'
+          +'<td class="s"><span style="color:var(--t3);font-size:11px" title="A folha deste mês ainda não foi publicada">sem coleta</span></td>'
+          +'<td class="v" style="color:var(--t3);font-style:italic">'+(vpar===undefined?'—':exato(vpar))+'</td></tr>';
+      }
       lista.forEach(({y,m})=>{
         const k=chave(y,m), v=ser.pes[k], r=ser.rcl[k], vp=ser.pes[prevDe(y,m)];
         const dentro=(y===eq.ano)&&P.sel.includes(m);
