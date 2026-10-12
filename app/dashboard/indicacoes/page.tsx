@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import IndicacoesGate from "./_components/IndicacoesGate"
+import AbasIndicacoes from "./_components/AbasIndicacoes"
 
 type Indicacao = {
   id: string
@@ -110,6 +111,8 @@ function IndicacoesConteudo() {
           </Link>
         </div>
       </div>
+
+      <AbasIndicacoes />
 
       {/* Dashboard */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

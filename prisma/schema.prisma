@@ -46,6 +46,7 @@ model Vereador {
   requerimentos  Requerimento[]       @relation("RequerimentoAutor")
   tags           Tag[]                @relation("TagAutor")
   indicacoes     IndicacaoCargo[]
+  pedidos        PedidoVereador[]
 
   @@index([nome])
   @@index([ativo])
@@ -370,4 +371,40 @@ model ResetSenha {
   expiraEm DateTime
   usado    Boolean  @default(false)
   criadoEm DateTime @default(now())
+}
+
+// SRM — pedidos dos vereadores ao Poder Executivo (módulo Ind.)
+model PedidoVereador {
+  id             String    @id @default(cuid())
+  vereadorId     String?
+  tipo           String
+  descricao      String
+  endereco       String?
+  dataPedido     DateTime
+  prazo          DateTime?
+  status         String    @default("Em andamento")
+  referencia     Int?
+  dataFechamento DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  vereador   Vereador?          @relation(fields: [vereadorId], references: [id])
+  andamentos AndamentoPedido[]
+
+  @@index([vereadorId])
+  @@index([status])
+  @@index([dataPedido])
+}
+
+model AndamentoPedido {
+  id        String   @id @default(cuid())
+  pedidoId  String
+  data      DateTime
+  descricao String
+  status    String?
+  createdAt DateTime @default(now())
+
+  pedido PedidoVereador @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+
+  @@index([pedidoId])
 }
