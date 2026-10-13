@@ -4186,7 +4186,7 @@ function montaBusca(){
       h+='<b>Nenhum microfone encontrado.</b> Conecte um microfone ou fone com microfone ao computador, confira em <i>Configurações do Windows › Sistema › Som › Entrada</i> e tente de novo.';
     } else if(motivo==='network'){
       h+='<b>Sem conexão com o serviço de voz.</b> O reconhecimento de voz do navegador precisa de internet. Verifique a conexão e tente de novo.';
-    } else if(motivo==='service-not-allowed'){
+    } else if(motivo==='service-not-allowed'&&!celular){
       h+='<b>O navegador não permite o reconhecimento de voz neste momento.</b> Use o Chrome ou o Edge atualizados, com internet, ou digite a pergunta.';
     } else if(!celular){
       h+='<b>O navegador bloqueou o microfone deste site.</b><br><br>'
@@ -4198,7 +4198,7 @@ function montaBusca(){
       h+='O microfone não foi liberado aqui.'
         +(noQuadro?'<br><br><b>1.</b> <a href="'+location.pathname+'" target="_top" style="font-weight:700;color:#1d4ed8">Abrir o painel em tela cheia</a> e tocar no microfone de novo — o navegador vai pedir a permissão.':'')
         +'<br><br><b>'+(noQuadro?'2.':'1.')+'</b> <button type="button" id="bsDitar" style="font-weight:700;color:#1d4ed8;background:none;border:0;padding:0;text-decoration:underline">Tocar no campo</button> e usar o <b>microfone do teclado</b> do celular (ao lado da barra de espaço)'
-        +(ios?' — se não aparecer, ative o Ditado em Ajustes › Geral › Teclado.':'.');
+        +(ios?' — se o ícone do microfone não aparecer no teclado, ative o <b>Ditado</b> em <i>Ajustes › Geral › Teclado › Ativar Ditado</i>. O botão do painel só funciona no <b>Safari</b> com o Siri e o Ditado ligados.':'.');
     }
     pnl.innerHTML=h+'<br><br><span style="color:var(--t3);font-size:12.5px">Enquanto isso, é só digitar a pergunta no campo e apertar Perguntar.</span></div>';
     const d=document.getElementById('bsDitar'); if(d) d.onclick=()=>{ fecha(); inp.focus(); };
