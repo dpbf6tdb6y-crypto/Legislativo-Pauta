@@ -22,7 +22,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user.id, name: user.nome, email: user.email, perfil: user.perfil,
           podeVerIndicacoes: user.podeVerIndicacoes,
-          acessos: user.acessos, fluxoResumido: user.fluxoResumido, senhaAreaRestrita: user.senhaAreaRestrita,
+          acessos: user.acessos, fluxoResumido: user.fluxoResumido, senhaAreaRestrita: user.senhaAreaRestrita, podeUsarMicrofone: user.podeUsarMicrofone,
           podeCriar: user.podeCriar, podeEditar: user.podeEditar, podeExcluir: user.podeExcluir,
           podeImportar: user.podeImportar, podeExportar: user.podeExportar,
           podeGerenciarVereadores: user.podeGerenciarVereadores, podeVerAuditoria: user.podeVerAuditoria,
@@ -40,6 +40,7 @@ export const authOptions: AuthOptions = {
         token.acessos = u.acessos ?? null;
         token.fluxoResumido = !!u.fluxoResumido;
         token.senhaAreaRestrita = u.senhaAreaRestrita !== false;
+        token.podeUsarMicrofone = u.podeUsarMicrofone !== false;
         token.podeCriar = u.podeCriar;
         token.podeEditar = u.podeEditar;
         token.podeExcluir = u.podeExcluir;
@@ -59,6 +60,7 @@ export const authOptions: AuthOptions = {
         su.acessos = token.acessos ?? null;
         su.fluxoResumido = !!token.fluxoResumido;
         su.senhaAreaRestrita = token.senhaAreaRestrita !== false;
+        su.podeUsarMicrofone = token.podeUsarMicrofone !== false;
         su.podeCriar = token.podeCriar;
         su.podeEditar = token.podeEditar;
         su.podeExcluir = token.podeExcluir;

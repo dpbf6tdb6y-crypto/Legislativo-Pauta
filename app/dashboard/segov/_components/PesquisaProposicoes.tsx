@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useSession } from "next-auth/react"
 
 // Pesquisa por pergunta (texto ou voz) na lista de proposições. Não calcula nada por conta própria:
 // traduz a frase em filtros da própria lista, e a lista mostra o resultado. Funciona por regras.
@@ -24,7 +25,16 @@ const SUGESTOES = [
   "PL 2758 de 2026",
 ]
 
-export default function PesquisaProposicoes({ itens, vereadores, statusList, total, aplicar, limpar }: Props) {
+export default function PesquisaProposicoes(props: Props) {
+  // a pesquisa por pergunta/microfone depende da permissão do usuário (Master e Admin sempre têm)
+  const { data: session } = useSession()
+  const u = session?.user as any
+  const pode = !u || u.perfil === "master" || u.perfil === "admin" || u.podeUsarMicrofone !== false
+  if (!pode) return null
+  return <PesquisaInterna {...props} />
+}
+
+function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar }: Props) {
   const [texto, setTexto] = useState("")
   const [resumo, setResumo] = useState<{ ok: boolean; partes: string[] } | null>(null)
   const [ouvindo, setOuvindo] = useState(false)
