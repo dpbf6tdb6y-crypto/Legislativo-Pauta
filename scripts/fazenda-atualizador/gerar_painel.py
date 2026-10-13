@@ -4159,7 +4159,7 @@ function montaBusca(){
   if(!SR){
     mic.title='Este navegador não reconhece voz. Use o microfone do teclado do celular ou digite.';
     mic.classList.add('semVoz');
-    mic.onclick=()=>{ semMic(); };
+    mic.onclick=()=>{ semMic('sem-suporte'); };
   } else {
     function parar(){ try{ rec&&rec.stop(); }catch(e){} }
     mic.onclick=()=>{
@@ -4180,28 +4180,33 @@ function montaBusca(){
   function semMic(motivo){
     const noQuadro=window.top!==window, ios=/iPhone|iPad|iPod/i.test(navigator.userAgent);
     const celular=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||navigator.maxTouchPoints>1;
+    const safari=ios&&!/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent);
+    const tecla='<button type="button" id="bsDitar" style="font-weight:700;color:#1d4ed8;background:none;border:0;padding:0;text-decoration:underline">Toque no campo</button> e use o <b>microfone do teclado</b>';
     pnl.hidden=false;
     let h='<div class="bsMsg">';
     if(motivo==='audio-capture'){
-      h+='<b>Nenhum microfone encontrado.</b> Conecte um microfone ou fone com microfone ao computador, confira em <i>Configurações do Windows › Sistema › Som › Entrada</i> e tente de novo.';
+      h+='<b>Nenhum microfone encontrado</b> neste computador. Conecte um microfone ou fone e tente de novo — ou digite a pergunta.';
     } else if(motivo==='network'){
-      h+='<b>Sem conexão com o serviço de voz.</b> O reconhecimento de voz do navegador precisa de internet. Verifique a conexão e tente de novo.';
-    } else if(motivo==='service-not-allowed'&&!celular){
-      h+='<b>O navegador não permite o reconhecimento de voz neste momento.</b> Use o Chrome ou o Edge atualizados, com internet, ou digite a pergunta.';
-    } else if(!celular){
-      h+='<b>O navegador bloqueou o microfone deste site.</b><br><br>'
-        +'<b>1.</b> Clique no <b>cadeado</b> (ou no ícone de ajustes) ao lado do endereço, no alto da tela.<br>'
-        +'<b>2.</b> Em <b>Microfone</b>, escolha <b>Permitir</b>.<br>'
-        +'<b>3.</b> Recarregue a página (F5) e clique no microfone de novo.'
-        +(noQuadro?'<br><br>Se não adiantar, <a href="'+location.pathname+'" target="_top" style="font-weight:700;color:#1d4ed8">abra o painel em tela cheia</a> e tente ali.':'');
+      h+='<b>Sem conexão com o serviço de voz.</b> Verifique a internet e tente de novo — ou digite a pergunta.';
+    } else if(celular&&ios&&!safari){
+      h+='O <b>navegador do iPhone</b> que você está usando não deixa o site ouvir sua voz.<br><br>'+tecla+' (ao lado da barra de espaço), ou abra este endereço no <b>Safari</b>.';
+    } else if(celular){
+      h+='O navegador não liberou o microfone.<br><br>'+tecla+' (ao lado da barra de espaço)'
+        +(ios?'. Se o ícone não aparecer, ative o <i>Ditado</i> em Ajustes › Geral › Teclado.':'.');
+    } else if(motivo==='sem-suporte'||motivo==='service-not-allowed'){
+      h+='Este navegador não reconhece voz. Use o <b>Chrome</b> ou o <b>Edge</b> — ou digite a pergunta.';
     } else {
-      h+='O microfone não foi liberado aqui.'
-        +(noQuadro?'<br><br><b>1.</b> <a href="'+location.pathname+'" target="_top" style="font-weight:700;color:#1d4ed8">Abrir o painel em tela cheia</a> e tocar no microfone de novo — o navegador vai pedir a permissão.':'')
-        +'<br><br><b>'+(noQuadro?'2.':'1.')+'</b> <button type="button" id="bsDitar" style="font-weight:700;color:#1d4ed8;background:none;border:0;padding:0;text-decoration:underline">Tocar no campo</button> e usar o <b>microfone do teclado</b> do celular (ao lado da barra de espaço)'
-        +(ios?' — se o ícone do microfone não aparecer no teclado, ative o <b>Ditado</b> em <i>Ajustes › Geral › Teclado › Ativar Ditado</i>. O botão do painel só funciona no <b>Safari</b> com o Siri e o Ditado ligados.':'.');
+      h+='<b>O navegador bloqueou o microfone deste site.</b><br><br>'
+        +'Clique no <b>cadeado</b> ao lado do endereço → <b>Microfone</b> → <b>Permitir</b>, e recarregue a página (F5).'
+        +(noQuadro?'<br><br>Se não adiantar, <a href="'+location.pathname+'" target="_top" style="font-weight:700;color:#1d4ed8">abra o painel em tela cheia</a>.':'');
     }
-    pnl.innerHTML=h+'<br><br><span style="color:var(--t3);font-size:12.5px">Enquanto isso, é só digitar a pergunta no campo e apertar Perguntar.</span></div>';
+    pnl.innerHTML=h+'</div>';
     const d=document.getElementById('bsDitar'); if(d) d.onclick=()=>{ fecha(); inp.focus(); };
+  }
+  /* iPhone fora do Safari: o navegador não deixa o site ouvir a voz — esconde o botão do microfone na caixa e orienta uma vez */
+  if(/iPhone|iPad|iPod/i.test(navigator.userAgent)&&/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent)){
+    mic.style.display='none';
+    inp.placeholder='Digite ou use o microfone do teclado';
   }
   const PH=inp.placeholder;
   /* aberto direto (tela cheia, fora do sistema): sem o menu do SEGOV — mostra um botão discreto para voltar */
