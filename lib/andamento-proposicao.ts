@@ -184,10 +184,13 @@ export function achaProposicoes(f: { proposicao?: string }, itens: any[], textoN
     })
     if (r.length) return r
   }
-  // sem o tipo na frase ("projeto 2681/2026", "proposição 2695"): procura só pelo número
-  const m = textoNormalizado.match(/(?:projeto|proposicao|requerimento|mocao|indicacao|numero|n)\s*(?:de\s*lei\s*(?:ordinaria|complementar)?\s*)?(?:n\.?|no|numero)?\s*(\d{1,5})(?:\s*\/\s*(\d{4})|\s+de\s+(\d{4}))?/)
+  // sem o tipo reconhecido na frase: procura "2681/2026", "2.681 de 2026" ou "projeto/pl 2681"
+  const q = textoNormalizado.replace(/(\d)\.(\d)/g, "$1$2")
+  const m =
+    q.match(/(\d{1,5})\s*(?:\/|de)\s*(20\d\d)/) ||
+    q.match(/(?:projeto|proposicao|requerimento|mocao|indicacao|numero|pl|plc|plo|pdl|pr|req|moc|ind|n)\s*(?:de\s*lei\s*(?:ordinaria|complementar)?\s*)?(?:n\.?|no|numero)?\s*(\d{1,5})/)
   if (!m) return []
-  const num = m[1], ano = m[2] || m[3]
+  const num = m[1], ano = m[2]
   return itens.filter(i => String(i.numero).replace(/\./g, "") === num && (!ano || String(i.ano) === ano))
 }
 

@@ -119,10 +119,21 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
     const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     const etapa = etapaPerguntada(norm)
     const achadas = etapa || ehPerguntaDeAndamento(norm) ? achaProposicoes(r.f, itens, norm) : []
-    setAndamentos(achadas.slice(0, 3).map(i => (etapa ? respondeEtapa(i, etapa) : andamentoDe(i))))
-    setResumo({ ok: r.entendeu, partes: r.partes })
+    const respostas = achadas.slice(0, 3).map(i => (etapa ? respondeEtapa(i, etapa) : andamentoDe(i)))
+    setAndamentos(respostas)
+    // achou a proposição só pelo número ("projeto 2681/2026"): conta como entendido e filtra a lista por ela
+    const f = { ...r.f }
+    const partes = [...r.partes]
+    let entendeu = r.entendeu
+    if (achadas.length && !f.proposicao) {
+      const i0 = achadas[0]
+      f.proposicao = `${i0.tipo} ${i0.numero}/${i0.ano}`.toLowerCase()
+      partes.push(`proposição ${i0.tipo} ${i0.numero}/${i0.ano}`)
+    }
+    if (achadas.length) entendeu = true
+    setResumo({ ok: entendeu, partes })
     // pergunta feita pelo microfone é respondida em voz alta
-    if (r.entendeu) { aplicar(r.f); falarDepois.current = porVoz }
+    if (entendeu) { aplicar(f); falarDepois.current = porVoz }
     else if (porVoz) falar("Não entendi a pergunta. Tente falar o tipo, a situação ou o nome do vereador.")
   }
 

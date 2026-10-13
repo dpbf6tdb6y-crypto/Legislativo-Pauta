@@ -30,6 +30,8 @@ describe("andamento da proposição", () => {
   it("acha a proposição só pelo número", () => {
     expect(achaProposicoes({}, [item], "quem pediu dispensa de intersticio do projeto 2681/2026")).toHaveLength(1)
     expect(achaProposicoes({}, [item], "andamento do projeto 2681")).toHaveLength(1)
+    expect(achaProposicoes({}, [{ ...item, tipo: "Projeto de Lei Ordinária" }], "como esta o andamento do pl 2681 de 2026")).toHaveLength(1)
+    expect(achaProposicoes({}, [item], "como esta o andamento da proposicao 2.681/2026")).toHaveLength(1)
     expect(ehPerguntaDeAndamento("como esta o andamento do projeto 2681")).toBe(true)
   })
 })
