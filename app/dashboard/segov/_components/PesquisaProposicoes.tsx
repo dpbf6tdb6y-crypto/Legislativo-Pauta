@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react"
 // traduz a frase em filtros da própria lista, e a lista mostra o resultado. Funciona por regras.
 
 import { interpreta, type FiltrosPesquisa } from "@/lib/pesquisa-proposicoes"
+import { andamentoDe, achaProposicoes, ehPerguntaDeAndamento, etapaPerguntada, respondeEtapa, type Andamento } from "@/lib/andamento-proposicao"
 export type { FiltrosPesquisa }
 
 type Props = {
@@ -23,6 +24,8 @@ const SUGESTOES = [
   "Proposições paradas há mais de 30 dias",
   "Proposições do vereador Gliverson",
   "PL 2758 de 2026",
+  "Qual o andamento do PL 2758 de 2026?",
+  "Quem pediu dispensa de interstício do PL 2758 de 2026?",
 ]
 
 export default function PesquisaProposicoes(props: Props) {
@@ -40,6 +43,7 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
   const [ouvindo, setOuvindo] = useState(false)
   const [voz, setVoz] = useState(false)
   const [sugestoes, setSugestoes] = useState(false)
+  const [andamentos, setAndamentos] = useState<Andamento[]>([])
   const falarDepois = useRef(false)
   const recRef = useRef<any>(null)
   const SR = typeof window !== "undefined" ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null
@@ -96,8 +100,9 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
 
   const frase = useMemo(() => {
     if (!resumo || !resumo.ok) return ""
+    if (andamentos.length) return `${saudacao ? saudacao + " " : ""}${andamentos.map(a => a.fala).join(" ")}`
     return `${saudacao ? saudacao + " " : ""}Encontrei ${total} ${total === 1 ? "proposição" : "proposições"}. Filtros: ${resumo.partes.join(", ")}.`
-  }, [resumo, total, saudacao])
+  }, [resumo, total, saudacao, andamentos])
 
   // fala depois que a lista já recalculou com os novos filtros
   useEffect(() => {
@@ -110,9 +115,15 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
     setSugestoes(false)
     const r = interpreta(s, itens, vereadores, statusList)
     setSaudacao(saudacaoDaVez())
+    // "como está o andamento do PL 2681/2026?": responde com a última informação do fluxo detalhado
+    const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    const etapa = etapaPerguntada(norm)
+    const achadas = etapa || ehPerguntaDeAndamento(norm) ? achaProposicoes(r.f, itens, norm) : []
+    setAndamentos(achadas.slice(0, 3).map(i => (etapa ? respondeEtapa(i, etapa) : andamentoDe(i))))
     setResumo({ ok: r.entendeu, partes: r.partes })
-    if (r.entendeu) { aplicar(r.f); falarDepois.current = porVoz && voz }
-    else if (porVoz && voz) falar("Não entendi a pergunta. Tente falar o tipo, a situação ou o nome do vereador.")
+    // pergunta feita pelo microfone é respondida em voz alta
+    if (r.entendeu) { aplicar(r.f); falarDepois.current = porVoz }
+    else if (porVoz) falar("Não entendi a pergunta. Tente falar o tipo, a situação ou o nome do vereador.")
   }
 
   function microfone() {
@@ -133,7 +144,7 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
     try { rec.start() } catch {}
   }
 
-  function limparTudo() { setTexto(""); setResumo(null); limpar() }
+  function limparTudo() { setTexto(""); setResumo(null); setAndamentos([]); limpar() }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-3">
@@ -165,6 +176,24 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
               className="text-xs px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:border-blue-400 hover:text-blue-700 text-left">
               {s}
             </button>
+          ))}
+        </div>
+      )}
+
+      {resumo?.ok && andamentos.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {andamentos.map(a => (
+            <div key={a.titulo} className="rounded-lg border border-blue-200 bg-blue-50/50 px-3 py-2">
+              <div className="text-sm font-bold text-gray-800">{a.titulo}</div>
+              <dl className="mt-1 grid grid-cols-[110px_1fr] gap-x-3 gap-y-0.5 text-sm">
+                {a.linhas.map(([k, v]) => (
+                  <div key={k} className="contents">
+                    <dt className="text-gray-500">{k}</dt>
+                    <dd className={`text-gray-800 ${k === "Última etapa" ? "font-semibold" : ""}`}>{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           ))}
         </div>
       )}
