@@ -4058,7 +4058,7 @@ function montaBusca(){
     fala('Olá! Esta é a voz '+l[k].name.replace(/Microsoft|Online|\(Natural\)|Portuguese|Brazil|\(.*?\)/g,'').replace(/\s+/g,' ').trim()+'. Posso responder com ela?');
   }
   if('speechSynthesis' in window){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{ speechSynthesis.getVoices(); }; }catch(e){} }
-  let _tmrKeep=null;
+  let _tmrKeep=null, _audioNuvem=null, _seqVoz=0;
   function fala(txt){
     if(!('speechSynthesis' in window)||!txt) return;
     try{
@@ -4071,6 +4071,17 @@ function montaBusca(){
         .replace(/\bfoi de\b/g,'foi');
       txt=txt.replace(/R\$\s*([\d.,]+)\s*mi\b/g,'$1 milhões de reais').replace(/R\$\s*([\d.,]+)\s*bi\b/g,'$1 bilhões de reais')
         .replace(/R\$\s*([\d.,]+)/g,'$1 reais').replace(/%/g,' por cento').replace(/−/g,'menos ').replace(/\+(\d)/g,'mais $1').replace(/\s+/g,' ').trim();
+      /* voz neural na nuvem (se o servidor tiver a chave); senão, a voz do aparelho */
+      if(window.__vozNuvem!==false){
+        const meu=++_seqVoz;
+        try{ speechSynthesis.cancel(); }catch(e){}
+        try{ if(_audioNuvem){ _audioNuvem.pause(); _audioNuvem=null; } }catch(e){}
+        fetch('/api/voz',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:txt})})
+          .then(r=>{ if(!r.ok){ if(r.status===501) window.__vozNuvem=false; throw new Error('voz'); } return r.blob(); })
+          .then(b=>{ if(meu!==_seqVoz) return; _audioNuvem=new Audio(URL.createObjectURL(b)); return _audioNuvem.play(); })
+          .catch(()=>{ if(meu===_seqVoz){ window.__vozNuvem=false; fala(txt); } });
+        return;
+      }
       const partes=[];
       txt.replace(/([.!?;:])\s+/g,'$1\n').split('\n').forEach(fr=>{
         fr=fr.trim();
@@ -4102,7 +4113,7 @@ function montaBusca(){
       return 'Olá, '+(per==='dia'?'bom dia':(per==='tarde'?'boa tarde':'boa noite'))+'!';
     }catch(e){ return ''; }
   }
-  function fecha(){ pnl.hidden=true; pnl.innerHTML=''; try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }
+  function fecha(){ pnl.hidden=true; pnl.innerHTML=''; _seqVoz++; try{ if(_audioNuvem){ _audioNuvem.pause(); _audioNuvem=null; } }catch(e){} try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} }
   function mostra(r,pergunta,porVoz,saud){
     ultima=r; pnl.hidden=false; saudPend=saud||'';
     let h='<div class="bsTopo"><span class="bsPerg">'+esc(pergunta)+'</span><button type="button" class="bsX" aria-label="Fechar" id="bsFechar">✕</button></div>'

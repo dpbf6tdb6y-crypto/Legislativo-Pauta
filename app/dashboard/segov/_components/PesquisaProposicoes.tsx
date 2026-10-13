@@ -47,6 +47,8 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
   const falarDepois = useRef(false)
   const recRef = useRef<any>(null)
   const keep = useRef<any>(null)
+  const audio = useRef<HTMLAudioElement | null>(null)
+  const seq = useRef(0)
   const SR = typeof window !== "undefined" ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null
 
   useEffect(() => { try { setVoz(localStorage.getItem("busca_voz") === "1") } catch {} }, [])
@@ -57,6 +59,17 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
     try {
       if (!("speechSynthesis" in window) || !t) return
       const texto = t.replace(/R\$\s*([\d.,]+)/g, "$1 reais").replace(/%/g, " por cento").replace(/\s+/g, " ").trim()
+      // voz neural na nuvem, se o servidor tiver a chave; senão cai na voz do aparelho
+      if ((window as any).__vozNuvem !== false) {
+        const meu = ++seq.current
+        try { speechSynthesis.cancel() } catch {}
+        try { audio.current?.pause() } catch {}
+        fetch("/api/voz", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ texto }) })
+          .then(r => { if (!r.ok) { if (r.status === 501) (window as any).__vozNuvem = false; throw new Error("voz") } return r.blob() })
+          .then(b => { if (meu !== seq.current) return; audio.current = new Audio(URL.createObjectURL(b)); return audio.current.play() })
+          .catch(() => { if (meu === seq.current) { (window as any).__vozNuvem = false; falar(t) } })
+        return
+      }
       const partes: string[] = []
       texto.replace(/([.!?;:])\s+/g, "$1\n").split("\n").forEach(fr => {
         let f = fr.trim()
