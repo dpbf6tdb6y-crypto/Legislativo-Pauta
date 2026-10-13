@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"
 // traduz a frase em filtros da própria lista, e a lista mostra o resultado. Funciona por regras.
 
 import { interpreta, type FiltrosPesquisa } from "@/lib/pesquisa-proposicoes"
-import { andamentoDe, achaProposicoes, ehPerguntaDeAndamento, etapaPerguntada, respondeEtapa, type Andamento } from "@/lib/andamento-proposicao"
+import { andamentoDe, achaProposicoes, achaPorPalavras, ehPerguntaDeAndamento, etapaPerguntada, respondeEtapa, type Andamento } from "@/lib/andamento-proposicao"
 export type { FiltrosPesquisa }
 
 type Props = {
@@ -118,14 +118,33 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
     // "como está o andamento do PL 2681/2026?": responde com a última informação do fluxo detalhado
     const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     const etapa = etapaPerguntada(norm)
-    const achadas = etapa || ehPerguntaDeAndamento(norm) ? achaProposicoes(r.f, itens, norm) : []
+    const querAndamento = !!etapa || ehPerguntaDeAndamento(norm)
+    let achadas = querAndamento ? achaProposicoes(r.f, itens, norm) : []
+    let palavrasBusca: string[] = []
+    // sem número: procura pelas palavras-chave na ementa ("o que fala sobre o plano diretor")
+    if (querAndamento && !achadas.length) {
+      const pp = achaPorPalavras(norm, itens)
+      achadas = pp.itens
+      palavrasBusca = pp.palavras
+    }
+    if (querAndamento && !achadas.length && palavrasBusca.length) {
+      setAndamentos([{ titulo: "Nenhuma proposição encontrada", linhas: [["Palavras", palavrasBusca.join(" ")], ["Resultado", "nenhuma ementa tem essas palavras"]],
+        fala: `Não encontrei proposição com ${palavrasBusca.join(" ")}.` }])
+      setResumo({ ok: true, partes: [`palavras: ${palavrasBusca.join(" ")}`] })
+      falarDepois.current = porVoz
+      return
+    }
     const respostas = achadas.slice(0, 3).map(i => (etapa ? respondeEtapa(i, etapa) : andamentoDe(i)))
+    if (achadas.length > 3) respostas.push({ titulo: `Mais ${achadas.length - 3} proposições`, linhas: [["Resultado", "veja as demais na lista abaixo"]], fala: `Há mais ${achadas.length - 3} proposições com esse assunto, na lista abaixo.` })
     setAndamentos(respostas)
     // achou a proposição só pelo número ("projeto 2681/2026"): conta como entendido e filtra a lista por ela
     const f = { ...r.f }
     const partes = [...r.partes]
     let entendeu = r.entendeu
-    if (achadas.length && !f.proposicao) {
+    if (achadas.length && palavrasBusca.length) {
+      f.ementa = palavrasBusca.join(" ")
+      partes.push(`assunto “${f.ementa}”`)
+    } else if (achadas.length && !f.proposicao) {
       const i0 = achadas[0]
       f.proposicao = `${i0.tipo} ${i0.numero}/${i0.ano}`.toLowerCase()
       partes.push(`proposição ${i0.tipo} ${i0.numero}/${i0.ano}`)

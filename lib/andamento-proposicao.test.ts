@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { andamentoDe, achaProposicoes, etapaPerguntada, respondeEtapa, ehPerguntaDeAndamento } from "./andamento-proposicao"
+import { andamentoDe, achaProposicoes, achaPorPalavras, etapaPerguntada, respondeEtapa, ehPerguntaDeAndamento } from "./andamento-proposicao"
 
 const item = {
   tipo: "PLO", numero: "2681", ano: 2026, status: "Aprovado", ementa: "Altera e retifica descrições de áreas.",
@@ -33,5 +33,16 @@ describe("andamento da proposição", () => {
     expect(achaProposicoes({}, [{ ...item, tipo: "Projeto de Lei Ordinária" }], "como esta o andamento do pl 2681 de 2026")).toHaveLength(1)
     expect(achaProposicoes({}, [item], "como esta o andamento da proposicao 2.681/2026")).toHaveLength(1)
     expect(ehPerguntaDeAndamento("como esta o andamento do projeto 2681")).toBe(true)
+  })
+
+  it("procura por palavras-chave na ementa", () => {
+    const itens = [
+      { tipo: "PLO", numero: "10", ano: 2026, ementa: "Dispõe sobre o Plano Diretor do Município de Nova Lima." },
+      { tipo: "PLO", numero: "11", ano: 2025, ementa: "Altera o Plano Diretor." },
+      { tipo: "PLO", numero: "12", ano: 2026, ementa: "Cria o programa de esporte escolar." },
+    ]
+    const r = achaPorPalavras("como esta o andamento que fala sobre o plano diretor do ano de 2026", itens)
+    expect(r.itens.map(i => i.numero)).toEqual(["10"])
+    expect(achaProposicoes({}, itens, "como esta o andamento que fala sobre o plano diretor do ano de 2026")).toHaveLength(0)
   })
 })

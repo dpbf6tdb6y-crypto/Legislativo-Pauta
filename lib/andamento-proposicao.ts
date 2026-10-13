@@ -191,6 +191,7 @@ export function achaProposicoes(f: { proposicao?: string }, itens: any[], textoN
     q.match(/(?:projeto|proposicao|requerimento|mocao|indicacao|numero|pl|plc|plo|pdl|pr|req|moc|ind|n)\s*(?:de\s*lei\s*(?:ordinaria|complementar)?\s*)?(?:n\.?|no|numero)?\s*(\d{1,5})/)
   if (!m) return []
   const num = m[1], ano = m[2]
+  if (!ano && /^20\d\d$/.test(num)) return [] // "do ano de 2026" não é o número de uma proposição
   return itens.filter(i => String(i.numero).replace(/\./g, "") === num && (!ano || String(i.ano) === ano))
 }
 
@@ -239,4 +240,33 @@ export function respondeEtapa(item: any, chave: string): Andamento {
     )
   })
   return { titulo: nome, linhas, fala: `Na proposição ${nome}, ${falas.join(". ")}.` }
+}
+
+const PARADAS = new Set((
+  "como esta estao andamento situacao status que fala falam falando sobre projeto projetos proposicao proposicoes lei leis qual quais quem " +
+  "pediu pedido ultima ultimo informacao etapa fase onde tramitacao tramita aconteceu dispensa intersticio parecer vista adiamento " +
+  "para pelo pela pelos pelas por com sem uma uns umas dos das nos nas aos ano anos este esse essa esta isso tem tinha foi sao ser " +
+  "existe existem algum alguma alguns algumas assunto tema trata tratam referente referentes acerca cujo cuja"
+).split(" "))
+
+// "como está o andamento do que fala sobre o plano diretor de 2026" -> projetos cuja ementa tem "plano" e "diretor"
+export function achaPorPalavras(textoNormalizado: string, itens: any[]) {
+  const norm = (x: string) => String(x || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
+  const ano = textoNormalizado.match(/\b(20\d\d)\b/)?.[1]
+  const palavras = textoNormalizado
+    .replace(/\d+/g, " ")
+    .split(/[^a-z]+/)
+    .filter(w => w.length >= 3 && !PARADAS.has(w) && !/^(de|do|da|o|a|os|as|em|no|na|um)$/.test(w))
+  if (!palavras.length) return { itens: [] as any[], palavras }
+  const raiz = (w: string) => (w.length > 5 ? w.replace(/(oes|aes|es|as|os|a|o|s)$/, "") : w.replace(/s$/, ""))
+  const rs = palavras.map(raiz)
+  const base = itens.filter(i => !ano || String(i.ano) === ano)
+  const pontua = (i: any) => {
+    const txt = " " + norm(i.ementa) + " " + norm(`${i.tipo} ${i.numero}`)
+    return rs.filter(r => txt.indexOf(" " + r) >= 0).length
+  }
+  const todos = base.filter(i => pontua(i) === rs.length)
+  if (todos.length) return { itens: todos, palavras }
+  const quase = rs.length >= 3 ? base.filter(i => pontua(i) >= rs.length - 1) : []
+  return { itens: quase, palavras }
 }
