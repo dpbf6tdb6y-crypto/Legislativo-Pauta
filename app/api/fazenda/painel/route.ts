@@ -25,7 +25,7 @@ export async function GET() {
       const u = await prisma.user.findUnique({ where: { id: (session.user as any).id }, select: { podeUsarMicrofone: true } });
       pode = u?.podeUsarMicrofone !== false;
     }
-    if (!pode) html = html.replace("</head>", "<script>window.__SEM_PESQUISA=1</script></head>");
+    if (!pode) html = "<script>window.__SEM_PESQUISA=1</script>" + html;   // o painel não tem <head>: o script vai antes de tudo
     return new NextResponse(html, {
       headers: {
         "Content-Type": "text/html; charset=utf-8",
