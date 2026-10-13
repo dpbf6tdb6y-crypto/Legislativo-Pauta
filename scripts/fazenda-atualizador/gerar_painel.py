@@ -4074,7 +4074,7 @@ function montaBusca(){
       const partes=[];
       txt.replace(/([.!?;:])\s+/g,'$1\n').split('\n').forEach(fr=>{
         fr=fr.trim();
-        while(fr.length>160){ let k=fr.lastIndexOf(',',160); if(k<50) k=fr.lastIndexOf(' ',160); if(k<20) k=160; partes.push(fr.slice(0,k+1).trim()); fr=fr.slice(k+1).trim(); }
+        while(fr.length>110){ let k=fr.lastIndexOf(',',110); if(k<40) k=fr.lastIndexOf(' ',110); if(k<20) k=110; partes.push(fr.slice(0,k+1).trim()); fr=fr.slice(k+1).trim(); }
         if(fr) partes.push(fr);
       });
       speechSynthesis.cancel();
@@ -4082,7 +4082,7 @@ function montaBusca(){
       const v=escolheVoz(); let i=0;
       const prox=()=>{
         if(i>=partes.length){ if(_tmrKeep){ clearInterval(_tmrKeep); _tmrKeep=null; } return; }
-        const u=new SpeechSynthesisUtterance(partes[i++]); u.lang='pt-BR'; u.rate=1.04; u.pitch=1.06; u.volume=1; if(v) u.voice=v;
+        const u=new SpeechSynthesisUtterance(partes[i++]); u.lang='pt-BR'; u.rate=.88; u.pitch=1.04; u.volume=1; if(v) u.voice=v;
         u.onend=prox; u.onerror=prox; speechSynthesis.speak(u);
       };
       setTimeout(prox,180);

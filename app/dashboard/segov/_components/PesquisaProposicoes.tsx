@@ -46,6 +46,7 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
   const [andamentos, setAndamentos] = useState<Andamento[]>([])
   const falarDepois = useRef(false)
   const recRef = useRef<any>(null)
+  const keep = useRef<any>(null)
   const SR = typeof window !== "undefined" ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null
 
   useEffect(() => { try { setVoz(localStorage.getItem("busca_voz") === "1") } catch {} }, [])
@@ -59,10 +60,10 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
       const partes: string[] = []
       texto.replace(/([.!?;:])\s+/g, "$1\n").split("\n").forEach(fr => {
         let f = fr.trim()
-        while (f.length > 160) {
-          let k = f.lastIndexOf(",", 160)
-          if (k < 50) k = f.lastIndexOf(" ", 160)
-          if (k < 20) k = 160
+        while (f.length > 110) {
+          let k = f.lastIndexOf(",", 110)
+          if (k < 40) k = f.lastIndexOf(" ", 110)
+          if (k < 20) k = 110
           partes.push(f.slice(0, k + 1).trim()); f = f.slice(k + 1).trim()
         }
         if (f) partes.push(f)
@@ -73,10 +74,12 @@ function PesquisaInterna({ itens, vereadores, statusList, total, aplicar, limpar
         + (/francisca|thalita|vitoria|camila|luciana|maria|google/i.test(x.name) ? 30 : 0) - (/antonio|daniel|felipe|ricardo/i.test(x.name) ? 10 : 0) - (/desktop|espeak|compact/i.test(x.name) ? 40 : 0)
       const voz = speechSynthesis.getVoices().filter(x => /^pt/i.test(x.lang)).sort((a, b) => nota(b) - nota(a))[0]
       let i = 0
+      if (keep.current) clearInterval(keep.current)
+      keep.current = setInterval(() => { try { if (speechSynthesis.speaking) { speechSynthesis.pause(); speechSynthesis.resume() } else if (keep.current) { clearInterval(keep.current); keep.current = null } } catch {} }, 9000)
       const prox = () => {
         if (i >= partes.length) return
         const u = new SpeechSynthesisUtterance(partes[i++])
-        u.lang = "pt-BR"; u.rate = 0.95; u.volume = 1
+        u.lang = "pt-BR"; u.rate = 0.88; u.pitch = 1.04; u.volume = 1
         if (voz) u.voice = voz
         u.onend = prox; u.onerror = prox
         speechSynthesis.speak(u)
