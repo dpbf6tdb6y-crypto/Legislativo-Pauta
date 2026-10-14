@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const usuario = searchParams.get("usuario") ?? "";
   const referencia = searchParams.get("referencia") ?? "";
 
-  const where: any = {};
+  const where: any = { entidade: { not: "Acesso" } };
   if (acao) where.acao = acao;
   if (usuario) where.usuarioNome = { contains: usuario, mode: "insensitive" };
   if (referencia) where.referencia = { contains: referencia, mode: "insensitive" };

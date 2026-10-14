@@ -63,6 +63,11 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener("change", atualiza);
   }, []);
   useEffect(() => { setMenuMovel(false); }, [pathname]);
+  // registro discreto de acesso (quem abriu qual menu); falha silenciosa
+  useEffect(() => {
+    if (!pathname) return;
+    fetch("/api/acesso", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ rota: pathname }) }).catch(() => {});
+  }, [pathname]);
   useEffect(() => {
     try { setFixado(localStorage.getItem("segov_menu_fixado") === "1"); } catch {}
   }, []);

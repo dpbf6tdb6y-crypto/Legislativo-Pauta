@@ -2,6 +2,7 @@ import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -11,7 +12,7 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         senha: { label: "Senha", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.senha) return null;
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
@@ -19,6 +20,13 @@ export const authOptions: AuthOptions = {
         if (!user || !user.ativo) return null;
         const ok = await bcrypt.compare(credentials.senha, user.senha);
         if (!ok) return null;
+        // registra a entrada (usuário, aparelho e endereço) — consulta direta, fora da tela de Auditoria
+        const h = (req as any)?.headers || {};
+        await registrarAuditoria({
+          acao: "login", entidade: "Acesso", referencia: "Login",
+          detalhes: { ip: String(h["x-forwarded-for"] || "").split(",")[0].trim(), aparelho: String(h["user-agent"] || "").slice(0, 160) },
+          usuarioId: user.id, usuarioNome: user.nome,
+        });
         return {
           id: user.id, name: user.nome, email: user.email, perfil: user.perfil,
           podeVerIndicacoes: user.podeVerIndicacoes,
