@@ -56,10 +56,20 @@ export const authOptions: AuthOptions = {
         token.podeExportar = u.podeExportar;
         token.podeGerenciarVereadores = u.podeGerenciarVereadores;
         token.podeVerAuditoria = u.podeVerAuditoria;
+        token.invalido = false;
+        token.checadoEm = Date.now();
+      } else if (token.id && (!token.checadoEm || Date.now() - (token.checadoEm as number) > 20000)) {
+        // usuário inativado (ou excluído) perde o acesso mesmo com a sessão ainda aberta
+        try {
+          const u = await prisma.user.findUnique({ where: { id: token.id as string }, select: { ativo: true } });
+          token.invalido = !u || !u.ativo;
+          token.checadoEm = Date.now();
+        } catch {}
       }
       return token;
     },
     async session({ session, token }) {
+      if (token.invalido) return {} as any; // sessão encerrada: getServerSession passa a devolver null
       if (session.user) {
         const su = session.user as any;
         su.id = token.id as string;
