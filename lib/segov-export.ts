@@ -259,7 +259,7 @@ export function exportarSegovPDF(
       `${new Date().toLocaleDateString("pt-BR")}  ·  ${ordenados.length} item(ns)`,
       W - margin, 21, { align: "right" }
     );
-    doc.text(`Página ${pageNum}`, W - margin, 32, { align: "right" });
+    // o "N de T" é escrito no fim, quando já se sabe o total de páginas
   }
 
   function novaPagina() {
@@ -887,6 +887,16 @@ export function exportarSegovPDF(
 
     y += cardH + 7;
   });
+
+  // Numeração "1 de 4", "2 de 4"… em todas as páginas (só agora o total é conhecido)
+  const totalPaginas = doc.getNumberOfPages();
+  for (let p = 1; p <= totalPaginas; p++) {
+    doc.setPage(p);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(219, 234, 254);
+    doc.text(`${p} de ${totalPaginas}`, W - margin, 32, { align: "right" });
+  }
 
   doc.save(nomeArquivo);
 }
