@@ -24,6 +24,7 @@ type Usuario = {
   fluxoResumido?: boolean;
   senhaAreaRestrita?: boolean;
   podeUsarMicrofone?: boolean;
+  podeVerConfiguracoes?: boolean;
   createdAt: string;
 };
 
@@ -44,6 +45,7 @@ export default function UsuariosPage() {
   const [fluxoResumido, setFluxoResumido] = useState(false);
   const [senhaAreaRestrita, setSenhaAreaRestrita] = useState(true);
   const [podeUsarMicrofone, setPodeUsarMicrofone] = useState(true);
+  const [podeVerConfiguracoes, setPodeVerConfiguracoes] = useState(false);
 
   async function carregar() {
     setCarregando(true);
@@ -73,6 +75,7 @@ export default function UsuariosPage() {
       setFluxoResumido(alvo === "novo" ? false : !!(alvo as any).fluxoResumido);
       setSenhaAreaRestrita(alvo === "novo" ? true : (alvo as any).senhaAreaRestrita !== false);
       setPodeUsarMicrofone(alvo === "novo" ? true : (alvo as any).podeUsarMicrofone !== false);
+      setPodeVerConfiguracoes(alvo === "novo" ? false : (alvo as any).podeVerConfiguracoes === true);
     }
     setModal(alvo);
     setErro("");
@@ -101,6 +104,7 @@ export default function UsuariosPage() {
             fluxoResumido,
             senhaAreaRestrita,
             podeUsarMicrofone,
+            podeVerConfiguracoes,
             ...permissoes,
           }),
         });
@@ -120,6 +124,7 @@ export default function UsuariosPage() {
             fluxoResumido,
             senhaAreaRestrita,
             podeUsarMicrofone,
+            podeVerConfiguracoes,
             ...permissoes,
           }),
         });
@@ -278,6 +283,11 @@ export default function UsuariosPage() {
                   <b>Visualizar</b>: a pessoa vê o menu e consulta, sem botões de cadastro. <b>Cadastrar</b>: também cria e edita.
                   Master e Administrador têm acesso total.
                 </p>
+                <label className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg border border-purple-200 bg-purple-50 text-sm text-purple-900 cursor-pointer">
+                  <input type="checkbox" checked={podeVerConfiguracoes} onChange={e => setPodeVerConfiguracoes(e.target.checked)}
+                    className="w-4 h-4 accent-purple-600" />
+                  <span><b>⚙️ Autorizar acesso a Configurações</b> — pede a senha de login ao entrar. O Master sempre tem acesso.</span>
+                </label>
                 <div className="border border-gray-200 rounded-lg overflow-hidden">
                   <div className="grid grid-cols-[1fr_80px_80px] bg-gray-50 text-[10px] font-semibold text-gray-500 uppercase tracking-wide px-3 py-1">
                     <span>Menu</span><span className="text-center">Visualizar</span><span className="text-center">Cadastrar</span>

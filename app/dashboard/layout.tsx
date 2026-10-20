@@ -8,6 +8,7 @@ import { ToastProvider } from "@/contexts/toast";
 import AprovacaoRelatorioListener from "./_components/AprovacaoRelatorioListener";
 import SomenteLeitura from "./_components/SomenteLeitura";
 import { acessoDoMenu, menuDaRota, rotaDeCadastro, rotaDeEdicao } from "@/lib/acessos";
+import ConfigGate from "./_components/ConfigGate";
 
 const navItems = [
   { href: "/dashboard", chave: "dashboard", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -83,7 +84,10 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const isAdminOuMaster = perfilAtual === "admin" || perfilAtual === "master";
   const usuarioSessao = session?.user as any;
   const podeVerIndicacoes = acessoDoMenu(usuarioSessao, "indicacoes").ver;
+  const podeConfiguracoes = perfilAtual === "master" || usuarioSessao?.podeVerConfiguracoes === true;
   const configItemsVisiveis = isAdminOuMaster ? [...configItems, usuariosItem, backupItem, auditoriaItem] : configItems;
+  // telas da área de Configurações: só quem está autorizado entra, e todos confirmam a senha
+  const emConfiguracoes = configItemsVisiveis.some(i => pathname.startsWith(i.href)) || [usuariosItem, backupItem, auditoriaItem].some(i => pathname.startsWith(i.href));
   const [configAberto, setConfigAberto] = useState(
     configItemsVisiveis.some(i => pathname.startsWith(i.href))
   );
@@ -128,7 +132,7 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
   const menuAtual = menuDaRota(pathname);
   const acessoAtual = menuAtual ? acessoDoMenu(usuarioSessao, menuAtual) : null;
   // sem acesso ao menu, ou tela de cadastro (novo/importar) para quem só visualiza
-  const semAcesso = !!acessoAtual && (!acessoAtual.ver || (!acessoAtual.cad && (rotaDeCadastro(pathname) || rotaDeEdicao(pathname))));
+  const semAcesso = (emConfiguracoes && !podeConfiguracoes) || (!!acessoAtual && (!acessoAtual.ver || (!acessoAtual.cad && (rotaDeCadastro(pathname) || rotaDeEdicao(pathname)))));
   const somenteLeitura = !!acessoAtual && acessoAtual.ver && !acessoAtual.cad;
 
   return (
@@ -255,8 +259,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
           })()}
         </nav>
 
-        {/* Configurações: só o Master vê */}
-        {perfilAtual === "master" && (
+        {/* Configurações: o Master e quem foi autorizado no cadastro de usuários */}
+        {podeConfiguracoes && (
         <div className="px-2 pb-1 pt-2" style={{ borderTop: `1px solid ${BORDER_COLOR}` }}>
           <button
             onClick={() => { if (sidebarOpen) setConfigAberto(v => !v); }}
@@ -376,6 +380,8 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
               <p className="font-bold text-gray-800 mb-1">Sem acesso a esta tela</p>
               <p className="text-sm text-gray-500">Seu usuário não tem permissão para esta área. Fale com o Master para liberar.</p>
             </div>
+          ) : emConfiguracoes ? (
+            <ConfigGate>{children}</ConfigGate>
           ) : somenteLeitura ? (
             <SomenteLeitura bloqueiaCampos={rotaDeEdicao(pathname)}>{children}</SomenteLeitura>
           ) : (

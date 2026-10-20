@@ -19,6 +19,7 @@ model User {
   fluxoResumido            Boolean  @default(false)
   senhaAreaRestrita        Boolean  @default(true)
   podeUsarMicrofone        Boolean  @default(true)
+  podeVerConfiguracoes     Boolean  @default(false)
   podeCriar                Boolean  @default(true)
   podeEditar               Boolean  @default(true)
   podeExcluir              Boolean  @default(true)
