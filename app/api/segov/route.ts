@@ -21,8 +21,11 @@ export async function GET(req: Request) {
       ...(vereadorId ? { vereadorId } : {}),
     },
     include: { vereador: true },
-    orderBy: [{ ano: "desc" }, { numero: "asc" }],
+    orderBy: [{ ano: "desc" }],
   });
+  // ano mais novo primeiro e, dentro do ano, o número MAIOR primeiro (comparado como número: "999" < "2758")
+  const num = (n: string) => parseInt(String(n).replace(/\D/g, ""), 10) || 0;
+  data.sort((a, b) => b.ano - a.ano || num(b.numero) - num(a.numero) || String(a.tipo).localeCompare(String(b.tipo)));
   return NextResponse.json(data);
 }
 
