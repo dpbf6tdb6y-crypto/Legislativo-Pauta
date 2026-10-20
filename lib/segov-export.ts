@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 import jsPDF from "jspdf";
 import { ehPoderExecutivo, resolverAutores } from "@/lib/vereador-match";
 
@@ -127,22 +127,49 @@ function valorColuna(item: SegovItem, key: ColunasKey): string {
   }
 }
 
+// Cores de destaque por poder (mesmas no Excel e no PDF): Executivo em azul-marinho, Legislativo em verde.
+const COR_EXECUTIVO = { rgb: [30, 58, 138], hex: "1E3A8A", claro: "DBEAFE" };
+const COR_LEGISLATIVO = { rgb: [21, 128, 61], hex: "15803D", claro: "DCFCE7" };
+
 export function exportarSegovExcel(
   itens: SegovItem[],
   colunas: ColunasKey[],
   nomeArquivo = "segov.xlsx"
 ) {
   const headers = colunas.map(k => COLUNAS_RELATORIO.find(c => c.key === k)!.label);
-  const linhas = itens.map(item => {
-    const row: Record<string, string> = {};
-    colunas.forEach((k, i) => { row[headers[i]] = valorColuna(item, k); });
-    return row;
+  const wb = XLSX.utils.book_new();
+
+  // Uma aba por poder (cada uma "começa em página própria"): Executivo primeiro, depois Legislativo.
+  const grupos = [
+    { nome: "Poder Executivo", titulo: "PODER EXECUTIVO — PROPOSIÇÕES", cor: COR_EXECUTIVO, itens: itens.filter(i => ehPoderExecutivo(i)) },
+    { nome: "Legislativo", titulo: "PODER LEGISLATIVO (VEREADORES) — PROPOSIÇÕES", cor: COR_LEGISLATIVO, itens: itens.filter(i => !ehPoderExecutivo(i)) },
+  ].filter(g => g.itens.length > 0);
+
+  const borda = { style: "thin", color: { rgb: "D1D5DB" } };
+  const bordas = { top: borda, bottom: borda, left: borda, right: borda };
+
+  grupos.forEach(g => {
+    const aoa: any[][] = [];
+    const nCols = headers.length;
+    // linha 1: faixa de título do poder
+    aoa.push([{ v: g.titulo, t: "s", s: { font: { bold: true, sz: 14, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: g.cor.hex } }, alignment: { vertical: "center" } } },
+      ...Array(nCols - 1).fill({ v: "", t: "s", s: { fill: { fgColor: { rgb: g.cor.hex } } } })]);
+    // linha 2: cabeçalho das colunas
+    aoa.push(headers.map(h => ({ v: h, t: "s", s: { font: { bold: true, color: { rgb: g.cor.hex } }, fill: { fgColor: { rgb: g.cor.claro } }, border: bordas, alignment: { vertical: "center", wrapText: true } } })));
+    // dados
+    g.itens.forEach(item => {
+      aoa.push(colunas.map(k => ({ v: valorColuna(item, k), t: "s", s: { border: bordas, alignment: { vertical: "top", wrapText: true } } })));
+    });
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws["!cols"] = headers.map((h, i) => ({ wch: colunas[i] === "ementa" ? 70 : Math.min(40, Math.max(14, h.length + 4)) }));
+    ws["!rows"] = [{ hpt: 26 }];
+    ws["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: Math.max(0, nCols - 1) } }];
+    ws["!freeze"] = { xSplit: 0, ySplit: 2 };
+    (ws as any)["!views"] = [{ state: "frozen", ySplit: 2 }];
+    XLSX.utils.book_append_sheet(wb, ws, g.nome);
   });
 
-  const ws = XLSX.utils.json_to_sheet(linhas);
-  ws["!cols"] = headers.map(h => ({ wch: Math.min(60, Math.max(12, h.length + 4)) }));
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Proposições");
+  if (!grupos.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([headers]), "Proposições");
   XLSX.writeFile(wb, nomeArquivo);
 }
 
@@ -531,12 +558,14 @@ export function exportarSegovPDF(
       // Mesmo azul do cabeçalho do relatório — faixa de seção precisa se
       // destacar bem mais que um simples divisor cinza, já que é o que
       // separa Executivo de Vereador numa lista com dezenas de itens.
-      doc.setFillColor(37, 99, 235);
+      // Executivo em azul-marinho, Legislativo em verde — cada poder com o seu destaque.
+      const corSecao = g === 0 ? COR_EXECUTIVO.rgb : COR_LEGISLATIVO.rgb;
+      doc.setFillColor(corSecao[0], corSecao[1], corSecao[2]);
       doc.rect(margin, y, cw, 22, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(255, 255, 255);
-      doc.text((g === 0 ? "PODER EXECUTIVO — PROPOSIÇÕES" : "VEREADOR — PROPOSIÇÕES"), margin + 9, y + 14.5);
+      doc.text((g === 0 ? "PODER EXECUTIVO — PROPOSIÇÕES" : "PODER LEGISLATIVO (VEREADORES) — PROPOSIÇÕES"), margin + 9, y + 14.5);
       y += 28;
     }
 
@@ -544,7 +573,8 @@ export function exportarSegovPDF(
 
     // Mesmo azul usado no cabeçalho e nos contornos das telas (bg-blue-600),
     // no lugar do verde anterior.
-    doc.setDrawColor(37, 99, 235);
+    const corCartao = g === 0 ? COR_EXECUTIVO.rgb : COR_LEGISLATIVO.rgb;
+    doc.setDrawColor(corCartao[0], corCartao[1], corCartao[2]);
     doc.setLineWidth(1.2);
     doc.rect(margin, y, cw, cardH, "S");
 
