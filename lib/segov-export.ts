@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx-js-style";
 import jsPDF from "jspdf";
 import { ehPoderExecutivo, resolverAutores } from "@/lib/vereador-match";
+import { chavesDoConjunto } from "@/lib/fluxo-conjunto";
 
 export type SegovItem = {
   tipo: string;
@@ -343,10 +344,8 @@ export function exportarSegovPDF(
     // Parecer conjunto: as comissões que o emitiram são desenhadas dentro de
     // uma moldura única, sem setas entre elas, e o passo avulso "C. Conj." sai
     // do fluxo (a moldura já comunica isso).
-    const conjunta = !!fluxo["comissaoConjunta"]?.done;
-    const comissoesDoGrupo = conjunta
-      ? FLUXO_DEF_EXPORT.filter(d => CHAVES_COMISSAO.includes(d.key) && fluxo[d.key]?.done)
-      : [];
+    const chavesGrupoConj = chavesDoConjunto(fluxo as any);
+    const comissoesDoGrupo = FLUXO_DEF_EXPORT.filter(d => chavesGrupoConj.includes(d.key));
     const agrupar = comissoesDoGrupo.length >= 2;
 
     const marcadosBase = FLUXO_DEF_EXPORT.filter(d => {

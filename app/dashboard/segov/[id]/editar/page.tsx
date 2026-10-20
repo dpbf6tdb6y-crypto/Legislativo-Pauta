@@ -6,6 +6,7 @@ import { useToast } from '@/contexts/toast'
 import { useTopbar } from '@/contexts/topbar'
 import { buscarVereadorPorNome, splitAutoresTexto } from '@/lib/vereador-match'
 import { derivarStatusSegov } from '@/lib/segov-status'
+import { chavesDoConjunto } from '@/lib/fluxo-conjunto'
 
 const TIPOS = ['PL', 'PLC', 'PDL', 'RES', 'PELO']
 const STATUS_LIST = ['Aguardando', 'Em análise', 'Aprovado', 'Sancionado', 'Promulgado', 'Rejeitado', 'Arquivado', 'Retirado']
@@ -25,6 +26,7 @@ const STATUS_COR: Record<string, string> = {
 type Autor = { id?: string; nome: string; isPE: boolean; ativo?: boolean }
 
 type StepData = {
+  comissoes?: string[] // só no Parecer Conjunto: quais comissões fizeram parte
   comissaoId?: string
   comissaoNome?: string
   nome1?: string
@@ -294,6 +296,17 @@ export default function EditarSeggovPage() {
       return { ...prev, [key]: { ...(prev[key] || {}), autoresComissoes: novo } }
     })
   }
+  /** Parecer Conjunto de só algumas comissões: marca/desmarca quais delas fizeram parte. */
+  function alternarComissaoDoConjunto(chaveComissao: string) {
+    setFluxo(prev => {
+      const conj = prev['comissaoConjunta']
+      if (!conj) return prev
+      const marcadas = ['comissao1', 'comissao2', 'comissao3'].filter(k => prev[k]?.done)
+      const atual = Array.isArray(conj.data?.comissoes) ? conj.data!.comissoes! : marcadas
+      const novo = atual.includes(chaveComissao) ? atual.filter(k => k !== chaveComissao) : [...atual, chaveComissao]
+      return { ...prev, comissaoConjunta: { ...conj, data: { ...(conj.data || {}), comissoes: novo } } }
+    })
+  }
   function alterarAutoresComissao(key: string, nomeComissao: string) {
     setFluxo(prev => {
       if (!prev[key]) return prev
@@ -529,15 +542,14 @@ export default function EditarSeggovPage() {
 
   const segmentos = useMemo(() => {
     type No = typeof marcados[number]
-    const doGrupo = fluxo['comissaoConjunta']?.done
-      ? marcados.filter(m => CHAVES_COMISSAO.includes(m.key))
-      : []
+    const chavesGrupo = chavesDoConjunto(fluxo)
+    const doGrupo = marcados.filter(m => chavesGrupo.includes(m.key))
     const agrupar = doGrupo.length >= 2
 
     const out: ({ tipo: 'no'; step: No } | { tipo: 'grupo'; steps: No[] } | { tipo: 'fantasma'; label: string })[] = []
     let grupoInserido = false
     marcados.forEach(step => {
-      if (agrupar && CHAVES_COMISSAO.includes(step.key)) {
+      if (agrupar && chavesGrupo.includes(step.key)) {
         if (!grupoInserido) { out.push({ tipo: 'grupo', steps: doGrupo }); grupoInserido = true }
         return
       }
@@ -912,6 +924,30 @@ export default function EditarSeggovPage() {
                     )}
                   </select>
                 )}
+              </div>
+            )
+          })()}
+
+          {def.key === 'comissaoConjunta' && done && (() => {
+            const marcadas = ['comissao1', 'comissao2', 'comissao3'].filter(k => fluxo[k]?.done)
+            const escolhidas: string[] = Array.isArray(state?.data?.comissoes) ? state!.data!.comissoes! : marcadas
+            if (marcadas.length < 2) return null
+            return (
+              <div className="w-full">
+                <label className="block text-xs text-gray-500 mb-1">Comissões do parecer conjunto</label>
+                <div className="flex flex-col gap-1">
+                  {marcadas.map(k => {
+                    const nome = fluxo[k]?.data?.comissaoNome || k.replace('comissao', 'Comissão ')
+                    const rotulo = nome.includes(' — ') ? nome.split(' — ').slice(1).join(' — ') : nome
+                    return (
+                      <label key={k} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                        <input type="checkbox" checked={escolhidas.includes(k)} onChange={() => alternarComissaoDoConjunto(k)} className="w-4 h-4 accent-purple-600" />
+                        <span>{k.replace('comissao', 'Comissão ')} — {rotulo}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">Desmarque a comissão que deu o parecer à parte. O conjunto precisa de pelo menos 2.</p>
               </div>
             )
           })()}

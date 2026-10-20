@@ -12,6 +12,7 @@ import PasswordInput from '@/app/components/PasswordInput'
 import { usePermissao } from '@/lib/usePermissao'
 import { useSession } from 'next-auth/react'
 import PesquisaProposicoes, { type FiltrosPesquisa } from './_components/PesquisaProposicoes'
+import { chavesDoConjunto } from '@/lib/fluxo-conjunto'
 
 const FLUXO_DEF = [
   { key: 'protocolado',         labelCurto: 'Prot.'    },
@@ -645,14 +646,13 @@ export default function SeggovPage() {
 
             // Parecer conjunto: as comissões entram numa faixa única, sem setas
             // entre elas — enfileirá-las sugeriria tramitação sequencial.
-            const doGrupo = fluxo['comissaoConjunta']?.done
-              ? marcados.filter(m => CHAVES_COMISSAO.includes(m.key))
-              : []
+            const chavesGrupo = chavesDoConjunto(fluxo)
+            const doGrupo = marcados.filter(m => chavesGrupo.includes(m.key))
             const agrupar = doGrupo.length >= 2
             const segmentos: ({ tipo: 'no'; step: typeof marcados[number] } | { tipo: 'grupo'; steps: typeof marcados } | { tipo: 'fantasma'; label: string })[] = []
             let grupoInserido = false
             marcados.forEach(step => {
-              if (agrupar && CHAVES_COMISSAO.includes(step.key)) {
+              if (agrupar && chavesGrupo.includes(step.key)) {
                 if (!grupoInserido) { segmentos.push({ tipo: 'grupo', steps: doGrupo }); grupoInserido = true }
                 return
               }
