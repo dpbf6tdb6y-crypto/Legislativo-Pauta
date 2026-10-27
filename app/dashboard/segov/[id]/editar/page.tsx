@@ -614,12 +614,14 @@ export default function EditarSeggovPage() {
     // Retirado de Pauta é sempre laranja, a mesma cor do status "Retirado" —
     // independe do resto do fluxo estar verde/vermelho/azul.
     const isRetirado = step.key.startsWith('retiradoPauta')
+    // Comissão marcada, mas ainda sem Aprovado/Reprovado: fica azul (em análise). Verde só quando aprovada.
+    const comissaoPendente = (CHAVES_COMISSAO.includes(step.key) || step.key === 'comissaoEspecial') && !step.data?.resultado
     return (
       <div className="flex flex-col items-center" style={{ width: '84px' }}>
         <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-sm ${
           isRetirado ? 'bg-orange-500' :
           negativoLocal || graficoCor === 'vermelho' ? 'bg-red-500' :
-          (graficoCor === 'normal' && isLast) ? 'bg-blue-500' :
+          (graficoCor === 'normal' && (isLast || comissaoPendente)) ? 'bg-blue-500' :
           'bg-green-500'
         }`}>
           <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -633,7 +635,7 @@ export default function EditarSeggovPage() {
           <p className={`text-xs font-semibold mt-1 text-center leading-tight px-1 ${
             isRetirado ? 'text-orange-600' :
             negativoLocal || graficoCor === 'vermelho' ? 'text-red-700' :
-            (graficoCor === 'normal' && isLast) ? 'text-blue-600' :
+            (graficoCor === 'normal' && (isLast || comissaoPendente)) ? 'text-blue-600' :
             'text-gray-700'
           }`}>{step.labelCurto}</p>
         )}

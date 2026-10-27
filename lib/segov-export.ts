@@ -798,11 +798,13 @@ export function exportarSegovPDF(
           // Retirado de Pauta é sempre laranja, a mesma cor do status
           // "Retirado" — independe do resto do fluxo.
           const isRetirado = p.step.key.startsWith("retiradoPauta");
+          // Comissão marcada, mas ainda sem Aprovado/Reprovado: azul (em análise). Verde só quando aprovada.
+          const comissaoPendente = (CHAVES_COMISSAO.includes(p.step.key) || p.step.key === "comissaoEspecial") && !p.sd?.data?.resultado;
 
           let nr = 22, ng = 163, nb = 74;
           if (isRetirado) { nr = 249; ng = 115; nb = 22; }
           else if (negativoLocal || graficoCor === "vermelho") { nr = 220; ng = 38; nb = 38; }
-          else if (graficoCor === "normal" && ultimoGeral) { nr = 37; ng = 99; nb = 235; }
+          else if (graficoCor === "normal" && (ultimoGeral || comissaoPendente)) { nr = 37; ng = 99; nb = 235; }
 
           doc.setFillColor(nr, ng, nb);
           doc.circle(x, nodeY, nodeR, "F");
