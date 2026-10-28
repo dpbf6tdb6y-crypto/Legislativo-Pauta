@@ -16,16 +16,18 @@ type Modo = 'texto' | 'pdf' | 'word' | 'excel'
 type Etapa = 'upload' | 'revisao' | 'sucesso'
 
 type ItemProposicao = {
-  tipo: string; numero: string; ano: number; ementa: string
-  jaExiste: boolean; incluir: boolean
-  observacao?: string; dataEnvio?: string; autorNome?: string; vereadorId?: string
+  tipo: string; sigla: string; numero: string; ano: number; ementa: string
+  jaExiste: { id: string; autorNome: string | null; ementa: string; status: string; quantidade: number } | null
+  incluir: boolean
+  repetidoNaPauta: string[]; autoresSemVinculo: string[]
+  observacao?: string; dataEnvio?: string; autorNome?: string; vereadorId?: string | null
 }
 
-type ItemParecer = {
-  tipo: string; numero: string; ano: number
-  parecerComissao: string; parecerConjunto: boolean
-  proxComissao?: string; autorNome?: string; ementa?: string; dataParecere?: string
-  jaExiste: boolean; incluir: boolean
+type ItemIgnorado = { tipo: string; numero: string; ano: number; autorNome?: string; motivo: string }
+
+type ResultadoImportacao = {
+  criados: number; ignorados: number; erros: number
+  jaExistiam: string[]; errosDetalhe: { ref: string; motivo: string }[]
 }
 
 const MODOS: { id: Modo; label: string; accept: string; ext: string }[] = [
@@ -51,7 +53,8 @@ export default function ImportarSeggovPage() {
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
   const [proposicoes, setProposicoes] = useState<ItemProposicao[]>([])
-  const [pareceres, setPareceres] = useState<ItemParecer[]>([])
+  const [ignorados, setIgnorados] = useState<ItemIgnorado[]>([])
+  const [avisos, setAvisos] = useState<string[]>([])
   const [historico, setHistorico] = useState<LogImportacao[]>([])
   const [mostrarHistorico, setMostrarHistorico] = useState(false)
 
@@ -59,7 +62,7 @@ export default function ImportarSeggovPage() {
     fetch('/api/log-importacao').then(r => r.json()).then(d => Array.isArray(d) && setHistorico(d))
   }, [])
   const [dataEnvio, setDataEnvio] = useState<string | undefined>()
-  const [resultado, setResultado] = useState<{ criados: number; atualizados: number; erros: number } | null>(null)
+  const [resultado, setResultado] = useState<ResultadoImportacao | null>(null)
 
   function trocarModo(m: Modo) {
     setModo(m); setArquivo(null); setErro('')
@@ -85,14 +88,15 @@ export default function ImportarSeggovPage() {
       const data = await res.json()
       if (!res.ok) { setErro(data.error || 'Erro ao extrair'); setExtraindo(false); return }
 
-      if (!data.proposicoes?.length && !data.pareceres?.length) {
-        setErro('Nenhuma proposição ou parecer encontrado no documento.')
+      if (!data.proposicoes?.length && !data.ignorados?.length) {
+        setErro((data.avisos && data.avisos[0]) || 'Nenhuma proposição nova encontrada na seção "Apresentação de proposições".')
         setExtraindo(false); return
       }
 
       setDataEnvio(data.dataEnvio)
       setProposicoes((data.proposicoes || []).map((p: any) => ({ ...p, incluir: !p.jaExiste })))
-      setPareceres((data.pareceres || []).map((p: any) => ({ ...p, incluir: true })))
+      setIgnorados(data.ignorados || [])
+      setAvisos(data.avisos || [])
       setEtapa('revisao')
     } catch {
       setErro('Erro de conexão. Tente novamente.')
@@ -101,7 +105,7 @@ export default function ImportarSeggovPage() {
   }
 
   const novasProposicoes = proposicoes.filter(p => p.incluir && !p.jaExiste)
-  const parecedParaAtualizar = pareceres.filter(p => p.incluir)
+  const jaExistem = proposicoes.filter(p => p.jaExiste)
 
   async function cadastrar() {
     setSalvando(true)
@@ -110,10 +114,10 @@ export default function ImportarSeggovPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         proposicoes: novasProposicoes.map(p => ({ ...p, dataEnvio: p.dataEnvio ?? dataEnvio })),
-        pareceres: parecedParaAtualizar.map(p => ({ ...p, dataParecere: p.dataParecere ?? dataEnvio })),
       }),
     })
     const data = await res.json()
+    if (!res.ok) { setErro(data.error || 'Erro ao importar'); setSalvando(false); return }
     setResultado(data); setEtapa('sucesso'); setSalvando(false)
     fetch('/api/log-importacao').then(r => r.json()).then(d => Array.isArray(d) && setHistorico(d))
   }
@@ -134,7 +138,7 @@ export default function ImportarSeggovPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-xl font-bold text-gray-800">Importar Pauta</h1>
-          <p className="text-sm text-gray-500">Extrai proposições e pareceres da pauta automaticamente</p>
+          <p className="text-sm text-gray-500">Lê a pauta da Câmara e cadastra as proposições novas (Apresentação de proposições)</p>
         </div>
         {historico.length > 0 && (
           <button onClick={() => setMostrarHistorico(v => !v)}
@@ -272,10 +276,9 @@ export default function ImportarSeggovPage() {
                 )}
               </p>
               <p className="text-sm text-gray-500 mt-0.5">
-                <span className="text-green-700 font-medium">{novasProposicoes.length} nova(s)</span> para criar
-                {parecedParaAtualizar.length > 0 && (
-                  <> · <span className="text-purple-700 font-medium">{parecedParaAtualizar.length} parecer(es)</span> para registrar</>
-                )}
+                <span className="text-green-700 font-medium">{novasProposicoes.length} nova(s)</span> para cadastrar
+                {jaExistem.length > 0 && <> · <span className="text-amber-700 font-medium">{jaExistem.length} já existe(m)</span> (não serão gravadas)</>}
+                {ignorados.length > 0 && <> · <span className="text-gray-600 font-medium">{ignorados.length} ignorada(s)</span></>}
               </p>
             </div>
             <div className="flex gap-2">
@@ -283,7 +286,7 @@ export default function ImportarSeggovPage() {
                 className="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
                 Voltar
               </button>
-              <button onClick={cadastrar} disabled={salvando || (novasProposicoes.length === 0 && parecedParaAtualizar.length === 0)}
+              <button onClick={cadastrar} disabled={salvando || novasProposicoes.length === 0}
                 className="flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-semibold text-white transition disabled:opacity-60"
                 style={{ background: '#8B0000' }}>
                 {salvando ? (
@@ -291,10 +294,18 @@ export default function ImportarSeggovPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                   </svg>Importando...</>
-                ) : 'Importar Proposições'}
+                ) : `Cadastrar ${novasProposicoes.length} proposição(ões)`}
               </button>
             </div>
           </div>
+
+          {erro && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{erro}</div>}
+
+          {avisos.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 space-y-1">
+              {avisos.map((a, i) => <p key={i}>⚠ {a}</p>)}
+            </div>
+          )}
 
           {/* Seção: Apresentação de Proposições */}
           {proposicoes.length > 0 && (
@@ -329,15 +340,29 @@ export default function ImportarSeggovPage() {
                               className="w-4 h-4 accent-red-800" />
                         }
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded mr-1 ${TIPO_COR[item.tipo] || 'bg-gray-100 text-gray-700'}`}>{item.tipo}</span>
+                      <td className="px-3 py-2 whitespace-nowrap align-top">
+                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded mr-1 ${TIPO_COR[item.sigla] || 'bg-gray-100 text-gray-700'}`}>{item.sigla}</span>
                         <span className="font-semibold text-gray-800">{item.numero}/{item.ano}</span>
                         {item.autorNome && <p className="text-xs text-gray-400 mt-0.5">{item.autorNome}</p>}
                       </td>
-                      <td className="px-3 py-2 text-gray-600 text-xs max-w-xs">
+                      <td className="px-3 py-2 text-gray-600 text-xs max-w-xs align-top">
                         <span className="line-clamp-2">{item.ementa || <em className="text-gray-400">sem ementa</em>}</span>
+                        {item.jaExiste && (
+                          <p className="mt-1 text-amber-700">
+                            Já cadastrada{item.jaExiste.quantidade > 1 ? ` (${item.jaExiste.quantidade} registros com esta numeração)` : ''}
+                            {item.jaExiste.autorNome ? ` — autoria ${item.jaExiste.autorNome}` : ''}, situação {item.jaExiste.status}.
+                          </p>
+                        )}
+                        {item.repetidoNaPauta.length > 0 && (
+                          <p className="mt-1 text-red-700 font-medium">
+                            ⚠ Numeração repetida na pauta: este número também aparece em {item.repetidoNaPauta.join('; ')}.
+                          </p>
+                        )}
+                        {item.autoresSemVinculo.length > 0 && (
+                          <p className="mt-1 text-gray-500">Autor sem vínculo com vereador cadastrado: {item.autoresSemVinculo.join(', ')} (fica só como texto).</p>
+                        )}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-500">
+                      <td className="px-3 py-2 text-xs text-gray-500 align-top">
                         {item.observacao && <span className="bg-gray-100 px-2 py-0.5 rounded">{item.observacao}</span>}
                       </td>
                     </tr>
@@ -347,64 +372,23 @@ export default function ImportarSeggovPage() {
             </div>
           )}
 
-          {/* Seção: Leitura de Pareceres */}
-          {pareceres.length > 0 && (
+          {/* Itens que a pauta traz, mas que não entram no sistema */}
+          {ignorados.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="px-4 py-3 border-b border-gray-100 bg-purple-50 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />
-                <span className="text-sm font-semibold text-purple-700">d) Leitura de Pareceres</span>
-                <span className="text-xs text-purple-400 ml-auto">{pareceres.length} item(s)</span>
+              <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />
+                <span className="text-sm font-semibold text-gray-700">Ignorados (não serão cadastrados)</span>
+                <span className="text-xs text-gray-400 ml-auto">{ignorados.length} item(s)</span>
               </div>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="w-10 px-3 py-2">
-                      <input type="checkbox"
-                        checked={pareceres.every(p => p.incluir)}
-                        onChange={e => setPareceres(prev => prev.map(p => ({ ...p, incluir: e.target.checked })))}
-                        className="w-4 h-4 accent-purple-700" />
-                    </th>
-                    <th className="text-left px-3 py-2 font-semibold text-gray-500 text-xs">Proposição</th>
-                    <th className="text-left px-3 py-2 font-semibold text-gray-500 text-xs">Comissão que emitiu</th>
-                    <th className="text-left px-3 py-2 font-semibold text-gray-500 text-xs">Próxima comissão</th>
-                    <th className="text-left px-3 py-2 font-semibold text-gray-500 text-xs">Cadastrada</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {pareceres.map((item, idx) => (
-                    <tr key={idx} className={item.incluir ? '' : 'opacity-40'}>
-                      <td className="px-3 py-2 text-center">
-                        <input type="checkbox" checked={item.incluir}
-                          onChange={() => setPareceres(prev => prev.map((p, i) => i === idx ? { ...p, incluir: !p.incluir } : p))}
-                          className="w-4 h-4 accent-purple-700" />
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        <span className={`text-xs font-bold px-1.5 py-0.5 rounded mr-1 ${TIPO_COR[item.tipo] || 'bg-gray-100 text-gray-700'}`}>{item.tipo}</span>
-                        <span className="font-semibold text-gray-800">{item.numero}/{item.ano}</span>
-                        {item.autorNome && <p className="text-xs text-gray-400 mt-0.5">{item.autorNome}</p>}
-                      </td>
-                      <td className="px-3 py-2 text-xs">
-                        {item.parecerConjunto && (
-                          <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-1.5 py-0.5 rounded mr-1">CONJUNTO</span>
-                        )}
-                        <span className="text-gray-700">{item.parecerComissao}</span>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-500">
-                        {item.proxComissao
-                          ? <span className="bg-gray-100 px-2 py-0.5 rounded">{item.proxComissao}</span>
-                          : <span className="text-gray-300">Pronto p/ votação</span>
-                        }
-                      </td>
-                      <td className="px-3 py-2">
-                        {item.jaExiste
-                          ? <span className="text-xs text-green-700 font-medium bg-green-50 px-2 py-0.5 rounded">Encontrado</span>
-                          : <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-0.5 rounded">Novo</span>
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <ul className="divide-y divide-gray-50 text-sm">
+                {ignorados.map((i, idx) => (
+                  <li key={idx} className="px-4 py-2 text-gray-600">
+                    <span className="font-semibold text-gray-800">{i.tipo} {i.numero}/{i.ano}</span>
+                    {i.autorNome && <span className="text-gray-400"> — {i.autorNome}</span>}
+                    <span className="block text-xs text-gray-500">{i.motivo}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
@@ -419,21 +403,24 @@ export default function ImportarSeggovPage() {
             </svg>
           </div>
           <div>
-            <p className="text-xl font-bold text-gray-800">Pauta importada com sucesso</p>
-            <div className="flex justify-center gap-6 mt-3 text-sm">
-              {resultado.criados > 0 && (
-                <span className="text-blue-700"><strong>{resultado.criados}</strong> proposição(ões) criada(s)</span>
-              )}
-              {resultado.atualizados > 0 && (
-                <span className="text-purple-700"><strong>{resultado.atualizados}</strong> parecer(es) registrado(s)</span>
+            <p className="text-xl font-bold text-gray-800">Pauta importada</p>
+            <div className="flex justify-center gap-6 mt-3 text-sm flex-wrap">
+              <span className="text-blue-700"><strong>{resultado.criados}</strong> proposição(ões) criada(s)</span>
+              {resultado.ignorados > 0 && (
+                <span className="text-amber-700"><strong>{resultado.ignorados}</strong> já existia(m), não gravada(s)</span>
               )}
               {resultado.erros > 0 && (
                 <span className="text-red-600"><strong>{resultado.erros}</strong> erro(s)</span>
               )}
             </div>
+            {resultado.errosDetalhe?.length > 0 && (
+              <ul className="mt-3 text-xs text-red-600 space-y-0.5">
+                {resultado.errosDetalhe.map((e, i) => <li key={i}>{e.ref}: {e.motivo}</li>)}
+              </ul>
+            )}
           </div>
           <div className="flex justify-center gap-3 pt-2">
-            <button onClick={() => { setEtapa('upload'); setProposicoes([]); setPareceres([]); setArquivo(null); setTexto(''); setResultado(null); setDataEnvio(undefined) }}
+            <button onClick={() => { setEtapa('upload'); setProposicoes([]); setIgnorados([]); setAvisos([]); setArquivo(null); setTexto(''); setResultado(null); setDataEnvio(undefined) }}
               className="px-5 py-2.5 rounded-lg text-sm font-semibold border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
               Nova Importação
             </button>
