@@ -2373,6 +2373,36 @@ function barrasSaldo(host,meses){
   });
 }
 
+/* restos a pagar (RREO, Anexo 07): para cada grupo, quanto foi inscrito e para onde foi (pago, cancelado ou ainda a pagar).
+   Barras horizontais na mesma escala; despesa de anos anteriores, fora da conta de receita x pago do exercício. */
+function barrasRestos(host,rp){
+  host.innerHTML='';
+  const W=host.clientWidth||900, ml=150, mr=24, rowH=26, gap=14, mt=6, H=mt+3*rowH+2*gap+6;
+  const svg=S('svg',{viewBox:'0 0 '+W+' '+H,width:W,height:H}); host.appendChild(svg);
+  const grupos=[
+    {nome:'Total', pag:rp.pagos, can:rp.cancelados, sal:rp.saldo_total, ins:rp.inscritos_ano_anterior+rp.inscritos_anteriores,
+     dica:'Restos a pagar processados e não processados'},
+    {nome:'Processados', pag:rp.pagos_proc, can:rp.canc_proc, sal:rp.saldo_proc, ins:rp.ant_proc+rp.insc_proc,
+     dica:'Já entregues e liquidados: a despesa estava pronta para pagar'},
+    {nome:'Não processados', pag:rp.pagos_nproc, can:rp.canc_nproc, sal:rp.saldo_nproc, ins:rp.ant_nproc+rp.insc_nproc,
+     dica:'Empenhados, mas ainda sem a entrega ou a liquidação em 31/12'}];
+  const maxV=Math.max(1,...grupos.map(g=>g.ins)), esc_=(W-ml-mr-90)/maxV;
+  const SEG=[['pag','Pagos','#B8860B','#fff'],['can','Cancelados','#98A2B3','#1D2939'],['sal','Ainda a pagar','var(--acento)','#fff']];
+  grupos.forEach((g,i)=>{
+    const y=mt+i*(rowH+gap);
+    const t=S('text',{x:ml-10,y:y+rowH/2+4,'text-anchor':'end',class:i?'cc':'cv'}); t.textContent=g.nome; svg.appendChild(t);
+    let x=ml;
+    SEG.forEach(([k,rot,cor,txt])=>{
+      const v=g[k]||0, w=v*esc_; if(w<=0) return;
+      const r=S('rect',{x:x,y:y,width:Math.max(w,1.5),height:rowH,fill:cor,stroke:'var(--bg)','stroke-width':1.5});
+      dica(r,rot+' · '+g.nome,'<em>'+exato(v)+'</em><br>'+f1.format(g.ins?v/g.ins*100:0)+'% do inscrito<br>'+g.dica); svg.appendChild(r);
+      if(w>74){ const tx=S('text',{x:x+w/2,y:y+rowH/2+4,'text-anchor':'middle',class:'cv'}); tx.style.fill=txt; tx.textContent=extenso(v); svg.appendChild(tx); }
+      x+=w;
+    });
+    const tf=S('text',{x:x+8,y:y+rowH/2+4,class:'cc'}); tf.textContent='inscrito '+extenso(g.ins); svg.appendChild(tf);
+  });
+}
+
 /* ---------------- página de equilíbrio (Gestão Fiscal) ---------------- */
 function montaEquilibrio(){
   const host=document.getElementById('pg-eq');
@@ -2403,6 +2433,20 @@ function montaEquilibrio(){
   const sSal=bloco(host,'Saldo acumulado do ano · receita menos pago');
   const salG=el('div'); sSal.appendChild(salG);
   const nSal=el('div','nota'); nSal.style.paddingTop='8px'; sSal.appendChild(nSal);
+  /* restos a pagar: gráfico à parte (não é receita nem despesa do exercício) */
+  const rrRP=(DATA.rreo&&DATA.rreo.ultimo)||null, rpDados=(rrRP&&rrRP.rp)||null;
+  let hostRP=null;
+  if(rpDados){
+    const sRP=bloco(host,'Restos a pagar · inscritos, pagos, cancelados e ainda a pagar');
+    hostRP=el('div'); sRP.appendChild(hostRP);
+    const leg=el('div'); leg.style.cssText='display:flex;flex-wrap:wrap;gap:4px 16px;padding-top:6px';
+    [['Pagos em '+rrRP.ano,'#B8860B'],['Cancelados','#98A2B3'],['Ainda a pagar','var(--acento)']].forEach(([n,c])=>{
+      leg.innerHTML+='<span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)"><span style="width:10px;height:10px;border-radius:2px;background:'+c+'"></span>'+n+'</span>'; });
+    sRP.appendChild(leg);
+    const nRP=el('div','nota'); nRP.style.paddingTop='8px'; sRP.appendChild(nRP);
+    nRP.textContent='Restos a pagar são despesas empenhadas em anos anteriores (até 31/12/'+(rrRP.ano-1)+') e pagas agora com caixa daquele período, por isso ficam de fora da conta de receita x pago acima. '
+      +'Processados: despesa já entregue e liquidada. Não processados: empenhados, mas ainda sem liquidação em 31/12. Fonte: RREO '+rrRP.bimestre+'º bimestre/'+rrRP.ano+' (Anexo 07), posição em '+rrRP.posicao+'. Passe o mouse nas barras para ver o valor.';
+  }
 
   const sLim=bloco(host,'Limites legais');
   const rolaLim=el('div','rolatab'); sLim.appendChild(rolaLim);
@@ -2434,6 +2478,7 @@ function montaEquilibrio(){
     linhasAcum(mesG, mAt, SERIES, refV>0?{v:refV,rot:'Previsão da receita do ano: '+extenso(refV)}:null);
     nMes.textContent='Cada linha soma os meses desde janeiro. A linha tracejada é a receita líquida prevista para o ano (previsão atualizada). Passe o mouse nos pontos para ver o valor.';
     barrasSaldo(salG, mAt);
+    if(hostRP) barrasRestos(hostRP, rpDados);
     const ultSal=meses.reduce((c,r)=>c+r[1]-r[3],0);
     nSal.textContent='Cada barra é a receita acumulada menos o pago acumulado até o mês, só do exercício. Os restos a pagar de anos anteriores não entram nessa conta'
       +(rpEq?' (R$ '+extenso(rpEq.pagos)+' pagos até '+posRP+', pelo RREO, com caixa de anos anteriores).':'.')
