@@ -2413,17 +2413,17 @@ function montaEquilibrio(){
   const totReceita=meses.reduce((s,m)=>s+m[1],0), totEmp=meses.reduce((s,m)=>s+m[2],0),
         totPag=meses.reduce((s,m)=>s+m[3],0);
   const rpEq=(DATA.rreo&&DATA.rreo.ultimo&&DATA.rreo.ultimo.rp)||null, posRP=(DATA.rreo&&DATA.rreo.ultimo&&DATA.rreo.ultimo.posicao)||'';
-  const pagEx=rpEq?totPag-rpEq.pagos:totPag;       /* pago do exercício: sem os restos a pagar de anos anteriores */
-  const saldo=totReceita-pagEx;
+  /* O pago do portal é só o do exercício: confere com o Balanço Orçamentário do RREO (empenhado, liquidado e pago de jan a jun batem).
+     Restos a pagar de anos anteriores NÃO estão nele, então não se desconta nada; aparecem só como informação à parte. */
+  const saldo=totReceita-totPag;
   const rclTotal=Object.values((DATA.lei&&DATA.lei.meses)||{}).reduce((s,m)=>s+(m.rcl||0),0);
 
   return function(){
     kpis.innerHTML='';
     [['Receita líquida total', brlx(totReceita), 'Corrente + Capital − Deduções · RCL (sem capital): '+exato(rclTotal), totReceita, null],
      ['Empenhado', brlx(totEmp), 'comprometido no período', totEmp, null],
-     ['Pago', brlx(totPag), 'efetivamente desembolsado', totPag, null],
-     ['Saldo do exercício', brlx(saldo), rpEq?(saldo>=0?'receita cobriu o pago, sem os restos a pagar (R$ '+extenso(rpEq.pagos)+' até '+posRP+')':'pago acima da receita, mesmo sem os restos a pagar (R$ '+extenso(rpEq.pagos)+' até '+posRP+')')
-        :(saldo>=0?'receita cobriu o pago':'pago passou da receita (inclui restos a pagar de anos anteriores)'), saldo,
+     ['Pago', brlx(totPag), 'efetivamente desembolsado, só do exercício'+(rpEq?'<br>(restos a pagar de anos anteriores, fora deste valor: R$ '+extenso(rpEq.pagos)+' pagos até '+posRP+')':''), totPag, null],
+     ['Saldo do exercício', brlx(saldo), saldo>=0?'receita cobriu o que foi pago no exercício':'pago acima da receita arrecadada no exercício (receita − pago)', saldo,
        saldo>=0?'var(--alta)':'var(--baixa)'],
     ].forEach(([r,v,s,x,cor])=>{
       const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x,cor); kpis.appendChild(d);
@@ -2435,8 +2435,9 @@ function montaEquilibrio(){
     nMes.textContent='Cada linha soma os meses desde janeiro. A linha tracejada é a receita líquida prevista para o ano (previsão atualizada). Passe o mouse nos pontos para ver o valor.';
     barrasSaldo(salG, mAt);
     const ultSal=meses.reduce((c,r)=>c+r[1]-r[3],0);
-    nSal.textContent='Cada barra é a receita acumulada menos o pago acumulado até o mês. O pago inclui restos a pagar de anos anteriores'
-      +(rpEq?' (R$ '+extenso(rpEq.pagos)+' pagos até '+posRP+', pelo RREO); sem eles, o saldo do ano é '+(saldo>=0?'+':'−')+brlx(Math.abs(saldo))+'.':'.');
+    nSal.textContent='Cada barra é a receita acumulada menos o pago acumulado até o mês, só do exercício. Os restos a pagar de anos anteriores não entram nessa conta'
+      +(rpEq?' (R$ '+extenso(rpEq.pagos)+' pagos até '+posRP+', pelo RREO, com caixa de anos anteriores).':'.')
+      +' Não é o resultado orçamentário oficial, que o RREO calcula com a despesa liquidada.';
 
     limitesLegais(sLim.querySelector('.rot'), rolaLim, notaLim);
     barraObrigatorias(hostObr);
@@ -2470,12 +2471,6 @@ function montaComando(){
   }
   const fech=Math.min((DATA.lei&&DATA.lei.fechado)||meses[meses.length-1], meses[meses.length-1]);
   const st={M:fech, rr:0, rf:0, rs:0, re:0, tm:null, sel:new Set(meses), vinc:null};   /* abre com todos os meses marcados */
-  /* restos a pagar pagos em 2026 (RREO, Anexo 07): só vale para o ano inteiro, contra o pago acumulado */
-  function ajusteRP(P){
-    const rp=(DATA.rreo&&DATA.rreo.ultimo&&DATA.rreo.ultimo.rp)||null;
-    const anoInteiro=!P.sel.length||(P.ms[0]===1&&P.ms.every((m,i)=>m===i+1));
-    return (rp&&anoInteiro)?rp:null;
-  }
   /* período: os meses marcados (vários) ou, sem marcação, o ano de janeiro até o último mês fechado.
      Os indicadores somam só os meses do período; M é o último deles (fim da janela de 12 meses). */
   function periodo(){
@@ -2586,8 +2581,7 @@ function montaComando(){
     /* selo */
     /* o saldo (receita líquida − pago) também pesa no selo: pago acima da receita é atenção, e alerta se passar de 3% */
     const em=(eq.meses||[]).filter(m=>P.ms.includes(m[0])), rec=em.reduce((s,m)=>s+m[1],0), pag=em.reduce((s,m)=>s+m[3],0);
-    const rpA=ajusteRP(P), pagEx=rpA?pag-rpA.pagos:pag;   /* pago do exercício = pago total − restos pagos (até a data do RREO) */
-    const stSaldo=rec-pagEx>=0?'ok':((rec-pagEx)/(rec||1)>-0.03?'at':'ruim');
+    const stSaldo=rec-pag>=0?'ok':((rec-pag)/(rec||1)>-0.03?'at':'ruim');   /* o pago do portal já é só do exercício (sem restos a pagar) */
     const ss=R.gauges.map(stat), todos=ss.concat([stSaldo]);
     const pior=todos.includes('ruim')?'ruim':(todos.includes('at')?'at':'ok');
     /* a faixa de status em linguagem simples: uma frase por assunto que merece atenção */
@@ -2599,7 +2593,7 @@ function montaComando(){
       ()=>'O repasse à Câmara está em '+x_(3)+'% do teto permitido.'];
     const linhas=[];
     ss.forEach((s_,i)=>{ if(s_!=='ok') linhas.push(FRASE[i]()); });
-    if(stSaldo!=='ok') linhas.push('Neste ano, foi pago '+brlx(pagEx-rec)+' a mais do que se arrecadou'+(rpA?' (sem contar os restos a pagar de anos anteriores).':' (inclui restos a pagar de anos anteriores).'));
+    if(stSaldo!=='ok') linhas.push('Neste ano, foi pago '+brlx(pag-rec)+' a mais do que se arrecadou (sem contar os restos a pagar de anos anteriores).');
     if(!linhas.length) linhas.push('Os limites da lei estão cumpridos e a receita cobre o que foi pago.');
     selo.style.alignItems='flex-start';
     selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+';margin-top:1px">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
@@ -2612,15 +2606,13 @@ function montaComando(){
     const pad=m=>String(m).padStart(2,'0'), ms=P.ms, pf=DATA.prefeito||{}, VI=DATA.vinculadas||{mes:{},bruta_mes:{}};
     const cards=[];
     // receita x despesa paga (saldo do ano)
-    if(rpA){
-      const rr_=DATA.rreo.ultimo;
-      cards.push({tit:'Receita x despesa paga', st:stSaldo, valor:(rec-pagEx>=0?'+':'−')+brlx(Math.abs(rec-pagEx)),
-        sub:rec-pagEx>=0?'A receita do exercício cobriu o que foi pago, sem contar os restos a pagar.':'Mesmo sem os restos a pagar de anos anteriores, o pago superou a receita do período.',
-        leg:'Receita líquida '+brlx(rec)+' · pago total '+brlx(pag)+' − restos a pagar pagos em 2026 '+brlx(rpA.pagos)+' (RREO, posição em '+rr_.posicao+'; pagamentos de restos depois dessa data não estão descontados) = pago do exercício '+brlx(pagEx), ir:'eq'});
-    } else {
+    {
+      const rr_=DATA.rreo&&DATA.rreo.ultimo, rpI=(rr_&&rr_.rp)||null;
       cards.push({tit:'Receita x despesa paga', st:stSaldo, valor:(rec-pag>=0?'+':'−')+brlx(Math.abs(rec-pag)),
-        sub:rec-pag>=0?'A receita cobriu tudo o que foi pago.':'O pago no período (com restos a pagar) superou a receita arrecadada.',
-        leg:'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+(rec-pag>=0?'':' · não é resultado orçamentário: o pago inclui restos a pagar de exercícios anteriores, que o portal não separa'), ir:'eq'});
+        sub:rec-pag>=0?'A receita cobriu tudo o que foi pago no exercício.':'O pago do exercício superou a receita arrecadada no período.',
+        leg:'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+' (só do exercício; o pago do portal confere com o Balanço Orçamentário do RREO). Não inclui restos a pagar de anos anteriores'
+          +(rpI?' ('+brlx(rpI.pagos)+' pagos em '+rr_.ano+', até '+rr_.posicao+', com caixa de anos anteriores)':'')
+          +'. Não é o resultado orçamentário oficial, que o RREO calcula com a despesa liquidada.', ir:'eq'});
     }
     // orçamento executado
     if(pf.dot_atual>0){
@@ -2850,12 +2842,11 @@ function montaComando(){
     }
     // ---- equilíbrio
     {
-      const rpA=ajusteRP(Pb), pagEx=rpA?pag-rpA.pagos:pag;
-      const sd=rec-pagEx, rel=rec?sd/rec:0, n=sd>=0?'o':(rel>-0.03?'l':'v');
+      const sd=rec-pag, rel=rec?sd/rec:0, n=sd>=0?'o':(rel>-0.03?'l':'v');
+      const rpI=(rr&&rr.rp)||null;
       add('Equilíbrio das contas',n,sd>=0?'Receita x despesa paga: a receita líquida cobre o que foi pago':'Receita x despesa paga: pago acima da receita líquida arrecadada',
-        'Receita líquida '+brlx(rec)+' · pago total '+brlx(pag)
-        +(rpA?' − restos a pagar pagos em 2026 (RREO, posição em '+rr.posicao+') '+brlx(rpA.pagos)+' = pago do exercício '+brlx(pagEx)+'. Pagamentos de restos depois dessa data não estão descontados.'
-             :'. O pago inclui restos a pagar de anos anteriores.'),(sd>=0?'+':'−')+brlx(Math.abs(sd)),'eq');
+        'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+' (só do exercício). Não inclui restos a pagar de anos anteriores'
+        +(rpI?' ('+brlx(rpI.pagos)+' pagos em '+rr.ano+', até '+rr.posicao+', com caixa de anos anteriores)':'')+'.',(sd>=0?'+':'−')+brlx(Math.abs(sd)),'eq');
     }
     if(pf.dot_atual>0){
       const pe=emp/pf.dot_atual*100, ritmo=fech/12*100, n=pe>100?'v':(pe-ritmo>10?'l':'o');
@@ -2933,7 +2924,7 @@ function montaComando(){
       [/^Saúde \(ASPS\)/,'CF art. 198; LC 141/2012, arts. 4º e 7º','Manter o acompanhamento bimestral; conferir despesas que não contam como ASPS (inativos, merenda, saneamento).'],
       [/^FUNDEB/,'Lei 14.113/2020, art. 26','Garantir que ao menos 70% dos recursos do FUNDEB sejam aplicados na remuneração dos profissionais da educação básica.'],
       [/^Repasse à Câmara/,'CF art. 29-A','Controlar o duodécimo contra o teto de 6% da base de 2025; repasse acima do teto é crime de responsabilidade.'],
-      [/^Receita x despesa paga/,'LRF art. 1º, §1º e art. 9º','Verificar o fluxo de caixa e a origem dos restos a pagar pagos; se o desequilíbrio persistir, avaliar a limitação de empenho (LRF art. 9º).'],
+      [/^Receita x despesa paga/,'LRF art. 1º, §1º e art. 9º','Verificar o fluxo de caixa e quanto da despesa do ano foi coberto por saldo de exercícios anteriores (superávit financeiro); se o desequilíbrio persistir, avaliar a limitação de empenho (LRF art. 9º).'],
       [/^Empenhado sobre o orçamento/,'Lei 4.320/1964, arts. 58 a 60','Acompanhar o ritmo de empenho contra o calendário e a arrecadação, para não comprometer o fim do exercício.'],
       [/^Remanejamento do orçamento/,'CF art. 167, V; Lei 4.320/1964, arts. 40 a 46','Conferir se os créditos adicionais têm lei ou decreto e fonte de recurso indicada.'],
       [/^Receita vinculante sem despesa/,'CF art. 167, IV; LRF art. 8º, parágrafo único','Solicitar à Contabilidade o balancete da despesa por fonte/destinação de recursos e conciliar mensalmente receita vinculante e despesa paga.'],
@@ -3921,10 +3912,10 @@ function montaBusca(){
   function respSaldo(q){
     const eq=DATA.equilibrio||{meses:[]}; if(!eq.meses.length) return nao('Ainda não tenho receita e despesa para comparar.');
     const rec=eq.meses.reduce((s,m)=>s+m[1],0), pag=eq.meses.reduce((s,m)=>s+m[3],0);
-    const rr=DATA.rreo&&DATA.rreo.ultimo, rp=rr&&rr.rp; const pagEx=rp?pag-rp.pagos:pag, sd=rec-pagEx;
+    const rr=DATA.rreo&&DATA.rreo.ultimo, rp=rr&&rr.rp; const sd=rec-pag;
     return {ok:true,entendi:'receita líquida contra despesa paga no ano',titulo:'Receita x despesa paga',destaque:sinal(sd),
-      linhas:[['Receita líquida',R$(rec)],['Pago total',R$(pag)]].concat(rp?[['(−) Restos a pagar pagos (até '+rr.posicao+')',R$(rp.pagos)],['Pago do exercício',R$(pagEx)]]:[]),
-      nota:sd>=0?'A receita cobre o que foi pago no exercício.':'O pago do exercício superou a receita do período.',fonte:'Portal da Transparência e RREO',ir:'eq',
+      linhas:[['Receita líquida',R$(rec)],['Pago do exercício',R$(pag)]].concat(rp?[['Restos a pagar de anos anteriores, à parte (pagos até '+rr.posicao+')',R$(rp.pagos)]]:[]),
+      nota:(sd>=0?'A receita cobre o que foi pago no exercício.':'O pago do exercício superou a receita do período.')+' Os restos a pagar não entram nessa conta.',fonte:'Portal da Transparência e RREO',ir:'eq',
       fala:(sd>=0?'A receita cobriu o pago, com sobra de ':'O pago superou a receita em ')+falado(Math.abs(sd))+'.'};
   }
 
