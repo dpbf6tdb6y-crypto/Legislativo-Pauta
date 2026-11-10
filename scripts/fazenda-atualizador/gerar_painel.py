@@ -114,6 +114,25 @@ for _f in _rh:
 _cands.sort(key=lambda c: c[0])
 RH_TUPLA, _arq_rh, rh = _cands[-1]
 print('folha de pessoal:', os.path.basename(_arq_rh), RH_TUPLA)
+# Tela completa do mesmo mês (RHX_*.csv, lida pelo coletor_pessoal): traz também os lançamentos sem
+# vencimento que a exportação em Excel não tem. Se não existir (ou não for do mês do Excel), segue só com o Excel.
+RH_INFO = {'completo': False}
+try:
+    import grade_pessoal
+    _rhx = os.path.join(BASE, 'RHX_%d_%02d.csv' % RH_TUPLA)
+    if os.path.exists(_rhx):
+        _rhc, _inf = grade_pessoal.rh_completo(_rhx)
+        _rhc['Ano/Mês'] = _rhc['Ano/Mês'].astype(str)
+        if ref_tupla(_rhc) == RH_TUPLA:
+            rh, RH_INFO = _rhc, dict(_inf, completo=True)
+            print('folha COMPLETA (tela do portal): %d registros, %d matrículas, %d lançamentos sem vencimento (R$ %.2f)'
+                  % (_inf['registros'], _inf['matriculas'], _inf['extras'], _inf['bruto_extras']))
+        else:
+            print('AVISO: o RHX_*.csv não é do mês %s — usando só a exportação em Excel' % (RH_TUPLA,))
+    else:
+        print('AVISO: sem RHX_%d_%02d.csv — a folha vem só da exportação em Excel (sem os lançamentos sem vencimento)' % RH_TUPLA)
+except Exception as _e:
+    print('AVISO: não consegui usar a tela completa da folha (%s) — usando só a exportação em Excel' % _e)
 rh['Secretaria'] = rh['Lotação'].astype(str).str.split(' - ').str[0].str.strip()
 
 MESES_PT = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -146,7 +165,8 @@ _a, _m = RH_TUPLA
 for _ in range(3):
     _a, _m = _mes_anterior(_a, _m)
     _r = _pj.get('%d-%02d' % (_a, _m))
-    if _r:
+    # só compara meses medidos do mesmo jeito: tela completa com tela completa, exportação com exportação
+    if _r and bool(_r.get('completo')) == bool(RH_INFO.get('completo')):
         PESSOAL_HIST.append({'ano': _a, 'mes': _m, 'servidores': _r['servidores'],
                              'vencimentos': _r['vencimentos'], 'bruto': _r['bruto'],
                              'media': _r['media']})
@@ -552,6 +572,7 @@ DATA = {
     'ct_coleta': CT_COLETA,
     'rh_ref': RH_REF,
     'pessoal_hist': PESSOAL_HIST,
+    'rh_info': RH_INFO,
     'pessoal_serie': _pj,
     'despesas': DESPESAS,
     'natureza': NATUREZA,
@@ -1860,6 +1881,18 @@ function montaPessoal(){
   topopag.appendChild(cab);
   const filtroPes=el('div','filtros'); topopag.appendChild(filtroPes);
   const kpis=el('div','kpis'); host.appendChild(kpis);
+  /* A exportação em Excel do portal tem 1 linha por servidor; a tela de consulta lista também outros lançamentos
+     (sem vencimento nem desconto, bruto = líquido) que o Excel não traz. Quando o coletor leu a tela completa
+     (e ela passou na conferência), o painel soma tudo e bate com a tela do portal. */
+  const RI=DATA.rh_info||{completo:false};
+  const notaPes=el('div','nota'); notaPes.style.paddingTop='10px';
+  notaPes.textContent=RI.completo
+    ? 'Fonte: tela de consulta do portal, lida por inteiro e conferida: '+f0.format(RI.registros)+' registros em '+f0.format(RI.matriculas)+' matrículas, o mesmo total que o portal informa. '
+      +'Cada matrícula soma todos os seus lançamentos do mês. '+f0.format(RI.extras)+' deles não têm vencimento nem desconto (bruto igual ao líquido; somam '+brlx(RI.bruto_extras)+' de bruto) e a exportação em Excel do portal não os traz; o portal não informa o tipo de cada um. '
+      +'Servidores = matrículas na folha; '+f0.format(RI.com_venc)+' têm vencimento no mês, e o vencimento médio é calculado só sobre elas.'
+    : 'ATENÇÃO — folha parcial: aqui entram só os dados da exportação em Excel do portal (uma linha por servidor). A tela de consulta do portal lista também outros lançamentos para a maior parte dos servidores (não são duplicidades), sem vencimento e sem desconto, que a exportação não traz e que não estão somados. '
+      +'Por isso o bruto e o número de registros da tela do portal são maiores que os deste painel; os vencimentos coincidem. A leitura completa não está disponível nesta atualização.';
+  host.appendChild(notaPes);
 
   const s1=el('div','secao'), d1=el('div','duplo');
   d1.style.gridTemplateColumns='1fr 1fr';
@@ -1899,11 +1932,12 @@ function montaPessoal(){
     const semFiltro=!st.busca && !st.corte;
     const nomeMes=h=>{ const n=MESNOME[String(h.mes)]; return n.charAt(0).toUpperCase()+n.slice(1); };
     const hist=(campo,fmt)=> semFiltro ? (DATA.pessoal_hist||[]).map(h=>[nomeMes(h), fmt(h[campo])]) : null;
+    const comVenc=b.filter(r=>r[5]>0).length;      /* matrículas com vencimento no mês (as que têm salário) */
     [['Servidores', f0.format(b.length),
-       st.corte? 'vínculo '+esc(st.corte) : (DATA.rh_ref||'').replace('referência','folha de'), null, hist('servidores', f0.format)],
+       (st.corte? 'vínculo '+esc(st.corte) : (DATA.rh_ref||'').replace('referência','folha de'))+(RI.completo?' · '+f0.format(comVenc)+' com vencimento':''), null, hist('servidores', f0.format)],
      ['Vencimentos', brlx(folha), 'base da folha', folha, hist('vencimentos', exato)],
-     ['Bruto', brlx(bruto), 'com vantagens e adicionais', bruto, hist('bruto', exato)],
-     ['Vencimento médio', brlx(b.length?folha/b.length:0), 'por servidor', b.length?folha/b.length:null, hist('media', exato)]
+     ['Bruto', brlx(bruto), RI.completo?'com vantagens, adicionais e lançamentos sem vencimento':'com vantagens e adicionais (só a exportação do portal; parcial)', bruto, hist('bruto', exato)],
+     ['Vencimento médio', brlx(comVenc?folha/comVenc:0), RI.completo?'por servidor com vencimento':'por servidor', comVenc?folha/comVenc:null, hist('media', exato)]
     ].forEach(([r,v,s,x,hs])=>{
       const d=el('div','kpi');
       d.innerHTML=kpiHtml(r,v,s,x,null,hs);
@@ -2310,7 +2344,7 @@ function linhasAcum(host,meses,series,ref){
   const X=m=>ml+(W-ml-mr)*(m-1)/11, Y=v=>base-(v/maxV)*(base-topo);
   for(let k=0;k<=4;k++){
     const v=maxV*k/4, y=Y(v);
-    svg.appendChild(S('line',{x1:ml,x2:W-mr,y1:y,y2:y,stroke:'var(--linha)','stroke-width':1}));
+    /* sem linhas de grade: ficam só os valores do eixo */
     const tx=S('text',{x:ml-8,y:y+4,'text-anchor':'end',class:'cc'}); tx.textContent=k?(v>=1e9?(v/1e9).toFixed(2).replace('.',',')+' bi':Math.round(v/1e6)+' mi'):'0'; svg.appendChild(tx);
   }
   for(let m=1;m<=12;m++){ const tx=S('text',{x:X(m),y:base+18,'text-anchor':'middle',class:'cc'}); tx.textContent=MESES[m-1]; svg.appendChild(tx); }
@@ -3072,7 +3106,7 @@ function montaComando(){
      terminam no último mês escolhido. Clicar num vínculo mostra o recorte da folha daquele vínculo. */
   function desenhaVinculo(P){
     const rh=DATA.rh||[], mv=new Map();
-    rh.forEach(r=>{ const o=mv.get(r[2])||{n:0,venc:0,bruto:0}; o.n++; o.venc+=r[5]||0; o.bruto+=r[6]||0; mv.set(r[2],o); });
+    rh.forEach(r=>{ const o=mv.get(r[2])||{n:0,nv:0,venc:0,bruto:0}; o.n++; if((r[5]||0)>0) o.nv++; o.venc+=r[5]||0; o.bruto+=r[6]||0; mv.set(r[2],o); });
     const tv=[...mv].sort((x,y)=>y[1].n-x[1].n), mx=tv.length?tv[0][1].n:1, tot=rh.length;
     const totBruto=tv.reduce((s,[,o])=>s+o.bruto,0), totVenc=tv.reduce((s,[,o])=>s+o.venc,0);
     const ref=(DATA.rh_ref||'').replace('referência','').trim();
@@ -3166,7 +3200,7 @@ function montaComando(){
       const [k,o]=tv[+x.dataset.i];
       x.onclick=()=>{ st.vinc=(st.vinc===k?null:k); desenha_(); };
       dica(x, k, '<em>'+exato(o.bruto)+'</em><br>gasto bruto da folha · '+f1.format(totBruto?o.bruto/totBruto*100:0)+'% do total'
-        +'<br>'+f0.format(o.n)+' servidores · vencimentos '+exato(o.venc)+'<br>média por servidor: '+exato(o.n?o.venc/o.n:0));
+        +'<br>'+f0.format(o.n)+' servidores · vencimentos '+exato(o.venc)+'<br>vencimento médio por servidor com vencimento: '+exato(o.nv?o.venc/o.nv:0));
     });
   }
   window.__cmdApi={calc,stat,periodo,gaugeEl,eq,meses,fech,auditoria};

@@ -44,6 +44,14 @@ O QUE AINDA NAO E AUTOMATICO
 
 ATUALIZACAO AUTOMATICA NO SERVIDOR (todo dia 05:30, via auto_atualizar.sh)
    coletor.py, coletor_contratos.py, coletor_pessoal.py   Receita, Contratos, Pessoal
+   coletor_pessoal.py tambem le a TELA COMPLETA de Servidores (grade_pessoal.py): a exportacao
+      em Excel do portal traz 1 linha por servidor, mas a tela lista tambem lancamentos sem
+      vencimento (beneficios e pagamentos extras) que somam milhoes por mes. A leitura so vale
+      se passar na conferencia (mesmo numero de registros que o portal informa, sem repeticao,
+      mes certo, coincide com o Excel). E lenta (8 a 15 min por mes): so o mes mais recente e os
+      3 anteriores, e so refaz se algo mudou ou passaram 7 dias. Grava RHX_<ano>_<mm>.csv (so no
+      disco, fora do git). Teste rapido: python coletor_pessoal.py --so-recente
+      Se a leitura completa falhar, o painel avisa "folha parcial" e usa so o Excel.
    coletor_despesas_auto.py   Despesas por orgao (total e por secretaria, mes a mes)
    coletor_natureza.py        Despesa por natureza (e "funcao" com o argumento funcao)
    coletor_despesas.py (modo vigia) so e necessario se o coletor automatico falhar.

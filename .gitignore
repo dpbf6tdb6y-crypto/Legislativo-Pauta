@@ -50,6 +50,10 @@ prisma/dev.db
 # GitHub) — no VPS ela fica só no disco, fora do git. Ambiente virtual dos
 # coletores Python também fica de fora.
 scripts/fazenda-atualizador/RH_*.xls
+# tela completa da folha (todos os lançamentos, com nome e valores por servidor): mesma regra
+scripts/fazenda-atualizador/RHX_*.csv
+# estado local do coletor de pessoal (meses já conferidos); o git não pode restaurá-lo
+scripts/fazenda-atualizador/estado_pessoal_completo.json
 scripts/fazenda-atualizador/.venv/
 # HTML do painel Fazenda gerado (embute nome e salário de cada servidor):
 # fica só em private/fazenda/ no servidor, nunca no git. A pasta existe no
