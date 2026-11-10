@@ -3239,10 +3239,17 @@ function montaLoa(){
     const rcl=p12.rcl, pes=p12.pessoal, lim=rcl*0.60, ale=rcl*0.54, pru=rcl*0.57;
     const pcr=rcl?pes/rcl*100:0, cor=pcr>=57?'var(--baixa)':(pcr>=54?'var(--parcial)':'var(--alta)');
     const meses12=Object.keys(ser.rcl).sort().slice(-12).reverse();
+    /* a janela de 12 meses atravessa dois anos: mostra quanto vem de cada um, pra não ser lida como a receita do ano */
+    const [mAte,yAte]=(p12.ate||'').split('/').map(Number);
+    const janela=(mAte&&yAte)?Array.from({length:12},(_,i)=>{ const t=yAte*12+(mAte-1)-i; return Math.floor(t/12)+'-'+String(t%12+1).padStart(2,'0'); }).filter(k=>ser.rcl[k]!==undefined):meses12;
+    const porAno={}; janela.slice().sort().forEach(k=>{ const [y,m]=k.split('-'); const o=porAno[y]||(porAno[y]={v:0,ini:+m,fim:+m}); o.v+=ser.rcl[k]||0; o.ini=Math.min(o.ini,+m); o.fim=Math.max(o.fim,+m); });
+    const linhasAno=Object.keys(porAno).sort().map(y=>'<tr class="sub"><td>'+(porAno[y].ini===porAno[y].fim?MESES[porAno[y].ini-1]:MESES[porAno[y].ini-1]+' a '+MESES[porAno[y].fim-1])+'/'+y+'</td><td>'+exato(porAno[y].v)+'</td></tr>').join('');
     let h='<div class="lnota" style="margin:0 0 6px">RCL = receitas correntes − deduções (FUNDEB e outras), somadas nos 12 meses '+esc(p12.de||'')+' a '+esc(p12.ate||'')+'.'
       +((p12.faltam||[]).length?' <b>Janela incompleta: faltam '+(p12.faltam||[]).join(', ')+'.</b>':'')+'</div>'
       +'<table class="ltab"><tbody>'
       +'<tr class="tot"><td>RCL dos 12 meses</td><td>'+exato(rcl)+'</td></tr>'
+      +linhasAno
+      +'<tr class="sub"><td>Para comparar: receita líquida realizada em '+eq.ano+' (tabela acima)</td><td>'+exato(recReal)+'</td></tr>'
       +'<tr><td>Despesa com pessoal (liquidada)</td><td>'+exato(pes)+'</td></tr>'
       +'<tr><td>% da RCL</td><td style="color:'+cor+';font-weight:800">'+f1.format(pcr)+'%</td></tr>'
       +'<tr class="sub"><td>Limite da LRF (60%)</td><td>'+exato(lim)+'</td></tr>'
@@ -3253,6 +3260,7 @@ function montaLoa(){
       +'</tbody></table>'
       +'<div class="lnota" style="margin-top:10px"><b>RCL mês a mês</b></div><div class="lgrid">'
       +meses12.map(k=>{ const [y,m]=k.split('-'); return '<div><span>'+MESES[+m-1]+'/'+y.slice(2)+'</span><b>'+exato(ser.rcl[k])+'</b></div>'; }).join('')+'</div>'
+      +'<div class="lnota"><b>A RCL dos 12 meses não é a receita realizada do ano:</b> ela soma uma janela móvel que pega meses do ano anterior e só vai até o último mês fechado, por isso difere da receita líquida realizada acima.</div>'
       +'<div class="lnota">A RCL também é a base de outros limites da LRF (dívida consolidada, operações de crédito, garantias); o painel ainda não tem esses dados.</div>';
     sRcl.insertAdjacentHTML('beforeend',h);
   }
