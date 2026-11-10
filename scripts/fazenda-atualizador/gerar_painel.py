@@ -2373,6 +2373,14 @@ function barrasSaldo(host,meses){
   });
 }
 
+/* de onde sai o dinheiro quando o pago passa da receita: o caixa de anos anteriores (RREO, Anexo 06). Vazio se não houver o dado. */
+function txtCaixa(){
+  const rr=(DATA.rreo&&DATA.rreo.ultimo)||null, c=rr&&rr.caixa;
+  if(!c||c.caixa_liquida_ant==null||c.caixa_liquida_ate==null) return '';
+  return 'Essa diferença é coberta com o caixa de anos anteriores: caixa líquida de '+brlx(c.caixa_liquida_ant)+' em 31/12/'+(rr.ano-1)
+    +' e de '+brlx(c.caixa_liquida_ate)+' em '+rr.posicao+' (RREO).';
+}
+
 /* restos a pagar (RREO, Anexo 07): para cada grupo, quanto foi inscrito e para onde foi (pago, cancelado ou ainda a pagar).
    Barras horizontais na mesma escala; despesa de anos anteriores, fora da conta de receita x pago do exercício. */
 function barrasRestos(host,rp){
@@ -2467,7 +2475,7 @@ function montaEquilibrio(){
     [['Receita líquida total', brlx(totReceita), 'Corrente + Capital − Deduções · RCL (sem capital): '+exato(rclTotal), totReceita, null],
      ['Empenhado', brlx(totEmp), 'comprometido no período', totEmp, null],
      ['Pago', brlx(totPag), 'efetivamente desembolsado, só do exercício'+(rpEq?'<br>(restos a pagar de anos anteriores, fora deste valor: R$ '+extenso(rpEq.pagos)+' pagos até '+posRP+')':''), totPag, null],
-     ['Saldo do exercício', brlx(saldo), saldo>=0?'receita cobriu o que foi pago no exercício':'pago acima da receita arrecadada no exercício (receita − pago)', saldo,
+     ['Saldo do exercício', brlx(saldo), saldo>=0?'receita cobriu o que foi pago no exercício':'pago acima da receita arrecadada no exercício (receita − pago)'+(txtCaixa()?'<br>'+txtCaixa():''), saldo,
        saldo>=0?'var(--alta)':'var(--baixa)'],
     ].forEach(([r,v,s,x,cor])=>{
       const d=el('div','kpi'); d.innerHTML=kpiHtml(r,v,s,x,cor); kpis.appendChild(d);
@@ -2482,7 +2490,8 @@ function montaEquilibrio(){
     const ultSal=meses.reduce((c,r)=>c+r[1]-r[3],0);
     nSal.textContent='Cada barra é a receita acumulada menos o pago acumulado até o mês, só do exercício. Os restos a pagar de anos anteriores não entram nessa conta'
       +(rpEq?' (R$ '+extenso(rpEq.pagos)+' pagos até '+posRP+', pelo RREO, com caixa de anos anteriores).':'.')
-      +' Não é o resultado orçamentário oficial, que o RREO calcula com a despesa liquidada.';
+      +' Não é o resultado orçamentário oficial, que o RREO calcula com a despesa liquidada.'
+      +(saldo<0&&txtCaixa()?' '+txtCaixa():'');
 
     limitesLegais(sLim.querySelector('.rot'), rolaLim, notaLim);
     barraObrigatorias(hostObr);
@@ -2638,7 +2647,7 @@ function montaComando(){
       ()=>'O repasse à Câmara está em '+x_(3)+'% do teto permitido.'];
     const linhas=[];
     ss.forEach((s_,i)=>{ if(s_!=='ok') linhas.push(FRASE[i]()); });
-    if(stSaldo!=='ok') linhas.push('Neste ano, foi pago '+brlx(pag-rec)+' a mais do que se arrecadou (sem contar os restos a pagar de anos anteriores).');
+    if(stSaldo!=='ok') linhas.push('Neste ano, foi pago '+brlx(pag-rec)+' a mais do que se arrecadou (sem contar os restos a pagar de anos anteriores). '+txtCaixa());
     if(!linhas.length) linhas.push('Os limites da lei estão cumpridos e a receita cobre o que foi pago.');
     selo.style.alignItems='flex-start';
     selo.innerHTML='<span class="csel" style="--cs:'+COR_ST[pior]+';margin-top:1px">'+(pior==='ruim'?'ATENÇÃO':(pior==='at'?'OBSERVAÇÃO':'TUDO EM DIA'))+'</span>'
@@ -2657,7 +2666,8 @@ function montaComando(){
         sub:rec-pag>=0?'A receita cobriu tudo o que foi pago no exercício.':'O pago do exercício superou a receita arrecadada no período.',
         leg:'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+' (só do exercício; o pago do portal confere com o Balanço Orçamentário do RREO). Não inclui restos a pagar de anos anteriores'
           +(rpI?' ('+brlx(rpI.pagos)+' pagos em '+rr_.ano+', até '+rr_.posicao+', com caixa de anos anteriores)':'')
-          +'. Não é o resultado orçamentário oficial, que o RREO calcula com a despesa liquidada.', ir:'eq'});
+          +'. Não é o resultado orçamentário oficial, que o RREO calcula com a despesa liquidada.'
+          +(rec-pag<0&&txtCaixa()?' '+txtCaixa():''), ir:'eq'});
     }
     // orçamento executado
     if(pf.dot_atual>0){
@@ -2891,7 +2901,8 @@ function montaComando(){
       const rpI=(rr&&rr.rp)||null;
       add('Equilíbrio das contas',n,sd>=0?'Receita x despesa paga: a receita líquida cobre o que foi pago':'Receita x despesa paga: pago acima da receita líquida arrecadada',
         'Receita líquida '+brlx(rec)+' · pago '+brlx(pag)+' (só do exercício). Não inclui restos a pagar de anos anteriores'
-        +(rpI?' ('+brlx(rpI.pagos)+' pagos em '+rr.ano+', até '+rr.posicao+', com caixa de anos anteriores)':'')+'.',(sd>=0?'+':'−')+brlx(Math.abs(sd)),'eq');
+        +(rpI?' ('+brlx(rpI.pagos)+' pagos em '+rr.ano+', até '+rr.posicao+', com caixa de anos anteriores)':'')+'.'
+        +(sd<0&&txtCaixa()?' '+txtCaixa():''),(sd>=0?'+':'−')+brlx(Math.abs(sd)),'eq');
     }
     if(pf.dot_atual>0){
       const pe=emp/pf.dot_atual*100, ritmo=fech/12*100, n=pe>100?'v':(pe-ritmo>10?'l':'o');
@@ -3960,7 +3971,7 @@ function montaBusca(){
     const rr=DATA.rreo&&DATA.rreo.ultimo, rp=rr&&rr.rp; const sd=rec-pag;
     return {ok:true,entendi:'receita líquida contra despesa paga no ano',titulo:'Receita x despesa paga',destaque:sinal(sd),
       linhas:[['Receita líquida',R$(rec)],['Pago do exercício',R$(pag)]].concat(rp?[['Restos a pagar de anos anteriores, à parte (pagos até '+rr.posicao+')',R$(rp.pagos)]]:[]),
-      nota:(sd>=0?'A receita cobre o que foi pago no exercício.':'O pago do exercício superou a receita do período.')+' Os restos a pagar não entram nessa conta.',fonte:'Portal da Transparência e RREO',ir:'eq',
+      nota:(sd>=0?'A receita cobre o que foi pago no exercício.':'O pago do exercício superou a receita do período.')+' Os restos a pagar não entram nessa conta.'+(sd<0&&txtCaixa()?' '+txtCaixa():''),fonte:'Portal da Transparência e RREO',ir:'eq',
       fala:(sd>=0?'A receita cobriu o pago, com sobra de ':'O pago superou a receita em ')+falado(Math.abs(sd))+'.'};
   }
 
