@@ -41,9 +41,9 @@ COPY --from=build --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
-# Painel Fazenda (HTML gerado, com nomes/salários) — fora de public/ pra só
-# ser entregue pela rota autenticada /api/fazenda/painel.
-COPY --from=build --chown=nextjs:nodejs /app/private ./private
+# Painel Fazenda (HTML gerado): NÃO entra na imagem. O docker-compose monta ./private do servidor em /app/private
+# (somente leitura) e a rota autenticada /api/fazenda/painel lê de lá. Assim, nenhum dado da folha fica nas
+# camadas da imagem, no cache de build nem em registro de imagens.
 
 USER nextjs
 EXPOSE 3000

@@ -55,3 +55,46 @@ ATUALIZACAO AUTOMATICA NO SERVIDOR (todo dia 05:30, via auto_atualizar.sh)
    coletor_despesas_auto.py   Despesas por orgao (total e por secretaria, mes a mes)
    coletor_natureza.py        Despesa por natureza (e "funcao" com o argumento funcao)
    coletor_despesas.py (modo vigia) so e necessario se o coletor automatico falhar.
+
+=====================================================================
+VERSAO COM A BASE DO COMPLIANCE.GAVIX  (branch feat/gestao-compliance)
+=====================================================================
+O QUE MUDOU
+   Limite de pessoal   Agora e o do EXECUTIVO (max 54%, prudencial 51,3%, alerta 48,6% da RCL), nao os 60% do
+                       municipio inteiro. O numero que vale e o do RGF oficial (SICONFI); a conta do proprio
+                       painel fica como "aproximacao, inclui a Camara".
+   coletor_siconfi.py  Novo. Busca RGF (pessoal e divida) e RREO Anexo 14 (minimos de educacao, FUNDEB e saude,
+                       metas de resultado primario/nominal da LDO, resultado orcamentario, restos a pagar) na API
+                       publica do Tesouro. Grava dados_siconfi.json. Se falhar, mantem o arquivo anterior.
+                       Municipio: variavel FAZENDA_IBGE (padrao 3144805 = Nova Lima).
+   RREO                Se o SICONFI tem um bimestre mais novo que o PDF (coletor_rreo.py), os minimos de educacao,
+                       FUNDEB e saude passam a vir do SICONFI.
+   Art. 29-A (Camara)  Sem anos fixos: a base e a receita do ano ANTERIOR ao acompanhado e o percentual (7% a
+                       3,5%) sai da populacao informada pelo SICONFI.
+   Datas por fonte     O cabecalho do Painel de Comando mostra a data de cada fonte e avisa em vermelho quando
+                       receita, despesas, contratos, natureza ou funcao tem mais de 2 dias.
+   Metas e divida      Novo bloco "Metas fiscais e dívida (SICONFI)" na aba Limites legais.
+   Nomes dos servidores  NAO vao mais para o painel (aparece "Servidor 0001"...). Para ligar:
+                       FAZENDA_MOSTRAR_NOMES=1 no ambiente do gerar_painel.py. Sem a planilha de RH o painel
+                       sai sem a parte da folha por servidor, em vez de nao sair.
+   Imagem Docker       O painel gerado NAO entra mais na imagem: o docker-compose monta ./private (somente
+                       leitura) em /app/private. O .dockerignore deixa de fora private/, RH_*.xls e RHX_*.csv.
+                       Depois do primeiro deploy, apague a imagem antiga (ela ainda tem o painel com nomes):
+                       docker image prune
+   coletor_xml.py      Novo. Receita e despesas por órgão pelos arquivos XML do portal (no lugar do PDF de
+                       receita e do Excel de despesas), nos mesmos arquivos e formatos de antes. Confere o
+                       filtro gravado dentro do XML, a soma das contas com os totalizadores e guarda o SHA-256.
+                       O auto_atualizar.sh usa o XML e, se falhar, cai nos coletores antigos (reserva).
+                       Windows: FAZENDA_CANAL=msedge usa o Edge instalado. Teste sem tocar nos dados do projeto:
+                       FAZENDA_DADOS=C:\temp\dados python coletor_xml.py
+   Testes              python -m unittest discover -s tests   (nesta pasta; 20 testes, sem rede)
+                       npm test                               (inclui o teste da rota /api/fazenda/painel)
+                       O CI roda os dois.
+
+TESTAR SEM TOCAR A PRODUCAO
+   FAZENDA_SAIDA=C:\temp\painel.html python gerar_painel.py     (grava fora da pasta de cima)
+
+PARA CONFERIR COM O CONTADOR / JURIDICO (marcado CONFERIR em calculos.py)
+   - faixas populacionais do art. 29-A e a lista de receitas da base (dívida ativa, IOF-ouro etc.);
+   - exclusoes do art. 19, §1º, no que entra no limite de pessoal (despesa_obrigatoria.py);
+   - regras de vinculacao de receitas (vinculacao.py): taxas como 100% vinculadas depende de lei local.

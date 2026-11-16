@@ -4,6 +4,7 @@ import json, math, os, re
 import pandas as pd
 from vinculacao import classifica, area as area_vinc
 from despesa_obrigatoria import classifica as classifica_desp, _norm as _norm_desp
+import calculos
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
@@ -25,6 +26,44 @@ try:
     CURTO = json.load(open(os.path.join(BASE, 'nomes_curtos.json'), encoding='utf-8'))
 except Exception:
     CURTO = {}
+
+# ---------------------------------------------------------------- SICONFI (números oficiais) e limites de pessoal
+def _json_ou_vazio(nome):
+    try:
+        with open(os.path.join(BASE, nome), encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+def _coletado(nome):
+    return _json_ou_vazio(nome).get('coletado_em', '')
+
+SICONFI = _json_ou_vazio('dados_siconfi.json')
+
+def _periodo_mais_recente(d):
+    ks = sorted(d, key=lambda k: tuple(int(x) for x in k.split('-')))
+    return ks[-1] if ks else None
+
+_krgf = _periodo_mais_recente(SICONFI.get('rgf', {}))
+OFICIAL_RGF = None
+if _krgf:
+    _a, _q = (int(x) for x in _krgf.split('-'))
+    OFICIAL_RGF = dict(SICONFI['rgf'][_krgf], ano=_a, quadrimestre=_q)
+# Executivo: 54% máximo, 51,3% prudencial, 48,6% alerta (o "60%" é do município inteiro, com a Câmara).
+# Se o RGF oficial traz os percentuais, valem os dele.
+_lim = dict(calculos.LIMITES_PESSOAL['executivo'])
+if OFICIAL_RGF and all(k in OFICIAL_RGF for k in ('limite_alerta_pct', 'limite_prudencial_pct', 'limite_max_pct')):
+    _lim = {'alerta': OFICIAL_RGF['limite_alerta_pct'], 'prudencial': OFICIAL_RGF['limite_prudencial_pct'], 'maximo': OFICIAL_RGF['limite_max_pct']}
+LRF = {'limites': _lim, 'oficial': OFICIAL_RGF}
+
+_krreo = _periodo_mais_recente(SICONFI.get('rreo', {}))
+SICONFI_RREO = None
+SICONFI_RREO_HIST = []
+for _k in sorted(SICONFI.get('rreo', {}), key=lambda k: tuple(int(x) for x in k.split('-'))):
+    _a, _b = (int(x) for x in _k.split('-'))
+    SICONFI_RREO_HIST.append(dict(SICONFI['rreo'][_k], ano=_a, bimestre=_b))
+if SICONFI_RREO_HIST:
+    SICONFI_RREO = SICONFI_RREO_HIST[-1]
 
 def bonito(desc):
     """Descrição do PDF vem em CAIXA ALTA e truncada; deixa legível."""
@@ -81,7 +120,7 @@ print('contratos carregados:', len(CONTRATOS))
 import glob
 _rh = glob.glob(os.path.join(BASE, '..', '..', 'RH', '*.xls')) + glob.glob(os.path.join(BASE, 'RH_*.xls'))
 if not _rh:
-    raise SystemExit('Nao encontrei a planilha de RH (../../RH/*.xls ou RH_*.xls)')
+    print('AVISO: sem planilha de RH (../../RH/*.xls ou RH_*.xls) — o painel sai sem a folha por servidor')
 def le_folha(caminho):
     """Acha a linha de cabecalho (a que tem Nome e Cargo) e le a partir dela."""
     bruto = pd.read_excel(caminho, header=None, nrows=15)
@@ -112,8 +151,12 @@ for _f in _rh:
     _d = le_folha(_f)
     _cands.append((ref_tupla(_d), _f, _d))
 _cands.sort(key=lambda c: c[0])
-RH_TUPLA, _arq_rh, rh = _cands[-1]
-print('folha de pessoal:', os.path.basename(_arq_rh), RH_TUPLA)
+if _cands:
+    RH_TUPLA, _arq_rh, rh = _cands[-1]
+else:
+    RH_TUPLA, _arq_rh = (0, 0), ''
+    rh = pd.DataFrame(columns=['Nome', 'Cargo', 'Tipo', 'Situação', 'Lotação', 'Vencimentos', 'Bruto', 'Líquido', 'Ano/Mês'])
+print('folha de pessoal:', os.path.basename(str(_arq_rh)) or '(nenhuma)', RH_TUPLA)
 # Tela completa do mesmo mês (RHX_*.csv, lida pelo coletor_pessoal): traz também os lançamentos sem
 # vencimento que a exportação em Excel não tem. Se não existir (ou não for do mês do Excel), segue só com o Excel.
 RH_INFO = {'completo': False}
@@ -384,8 +427,8 @@ EQUILIBRIO = {
 }
 
 # ---------------------------------------------------------------- Art. 29-A
-# Teto constitucional de repasse à Câmara (CF, art. 29-A): 6% (faixa de
-# 100.001 a 300.000 habitantes) sobre a Receita Tributária própria + as
+# Teto constitucional de repasse à Câmara (CF, art. 29-A): percentual pela faixa de
+# população (7% a 3,5%; 6% para 100.001 a 300.000 hab.) sobre a Receita Tributária própria + as
 # transferências dos arts. 153 §5º, 158 e 159 da CF, EFETIVAMENTE REALIZADAS
 # no exercício ANTERIOR (2025) — nunca a RCL, nunca orçado, nunca o ano
 # atual. Valores brutos (antes da dedução do FUNDEB) — ponto que varia de
@@ -409,9 +452,12 @@ CODIGOS_ART29A = [
     '1721520100',                                                  # Cota-parte IPI-Municípios
     '1721530100',                                                  # Cota-parte CIDE
 ]
-_receita_2025 = D.get('anos', {}).get('2025', {})
-BASE_ART29A_2025 = sum(_receita_2025.get(c, {}).get('ate_per', 0) for c in CODIGOS_ART29A)
-TETO_CAMARA_2026 = BASE_ART29A_2025 * 0.06
+_ano_base = int(ANO_EQUILIBRIO) - 1      # exercício anterior ao que está sendo acompanhado
+_receita_base = D.get('anos', {}).get(str(_ano_base), {})
+BASE_ART29A = sum(_receita_base.get(c, {}).get('ate_per', 0) for c in CODIGOS_ART29A)
+_pop = SICONFI.get('populacao')
+PCT_ART29A = calculos.percentual_29a(_pop) if _pop else None   # CONFERIR com o jurídico: faixas da EC 58/2009
+TETO_CAMARA = calculos.teto_camara(BASE_ART29A, _pop) if _pop else 0
 
 _orgpm = DESPESAS.get('orgaos_por_mes', {})
 _CAM_RE = __import__('re').compile(r'^C.MARA')
@@ -422,17 +468,20 @@ _pag_camara = sum(o[5] for m in _orgpm.values() for o in m if _CAM_RE.match(o[0]
 # conta do teto em si.
 _loa_camara = next((o[1] for m in _orgpm.values() for o in m if _CAM_RE.match(o[0])), 0)
 ART29A = {
-    'base_2025': round(BASE_ART29A_2025, 2),
-    'teto_2026': round(TETO_CAMARA_2026, 2),
-    'emp_camara_2026': round(_emp_camara, 2),
-    'pag_camara_2026': round(_pag_camara, 2),
-    'loa_camara_2026': round(_loa_camara, 2),
+    'ano_base': _ano_base,
+    'pct': PCT_ART29A,
+    'populacao': _pop,
+    'base_anterior': round(BASE_ART29A, 2),
+    'teto': round(TETO_CAMARA, 2),
+    'emp_camara': round(_emp_camara, 2),
+    'pag_camara': round(_pag_camara, 2),
+    'loa_camara': round(_loa_camara, 2),
     'meses_coletados': len(_orgpm),
     # empenhado da Câmara mês a mês (pro Painel de Comando acumular até o mês escolhido)
     'camara_mes': {m: round(sum(o[3] for o in v if _CAM_RE.match(o[0])), 2) for m, v in _orgpm.items()},
 }
-print('Art. 29-A — base 2025: %.2f | teto 2026 (6%%): %.2f | Câmara empenhado: %.2f | Câmara pago: %.2f | LOA Câmara: %.2f'
-      % (BASE_ART29A_2025, TETO_CAMARA_2026, _emp_camara, _pag_camara, _loa_camara))
+print('Art. 29-A — base %d: %.2f | teto (%s%%): %.2f | Câmara empenhado: %.2f | Câmara pago: %.2f | LOA Câmara: %.2f'
+      % (_ano_base, BASE_ART29A, PCT_ART29A, TETO_CAMARA, _emp_camara, _pag_camara, _loa_camara))
 
 # ------------------------------------------------------- Visão do Prefeito
 # Números que só existem pra essa tela: dotação (LOA atualizada), arrecadação
@@ -561,6 +610,41 @@ try:
 except Exception:
     RREO = {}
 
+# O RREO em PDF (coletor_rreo.py) traz também caixa e restos a pagar por ano, mas depende de navegador e de ler PDF.
+# Se o SICONFI já tem um bimestre MAIS NOVO que o do PDF, os mínimos de educação, FUNDEB e saúde passam a vir dele
+# (caixa e restos a pagar do PDF ficam de fora: seriam de outro bimestre).
+def _bimestre_fim(ano, b):
+    import calendar
+    return '%02d/%02d/%d' % (calendar.monthrange(ano, 2 * b)[1], 2 * b, ano)
+
+_pdf = (RREO or {}).get('ultimo') or {}
+if SICONFI_RREO and (SICONFI_RREO['ano'], SICONFI_RREO['bimestre']) > (_pdf.get('ano', 0), _pdf.get('bimestre', 0)):
+    _r = SICONFI_RREO
+    def _min(chave):
+        return {'minimo': _r.get(chave + '_minimo_pct'), 'pct': _r.get(chave + '_pct'), 'valor': _r.get(chave + '_valor')}
+    if all(_r.get(k) is not None for k in ('mde_pct', 'asps_pct', 'fundeb_pct')):
+        RREO = dict(RREO or {})
+        RREO['ultimo'] = {'ano': _r['ano'], 'bimestre': _r['bimestre'], 'posicao': _bimestre_fim(_r['ano'], _r['bimestre']),
+                          'fonte': 'RREO · SICONFI (Anexo 14)', 'origem': 'siconfi',
+                          'mde': _min('mde'), 'asps': _min('asps'), 'fundeb70': _min('fundeb')}
+        print('RREO: usando o SICONFI (%dº bimestre/%d), mais novo que o PDF (%sº/%s)' % (_r['bimestre'], _r['ano'], _pdf.get('bimestre'), _pdf.get('ano')))
+
+MOSTRAR_NOMES = os.environ.get('FAZENDA_MOSTRAR_NOMES') == '1'
+def _nome_exibido(i, nome):
+    """Padrão: sem nome. O painel não precisa dele para a visão do prefeito (totais, vínculo, secretaria)."""
+    return nome if MOSTRAR_NOMES else 'Servidor %04d' % (i + 1)
+
+FONTES = [
+    {'nome': 'Receita', 'data': D.get('coletado_em', ''), 'diaria': True},
+    {'nome': 'Despesas', 'data': DP_COLETA, 'diaria': True},
+    {'nome': 'Contratos', 'data': CT_COLETA, 'diaria': True},
+    {'nome': 'Natureza', 'data': _coletado('dados_natureza.json'), 'diaria': True},
+    {'nome': 'Função', 'data': _coletado('dados_funcao.json'), 'diaria': True},
+    {'nome': 'Folha', 'data': _coletado('dados_pessoal.json'), 'diaria': False},
+    {'nome': 'RREO (PDF)', 'data': _coletado('dados_rreo.json'), 'diaria': False},
+    {'nome': 'SICONFI', 'data': SICONFI.get('coletado_em', ''), 'diaria': False},
+]
+
 DATA = {
     'rc':  bloco('1'),
     'cap': bloco('2'),
@@ -585,9 +669,13 @@ DATA = {
     'equilibrio': EQUILIBRIO,
     'art29a': ART29A,
     'dp_coleta': DP_COLETA,
-    'rh':  [[txt(r['Nome']), txt(r['Cargo']), txt(r['Tipo']), txt(r['Situação']),
+    'rh':  [[_nome_exibido(_i, txt(r['Nome'])), txt(r['Cargo']), txt(r['Tipo']), txt(r['Situação']),
              txt(r['Secretaria']), num(r['Vencimentos']), num(r['Bruto']), num(r['Líquido'])]
-            for _, r in rh.iterrows()],
+            for _i, (_, r) in enumerate(rh.iterrows())],
+    'lrf': LRF,
+    'siconfi': {'coletado_em': SICONFI.get('coletado_em', ''), 'populacao': SICONFI.get('populacao'), 'rgf': OFICIAL_RGF, 'rreo': SICONFI_RREO, 'rreo_hist': SICONFI_RREO_HIST},
+    'fontes': FONTES,
+    'nomes_visiveis': MOSTRAR_NOMES,
 }
 
 HTML = r'''<!DOCTYPE html>
@@ -1282,6 +1370,8 @@ const DATA = __DATA__;
 const LOGO_SRC = '__LOGO_SRC__';   /* logotipo da prefeitura (data URI), vazio se o arquivo não existir */
 const ANOS = [...new Set(DATA.rc.map(r=>r[0]))].sort((a,b)=>a-b);
 const PARCIAL = Math.max(...ANOS);              /* exercício ainda em andamento */
+
+const LRF = DATA.lrf || {limites:{alerta:48.6, prudencial:51.3, maximo:54}, oficial:null};   /* Executivo; oficial = RGF do SICONFI */
 
 const PAGS = {
   rc:  {t:'Receitas Correntes', sub:'Arrecadação corrente do município, por ano e por fonte',
@@ -2230,12 +2320,12 @@ function limitesLegais(rot, rolaLei, notaLei){
      apl:S('edu')-S('edu_fed'), bn:'receita de impostos e transferências'},
     {n:'Saúde (ASPS)', regra:'mínimo 15% · LC 141/2012', tipo:'min', lim:15, base:rit, ref:rit*0.15,
      apl:S('saude')-S('saude_fed'), bn:'receita de impostos e transferências'},
-    {n:'Despesa com pessoal (12 meses)', regra:'máximo 60% · LRF art. 19 · janela móvel '+(p12.de||'')+' a '+(p12.ate||''), tipo:'max', lim:60, base:p12.rcl, ref:p12.rcl*0.60,
+    {n:'Despesa com pessoal (12 meses)', regra:'máximo '+LRF.limites.maximo+'% do Executivo · LRF art. 20 · aproximação, inclui a Câmara · janela móvel '+(p12.de||'')+' a '+(p12.ate||''), tipo:'max', lim:LRF.limites.maximo, base:p12.rcl, ref:p12.rcl*LRF.limites.maximo/100,
      apl:p12.pessoal, bn:'receita corrente líquida dos 12 meses (aprox.)', anual:true},
-    {n:'Repasse à Câmara (empenhado)', regra:'teto 6% · CF art. 29-A', tipo:'max', lim:6, base:art29.base_2025||0, ref:art29.teto_2026||0,
-     apl:art29.emp_camara_2026||0, bn:'receita tributária e transferências de 2025', anual:true},
-    {n:'Repasse à Câmara (pago)', regra:'teto 6% · CF art. 29-A', tipo:'max', lim:6, base:art29.base_2025||0, ref:art29.teto_2026||0,
-     apl:art29.pag_camara_2026||0, bn:'receita tributária e transferências de 2025', anual:true},
+    {n:'Repasse à Câmara (empenhado)', regra:'teto '+(art29.pct||'?')+'% · CF art. 29-A', tipo:'max', lim:art29.pct||6, base:art29.base_anterior||0, ref:art29.teto||0,
+     apl:art29.emp_camara||0, bn:'receita tributária e transferências de '+(art29.ano_base||'?'), anual:true},
+    {n:'Repasse à Câmara (pago)', regra:'teto '+(art29.pct||'?')+'% · CF art. 29-A', tipo:'max', lim:art29.pct||6, base:art29.base_anterior||0, ref:art29.teto||0,
+     apl:art29.pag_camara||0, bn:'receita tributária e transferências de '+(art29.ano_base||'?'), anual:true},
   ];
   const t=el('table');
   t.innerHTML='<thead><tr><th class="e" style="width:20%">Exigência</th><th class="e">Regra</th>'
@@ -2260,10 +2350,10 @@ function limitesLegais(rot, rolaLei, notaLei){
     tb.appendChild(tr);
   });
   t.appendChild(tb); rolaLei.appendChild(t);
-  const loa=art29.loa_camara_2026||0, teto=art29.teto_2026||0;
+  const loa=art29.loa_camara||0, teto=art29.teto||0;
   notaLei.innerHTML='<div style="font-size:13px;color:var(--t1);padding:6px 0 12px;line-height:1.7">'
     +'<b>Repasse à Câmara Municipal:</b> previsto na LOA <b>'+exato(loa)+'</b> ('+f1.format(teto?loa/teto*100:0)+'% do teto) · '
-    +'empenhado <b>'+exato(art29.emp_camara_2026||0)+'</b> · pago <b>'+exato(art29.pag_camara_2026||0)+'</b> · '
+    +'empenhado <b>'+exato(art29.emp_camara||0)+'</b> · pago <b>'+exato(art29.pag_camara||0)+'</b> · '
     +'teto do art. 29-A <b>'+exato(teto)+'</b></div>'
     +'Barra: preenchimento = % aplicado; traço = limite legal. Verde = dentro da regra; âmbar = abaixo do mínimo no período; vermelho = acima do teto.<br>'
     +'<b>Aproximação gerencial</b> pelo liquidado do ano civil (restos a pagar não entram), sem substituir SIOPE/SIOPS/RREO. '
@@ -2502,6 +2592,8 @@ function montaEquilibrio(){
   const sLim=bloco(host,'Limites legais');
   const rolaLim=el('div','rolatab'); sLim.appendChild(rolaLim);
   const notaLim=el('div','nota'); sLim.appendChild(notaLim);
+  const sMeta=bloco(host,'Metas fiscais e dívida (SICONFI)');
+  const hostMeta=el('div'); sMeta.appendChild(hostMeta);
   const sObr=bloco(host,'Gastos obrigatórios x discricionários');
   const hostObr=el('div'); sObr.appendChild(hostObr);
 
@@ -2538,6 +2630,7 @@ function montaEquilibrio(){
       +(saldo<0&&txtCaixa()?' '+txtCaixa():'');
 
     limitesLegais(sLim.querySelector('.rot'), rolaLim, notaLim);
+    metasFiscais(hostMeta);
     barraObrigatorias(hostObr);
   };
 }
@@ -2550,6 +2643,51 @@ const TAG_ST={ ok:'OK', at:'ATENÇÃO', ruim:'ALERTA', info:'INFORMATIVO', esp:'
 function irPara(p){ pagina=p; render(); scrollTo({top:0,behavior:'smooth'}); }
 
 
+/* datas de cada fonte (a data que vale é a da própria fonte, não a "última coleta") */
+function htmlFontes(){
+  const fs=DATA.fontes||[]; if(!fs.length) return '';
+  const hoje=new Date(), vel=[];
+  const dia=s=>s?new Date(String(s).slice(0,10)+'T12:00:00'):null;
+  const itens=fs.map(f=>{
+    const d=dia(f.data), idade=d?Math.floor((hoje-d)/86400000):null, velha=f.diaria&&(idade===null||idade>2);
+    if(velha) vel.push(f.nome);
+    return '<span'+(velha?' style="color:var(--baixa);font-weight:700"':'')+'>'+esc(f.nome)+' '+(d?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'—')+'</span>';
+  });
+  return '<b>Dados por fonte:</b> '+itens.join(' · ')+(vel.length?' · <b style="color:var(--baixa)">desatualizado: '+vel.map(esc).join(', ')+'</b>':'');
+}
+
+/* ---------------- Metas fiscais da LDO e dívida (SICONFI) ---------------- */
+function metasFiscais(host){
+  host.innerHTML='';
+  const S=DATA.siconfi||{}, r=S.rreo, g=S.rgf, hist=S.rreo_hist||[];
+  if(!r&&!g){ const d=el('div','vazio'); d.textContent='O SICONFI ainda não foi coletado (coletor_siconfi.py).'; host.appendChild(d); return; }
+  const m=v=>(v===undefined||v===null)?'—':exato(v), p=v=>(v===undefined||v===null)?'—':f2.format(v)+'%';
+  let h='<table class="ltab"><tbody>';
+  if(r){
+    h+='<tr class="tot"><td colspan="2">RREO · '+r.bimestre+'º bimestre de '+r.ano+' (Anexo 14 · SICONFI)</td></tr>'
+      +'<tr><td>Resultado primário apurado até o bimestre</td><td>'+m(r.primario_apurado)+'</td></tr>'
+      +'<tr><td>Meta de resultado primário da LDO (ano inteiro)</td><td>'+m(r.primario_meta)+'</td></tr>'
+      +'<tr><td>Resultado nominal apurado</td><td>'+m(r.nominal_apurado)+'</td></tr>'
+      +'<tr><td>Meta de resultado nominal da LDO (ano inteiro)</td><td>'+m(r.nominal_meta)+'</td></tr>'
+      +'<tr><td>Resultado orçamentário até o bimestre ('+(r.resultado_orcamentario<0?'déficit':'superávit')+')</td><td>'+m(r.resultado_orcamentario)+'</td></tr>'
+      +(r.saldo_exercicios_anteriores!==undefined?'<tr class="sub"><td>Saldos de exercícios anteriores usados para créditos adicionais</td><td>'+m(r.saldo_exercicios_anteriores)+'</td></tr>':'')
+      +'<tr class="sub"><td>Restos a pagar de anos anteriores ainda a pagar (processados + não processados)</td><td>'+m((r.rp_proc_saldo||0)+(r.rp_nproc_saldo||0))+'</td></tr>';
+  }
+  if(g&&g.dcl_pct!==undefined){
+    h+='<tr class="tot"><td colspan="2">RGF · '+g.quadrimestre+'º quadrimestre de '+g.ano+' (SICONFI)</td></tr>'
+      +'<tr><td>Dívida consolidada líquida</td><td>'+m(g.dcl)+' ('+p(g.dcl_pct)+' da RCL ajustada)</td></tr>'
+      +'<tr class="sub"><td>Limite do Senado Federal (Res. 40/2001; alerta a 90% do limite)</td><td>'+p(g.dcl_limite_pct)+'</td></tr>';
+  }
+  h+='</tbody></table>';
+  if(hist.length){
+    h+='<div class="lnota" style="margin:12px 0 4px"><b>Bimestre a bimestre</b> · acumulado do ano, como a contabilidade publicou</div><div class="rolatab"><table class="ltab"><thead><tr><th>Bimestre</th><th>Educação (mín. 25%)</th><th>Saúde (mín. 15%)</th><th>FUNDEB (mín. 70%)</th><th>Primário apurado</th><th>Result. orçamentário</th></tr></thead><tbody>'
+      +hist.filter(x=>x.ano===(r&&r.ano)).map(x=>'<tr><td>'+x.bimestre+'º</td><td>'+p(x.mde_pct)+'</td><td>'+p(x.asps_pct)+'</td><td>'+p(x.fundeb_pct)+'</td><td>'+m(x.primario_apurado)+'</td><td>'+m(x.resultado_orcamentario)+'</td></tr>').join('')
+      +'</tbody></table></div>';
+  }
+  h+='<div class="lnota" style="margin-top:8px">Números publicados pela contabilidade do município no SICONFI (coleta de '+esc(String(S.coletado_em||'—'))+'); o painel só mostra, não recalcula. Resultado abaixo da meta, déficit e uso de saldos anteriores são pontos para a contabilidade explicar, não conclusão de irregularidade. Os mínimos de educação, saúde e FUNDEB valem para o ano inteiro.</div>';
+  host.innerHTML=h;
+}
+
 /* ---------------- Painel de Comando ---------------- */
 function montaComando(){
   const host=document.getElementById('pg-cmd');
@@ -2561,7 +2699,7 @@ function montaComando(){
   const colTit=el('div','coltit'); topopag.appendChild(colTit);
   const cab=el('div','cab');
   cab.innerHTML='<div><h1>Painel de Controle Fiscal e Orçamentário</h1><p>'+(eq.ano||'')+' · escolha o mês de referência · '
-    +'indicadores gerenciais, não substituem o RREO/RGF'+(DATA.coleta?' · <b>Atualizado em '+DATA.coleta.split('-').reverse().join('/')+'</b> · fonte: Portal da Transparência':'')+'</p></div>';
+    +'indicadores gerenciais, não substituem o RREO/RGF'+' · '+htmlFontes()+'</p></div>';
   colTit.appendChild(cab);
   if(!meses.length||!eq.ano){
     const d=el('div','vazio'); d.textContent='Sem dados suficientes ainda pra montar o painel.'; host.appendChild(d);
@@ -2621,23 +2759,28 @@ function montaComando(){
     }
     pes*=1+st.rf/100; rcl*=fr;
     const cam=meses.filter(m=>m<=M).reduce((s,m)=>s+((a29.camara_mes||{})[m]||0),0);   // Câmara: acumulado até o fim do período, contra o teto anual
-    const pPes=rcl?pes/rcl*100:0, pEdu=rit?edu/rit*100:0, pSau=rit?sau/rit*100:0, pCam=a29.teto_2026?cam/a29.teto_2026*100:0;
+    const pPes=rcl?pes/rcl*100:0, pEdu=rit?edu/rit*100:0, pSau=rit?sau/rit*100:0, pCam=a29.teto?cam/a29.teto*100:0;
     /* Educação e Saúde: o número que vale é o do RREO (apuração oficial); a aproximação pelo liquidado fica só no balão */
     const vEdu=rr?rr.mde.pct:pEdu, vSau=rr?rr.asps.pct:pSau;
     const subOf=rr?'apuração oficial · RREO '+rr.bimestre+'º bim/'+rr.ano:'aproximação pelo liquidado';
     /* período a que cada medidor se refere (aparece sob o nome) */
     const mesRR=rr?(MESNOME[+String(rr.posicao).split('/')[1]]||''):'';
     const perOficial=rr?'jan a '+mesRR+'/'+rr.ano+' · relatório oficial (RREO)':'aproximação · jan a '+MESNOME[M];
+    /* pessoal: o número que vale é o do RGF oficial (Executivo, SICONFI); a conta do painel é só aproximação e inclui a Câmara.
+       Na simulação (folha × receita) o oficial é escalado pelo mesmo fator. */
+    const ofP=LRF.oficial, lm=LRF.limites;
+    const vPes=ofP?ofP.dtp_pct*(1+st.rf/100)/(1+st.rr/100):pPes;
+    const perPes=ofP?'12 meses até o '+ofP.quadrimestre+'º quadrimestre/'+ofP.ano+' · RGF oficial (SICONFI)':'aproximação · 12 meses até '+MESNOME[Math.min(M,fech)]+'/'+eq.ano+' · inclui a Câmara';
     return {falt,pes,rcl,rit,gauges:[
-      {n:'Folha de pessoal', c:'Folha de pessoal', per:'últimos 12 meses até '+MESNOME[Math.min(M,fech)]+'/'+eq.ano, v:pPes, lim:60, max:80, tipo:'max', alerta:54, sub:'sobre a RCL · últimos 12 meses', x:'Limite 60% · alerta 54%'+(falt?' · janela com '+(12-falt)+' meses':'')},
+      {n:'Folha de pessoal (Executivo)', c:'Folha de pessoal · Executivo', per:perPes, v:vPes, aprox:pPes, lim:lm.maximo, prud:lm.prudencial, max:72, tipo:'max', alerta:lm.alerta, sub:ofP?'sobre a RCL ajustada · RGF oficial':'sobre a RCL · aproximação, inclui a Câmara', x:'Limite '+lm.maximo+'% · prudencial '+lm.prudencial+'% · alerta '+lm.alerta+'%'+(ofP?' · aproximação do painel: '+f1.format(pPes)+'% (inclui a Câmara)':' · RGF oficial ainda não coletado')+(falt?' · janela com '+(12-falt)+' meses':'')},
       {n:'Educação', c:'Educação · mín. 25%', per:perOficial, v:vEdu, aprox:pEdu, lim:25, max:50, tipo:'min', sub:subOf, x:'Mínimo 25% (CF art. 212)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pEdu)+'%':'')},
       {n:'Saúde', c:'Saúde · mín. 15%', per:perOficial, v:vSau, aprox:pSau, lim:15, max:40, tipo:'min', sub:subOf, x:'Mínimo 15% (LC 141/2012)'+(rr?' · Oficial (RREO '+rr.bimestre+'º bim/'+rr.ano+', posição em '+rr.posicao+') · aproximação do painel: '+f1.format(pSau)+'%':'')},
-      {n:'Repasse à Câmara', c:'Câmara · do teto', per:'jan a '+MESNOME[M]+'/'+eq.ano+' · empenhado', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de 6% (CF art. 29-A)'}]};
+      {n:'Repasse à Câmara', c:'Câmara · do teto', per:'jan a '+MESNOME[M]+'/'+eq.ano+' · empenhado', v:pCam, lim:100, max:120, tipo:'max', alerta:90, sub:'do teto já empenhado', x:'Teto de '+(a29.pct||'?')+'% (CF art. 29-A) sobre a base de '+(a29.ano_base||'?')}]};
   }
   function stat(g,Mref){
     /* o mínimo é anual: abaixo dele antes de dezembro é só observação, não descumprimento */
     if(g.tipo==='min') return g.v>=g.lim?'ok':((g.v>=g.lim-2||(Mref||periodo().M)<12)?'at':'ruim');
-    if(g.v>g.lim) return 'ruim';
+    if(g.v>=g.lim||(g.prud!==undefined&&g.v>=g.prud)) return 'ruim';
     return (g.alerta&&g.v>g.alerta)?'at':'ok';
   }
   const ang=p=>Math.PI*(1-p), pt=(cx,cy,r,p)=>[cx+r*Math.cos(ang(p)), cy-r*Math.sin(ang(p))];
@@ -2685,7 +2828,7 @@ function montaComando(){
     /* a faixa de status em linguagem simples: uma frase por assunto que merece atenção */
     const x_=i=>f1.format(R.gauges[i].v);
     const FRASE=[
-      ()=>'A folha de pessoal está em '+x_(0)+'% da receita; o limite da lei é 60% (alerta a partir de 54%).',
+      ()=>'A folha de pessoal do Executivo está em '+x_(0)+'% da receita corrente líquida; o limite da lei é '+LRF.limites.maximo+'% (prudencial em '+LRF.limites.prudencial+'%, alerta a partir de '+LRF.limites.alerta+'%).',
       ()=>'A Educação aplicou '+x_(1)+'% da receita de impostos; a lei exige no mínimo 25%. A conta é fechada em dezembro.',
       ()=>'A Saúde aplicou '+x_(2)+'% da receita de impostos; a lei exige no mínimo 15%. A conta é fechada em dezembro.',
       ()=>'O repasse à Câmara está em '+x_(3)+'% do teto permitido.'];
@@ -2916,8 +3059,8 @@ function montaComando(){
     const p1=x=>f1.format(x)+'%', p2=x=>f2.format(x)+'%';
     // ---- limites legais
     {
-      const g=R.gauges[0], n=g.v>=57?'v':(g.v>=54?'l':'o');
-      add('Limites legais',n,'Despesa com pessoal sobre a RCL (janela de 12 meses)','Limite de 60% da LRF; alerta a partir de 54% e prudencial em 57%. Liquidado que entra no limite ÷ RCL dos mesmos 12 meses.',p1(g.v),'eq');
+      const g=R.gauges[0], n=g.v>=LRF.limites.prudencial?'v':(g.v>=LRF.limites.alerta?'l':'o');
+      add('Limites legais',n,'Despesa com pessoal sobre a RCL (janela de 12 meses)','Limite do Executivo: '+LRF.limites.maximo+'% da RCL (LRF art. 20, III, "b"); alerta a partir de '+LRF.limites.alerta+'% e prudencial em '+LRF.limites.prudencial+'%. '+(LRF.oficial?'Número oficial do RGF ('+LRF.oficial.quadrimestre+'º quadrimestre/'+LRF.oficial.ano+', SICONFI).':'Aproximação do painel (liquidado que entra no limite ÷ RCL dos 12 meses, inclui a Câmara); o RGF oficial ainda não foi coletado.'),p1(g.v),'eq');
     }
     const lim=(nome,minimo,aprox,ofi,fonte,art)=>{
       if(ofi!==null){
@@ -2937,7 +3080,7 @@ function montaComando(){
     }
     {
       const g=R.gauges[3], n=g.v>100?'v':(g.v>=90?'l':'o');
-      add('Limites legais',n,'Repasse à Câmara dentro do teto do art. 29-A','Empenhado da Câmara contra o teto de 6% da base de 2025 ('+brlx((DATA.art29a||{}).teto_2026||0)+').',p1(g.v),'eq');
+      add('Limites legais',n,'Repasse à Câmara dentro do teto do art. 29-A','Empenhado da Câmara contra o teto de '+((DATA.art29a||{}).pct||'?')+'% da base de '+((DATA.art29a||{}).ano_base||'?')+' ('+brlx((DATA.art29a||{}).teto||0)+').',p1(g.v),'eq');
     }
     // ---- equilíbrio
     {
@@ -3020,11 +3163,11 @@ function montaComando(){
     const dt=hoje.toLocaleDateString('pt-BR')+' às '+hoje.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
     /* base legal e recomendação de cada ponto de controle */
     const META=[
-      [/^Despesa com pessoal/,'LRF arts. 18 a 23 (limite 60%; alerta 54%; prudencial 57%)','Acompanhar mensalmente a despesa total com pessoal; antes de novas nomeações, reajustes ou horas extras, simular o efeito sobre o limite.'],
+      [/^Despesa com pessoal/,'LRF arts. 18 a 23 e 59 (Executivo: limite 54%; prudencial 51,3%; alerta 48,6%)','Acompanhar mensalmente a despesa total com pessoal; antes de novas nomeações, reajustes ou horas extras, simular o efeito sobre o limite.'],
       [/^Educação \(MDE\)/,'CF art. 212; LDB arts. 70 e 71','Programar a aplicação do saldo até dezembro para atingir 25% da receita de impostos; conferir glosas (inativos, merenda, desvio de função).'],
       [/^Saúde \(ASPS\)/,'CF art. 198; LC 141/2012, arts. 4º e 7º','Manter o acompanhamento bimestral; conferir despesas que não contam como ASPS (inativos, merenda, saneamento).'],
       [/^FUNDEB/,'Lei 14.113/2020, art. 26','Garantir que ao menos 70% dos recursos do FUNDEB sejam aplicados na remuneração dos profissionais da educação básica.'],
-      [/^Repasse à Câmara/,'CF art. 29-A','Controlar o duodécimo contra o teto de 6% da base de 2025; repasse acima do teto é crime de responsabilidade.'],
+      [/^Repasse à Câmara/,'CF art. 29-A','Controlar o duodécimo contra o teto do art. 29-A (percentual pela população, sobre a base do ano anterior); repasse acima do teto é crime de responsabilidade.'],
       [/^Receita x despesa paga/,'LRF art. 1º, §1º e art. 9º','Verificar o fluxo de caixa e quanto da despesa do ano foi coberto por saldo de exercícios anteriores (superávit financeiro); se o desequilíbrio persistir, avaliar a limitação de empenho (LRF art. 9º).'],
       [/^Empenhado sobre o orçamento/,'Lei 4.320/1964, arts. 58 a 60','Acompanhar o ritmo de empenho contra o calendário e a arrecadação, para não comprometer o fim do exercício.'],
       [/^Remanejamento do orçamento/,'CF art. 167, V; Lei 4.320/1964, arts. 40 a 46','Conferir se os créditos adicionais têm lei ou decreto e fonte de recurso indicada.'],
@@ -3168,7 +3311,7 @@ function montaComando(){
       });
       const media=(12-falt)?soma12/(12-falt):0;
       const pc=rcl12?soma12/rcl12*100:0;
-      const cor=pc>=57?'var(--baixa)':(pc>=54?'var(--parcial)':'var(--alta)');
+      const cor=pc>=LRF.limites.prudencial?'var(--baixa)':(pc>=LRF.limites.alerta?'var(--parcial)':'var(--alta)');
       h+='<div class="pjt">Despesa com pessoal · mês a mês <span>(liquidado que entra no limite da LRF)</span></div>'
         +'<div class="pjv"><div><small>Média mensal</small><b>'+exato(media)+'</b></div>'
         +(maiorAlta?'<div><small>Maior alta</small><b style="color:var(--baixa)">'+maiorAlta.k+' · +'+f1.format(maiorAlta.v)+'%</b></div>':'')
@@ -3184,7 +3327,7 @@ function montaComando(){
         +'<div class="pjs"><div><small>Total dos 12 meses</small><b>'+exato(soma12)+'</b></div>'
         +'<div><small>% da RCL ('+brlx(rcl12)+')</small><b style="color:'+cor+'">'+f1.format(pc)+'%</b></div>'
         +(nSel?'<div><small>Meses marcados ('+nSel+')</small><b>'+exato(somaSel)+'</b></div>':'')+'</div>'
-        +'<div class="nota" style="padding-top:6px">Limite 60% da RCL (alerta a partir de 54%). '
+        +'<div class="nota" style="padding-top:6px">Limite do Executivo '+LRF.limites.maximo+'% da RCL (alerta a partir de '+LRF.limites.alerta+'%, prudencial '+LRF.limites.prudencial+'%). Série aproximada do painel (inclui a Câmara); o número oficial vem do RGF, em Limites legais. '
         +(falt?'<b>Janela incompleta: faltam '+falt+' mês(es) de dados.</b> ':'')
         +'Inclui inativos, pensionistas, contratação temporária e terceirização que substitui servidores; fora: indenização por demissão, sentenças e exercícios anteriores.</div>';
     }
@@ -3281,8 +3424,8 @@ function montaLoa(){
   const sRcl=bloco(grade,'Receita Corrente Líquida (RCL) · base de cálculo dos limites'); sRcl.classList.add('c6');
   {
     const p12=(DATA.natureza&&DATA.natureza.pessoal12)||{pessoal:0,rcl:0,de:'',ate:'',faltam:[]};
-    const rcl=p12.rcl, pes=p12.pessoal, lim=rcl*0.60, ale=rcl*0.54, pru=rcl*0.57;
-    const pcr=rcl?pes/rcl*100:0, cor=pcr>=57?'var(--baixa)':(pcr>=54?'var(--parcial)':'var(--alta)');
+    const rcl=p12.rcl, pes=p12.pessoal, lim=rcl*LRF.limites.maximo/100, ale=rcl*LRF.limites.alerta/100, pru=rcl*LRF.limites.prudencial/100;
+    const pcr=rcl?pes/rcl*100:0, cor=pcr>=LRF.limites.prudencial?'var(--baixa)':(pcr>=LRF.limites.alerta?'var(--parcial)':'var(--alta)');
     const meses12=Object.keys(ser.rcl).sort().slice(-12).reverse();
     /* a janela de 12 meses atravessa dois anos: mostra quanto vem de cada um, pra não ser lida como a receita do ano */
     const [mAte,yAte]=(p12.ate||'').split('/').map(Number);
@@ -3296,17 +3439,18 @@ function montaLoa(){
       +linhasAno
       +'<tr class="sub"><td>Para comparar: receita líquida realizada em '+eq.ano+' (tabela acima)</td><td>'+exato(recReal)+'</td></tr>'
       +'<tr><td>Despesa com pessoal (liquidada)</td><td>'+exato(pes)+'</td></tr>'
-      +'<tr><td>% da RCL</td><td style="color:'+cor+';font-weight:800">'+f1.format(pcr)+'%</td></tr>'
-      +'<tr class="sub"><td>Limite da LRF (60%)</td><td>'+exato(lim)+'</td></tr>'
-      +'<tr class="sub"><td>Prudencial (57%)</td><td>'+exato(pru)+'</td></tr>'
-      +'<tr class="sub"><td>Alerta (54%)</td><td>'+exato(ale)+'</td></tr>'
+      +'<tr><td>% da RCL</td><td style="color:'+cor+';font-weight:800">'+f1.format(pcr)+'% <small style="font-weight:400">(aproximação, inclui a Câmara)</small></td></tr>'
+      +(LRF.oficial?'<tr class="tot"><td>Oficial (RGF, '+LRF.oficial.quadrimestre+'º quadrimestre/'+LRF.oficial.ano+', SICONFI): '+f1.format(LRF.oficial.dtp_pct)+'% da RCL ajustada de '+exato(LRF.oficial.rcl_ajustada)+'</td><td>'+exato(LRF.oficial.dtp)+'</td></tr>':'')
+      +'<tr class="sub"><td>Limite da LRF, Executivo ('+f1.format(LRF.limites.maximo)+'%)</td><td>'+exato(lim)+'</td></tr>'
+      +'<tr class="sub"><td>Prudencial ('+f1.format(LRF.limites.prudencial)+'%)</td><td>'+exato(pru)+'</td></tr>'
+      +'<tr class="sub"><td>Alerta ('+f1.format(LRF.limites.alerta)+'%)</td><td>'+exato(ale)+'</td></tr>'
       +'<tr class="tot"><td>Margem até o alerta</td><td style="color:'+(ale-pes>=0?'var(--alta)':'var(--baixa)')+'">'+(ale-pes>=0?'':'− ')+exato(Math.abs(ale-pes))+'</td></tr>'
       +'<tr><td>Margem até o limite</td><td>'+exato(lim-pes)+'</td></tr>'
       +'</tbody></table>'
       +'<div class="lnota" style="margin-top:10px"><b>RCL mês a mês</b></div><div class="lgrid">'
       +meses12.map(k=>{ const [y,m]=k.split('-'); return '<div><span>'+MESES[+m-1]+'/'+y.slice(2)+'</span><b>'+exato(ser.rcl[k])+'</b></div>'; }).join('')+'</div>'
       +'<div class="lnota"><b>A RCL dos 12 meses não é a receita realizada do ano:</b> ela soma uma janela móvel que pega meses do ano anterior e só vai até o último mês fechado, por isso difere da receita líquida realizada acima.</div>'
-      +'<div class="lnota">A RCL também é a base de outros limites da LRF (dívida consolidada, operações de crédito, garantias); o painel ainda não tem esses dados.</div>';
+      +'<div class="lnota">A RCL também é a base de outros limites da LRF (dívida consolidada, operações de crédito, garantias); a dívida consolidada líquida (SICONFI) aparece em "Metas fiscais e dívida".</div>';
     sRcl.insertAdjacentHTML('beforeend',h);
   }
 
@@ -4007,10 +4151,10 @@ function montaBusca(){
     if(tem(q,/educa/)&&rr) out.push(['Educação (mínimo 25%)',pct(rr.mde.pct),rr.mde.pct>=25?'cumprido até aqui':'abaixo do mínimo na posição de '+rr.posicao]);
     if(tem(q,/saude/)&&rr) out.push(['Saúde (mínimo 15%)',pct(rr.asps.pct),rr.asps.pct>=15?'cumprido':'abaixo do mínimo']);
     if(tem(q,/fundeb/)&&rr) out.push(['FUNDEB na remuneração (mínimo 70%)',pct(rr.fundeb70.pct),rr.fundeb70.pct>=70?'cumprido':'abaixo do mínimo']);
-    if(api&&tem(q,/folha|pessoal|limite/)){ const g=api.calc(api.periodo()).gauges[0]; out.push(['Folha de pessoal (limite 60%)',pct(g.v),g.v>54?'em alerta':'dentro do limite']); }
+    if(api&&tem(q,/folha|pessoal|limite/)){ const g=api.calc(api.periodo()).gauges[0]; out.push(['Folha de pessoal do Executivo (limite '+LRF.limites.maximo+'%)',pct(g.v),g.v>=LRF.limites.prudencial?'acima do limite prudencial':(g.v>=LRF.limites.alerta?'em alerta':'dentro do limite')]); }
     if(api&&tem(q,/camara|duodecimo/)){ const g=api.calc(api.periodo()).gauges[3]; out.push(['Repasse à Câmara (teto)',pct(g.v),g.v>100?'acima do teto':'dentro do teto']); }
     if(!out.length&&api){ const R=api.calc(api.periodo()); const g=R.gauges;
-      out.push(['Folha de pessoal',pct(g[0].v),'limite 60%'],['Educação',rr?pct(rr.mde.pct):pct(g[1].v),'mínimo 25%'],['Saúde',rr?pct(rr.asps.pct):pct(g[2].v),'mínimo 15%'],['Câmara',pct(g[3].v),'do teto']); }
+      out.push(['Folha de pessoal',pct(g[0].v),'limite '+LRF.limites.maximo+'%'],['Educação',rr?pct(rr.mde.pct):pct(g[1].v),'mínimo 25%'],['Saúde',rr?pct(rr.asps.pct):pct(g[2].v),'mínimo 15%'],['Câmara',pct(g[3].v),'do teto']); }
     if(!out.length) return nao('Não consegui montar os limites agora.');
     return {ok:true,entendi:'limites legais',titulo:'Limites legais',destaque:out[0][1],linhas:out.map(o=>[o[0],o[1]+' · '+o[2]]),
       nota:rr?'Educação e Saúde pelo relatório oficial (RREO), posição em '+rr.posicao+'. A verificação é anual, em dezembro.':'',fonte:'RREO e Portal da Transparência',ir:'eq',
@@ -4401,7 +4545,7 @@ else:
     out = out.replace('__LOGO__', 'Nova Lima<small>prefeitura</small>')
     out = out.replace('__LOGO_SRC__', '')
 
-dest = os.path.abspath(os.path.join(BASE, '..', 'Painel_Receita_Despesas.html'))
+dest = os.environ.get('FAZENDA_SAIDA') or os.path.abspath(os.path.join(BASE, '..', 'Painel_Receita_Despesas.html'))
 with open(dest, 'w', encoding='utf-8') as f:
     f.write(out)
 print('painel gerado:', dest, '(%.1f KB)' % (len(out) / 1024))

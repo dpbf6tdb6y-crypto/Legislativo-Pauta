@@ -7,3 +7,10 @@ node_modules
 npm-debug.log*
 coverage
 .claude
+# dados de folha e painel gerado: nunca no contexto de build (e portanto nunca em camada de imagem ou cache)
+private
+scripts/fazenda-atualizador/RH_*.xls
+scripts/fazenda-atualizador/RHX_*.csv
+scripts/fazenda-atualizador/.venv
+scripts/fazenda-atualizador/_cache
+scripts/Painel_Receita_Despesas.html

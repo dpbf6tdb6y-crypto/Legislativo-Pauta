@@ -64,3 +64,5 @@ public/fazenda/painel.html
 scripts/fazenda-atualizador/auto_atualizar.log
 scripts/fazenda-atualizador/_cache/
 scripts/Painel_Receita_Despesas.html
+__pycache__/
+*.pyc
