@@ -36,6 +36,7 @@ CANAL = os.environ.get('FAZENDA_CANAL', '')
 HOJE = datetime.date.today()
 DEST_REC = os.path.join(DADOS, 'dados_receita.json')
 DEST_DESP = os.path.join(DADOS, 'dados_despesas.json')
+DEST_CT = os.path.join(DADOS, 'dados_contratos.json')
 # totalizadores de cada bloco (iguais aos do coletor.py)
 BLOCOS = {'1': ('correntes', '1000000000'), '2': ('capital', '2000000000'), '9': ('deducoes', '91000000000')}
 
@@ -297,8 +298,51 @@ def coletar_despesas(portal, ano):
     return True
 
 
+def coletar_contratos(portal):
+    """Lista completa de contratos pelo XML. Recusa arquivo vazio ou que encolheu demais frente ao que já havia
+    (o portal pode entregar uma lista parcial); guarda o SHA-256."""
+    antigo = _json(DEST_CT, {})
+    ultimo = None
+    for t in range(3):
+        try:
+            portal.ir('wmcontratoslicitacoes?0')
+            corpo = portal.exportar_xml()
+            regs = L.ler_contratos(corpo.decode('utf-8'), HOJE)
+            break
+        except Exception as e:  # noqa: BLE001 — arquivo vazio ou falha de rede: tenta de novo
+            ultimo = e
+            log('  contratos: tentativa %d falhou (%s)' % (t + 1, str(e).splitlines()[0][:140]))
+            time.sleep(5 + 10 * t)
+    else:
+        log('  contratos: %s — mantendo os dados anteriores' % ultimo)
+        return False
+    antes = len(antigo.get('contratos') or [])
+    if antes and len(regs) < 0.9 * antes:
+        log('  contratos: o portal trouxe %d (havia %d) — lista parcial? mantendo os dados anteriores' % (len(regs), antes))
+        return False
+    nums = [r['num'] for r in regs]
+    if len(set(nums)) != len(nums):
+        log('  contratos: AVISO %d números repetidos no arquivo' % (len(nums) - len(set(nums))))
+    divergentes = [r['num'] for r in regs if r['sit'] == 'vigente' and not r['status_portal'].startswith('Contrato Vigente')]
+    if divergentes:
+        log('  contratos: AVISO %d vigentes pelas datas que o portal marca de outro modo (ex.: %s)' % (len(divergentes), ', '.join(divergentes[:5])))
+    por = {}
+    for r in regs:
+        por.setdefault(r['sit'], []).append(r)
+    log('  contratos lidos: %d   valor total R$ %s' % (len(regs), format(sum(r['valor'] for r in regs), ',.2f')))
+    for k in ('vigente', 'a iniciar', 'encerrado', 'sem data'):
+        if k in por:
+            log('    %-10s %5d   R$ %18s' % (k, len(por[k]), format(sum(r['valor'] for r in por[k]), ',.2f')))
+    venc = [r for r in regs if r['sit'] == 'vigente' and r['dias'] is not None and r['dias'] <= 90]
+    log('    vencendo em até 90 dias: %d contratos, R$ %s' % (len(venc), format(sum(r['valor'] for r in venc), ',.2f')))
+    sha = guardar(corpo, 'contratos_%s.xml' % HOJE.isoformat())
+    _gravar(DEST_CT, {'coletado_em': HOJE.isoformat(), 'fonte': 'xml', 'sha256': sha, 'contratos': regs}, separators=(',', ':'))
+    log('  gravado: %s' % DEST_CT)
+    return True
+
+
 def main(argv):
-    quais = [a for a in argv if a in ('receita', 'despesas', 'tudo')] or ['tudo']
+    quais = [a for a in argv if a in ('receita', 'despesas', 'contratos', 'tudo')] or ['tudo']
     # padrão: ano corrente; em janeiro e fevereiro também o anterior (o fechamento do ano ainda pode ser revisado)
     anos = [int(a) for a in argv if a.isdigit()] or ([HOJE.year - 1] if HOJE.month <= 2 else []) + [HOJE.year]
     from playwright.sync_api import sync_playwright
@@ -313,6 +357,9 @@ def main(argv):
                 for ano in anos:
                     log('DESPESAS por órgão (XML) %d' % ano)
                     ok = coletar_despesas(portal, ano) or ok
+            if 'contratos' in quais or 'tudo' in quais:
+                log('CONTRATOS (XML)')
+                ok = coletar_contratos(portal) or ok
         finally:
             portal.fechar()
     if not ok:

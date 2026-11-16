@@ -50,7 +50,18 @@
    "mde_pct": 19.7,
    "fundeb_valor": 13377981.12,
    "fundeb_minimo_pct": 70,
-   "fundeb_pct": 86.87
+   "fundeb_pct": 86.87,
+   "caixa": {
+    "caixa_liquida_ant": 455889241.85,
+    "caixa_liquida_ate": 485065826.07,
+    "caixa_bruta_ant": 508843607.79,
+    "caixa_bruta_ate": 506819883.87,
+    "rp_proc_ant": 41238348.92,
+    "rp_proc_ate": 10719796.32,
+    "depositos_ant": 11716017.02,
+    "depositos_ate": 11034261.48,
+    "superavit_utilizado": 5691757.26
+   }
   },
   "2026-2": {
    "rec_prev_atual": 1577689949.94,
@@ -80,7 +91,36 @@
    "fundeb_pct": 84.77,
    "asps_valor": 88375560.73,
    "asps_minimo_pct": 15,
-   "asps_pct": 27.5
+   "asps_pct": 27.5,
+   "caixa": {
+    "caixa_liquida_ant": 457337820.43,
+    "caixa_liquida_ate": 410213496.65,
+    "caixa_bruta_ant": 508843607.79,
+    "caixa_bruta_ate": 423364212.07,
+    "rp_proc_ant": 41238348.92,
+    "rp_proc_ate": 3051433.59,
+    "depositos_ant": 10267438.44,
+    "depositos_ate": 10099281.83,
+    "superavit_utilizado": 56251388.83
+   },
+   "rp": {
+    "ant_proc": 2292488.77,
+    "insc_proc": 38995534.63,
+    "pagos_proc": 38324764.16,
+    "canc_proc": 233.83,
+    "saldo_proc": 2963025.41,
+    "ant_nproc": 8106435.33,
+    "insc_nproc": 91294315.56,
+    "liq_nproc": 61341206.77,
+    "pagos_nproc": 61203124.11,
+    "canc_nproc": 15609805.19,
+    "saldo_nproc": 22587821.59,
+    "saldo_total": 25550847,
+    "pagos": 99527888.27,
+    "cancelados": 15610039.02,
+    "inscritos_ano_anterior": 130289850.19,
+    "inscritos_anteriores": 10398924.1
+   }
   },
   "2026-3": {
    "rec_prev_atual": 1577689949.94,
@@ -110,7 +150,36 @@
    "fundeb_pct": 88.45,
    "asps_valor": 100354009.56,
    "asps_minimo_pct": 15,
-   "asps_pct": 17.71
+   "asps_pct": 17.71,
+   "caixa": {
+    "caixa_liquida_ant": 457337820.43,
+    "caixa_liquida_ate": 362423119.82,
+    "caixa_bruta_ant": 508843607.79,
+    "caixa_bruta_ate": 376671197.46,
+    "rp_proc_ant": 41238348.92,
+    "rp_proc_ate": 3048792.19,
+    "depositos_ant": 10267438.44,
+    "depositos_ate": 11199285.45,
+    "superavit_utilizado": 104756754.03
+   },
+   "rp": {
+    "ant_proc": 2292488.77,
+    "insc_proc": 38995534.63,
+    "pagos_proc": 38331925.4,
+    "canc_proc": 6005.55,
+    "saldo_proc": 2950092.45,
+    "ant_nproc": 8106435.33,
+    "insc_nproc": 91294315.56,
+    "liq_nproc": 62699552.06,
+    "pagos_nproc": 62551177.84,
+    "canc_nproc": 16519121.9,
+    "saldo_nproc": 20330451.15,
+    "saldo_total": 23280543.6,
+    "pagos": 100883103.24,
+    "cancelados": 16525127.45,
+    "inscritos_ano_anterior": 130289850.19,
+    "inscritos_anteriores": 10398924.1
+   }
   },
   "2026-4": {
    "rec_prev_atual": 1577882931.6,
@@ -140,18 +209,54 @@
    "fundeb_pct": 95.25,
    "asps_valor": 163960827.14,
    "asps_minimo_pct": 15,
-   "asps_pct": 22.04
+   "asps_pct": 22.04,
+   "caixa": {
+    "caixa_liquida_ant": 457337820.43,
+    "caixa_liquida_ate": 307591264.25,
+    "caixa_bruta_ant": 508843607.79,
+    "caixa_bruta_ate": 320907169.31,
+    "rp_proc_ant": 41238348.92,
+    "rp_proc_ate": 2898147.81,
+    "depositos_ant": 10267438.44,
+    "depositos_ate": 10417757.25,
+    "superavit_utilizado": 122101556.24
+   },
+   "rp": {
+    "ant_proc": 2292488.77,
+    "insc_proc": 38995534.63,
+    "pagos_proc": 38354155.92,
+    "canc_proc": 13771.2,
+    "saldo_proc": 2920096.28,
+    "ant_nproc": 8106435.33,
+    "insc_nproc": 91294315.56,
+    "liq_nproc": 63156230.97,
+    "pagos_nproc": 63128504.96,
+    "canc_nproc": 26844629.99,
+    "saldo_nproc": 9427615.94,
+    "saldo_total": 12347712.22,
+    "pagos": 101482660.88,
+    "cancelados": 26858401.19,
+    "inscritos_ano_anterior": 130289850.19,
+    "inscritos_anteriores": 10398924.1
+   }
   }
  },
  "hashes": {
   "rgf 2026-Q1": "c65b3b0f2bfa379c2fc001a7ee3d76c5f83889abf731b4a1282615182c3c7f24",
   "rgf 2026-Q2": "52dd4e7bfa3a1c425a138ee62a31401eab5534a0ea66c6bc1f1842366c71da86",
+  "rreo 2026-B1 anexo 06": "9a33c6bb714f94e36f51b2d1e3a0912352f7ebe57d9c3eb912758cf338e005ec",
   "rreo 2026-B1": "1fab5f04e12e9a55b56665ac4e1f9e754440b18064cb8d4c3f1a3a5a2d70b497",
+  "rreo 2026-B2 anexo 06": "7d4f915b60195cc2a4b593ad15f0ba03cea4c2582bd8e2198868a30cc0a94a05",
+  "rreo 2026-B2 anexo 07": "bf1137e0ba5a65ab4455eddd5b8af2165ff93e07557db3cfe94f8ed4b06badfd",
   "rreo 2026-B2": "fd1f6a2eac1f127e23cdfa4535719e261c8c5fd411f46ce5dfb3b90afdc1ce41",
+  "rreo 2026-B3 anexo 06": "e85094d03f940989200c85b086a96af75a63c8fa52facf97d304765c4bbc146d",
+  "rreo 2026-B3 anexo 07": "8c8fec45d815216d8c495b813cf9e87945ff71b69aa3b88f6052def48dd4fa52",
   "rreo 2026-B3": "ab31754b847390dcf395ede14af762a16555b601297b107d3dc6f41bd2a35008",
+  "rreo 2026-B4 anexo 06": "d654a4d5f0c17fb100e51b99f08c262011b15cbb0fb6ce33685660cd3ae237f7",
+  "rreo 2026-B4 anexo 07": "3c9784e5cc2df1e16b551aeeb2fe742807e84fe92dca43bacf150798a75b0127",
   "rreo 2026-B4": "34711315d562418fe38683e9823fe72afabed5ec352875400ab98c64634bc823"
  },
  "populacao": 120959,
  "ibge": 3144805,
- "coletado_em": "2026-11-16 12:30"
+ "coletado_em": "2026-11-16 19:02"
 }

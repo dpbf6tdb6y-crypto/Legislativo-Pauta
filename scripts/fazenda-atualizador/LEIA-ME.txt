@@ -8,8 +8,11 @@ O QUE CADA SCRIPT FAZ
    coletor.py            Receita: baixa do portal o relatorio de cada ano e de cada mes,
                          le so as linhas analiticas e CONFERE a soma contra o totalizador
                          oficial. Se alguma conta nao fechar, avisa na tela.
-   coletor_contratos.py  Contratos: baixa a relacao completa e classifica vigente/encerrado
-                         pelas datas de inicio e fim.
+   coletor_contratos.py  Contratos (RESERVA): le o PDF do portal. Tem limites: o texto do objeto e do
+                         credor vem cortado e o tipo pode sair errado. O normal agora e coletor_xml.py contratos.
+   coletor_xml.py contratos  Contratos pelo XML do portal: nome completo do credor, CNPJ (nunca CPF), tipo,
+                         modalidade e processo; classifica vigente/encerrado pelas datas e confere com o status do
+                         portal. Recusa arquivo vazio ou lista que encolheu mais de 10%.
    coletor_folha.py      Folha: procura no portal o arquivo de servidores mais recente
                          ja publicado e guarda em ..\..\RH\<mes>_<ano>.xls
    gerar_painel.py       Monta o painel HTML com tudo isso.

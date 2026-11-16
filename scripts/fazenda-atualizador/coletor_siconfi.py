@@ -61,6 +61,21 @@ def coletar(ano):
         itens, h = obter('%s/rreo?an_exercicio=%d&nr_periodo=%d&co_tipo_demonstrativo=RREO&no_anexo=RREO-Anexo%%2014&id_ente=%d' % (API, ano, b, IBGE))
         r = calculos.extrair_rreo(itens)
         if r:
+            # caixa (Anexo 06) e restos a pagar (Anexo 07): se falharem, o bimestre fica sem eles (o painel avisa)
+            for chave, anexo, extrair in (('caixa', '06', calculos.extrair_caixa), ('rp', '07', calculos.extrair_restos)):
+                try:
+                    its, hx = obter('%s/rreo?an_exercicio=%d&nr_periodo=%d&co_tipo_demonstrativo=RREO&no_anexo=RREO-Anexo%%20%s&id_ente=%d' % (API, ano, b, anexo, IBGE))
+                    ex = extrair(its)
+                    if ex:
+                        r[chave] = ex
+                        novo['hashes']['rreo %d-B%d anexo %s' % (ano, b, anexo)] = hx
+                    else:
+                        log('  RREO %d-B%d Anexo %s: não conferiu ou veio vazio — sem %s neste bimestre' % (ano, b, anexo, chave))
+                except Exception as e:  # noqa: BLE001
+                    log('  RREO %d-B%d Anexo %s: %s — sem %s neste bimestre' % (ano, b, anexo, e, chave))
+            if r.get('caixa') and r.get('saldo_exercicios_anteriores') is not None:
+                # superávit financeiro de anos anteriores já usado (Anexo 14, saldo de exercícios anteriores)
+                r['caixa']['superavit_utilizado'] = r['saldo_exercicios_anteriores']
             novo['rreo']['%d-%d' % (ano, b)] = r
             novo['hashes']['rreo %d-B%d' % (ano, b)] = h
             pop = pop or calculos.populacao(itens)

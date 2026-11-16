@@ -44,6 +44,65 @@ def _itens(raiz, nome_item):
     return [_filhos(n) for n in raiz.iter() if _local(n.tag) == nome_item]
 
 
+def _data_br(iso):
+    """'2026-05-26' -> '26/05/2026' (o formato que o painel já usa)."""
+    p = (iso or '').split('-')
+    return '%s/%s/%s' % (p[2][:2], p[1], p[0]) if len(p) == 3 and len(p[0]) == 4 else ''
+
+
+def situacao_contrato(ini, fim, hoje):
+    """Vigente/encerrado/a iniciar pelas datas (critério estável; o status do portal só serve de conferência)."""
+    if ini is None or fim is None:
+        return 'sem data'
+    if ini > hoje:
+        return 'a iniciar'
+    if fim < hoje:
+        return 'encerrado'
+    return 'vigente'
+
+
+def ler_contratos(conteudo, hoje=None):
+    """Contratos: XML da lista inteira (sem filtro). -> lista no formato do painel (num, ini, fim, credor, desc, tipo,
+    valor, sit, dias) mais campos que o PDF não trazia (nome completo do credor, CNPJ, modalidade, processo, status do
+    portal). Pessoa física (CPF) não leva documento: só CNPJ é guardado."""
+    import datetime
+    hoje = hoje or datetime.date.today()
+    r = ET.fromstring(conteudo)
+    itens = _itens(r, 'SDTContrato')
+    if not itens:
+        raise ValueError('contratos: arquivo sem registros')
+    out = []
+    for d in itens:
+        def dia(s):
+            try:
+                return datetime.date.fromisoformat((s or '')[:10])
+            except ValueError:
+                return None
+        ini, fim = dia(d.get('ContratoDataIni')), dia(d.get('ContratoDataFim'))
+        doc = ''.join(c for c in d.get('ContratoFornecedorDoc', '') if c.isdigit())
+        pn, pa = d.get('ContratoProcessoNumero', ''), d.get('ContratoProcessoAno', '')
+        num, ano = d.get('ContratoNumero', ''), d.get('ContratoAno', '')
+        if not num or not ano:
+            raise ValueError('contratos: registro %s sem número/ano' % d.get('ContratoId', '?'))
+        out.append({
+            'id': int(d.get('ContratoId') or 0),
+            'num': '%s/%s' % (num, ano),
+            'ini': _data_br(d.get('ContratoDataIni')), 'fim': _data_br(d.get('ContratoDataFim')),
+            'credor': d.get('ContratoFornecedorRazao') or d.get('ContratoFornecedorNome', ''),
+            'cnpj': doc if len(doc) == 14 else '',
+            'desc': d.get('ContratoDsc', ''),
+            'tipo': d.get('ContratoTipoNome', ''),
+            'valor': _num(d.get('ContratoValorAtual') or d.get('ContratoValor')),
+            'valor_inicial': _num(d.get('ContratoValor')),
+            'modalidade': d.get('ContratoLicitacaoModalidade', ''),
+            'processo': '%s/%s' % (pn, pa) if pn and pn != '0' else '',
+            'status_portal': d.get('ContratoStatusDesc', ''),
+            'sit': situacao_contrato(ini, fim, hoje),
+            'dias': (fim - hoje).days if fim else None,
+        })
+    return out
+
+
 def ler_despesa_orgao(conteudo, ano, mes):
     """-> [{cod, nome, ini, atual, emp, liq, pag}] (valores do mês filtrado; mês 0 = ano inteiro)."""
     r = _raiz(conteudo, ano, mes, 'despesa_orgao')

@@ -612,7 +612,7 @@ except Exception:
 
 # O RREO em PDF (coletor_rreo.py) traz também caixa e restos a pagar por ano, mas depende de navegador e de ler PDF.
 # Se o SICONFI já tem um bimestre MAIS NOVO que o do PDF, os mínimos de educação, FUNDEB e saúde passam a vir dele
-# (caixa e restos a pagar do PDF ficam de fora: seriam de outro bimestre).
+# (caixa e restos a pagar também vêm do SICONFI, Anexos 06 e 07; os do PDF não são usados, seriam de outro bimestre).
 def _bimestre_fim(ano, b):
     import calendar
     return '%02d/%02d/%d' % (calendar.monthrange(ano, 2 * b)[1], 2 * b, ano)
@@ -625,9 +625,37 @@ if SICONFI_RREO and (SICONFI_RREO['ano'], SICONFI_RREO['bimestre']) > (_pdf.get(
     if all(_r.get(k) is not None for k in ('mde_pct', 'asps_pct', 'fundeb_pct')):
         RREO = dict(RREO or {})
         RREO['ultimo'] = {'ano': _r['ano'], 'bimestre': _r['bimestre'], 'posicao': _bimestre_fim(_r['ano'], _r['bimestre']),
-                          'fonte': 'RREO · SICONFI (Anexo 14)', 'origem': 'siconfi',
+                          'fonte': 'RREO · SICONFI (Anexos 14, 06 e 07)', 'origem': 'siconfi',
                           'mde': _min('mde'), 'asps': _min('asps'), 'fundeb70': _min('fundeb')}
+        # caixa (Anexo 06) e restos a pagar (Anexo 07) do mesmo bimestre; sem eles o painel mostra "indisponível",
+        # nunca o número de outro bimestre (o do PDF)
+        if _r.get('caixa'):
+            RREO['ultimo']['caixa'] = dict(_r['caixa'])
+        if _r.get('rp'):
+            RREO['ultimo']['rp'] = dict(_r['rp'])
         print('RREO: usando o SICONFI (%dº bimestre/%d), mais novo que o PDF (%sº/%s)' % (_r['bimestre'], _r['ano'], _pdf.get('bimestre'), _pdf.get('ano')))
+
+# Conferência cruzada: a despesa do portal (XML por órgão, somada de janeiro até o fim do bimestre) tem de bater com o
+# RREO oficial do SICONFI no mesmo período. O empenhado fecha ao centavo; o pago pode diferir um pouco (pagamentos
+# lançados depois da publicação). Acima de 0,5% o painel avisa, em vez de seguir como se estivesse tudo certo.
+CONFERENCIA = []
+try:
+    if SICONFI_RREO and DESPESAS.get('ano') == SICONFI_RREO['ano']:
+        _fim = 2 * SICONFI_RREO['bimestre']
+        _ms = [_m for _m in DESPESAS['meses'] if _m[0] <= _fim]
+        if len(_ms) == _fim:
+            for _rot, _ix, _ch in (('Empenhado', 1, 'desp_empenhada'), ('Pago', 3, 'desp_paga')):
+                _of = SICONFI_RREO.get(_ch)
+                if not _of:
+                    continue
+                _pt = round(sum(_m[_ix] for _m in _ms), 2)
+                _df = round(_pt - _of, 2)
+                CONFERENCIA.append({'rotulo': _rot, 'portal': _pt, 'oficial': _of, 'dif': _df,
+                                    'ok': abs(_df) <= 0.005 * abs(_of), 'ate': _bimestre_fim(SICONFI_RREO['ano'], SICONFI_RREO['bimestre'])})
+                print('Conferência %s (portal x RREO, jan a %s): portal %.2f | oficial %.2f | diferença %.2f %s'
+                      % (_rot, CONFERENCIA[-1]['ate'], _pt, _of, _df, 'OK' if CONFERENCIA[-1]['ok'] else '*** NÃO CONFERE ***'))
+except Exception as _e:
+    print('Conferência com o RREO não calculada:', _e)
 
 MOSTRAR_NOMES = os.environ.get('FAZENDA_MOSTRAR_NOMES') == '1'
 def _nome_exibido(i, nome):
@@ -675,6 +703,7 @@ DATA = {
     'lrf': LRF,
     'siconfi': {'coletado_em': SICONFI.get('coletado_em', ''), 'populacao': SICONFI.get('populacao'), 'rgf': OFICIAL_RGF, 'rreo': SICONFI_RREO, 'rreo_hist': SICONFI_RREO_HIST},
     'fontes': FONTES,
+    'conferencia': CONFERENCIA,
     'nomes_visiveis': MOSTRAR_NOMES,
 }
 
@@ -2653,7 +2682,11 @@ function htmlFontes(){
     if(velha) vel.push(f.nome);
     return '<span'+(velha?' style="color:var(--baixa);font-weight:700"':'')+'>'+esc(f.nome)+' '+(d?d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}):'—')+'</span>';
   });
-  return '<b>Dados por fonte:</b> '+itens.join(' · ')+(vel.length?' · <b style="color:var(--baixa)">desatualizado: '+vel.map(esc).join(', ')+'</b>':'');
+  const cf=DATA.conferencia||[], ruim=cf.filter(c=>!c.ok);
+  const txtCf=cf.length?(' · <b>Conferência com o RREO oficial (até '+esc(cf[0].ate)+'):</b> '+(ruim.length
+    ?'<b style="color:var(--baixa)">'+ruim.map(c=>esc(c.rotulo)+' não confere (diferença '+brlx(Math.abs(c.dif))+')').join('; ')+'</b>'
+    :'empenhado e pago do portal batem'+(cf.some(c=>Math.abs(c.dif)>=1)?' (diferença de até '+brlx(Math.max(...cf.map(c=>Math.abs(c.dif))))+')':''))):'';
+  return '<b>Dados por fonte:</b> '+itens.join(' · ')+(vel.length?' · <b style="color:var(--baixa)">desatualizado: '+vel.map(esc).join(', ')+'</b>':'')+txtCf;
 }
 
 /* ---------------- Metas fiscais da LDO e dívida (SICONFI) ---------------- */

@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export>
+<SDTContratoCollection xmlns="transparencianovalima">
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>14917</ContratoId>
+		<ContratoNumero>062</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-05-26</ContratoDataAssinatura>
+		<ContratoDataIni>2026-05-26</ContratoDataIni>
+		<ContratoDataFim>2031-05-26</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-05-26</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2031-05-26</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-05-27</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>Contratação de instituição financeira autorizada pelo Banco Central do Brasil para processar, de forma exclusiva, os créditos decorrentes da folha de pagamento dos subsídios, vencimentos e vantagens remuneratórias dos agentes políticos, servidores públicos ativos, inativos, contratos temporários e estagiários do Município de Nova Lima.</ContratoDsc>
+		<ContratoTipoId>28</ContratoTipoId>
+		<ContratoTipoNome>OUTROS TIPOS DE CONTRATOS</ContratoTipoNome>
+		<ContratoClassificacao>OUTROS TIPOS DE CONTRATOS</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>8830000.00</ContratoValor>
+		<ContratoValorAtual>8830000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>11</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Sem Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>0</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero/>
+		<ContratoLicitacaoAno>0</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>PREGAO ELETRÔNICO - NORMAL</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>24023</ContratoFornecedorId>
+		<ContratoFornecedorDoc>90400888000142</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>BANCO SANTANDER (BRASIL) S.A.</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>BANCO SANTANDER (BRASIL) S.A.</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0396</ContratoProcessoNumero>
+		<ContratoProcessoAno>2025</ContratoProcessoAno>
+		<ContratoEditalNumero>53</ContratoEditalNumero>
+		<ContratoEditalAno>2025</ContratoEditalAno>
+		<ContratoEditalIntencaoId>0</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>16054</ContratoId>
+		<ContratoNumero>0218</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-11-10</ContratoDataAssinatura>
+		<ContratoDataIni>2026-11-10</ContratoDataIni>
+		<ContratoDataFim>2027-11-10</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-11-10</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-11-10</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-11-13</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>CONTRATAÇÃO DE EMPRESA PARA PRESTAÇÃO DE SERVIÇOS DE OPERAÇÃO ASSISTIDA E GARANTIA DE FUNCIONALIDADE DE TODO SISTEMA, SEUS SOFTWARES E HARDWARES DE CENTRALIZAÇÃO COM ATUALIZAÇÃO DAS PROGRAMAÇÕES SEMAFÓRICAS, INCLUSIVE MANUTENÇÃO PREVENTIVA, PREDITIVA E CORRETIVA E LIMPEZA DOS EQUIPAMENTOS SEMAFÓRICOS INSTALADOS NO MUNICÍPIO E DOS QUE, PORVENTURA, VENHAM A SER INSTALADOS FUTURAMENTE</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>331091.52</ContratoValor>
+		<ContratoValorAtual>331091.52</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>69804</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0394</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>INEXIGIBILIDADE</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>16300</ContratoFornecedorId>
+		<ContratoFornecedorDoc>03581664000180</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>GARRA TRAFFIC SINALIZACAO LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>GARRA TRAFFIC SINALIZACAO LTDA</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0394</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>89</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>69804</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>16014</ContratoId>
+		<ContratoNumero>0215</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-10-22</ContratoDataAssinatura>
+		<ContratoDataIni>2026-10-22</ContratoDataIni>
+		<ContratoDataFim>2029-10-22</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-10-22</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2029-10-22</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-11-11</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>CONTRATAÇÃO DE EMPRESA ESPECIALIZADA NA PRESTAÇÃO DE SERVIÇOS DE LINKS DE COMUNICAÇÃO DE DADOS SIMETRICOS, FILTROS DE CONTEUDO E FUNCIONABILIDADE DO SD-WAN.</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>5273019.00</ContratoValor>
+		<ContratoValorAtual>5273019.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>0</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero/>
+		<ContratoLicitacaoAno>0</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade/>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>24987</ContratoFornecedorId>
+		<ContratoFornecedorDoc>05684180000191</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>COMPANHIA ITABIRANA DE TELECOMUNICACOES LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>VALENET</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0243</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>0</ContratoEditalNumero>
+		<ContratoEditalAno>0</ContratoEditalAno>
+		<ContratoEditalIntencaoId>0</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15115</ContratoId>
+		<ContratoNumero>0081</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-03-02</ContratoDataAssinatura>
+		<ContratoDataIni>2026-06-02</ContratoDataIni>
+		<ContratoDataFim>2026-12-02</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-06-02</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2026-12-02</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-06-11</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>Contratação dos serviços de advocacia para fins de representação judicial e extrajudicial do Município de Nova Lima, nos autos judiciais afetos à relação mantida junto aos servidores concursados, comissionados, contratados por tempo determinado e empregados contratados via empresa interposta (terceirização via prévio processo licitatório e contrato administrativo), nos processos em que a municipalidade figure como autora, ré ou terceira interessada, ainda que com competência declinada para outros juízos cíveis e trabalhista.</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>T</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente Terminando</ContratoStatusDesc>
+		<ContratoValor>240000.00</ContratoValor>
+		<ContratoValorAtual>240000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>65306</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0181</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>DISPENSA DE LICITAÇÃO</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>236968</ContratoFornecedorId>
+		<ContratoFornecedorDoc>07152492000180</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>MOURA LIMA E SIQUEIRA ADVOGADOS ASSOCIADOS</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>MOURA LIMA E SIQUEIRA ADVOGADOS ASSOCIADOS</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0181</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>94</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>65306</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>14997</ContratoId>
+		<ContratoNumero>0073</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-05-25</ContratoDataAssinatura>
+		<ContratoDataIni>2026-05-25</ContratoDataIni>
+		<ContratoDataFim>2026-11-25</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-05-25</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2026-11-25</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-05-27</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>FORCENCIMENTO DE GÊNEROS ALIMENTÍCIOS NÃO PERECÍVEIS COM VISTAS A ATENDER AS DEMANDAS DA SECRETARIA MUNICIPAL DE EDUCAÇÃO DO MUNICÍPIO DE NOVA LIMA</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>FORNECIMENTO DE MATERIAL</ContratoClassificacao>
+		<ContratoStatus>T</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente Terminando</ContratoStatusDesc>
+		<ContratoValor>1451309.95</ContratoValor>
+		<ContratoValorAtual>1451309.95</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>64902</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0164</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>DISPENSA DE LICITAÇÃO</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>22402</ContratoFornecedorId>
+		<ContratoFornecedorDoc>28110516000108</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>NUTRI COMERCIO EIRELLI - ME</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>NUTRI COMERCIO EIRELLI - ME</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0164</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>83</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>64902</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15757</ContratoId>
+		<ContratoNumero>0185</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-09-17</ContratoDataAssinatura>
+		<ContratoDataIni>2026-09-17</ContratoDataIni>
+		<ContratoDataFim>2026-10-16</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-09-19</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2026-09-19</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-09-18</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>Contratação da apresentação artística do cantor Samuel Eleoterio no evento Marcha para Jesus no dia 19/09/2026.</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>W</ContratoStatus>
+		<ContratoStatusDesc>Contrato Expirado</ContratoStatusDesc>
+		<ContratoValor>140000.00</ContratoValor>
+		<ContratoValorAtual>140000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>68514</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0350</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>INEXIGIBILIDADE</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>1167413</ContratoFornecedorId>
+		<ContratoFornecedorDoc>23497344000404</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>NON STOP PRODUCOES S/A</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>NON STOP PRODUCOES</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0350</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>77</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>68514</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15754</ContratoId>
+		<ContratoNumero>0183</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-09-15</ContratoDataAssinatura>
+		<ContratoDataIni>2026-09-15</ContratoDataIni>
+		<ContratoDataFim>2026-10-15</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-09-16</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2026-09-16</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-09-16</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>PRESTAÇÃO DE SERVIÇOS DE REALIZAÇÃO DA APRESENTAÇÃO ARTÍSTICA COM A CAMILA CAMPOS,DURANTE A SEMANA GOSPEL, PROMIOVIDO PELA SECRETARIA DE CULTURA, NO DIA 16 DE SETEMBRO/26, NO TEATRO MUNICIPAL, ATRAVES DA EMPRESA L&amp;C PRODUÇOES LTDA, POR INEXIGIBILIDADE DE LICITAÇÃO</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>W</ContratoStatus>
+		<ContratoStatusDesc>Contrato Expirado</ContratoStatusDesc>
+		<ContratoValor>7000.00</ContratoValor>
+		<ContratoValorAtual>7000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>68448</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0348</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>INEXIGIBILIDADE</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>1167290</ContratoFornecedorId>
+		<ContratoFornecedorDoc>23256774000183</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>L&amp;C MUSIC PRODUCOES LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>L&amp;C MUSIC PRODUCOES LTDA</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0348</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>76</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>68448</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15695</ContratoId>
+		<ContratoNumero>0177</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-09-03</ContratoDataAssinatura>
+		<ContratoDataIni>2026-09-03</ContratoDataIni>
+		<ContratoDataFim>2026-10-03</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-09-03</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2026-10-03</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-09-04</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>PRESTAÇÃO DE SERVIÇOS DE REALIZAÇÃO DE APRESETNAÇÃO MUSICAL DO ARTISTA DJ KVSH, ATRAVES DA EMPRESA LUCIANO RORIGUES CARVALHO FERREIRA, POR INEXIGIBILIDADE DE LICITAÇÃO NO EVENTO SEXTA NA FEIRA ESPECIAL, JUNTAMENTE COM A ORQUESTRA OURO PRETO, NO DIA 04 DE SETEMBRO/2026, NO ESPAÇO CULTURAL PEIRO GARZON</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>W</ContratoStatus>
+		<ContratoStatusDesc>Contrato Expirado</ContratoStatusDesc>
+		<ContratoValor>120000.00</ContratoValor>
+		<ContratoValorAtual>120000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>68108</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0336</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>INEXIGIBILIDADE</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>1107484</ContratoFornecedorId>
+		<ContratoFornecedorDoc>26137175000139</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>LUCIANO RODRIGUES DE CARVALHO FERREIRA - ME</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>KVSH MUSIC</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0336</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>75</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>68108</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15996</ContratoId>
+		<ContratoNumero>0214</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-11-04</ContratoDataAssinatura>
+		<ContratoDataIni>2026-11-04</ContratoDataIni>
+		<ContratoDataFim>2027-11-04</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-11-04</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-11-04</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-11-10</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>AQUISIÇÃO DE MOBILIÁRIO DE ESCRITORIO EM GERAL, PARA ATENDER AS DEMANDAS DO CONSELHO DE SAUDE E DA CASA DE SAUDE.</ContratoDsc>
+		<ContratoTipoId>1</ContratoTipoId>
+		<ContratoTipoNome>AQUISIÇÃO DE MATERIAIS</ContratoTipoNome>
+		<ContratoClassificacao>AQUISIÇÃO DE MATERIAIS</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>27498.20</ContratoValor>
+		<ContratoValorAtual>27498.20</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>0</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero/>
+		<ContratoLicitacaoAno>0</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade/>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>1169592</ContratoFornecedorId>
+		<ContratoFornecedorDoc>15011572000143</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>MOBILHE MOVEIS CORPORATIVOS LTDA -ME</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>MOBILHE - ME</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0392</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>0</ContratoEditalNumero>
+		<ContratoEditalAno>0</ContratoEditalAno>
+		<ContratoEditalIntencaoId>0</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15995</ContratoId>
+		<ContratoNumero>0213</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-11-04</ContratoDataAssinatura>
+		<ContratoDataIni>2026-11-04</ContratoDataIni>
+		<ContratoDataFim>2027-11-04</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-11-04</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-11-04</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-11-10</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>AQUISIÇÃO DE MOBILIÁRIOS DE ESCRITÓRIO EM GERAL</ContratoDsc>
+		<ContratoTipoId>1</ContratoTipoId>
+		<ContratoTipoNome>AQUISIÇÃO DE MATERIAIS</ContratoTipoNome>
+		<ContratoClassificacao>AQUISIÇÃO DE MATERIAIS</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>3523.48</ContratoValor>
+		<ContratoValorAtual>3523.48</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>0</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero/>
+		<ContratoLicitacaoAno>0</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade/>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>1169596</ContratoFornecedorId>
+		<ContratoFornecedorDoc>20323529000153</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>ABADE &amp; CAPELLI INDUSTRIA E COMERCIO DE MOVEIS LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>ABADE &amp; CAPELLI MOVEIS - ME</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0392</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>0</ContratoEditalNumero>
+		<ContratoEditalAno>0</ContratoEditalAno>
+		<ContratoEditalIntencaoId>0</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15856</ContratoId>
+		<ContratoNumero>0193</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-10-13</ContratoDataAssinatura>
+		<ContratoDataIni>2026-10-13</ContratoDataIni>
+		<ContratoDataFim>2027-10-13</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-10-13</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-10-13</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-10-14</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>aquisição de materiais permanentes essenciais ao funcionamento da Secretaria Municipal de Proteção e Defesa Civil,</ContratoDsc>
+		<ContratoTipoId>3</ContratoTipoId>
+		<ContratoTipoNome>AQUISIÇÃO DE MATERIAIS / PRESTAÇÃO DE SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>AQUISIÇÃO DE MATERIAIS / PRESTAÇÃO DE SERVIÇOS</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>18000.00</ContratoValor>
+		<ContratoValorAtual>18000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>64495</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0143</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>PREGAO ELETRÔNICO - INTEGRAÇÃO</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>1167300</ContratoFornecedorId>
+		<ContratoFornecedorDoc>53710803000104</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>STP COMERCIAL LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>SANITOP</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0143</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>22</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>64495</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15915</ContratoId>
+		<ContratoNumero>0201</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-10-07</ContratoDataAssinatura>
+		<ContratoDataIni>2026-10-07</ContratoDataIni>
+		<ContratoDataFim>2027-04-07</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-10-07</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-04-07</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-10-21</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>Desenvolvimento, a implantação e a disponibilização de uma aplicação web de consulta de extração de informações, estruturada para interagir com a base de dados Microsoft SQL server (mssql) remanescente do sistema legado utilizado pela prefeitura municipal de nova lima/mg</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>25000.00</ContratoValor>
+		<ContratoValorAtual>25000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>69041</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0367</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>DISPENSA DE LICITAÇÃO</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>12794</ContratoFornecedorId>
+		<ContratoFornecedorDoc>00000000000</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>PESSOA FISICA DE TESTE</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>PESSOA FISICA DE TESTE</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0367</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>190</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>69041</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15683</ContratoId>
+		<ContratoNumero>0175</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-09-03</ContratoDataAssinatura>
+		<ContratoDataIni>2026-09-03</ContratoDataIni>
+		<ContratoDataFim>2027-09-03</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-09-03</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-09-03</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-09-08</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>LOCAÇÃO DE IMÓVEL NA RUA VEREADOR JOÃO FURTADO, 02, CARIOCAS, DESTINADO AO FUNCIONAMENTO DAS ATIVIDADES DO PROGRAMA DE EDUCAÇÃO TEMPO INTEGRAL PARA O DESENVOLVIMENTO DAS ATIVIDADES PEDGÓGICAS, RECREATIVAS E COMPLEMENTARES.</ContratoDsc>
+		<ContratoTipoId>5</ContratoTipoId>
+		<ContratoTipoNome>CONTRATOS DE ALUGUÉIS</ContratoTipoNome>
+		<ContratoClassificacao>CONTRATOS DE ALUGUÉIS</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>73200.00</ContratoValor>
+		<ContratoValorAtual>73200.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>67969</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0325</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>INEXIGIBILIDADE</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>82117</ContratoFornecedorId>
+		<ContratoFornecedorDoc>00000000000</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>PESSOA FISICA DE TESTE</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>PESSOA FISICA DE TESTE</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0325</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>73</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>67969</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>15975</ContratoId>
+		<ContratoNumero>0210</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-10-27</ContratoDataAssinatura>
+		<ContratoDataIni>2026-10-27</ContratoDataIni>
+		<ContratoDataFim>2027-10-27</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-10-27</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-10-27</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-11-05</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>Contratação de solução tecnológica, em modelo SaaS, baseada em inteligência artificial especializada em contratações publicas, destinada a apoiar a elaboração, revisão, pesquisa, padronização, controle de coerência e gestão do conhecimento relacionada aos artefatos e processos da função de contratações, com base de conhecimento curada e continuamente atualizada, mecanismos de fundamentação em fontes auditáveis, controle de acesso por perfis, rastreabilidade, capacitação continuada e demais requisitos técnicos.</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>144000.00</ContratoValor>
+		<ContratoValorAtual>144000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>69578</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0388</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2026</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>INEXIGIBILIDADE</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>1169328</ContratoFornecedorId>
+		<ContratoFornecedorDoc>66845977000118</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>PLENUM GOVTECH TECNOLOGIA LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>PLENUM - EPP</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0388</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>88</ContratoEditalNumero>
+		<ContratoEditalAno>2026</ContratoEditalAno>
+		<ContratoEditalIntencaoId>69578</ContratoEditalIntencaoId>
+	</SDTContrato>
+</SDTContratoCollection>
+</Export>
