@@ -72,8 +72,40 @@ class Siconfi(unittest.TestCase):
         self.assertEqual(r['resultado_orcamentario'], -124522180.89)  # déficit vira negativo
         self.assertEqual((r['rp_proc_saldo'], r['rp_nproc_saldo']), (2920096.28, 9427615.94))
 
+    def test_caixa_rreo_anexo06_4_bimestre_2026(self):
+        c = C.extrair_caixa(json_fix('rreo_3144805_2026_b4_anexo06.json'))
+        self.assertEqual((c['caixa_liquida_ant'], c['caixa_bruta_ant']), (457337820.43, 508843607.79))
+        self.assertEqual((c['caixa_liquida_ate'], c['caixa_bruta_ate']), (307591264.25, 320907169.31))
+        self.assertEqual((c['rp_proc_ant'], c['rp_proc_ate']), (41238348.92, 2898147.81))
+        # a conta do próprio demonstrativo: bruto − restos processados − depósitos = líquido
+        self.assertAlmostEqual(c['caixa_bruta_ate'] - c['rp_proc_ate'] - c['depositos_ate'], c['caixa_liquida_ate'], places=2)
+
+    def test_caixa_que_nao_fecha_e_descartado(self):
+        itens = json_fix('rreo_3144805_2026_b4_anexo06.json')
+        for i in itens:
+            if i['cod_conta'] == 'RREO5DisponibilidadeDeCaixa' and i['coluna'].startswith('At'):
+                i['valor'] += 1000.0
+        self.assertEqual(C.extrair_caixa(itens), {})
+
+    def test_restos_a_pagar_rreo_anexo07_4_bimestre_2026(self):
+        r = C.extrair_restos(json_fix('rreo_3144805_2026_b4_anexo07.json'))
+        self.assertEqual((r['pagos_proc'], r['pagos_nproc'], r['pagos']), (38354155.92, 63128504.96, 101482660.88))
+        self.assertEqual((r['canc_proc'], r['canc_nproc'], r['cancelados']), (13771.2, 26844629.99, 26858401.19))
+        self.assertEqual((r['saldo_proc'], r['saldo_nproc'], r['saldo_total']), (2920096.28, 9427615.94, 12347712.22))
+        self.assertEqual((r['inscritos_ano_anterior'], r['inscritos_anteriores']), (130289850.19, 10398924.1))
+        # o saldo do Anexo 07 é o mesmo que o Anexo 14 publica (duas telas do SICONFI que têm de concordar)
+        a14 = C.extrair_rreo(json_fix('rreo_3144805_2026_b4_anexo14.json'))
+        self.assertEqual((r['saldo_proc'], r['saldo_nproc']), (a14['rp_proc_saldo'], a14['rp_nproc_saldo']))
+
+    def test_restos_que_nao_fecham_sao_descartados(self):
+        itens = json_fix('rreo_3144805_2026_b4_anexo07.json')
+        for i in itens:
+            if i['cod_conta'] == 'RestosAPagarNaoProcessadosPagos' and i['conta'].startswith('TOTAL'):
+                i['valor'] += 500.0
+        self.assertEqual(C.extrair_restos(itens), {})
+
     def test_relatorio_vazio_nao_inventa_numero(self):
-        self.assertEqual((C.extrair_rgf([]), C.extrair_rreo([])), ({}, {}))
+        self.assertEqual((C.extrair_rgf([]), C.extrair_rreo([]), C.extrair_caixa([]), C.extrair_restos([])), ({}, {}, {}, {}))
 
 
 class LeitoresXml(unittest.TestCase):

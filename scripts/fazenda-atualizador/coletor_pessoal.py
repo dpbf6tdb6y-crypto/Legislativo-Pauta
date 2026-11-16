@@ -102,6 +102,21 @@ def meses_alvo(page):
     return alvo
 
 
+def resultado(alvo, novos, hoje=None):
+    """Código de saída da coleta. O mês mais novo da lista tem de ter sido coletado, senão a coleta ficou manca (2).
+    Exceção: o mês CORRENTE (ou futuro), cuja folha o portal ainda não fechou: o arquivo vem vazio ou ilegível. Isso é
+    esperado, não é falha; vale o mês anterior, desde que ele tenha sido coletado."""
+    hoje = hoje or datetime.date.today()
+    if chave(*alvo[0]) in novos:
+        return 0
+    em_andamento = tuple(alvo[0]) >= (hoje.year, hoje.month)
+    if em_andamento and len(alvo) > 1 and chave(*alvo[1]) in novos:
+        log('folha de %s/%d ainda não disponível no portal (mês em andamento) — vale %s/%d, o último mês fechado'
+            % (MESES[alvo[0][1] - 1], alvo[0][0], MESES[alvo[1][1] - 1], alvo[1][0]))
+        return 0
+    return 2
+
+
 def exporta(page, ano, mes, destino):
     page.select_option('#W0044vFILTROANO', value=str(ano))
     page.select_option('#W0044vFILTROMES', value=str(mes))
@@ -192,7 +207,7 @@ def main():
             if quer_completo:
                 try:
                     n_reg = int(page.eval_on_selector('#W0044vNREGISTROS', 'e => e.value') or 0)
-                    csv_ok = i > 0 or os.path.exists(os.path.join(BASE, 'RHX_%d_%02d.csv' % (ano, mes)))
+                    csv_ok = mais_recente_ok is not None or os.path.exists(os.path.join(BASE, 'RHX_%d_%02d.csv' % (ano, mes)))
                     muda = (not guardado or not guardado.get('completo') or guardado.get('registros') != n_reg
                             or abs(guardado.get('vencimentos', 0) - venc) > 0.05 or not csv_ok
                             or (hoje - datetime.date.fromisoformat(guardado.get('completo_em', '2000-01-01'))).days >= REVALIDA_DIAS)
@@ -214,7 +229,7 @@ def main():
                             reg['servidores_venc'] = n
                             reg['completo'] = True
                             reg['completo_em'] = hoje.isoformat()
-                            if i == 0:
+                            if mais_recente_ok is None:   # o mês mais recente já coletado (não o índice 0: pode ser o mês em andamento)
                                 tela_completa = (ano, mes, linhas)
                             log('  %s: tela completa conferida em %.0f min | %d registros | %d matrículas | bruto R$ %s '
                                 '(lançamentos sem vencimento: %d, R$ %s)'
@@ -266,7 +281,7 @@ def main():
         existentes = sorted(glob.glob(os.path.join(BASE, 'RH_*.xls')))
         if existentes and os.path.basename(existentes[-1]) > 'RH_%d_%02d.xls' % (a, m):
             log('já existe planilha mais nova (%s) — mantida' % os.path.basename(existentes[-1]))
-            return 0 if chave(*alvo[0]) in novos else 2
+            return resultado(alvo, novos)
         destino = os.path.join(BASE, 'RH_%d_%02d.xls' % (a, m))
         with open(arq, 'rb') as f, open(destino, 'wb') as g:
             g.write(f.read())
@@ -275,8 +290,8 @@ def main():
                 os.remove(velho)
         log('planilha do mês mais recente: %s' % os.path.basename(destino))
 
-    # O mês mais recente tem de ser o primeiro da lista — senão a coleta ficou manca.
-    return 0 if chave(*alvo[0]) in novos else 2
+    # O mês mais recente tem de ter sido coletado — senão a coleta ficou manca (exceto o mês em andamento).
+    return resultado(alvo, novos)
 
 
 if __name__ == '__main__':

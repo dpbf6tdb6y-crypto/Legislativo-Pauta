@@ -144,6 +144,75 @@ def extrair_rreo(items):
     return {k: v for k, v in campos.items() if v is not None}
 
 
+def extrair_caixa(items06):
+    """RREO Anexo 06: disponibilidade de caixa (líquida e bruta), restos a pagar processados e depósitos, em 31/12 do ano
+    anterior e até o bimestre. Mesmos campos que o painel lia do PDF."""
+    a6 = [i for i in items06 if i.get('anexo') == 'RREO-Anexo 06']
+    if not a6:
+        return {}
+    a = _achador(a6)
+    campos = {
+        'caixa_liquida_ant': a('RREO5DisponibilidadeDeCaixa', 'Em 31/12'),
+        'caixa_liquida_ate': a('RREO5DisponibilidadeDeCaixa', 'Ate o Bimestre'),
+        'caixa_bruta_ant': a('DisponibilidadeDeCaixaBruta', 'Em 31/12'),
+        'caixa_bruta_ate': a('DisponibilidadeDeCaixaBruta', 'Ate o Bimestre'),
+        'rp_proc_ant': a('RestosAPagarProcessadosExcetoPrecatorios', 'Em 31/12'),
+        'rp_proc_ate': a('RestosAPagarProcessadosExcetoPrecatorios', 'Ate o Bimestre'),
+        'depositos_ant': a('DepositosRestituiveisEValoresVinculados', 'Em 31/12'),
+        'depositos_ate': a('DepositosRestituiveisEValoresVinculados', 'Ate o Bimestre'),
+    }
+    # o caixa líquido tem de ser bruto − restos processados − depósitos (a conta do próprio demonstrativo)
+    for suf in ('ant', 'ate'):
+        b, rp, dep, liq = (campos.get('caixa_bruta_' + suf), campos.get('rp_proc_' + suf),
+                           campos.get('depositos_' + suf), campos.get('caixa_liquida_' + suf))
+        if None not in (b, rp, dep, liq) and abs((b - rp - dep) - liq) > 0.05:
+            return {}  # não fecha: melhor mostrar "indisponível" do que um caixa inventado
+    return {k: v for k, v in campos.items() if v is not None}
+
+
+def extrair_restos(items07):
+    """RREO Anexo 07: restos a pagar do Poder Executivo + Câmara (linha TOTAL), processados e não processados."""
+    a7 = [i for i in items07 if i.get('anexo') == 'RREO-Anexo 07' and _norm(i.get('conta')).startswith('TOTAL')]
+    if not a7:
+        return {}
+
+    def v(cod, coluna):
+        for i in a7:
+            if i.get('cod_conta') == cod and _norm(i.get('coluna')).startswith(_norm(coluna)):
+                return i.get('valor')
+        return None
+    P = 'RestosAPagarProcessadosENaoProcessadosLiquidados'
+    N = 'RestosAPagarNaoProcessados'
+    r = {
+        'ant_proc': v(P + 'InscritosEmExerciciosAnteriores', 'Em Exerc'),
+        'insc_proc': v(P + 'InscritosEmExercicioAnterior', 'Em 31 de dezembro'),
+        'pagos_proc': v(P + 'Pagos', 'Pagos'),
+        'canc_proc': v(P + 'Cancelados', 'Cancelados'),
+        'saldo_proc': v(P + 'APagar', 'Saldo'),
+        'ant_nproc': v(N + 'InscritosEmExerciciosAnteriores', 'Em Exerc'),
+        'insc_nproc': v(N + 'InscritosEmExercicioAnterior', 'Em 31 de dezembro'),
+        'liq_nproc': v(N + 'Liquidados', 'Liquidados'),
+        'pagos_nproc': v(N + 'Pagos', 'Pagos'),
+        'canc_nproc': v(N + 'Cancelados', 'Cancelados'),
+        'saldo_nproc': v(N + 'APagar', 'Saldo'),
+        'saldo_total': v('SaldoTotal', 'Saldo Total'),
+    }
+    chaves = ('ant_proc', 'insc_proc', 'pagos_proc', 'canc_proc', 'saldo_proc',
+              'ant_nproc', 'insc_nproc', 'pagos_nproc', 'canc_nproc', 'saldo_nproc', 'saldo_total')
+    if any(r.get(k) is None for k in chaves):
+        return {}
+    # confere as contas do demonstrativo: saldo = inscrito − pago − cancelado, e o total = processados + não processados
+    if (abs(r['ant_proc'] + r['insc_proc'] - r['pagos_proc'] - r['canc_proc'] - r['saldo_proc']) > 0.05
+            or abs(r['ant_nproc'] + r['insc_nproc'] - r['pagos_nproc'] - r['canc_nproc'] - r['saldo_nproc']) > 0.05
+            or abs(r['saldo_proc'] + r['saldo_nproc'] - r['saldo_total']) > 0.05):
+        return {}
+    r['pagos'] = round(r['pagos_proc'] + r['pagos_nproc'], 2)
+    r['cancelados'] = round(r['canc_proc'] + r['canc_nproc'], 2)
+    r['inscritos_ano_anterior'] = round(r['insc_proc'] + r['insc_nproc'], 2)
+    r['inscritos_anteriores'] = round(r['ant_proc'] + r['ant_nproc'], 2)
+    return r
+
+
 def populacao(items):
     for i in items:
         if i.get('populacao'):
