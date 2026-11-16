@@ -28,3 +28,12 @@ jobs:
 
       - name: Rodar testes
         run: npm test
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Testes dos cálculos do painel Gestão (Python)
+        working-directory: scripts/fazenda-atualizador
+        run: python -m unittest discover -s tests -v

@@ -23,13 +23,24 @@ git pull >> "$LOG" 2>&1
 cd scripts/fazenda-atualizador
 # Falha de coleta (portal lento/fora do ar) nunca pode impedir a publicação do código:
 # o painel segue com os dados que já existiam e o aviso fica no log.
-.venv/bin/python3 coletor.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Receita falhou — mantendo os dados anteriores" >> "$LOG"
+# Receita e despesas por órgão: arquivos XML do portal (filtro conferido, soma conferida, SHA-256 guardado).
+# Se a coleta por XML falhar, cai nos coletores antigos (PDF de receita / Excel de despesas) como reserva.
+.venv/bin/python3 coletor_xml.py receita >> "$LOG" 2>&1 || {
+  echo "AVISO: coleta de Receita por XML falhou — usando o coletor antigo (PDF)" >> "$LOG"
+  .venv/bin/python3 coletor.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Receita falhou — mantendo os dados anteriores" >> "$LOG"
+}
 .venv/bin/python3 coletor_contratos.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Contratos falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_pessoal.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Pessoal falhou — mantendo os dados anteriores" >> "$LOG"
-.venv/bin/python3 coletor_despesas_auto.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Despesas por órgão falhou — mantendo os dados anteriores" >> "$LOG"
+.venv/bin/python3 coletor_xml.py despesas >> "$LOG" 2>&1 || {
+  echo "AVISO: coleta de Despesas por XML falhou — usando o coletor antigo (Excel)" >> "$LOG"
+  .venv/bin/python3 coletor_despesas_auto.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Despesas por órgão falhou — mantendo os dados anteriores" >> "$LOG"
+}
 .venv/bin/python3 coletor_natureza.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Natureza falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_natureza.py funcao >> "$LOG" 2>&1 || echo "AVISO: coleta de Função falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_rreo.py >> "$LOG" 2>&1 || echo "AVISO: coleta do RREO falhou — mantendo os dados anteriores" >> "$LOG"
+.venv/bin/python3 coletor_siconfi.py >> "$LOG" 2>&1 || echo "AVISO: coleta do SICONFI falhou — mantendo os dados anteriores" >> "$LOG"
+# testes dos cálculos e dos leitores: só avisam no log (não impedem a publicação)
+.venv/bin/python3 -m unittest discover -s tests >> "$LOG" 2>&1 || echo "AVISO: testes dos calculos do painel falharam — conferir o log acima" >> "$LOG"
 .venv/bin/python3 gerar_painel.py >> "$LOG" 2>&1
 mkdir -p ../../private/fazenda
 cp ../Painel_Receita_Despesas.html ../../private/fazenda/painel.html
@@ -49,6 +60,7 @@ git checkout -- scripts/fazenda-atualizador/dados_receita.json \
                 scripts/fazenda-atualizador/dados_natureza.json \
                 scripts/fazenda-atualizador/dados_funcao.json \
                 scripts/fazenda-atualizador/dados_despesas.json \
-                scripts/fazenda-atualizador/dados_rreo.json >> "$LOG" 2>&1
+                scripts/fazenda-atualizador/dados_rreo.json \
+                scripts/fazenda-atualizador/dados_siconfi.json >> "$LOG" 2>&1 || true   # só existe no git depois do 1º commit
 
 echo "concluído" >> "$LOG"

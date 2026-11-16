@@ -30,6 +30,9 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:3002:3000"
+    volumes:
+      # painel Fazenda gerado no servidor (não vai na imagem; ver docker/Dockerfile)
+      - ./private:/app/private:ro
     restart: unless-stopped
     mem_limit: 768m
     healthcheck:
