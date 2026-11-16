@@ -29,7 +29,10 @@ cd scripts/fazenda-atualizador
   echo "AVISO: coleta de Receita por XML falhou — usando o coletor antigo (PDF)" >> "$LOG"
   .venv/bin/python3 coletor.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Receita falhou — mantendo os dados anteriores" >> "$LOG"
 }
-.venv/bin/python3 coletor_contratos.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Contratos falhou — mantendo os dados anteriores" >> "$LOG"
+.venv/bin/python3 coletor_xml.py contratos >> "$LOG" 2>&1 || {
+  echo "AVISO: coleta de Contratos por XML falhou — usando o coletor antigo (PDF)" >> "$LOG"
+  .venv/bin/python3 coletor_contratos.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Contratos falhou — mantendo os dados anteriores" >> "$LOG"
+}
 .venv/bin/python3 coletor_pessoal.py >> "$LOG" 2>&1 || echo "AVISO: coleta de Pessoal falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_xml.py despesas >> "$LOG" 2>&1 || {
   echo "AVISO: coleta de Despesas por XML falhou — usando o coletor antigo (Excel)" >> "$LOG"
