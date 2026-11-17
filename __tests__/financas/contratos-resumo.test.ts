@@ -49,17 +49,17 @@ import { agregarLigacoes, filtrarContratos, ordenarContratos, prazoContrato, typ
 
 const l = (id: number, over: Partial<LinhaContrato> = {}): LinhaContrato => ({
   id, numero: String(id).padStart(3, '0'), ano: 2026, situacao: SITUACAO_VIGENTE, objeto: 'Limpeza', fornecedorNome: 'Alfa', fornecedorDoc: '111',
-  inicio: dia(2026, 1, 1), fim: dia(2027, 1, 1), valorAtual: 100n, secretaria: null, outrasSecretarias: 0, empenhado: 0n, pago: 0n, alta: 0, media: 0, ...over,
+  inicio: dia(2026, 1, 1), fim: dia(2027, 1, 1), valorAtual: 100n, secretaria: null, outrasSecretarias: 0, empenhado: 0n, liquidado: 0n, pago: 0n, alta: 0, media: 0, ...over,
 });
 
 describe('agregarLigacoes', () => {
   it('escolhe a secretaria que mais empenhou e conta as outras', () => {
     const r = agregarLigacoes([
-      { certeza: 'alta', empenho: { orgao: 'SAÚDE', liquido: 300n, pago: 100n } },
-      { certeza: 'media', empenho: { orgao: 'EDUCAÇÃO', liquido: 500n, pago: 0n } },
-      { certeza: 'alta', empenho: { orgao: 'SAÚDE', liquido: 400n, pago: 50n } },
+      { certeza: 'alta', empenho: { orgao: 'SAÚDE', liquido: 300n, liquidado: 200n, pago: 100n } },
+      { certeza: 'media', empenho: { orgao: 'EDUCAÇÃO', liquido: 500n, liquidado: 0n, pago: 0n } },
+      { certeza: 'alta', empenho: { orgao: 'SAÚDE', liquido: 400n, liquidado: 400n, pago: 50n } },
     ]);
-    expect(r).toMatchObject({ empenhado: 1200n, pago: 150n, alta: 2, media: 1, secretaria: 'SAÚDE', outras: 1 });
+    expect(r).toMatchObject({ empenhado: 1200n, liquidado: 600n, pago: 150n, alta: 2, media: 1, secretaria: 'SAÚDE', outras: 1 });
   });
   it('sem empenho ligado: sem secretaria', () => {
     expect(agregarLigacoes([])).toMatchObject({ secretaria: null, outras: 0, empenhado: 0n });
@@ -95,6 +95,12 @@ describe('filtrarContratos', () => {
     expect(filtrarContratos(linhas, { secretaria: 'EDUCAÇÃO' }, hoje).map((x) => x.id)).toEqual([2]);
     expect(filtrarContratos(linhas, { secretaria: '__sem' }, hoje).map((x) => x.id)).toEqual([3]);
     expect(filtrarContratos(linhas, { valorMin: '4.000,00' }, hoje).map((x) => x.id)).toEqual([1]);
+  });
+  it('ligação: só contratos com empenhado, liquidado ou pago maior que zero', () => {
+    const m = [l(1, { empenhado: 10n, liquidado: 5n, pago: 0n }), l(2, { empenhado: 10n, liquidado: 0n }), l(3)];
+    expect(filtrarContratos(m, { ligacao: 'empenhado' }, hoje).map((x) => x.id)).toEqual([1, 2]);
+    expect(filtrarContratos(m, { ligacao: 'liquidado' }, hoje).map((x) => x.id)).toEqual([1]);
+    expect(filtrarContratos(m, { ligacao: 'pago' }, hoje).map((x) => x.id)).toEqual([]);
   });
   it('prazo: até 30/90 dias, vencidos, sem data de fim', () => {
     expect(filtrarContratos(linhas, { prazo: '30' }, hoje).map((x) => x.id)).toEqual([1]);

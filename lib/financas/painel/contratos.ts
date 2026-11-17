@@ -59,27 +59,28 @@ export interface LinhaContrato extends ContratoResumivel {
   secretaria: string | null;
   outrasSecretarias: number;
   empenhado: bigint;
+  liquidado: bigint;
   pago: bigint;
   alta: number;
   media: number;
 }
 
-export interface EmpenhoLigavel { orgao: string; liquido: bigint /* valor - anulado */; pago: bigint }
-export interface AgregadoLigacao { empenhado: bigint; pago: bigint; alta: number; media: number; secretaria: string | null; outras: number }
+export interface EmpenhoLigavel { orgao: string; liquido: bigint /* valor - anulado (= empenhado) */; liquidado: bigint; pago: bigint }
+export interface AgregadoLigacao { empenhado: bigint; liquidado: bigint; pago: bigint; alta: number; media: number; secretaria: string | null; outras: number }
 
 /** Soma os empenhos ligados a um contrato e escolhe a secretaria que mais empenhou. */
 export function agregarLigacoes(itens: { certeza: string; empenho: EmpenhoLigavel }[]): AgregadoLigacao {
   const z = BigInt(0);
   const porOrgao = new Map<string, bigint>();
-  let empenhado = z, pago = z, alta = 0, media = 0;
+  let empenhado = z, liquidado = z, pago = z, alta = 0, media = 0;
   for (const { certeza, empenho: e } of itens) {
-    empenhado += e.liquido; pago += e.pago;
+    empenhado += e.liquido; liquidado += e.liquidado; pago += e.pago;
     if (certeza === 'alta') alta++; else media++;
     const o = e.orgao.trim();
     if (o) porOrgao.set(o, (porOrgao.get(o) ?? z) + e.liquido);
   }
   const ord = [...porOrgao.entries()].sort((a, b) => (b[1] > a[1] ? 1 : b[1] < a[1] ? -1 : a[0].localeCompare(b[0], 'pt-BR')));
-  return { empenhado, pago, alta, media, secretaria: ord[0]?.[0] ?? null, outras: Math.max(ord.length - 1, 0) };
+  return { empenhado, liquidado, pago, alta, media, secretaria: ord[0]?.[0] ?? null, outras: Math.max(ord.length - 1, 0) };
 }
 
 export type Tom = 'vermelho' | 'ambar' | 'cinza' | 'verde';
@@ -99,13 +100,14 @@ export function prazoContrato(fim: Date | null, situacao: string, hoje: Date): {
   return { dias, texto: `faltam ${anos} ${anos === 1 ? 'ano' : 'anos'}${meses ? ` e ${meses} ${meses === 1 ? 'mês' : 'meses'}` : ''}`, tom: 'verde' };
 }
 
-export const COLUNAS = ['contrato', 'secretaria', 'credor', 'objeto', 'vigencia', 'prazo', 'valor', 'empenhado', 'pago'] as const;
+export const COLUNAS = ['contrato', 'secretaria', 'credor', 'objeto', 'vigencia', 'prazo', 'valor', 'empenhado', 'liquidado', 'pago'] as const;
 export type Coluna = (typeof COLUNAS)[number];
 
 export interface FiltrosContrato {
   contrato?: string; situacao?: string; secretaria?: string; credor?: string; objeto?: string;
   prazo?: string;       // 30 | 60 | 90 | vencido | semfim
   valorMin?: string;    // em reais
+  ligacao?: string;     // empenhado | liquidado | pago: só contratos com esse valor ligado maior que zero
 }
 
 const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -127,6 +129,9 @@ export function filtrarContratos(linhas: LinhaContrato[], f: FiltrosContrato, ho
     if (credor && !(norm(c.fornecedorNome).includes(credor) || (credorDig && c.fornecedorDoc.includes(credorDig)))) return false;
     if (objeto && !norm(c.objeto).includes(objeto)) return false;
     if (minimo !== null && c.valorAtual < minimo) return false;
+    if (f.ligacao === 'empenhado' && !(c.empenhado > BigInt(0))) return false;
+    if (f.ligacao === 'liquidado' && !(c.liquidado > BigInt(0))) return false;
+    if (f.ligacao === 'pago' && !(c.pago > BigInt(0))) return false;
     if (f.prazo) {
       if (f.prazo === 'semfim') return !c.fim;
       if (!c.fim) return false;
@@ -156,6 +161,7 @@ export function ordenarContratos(linhas: LinhaContrato[], coluna: Coluna, dir: '
       case 'prazo': return t(c.fim);
       case 'valor': return c.valorAtual;
       case 'empenhado': return c.empenhado;
+      case 'liquidado': return c.liquidado;
       case 'pago': return c.pago;
     }
   };
