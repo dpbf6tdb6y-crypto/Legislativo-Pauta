@@ -44,8 +44,21 @@ jobs:
         run: npx tsc --noEmit
         continue-on-error: true
 
+      # As mesmas migrações da produção, na ordem em que foram aplicadas lá. Não dá para usar
+      # "prisma migrate deploy" num banco vazio: pela ordem alfabética, 20260613_add_cargo_vereador
+      # (e as outras de 13/06) vêm antes de 20260613_init e alteram tabelas que ainda não existem.
       - name: Criar as tabelas no banco de teste (as mesmas migrações da produção)
-        run: npx prisma migrate deploy
+        run: |
+          set -e
+          arquivos="prisma/migrations/20260613_init/migration.sql $(ls -d prisma/migrations/*/ | grep -v '/20260613_init/' | sort | sed 's#/$#/migration.sql#')"
+          for f in $arquivos; do
+            echo "→ $f"
+            npx prisma db execute --file "$f" --schema prisma/schema.prisma
+          done
+
+      - name: O banco montado pelas migrações bate com o schema.prisma (informativo)
+        run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+        continue-on-error: true
 
       - name: Rodar testes
         run: npm test
