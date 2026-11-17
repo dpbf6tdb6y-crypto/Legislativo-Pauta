@@ -25,8 +25,16 @@ type Usuario = {
   senhaAreaRestrita?: boolean;
   podeUsarMicrofone?: boolean;
   podeVerConfiguracoes?: boolean;
+  gestaoPerfil?: string | null;
+  gestaoOrgaoCod?: string;
   createdAt: string;
 };
+
+// Gestão $$$: perfil nos módulos financeiros (só o Master define)
+const PERFIS_GESTAO_ROTULO: [string, string][] = [
+  ["", "Sem acesso aos módulos"], ["prefeito", "Prefeito"], ["controlador", "Controlador"], ["financeiro", "Financeiro"],
+  ["rh", "Recursos Humanos"], ["juridico", "Jurídico"], ["auditor", "Auditor"], ["administrador", "Administrador"], ["secretaria", "Secretaria (uma só)"],
+];
 
 export default function UsuariosPage() {
   const { data: session } = useSession();
@@ -46,6 +54,9 @@ export default function UsuariosPage() {
   const [senhaAreaRestrita, setSenhaAreaRestrita] = useState(true);
   const [podeUsarMicrofone, setPodeUsarMicrofone] = useState(true);
   const [podeVerConfiguracoes, setPodeVerConfiguracoes] = useState(false);
+  const [gestaoPerfil, setGestaoPerfil] = useState("");
+  const [gestaoOrgaoCod, setGestaoOrgaoCod] = useState("");
+  const souMaster = (session?.user as any)?.perfil === "master";
 
   async function carregar() {
     setCarregando(true);
@@ -76,6 +87,8 @@ export default function UsuariosPage() {
       setSenhaAreaRestrita(alvo === "novo" ? true : (alvo as any).senhaAreaRestrita !== false);
       setPodeUsarMicrofone(alvo === "novo" ? true : (alvo as any).podeUsarMicrofone !== false);
       setPodeVerConfiguracoes(alvo === "novo" ? false : (alvo as any).podeVerConfiguracoes === true);
+      setGestaoPerfil(alvo === "novo" ? "" : (alvo as any).gestaoPerfil ?? "");
+      setGestaoOrgaoCod(alvo === "novo" ? "" : (alvo as any).gestaoOrgaoCod ?? "");
     }
     setModal(alvo);
     setErro("");
@@ -105,6 +118,7 @@ export default function UsuariosPage() {
             senhaAreaRestrita,
             podeUsarMicrofone,
             podeVerConfiguracoes,
+            ...(souMaster ? { gestaoPerfil: gestaoPerfil || null, gestaoOrgaoCod } : {}),
             ...permissoes,
           }),
         });
@@ -125,6 +139,7 @@ export default function UsuariosPage() {
             senhaAreaRestrita,
             podeUsarMicrofone,
             podeVerConfiguracoes,
+            ...(souMaster ? { gestaoPerfil: gestaoPerfil || null, gestaoOrgaoCod } : {}),
             ...permissoes,
           }),
         });
@@ -322,6 +337,20 @@ export default function UsuariosPage() {
                               className="w-3.5 h-3.5 accent-purple-600" />
                             🎤 Pode usar a pesquisa por pergunta e o microfone (voz) no Painel de Gestão
                           </label>
+                        )}
+                        {m.chave === "gestao" && (a.ver || a.cad) && (
+                          <div className="mt-1 ml-1 mb-1 text-xs text-gray-600 flex flex-wrap items-center gap-2">
+                            <span>Perfil nos módulos da Gestão:</span>
+                            <select value={gestaoPerfil} onChange={e => setGestaoPerfil(e.target.value)} disabled={!souMaster}
+                              className="border border-gray-300 rounded px-1.5 py-0.5 text-xs disabled:bg-gray-100">
+                              {PERFIS_GESTAO_ROTULO.map(([v, r]) => <option key={v} value={v}>{r}</option>)}
+                            </select>
+                            {gestaoPerfil === "secretaria" && (
+                              <input value={gestaoOrgaoCod} onChange={e => setGestaoOrgaoCod(e.target.value.replace(/\D/g, "").slice(0, 6))} disabled={!souMaster}
+                                placeholder="código da secretaria" className="border border-gray-300 rounded px-1.5 py-0.5 text-xs w-36 disabled:bg-gray-100" />
+                            )}
+                            {!souMaster && <span className="text-gray-400">(só o Master altera)</span>}
+                          </div>
                         )}
                         {m.chave === "indicacoes" && (a.ver || a.cad) && (
                           <label className="flex items-center gap-2 mt-1 ml-1 text-xs text-amber-800 cursor-pointer">

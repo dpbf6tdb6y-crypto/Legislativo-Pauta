@@ -66,3 +66,9 @@ scripts/fazenda-atualizador/_cache/
 scripts/Painel_Receita_Despesas.html
 __pycache__/
 *.pyc
+
+# Gestão $$$: arquivos baixados do portal (30 dias) e logs da coleta — só no disco do servidor
+/dados-financas/
+
+# relatório dos testes no CI
+vitest-relatorio.json

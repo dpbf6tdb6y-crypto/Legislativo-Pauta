@@ -257,6 +257,19 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })()}
+          {/* Gestão $$$: módulos financeiros (contratos, documentos, auditoria...). Aparece com o menu Gestão aberto */}
+          {acessoDoMenu(usuarioSessao, "gestao").ver && sidebarOpen && pathname.startsWith(fazendaItem.href) && (() => {
+            const active = pathname !== fazendaItem.href;
+            return (
+              <Link href="/dashboard/fazenda/modulos"
+                className="flex items-center gap-2 ml-8 px-3 py-1.5 rounded-lg text-xs transition-all"
+                style={active ? { color: FAZENDA_COLOR, fontWeight: 600 } : { color: FAZENDA_COLOR, opacity: 0.85 }}
+                onMouseEnter={e => { e.currentTarget.style.background = NAV_HOVER_BG; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                Módulos da Gestão
+              </Link>
+            );
+          })()}
         </nav>
 
         {/* Configurações: o Master e quem foi autorizado no cadastro de usuários */}

@@ -9,6 +9,12 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    // Gestão $$$: o coletor (Playwright) nunca entra no bundle do app
+    serverComponentsExternalPackages: ["playwright"],
+    // Gestão $$$: PDF anexado aos documentos para assinar, até 15 MB por arquivo (validado em lib/financas/documentos/anexos.ts)
+    serverActions: { bodySizeLimit: "32mb" },
+  },
 };
 
 export default nextConfig;

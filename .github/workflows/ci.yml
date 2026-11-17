@@ -9,6 +9,24 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Postgres VAZIO, só para os testes da Gestão $$$ (coleta, conferência, isolamento).
+    # Mesma versão do banco de produção (docker-compose.yml).
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: teste
+          POSTGRES_PASSWORD: teste
+          POSTGRES_DB: segov_teste
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U teste -d segov_teste"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://teste:teste@localhost:5432/segov_teste
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,8 +44,32 @@ jobs:
         run: npx tsc --noEmit
         continue-on-error: true
 
+      # O banco de teste sai direto do schema.prisma. As migrações antigas não montam um banco vazio
+      # (parte do banco de produção nasceu por "db push": ex. 20260701_add_autor_requerimento_tag altera
+      # "Requerimento" antes de ela existir), então "migrate deploy" aqui falharia por motivo alheio ao teste.
+      # O cadastro da prefeitura vem da migração da Gestão $$$ (só o INSERT).
+      - name: Criar as tabelas no banco de teste
+        run: |
+          npx prisma db push --skip-generate
+          sed -n '/^INSERT INTO "fin_prefeitura"/,/;$/p' prisma/migrations/20261116_gestao_base_financas/migration.sql \
+            | npx prisma db execute --stdin --schema prisma/schema.prisma
+
       - name: Rodar testes
-        run: npm test
+        run: npx vitest run --reporter=default --reporter=json --outputFile=vitest-relatorio.json
+        env:
+          FIN_TESTE_BANCO: '1'
+
+      # prova de que os testes com banco da Gestão $$$ rodaram (e não foram pulados)
+      - name: Conferir os testes com banco
+        run: |
+          node -e "
+            const r = require('./vitest-relatorio.json');
+            const db = r.testResults.filter((t) => t.name.endsWith('.db.test.ts'));
+            const n = (s) => db.reduce((t, f) => t + f.assertionResults.filter((a) => a.status === s).length, 0);
+            const msg = 'testes com banco: ' + db.length + ' arquivos, ' + n('passed') + ' passaram, ' + n('failed') + ' falharam, ' + (n('skipped') + n('pending')) + ' pulados';
+            console.log('::notice title=Gestão \$\$\$::' + msg);
+            if (db.length < 10 || n('passed') < 60 || n('failed') > 0) process.exit(1);
+          "
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -37,3 +79,18 @@ jobs:
       - name: Testes dos cálculos do painel Gestão (Python)
         working-directory: scripts/fazenda-atualizador
         run: python -m unittest discover -s tests -v
+
+  # A imagem do coletor da Gestão $$$ monta e o navegador abre (o mesmo que roda no servidor às 02:30).
+  coletor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Montar a imagem do coletor
+        run: docker build -f docker/coletor.Dockerfile -t segov-coletor:ci .
+
+      - name: O Chromium abre dentro da imagem e o código da coleta carrega
+        run: |
+          docker run --rm --shm-size=256m segov-coletor:ci node -e "require('playwright').chromium.launch().then(b => b.newPage().then(p => p.setContent('<p>ok</p>')).then(() => b.close())).then(() => console.log('chromium ok'))"
+          docker run --rm segov-coletor:ci npx tsx -e "import('./lib/financas/coleta/executar').then(m => console.log('coleta carrega:', typeof m.executarColeta))"

@@ -14,3 +14,5 @@ scripts/fazenda-atualizador/RHX_*.csv
 scripts/fazenda-atualizador/.venv
 scripts/fazenda-atualizador/_cache
 scripts/Painel_Receita_Despesas.html
+# Gestão $$$: arquivos baixados do portal e logs da coleta (ficam só no disco do servidor)
+dados-financas

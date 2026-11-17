@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export>
+	<Filtros>
+		<Exercicio>2026</Exercicio>
+	</Filtros>
+<SDTRestoPagarCollection xmlns="transparencianovalima">
+	<SDTRestoPagar xmlns="transparencianovalima">
+		<RestoPagarId>120102</RestoPagarId>
+		<RestoPagarNumero>24000120</RestoPagarNumero>
+		<RestoPagarAno>2025</RestoPagarAno>
+		<RestoPagarExerAno>2026</RestoPagarExerAno>
+		<RestoPagarMes>0</RestoPagarMes>
+		<RestoPagarData>2025-12-30</RestoPagarData>
+		<RestoPagarDsc>DOC. ANEXO. **GUIA** CONTRIBUIÇÃO DA PREFEITURA EM FAVOR DO INSS, REFERENTE AO MÊS DE</RestoPagarDsc>
+		<RestoPagarTipo>P</RestoPagarTipo>
+		<RestoPagarMotivo>0</RestoPagarMotivo>
+		<RestoPagarNaturezaPag>ENCARGOS SOCIAIS - INSS	</RestoPagarNaturezaPag>
+		<EmpenhoId>62311</EmpenhoId>
+		<RestoPagarEmpenhoNumero>24000005</RestoPagarEmpenhoNumero>
+		<RestoPagarEmpenhoData>2025-01-31</RestoPagarEmpenhoData>
+		<RestoPagarEmpenhoMes>1</RestoPagarEmpenhoMes>
+		<RestoPagarEmpenhoAno>2025</RestoPagarEmpenhoAno>
+		<RestoPagarEmpenhoDsc>DOC. ANEXO. **GUIA** CONTRIBUIÇÃO DA PREFEITURA EM FAVOR DO INSS, REFERENTE AO MÊS DE</RestoPagarEmpenhoDsc>
+		<RestoPagarValorInscrito>13156.32</RestoPagarValorInscrito>
+		<RestoPagarValorAnul>0.00</RestoPagarValorAnul>
+		<RestoPagarValorLiq>13156.32</RestoPagarValorLiq>
+		<RestoPagarEmpenhoSaldoAnt>0.00</RestoPagarEmpenhoSaldoAnt>
+		<RestoPagarEmpenhoValor>50000.00</RestoPagarEmpenhoValor>
+		<RestoPagarEmpenhoValorAnul>0.00</RestoPagarEmpenhoValorAnul>
+		<RestoPagarEmpenhoValorLiq>50000.00</RestoPagarEmpenhoValorLiq>
+		<RestoPagarLiquidacaoNumero/>
+		<RestoPagarLiquidacaoData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true">
+		</RestoPagarLiquidacaoData>
+		<RestoPagarLiquidacaoValor>13156.32</RestoPagarLiquidacaoValor>
+		<RestoPagarLiquidacaoValorAnul>0.00</RestoPagarLiquidacaoValorAnul>
+		<RestoPagarLiquidacaoValorLiq>13156.32</RestoPagarLiquidacaoValorLiq>
+		<RestoPagarPagamentoValor>13156.32</RestoPagarPagamentoValor>
+		<RestoPagarPagamentoValorAnul>0.00</RestoPagarPagamentoValorAnul>
+		<RestoPagarPagamentoValorLiq>13156.32</RestoPagarPagamentoValorLiq>
+		<RestoPagarFlgLiquidado>0</RestoPagarFlgLiquidado>
+		<RestoPagarCredorId>41</RestoPagarCredorId>
+		<RestoPagarCredorDoc>29979036012823</RestoPagarCredorDoc>
+		<RestoPagarCredorNome>INSTITUTO NACIONAL SEGURO SOCIAL-INSS</RestoPagarCredorNome>
+		<RestoPagarCredorRazao>INSTITUTO NACIONAL SEGURO SOCIAL-INSS</RestoPagarCredorRazao>
+		<RestoPagarOrgnId>4843</RestoPagarOrgnId>
+		<RestoPagarOrgnCod>24</RestoPagarOrgnCod>
+		<RestoPagarOrgnNome>SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL</RestoPagarOrgnNome>
+		<RestoPagarUnidId>4844</RestoPagarUnidId>
+		<RestoPagarUnidCod>001</RestoPagarUnidCod>
+		<RestoPagarUnidNome>SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL</RestoPagarUnidNome>
+		<RestoPagarDotacao>240003</RestoPagarDotacao>
+		<RestoPagarContaDespId>0</RestoPagarContaDespId>
+		<RestoPagarContaDespIdPai>0</RestoPagarContaDespIdPai>
+		<RestoPagarContaDespCod>319013</RestoPagarContaDespCod>
+		<RestoPagarContaDespCodPai/>
+		<RestoPagarContaDespNome>OBRIGAÇÕES PATRONAIS</RestoPagarContaDespNome>
+		<RestoPagarFonteRecursoExeId>0</RestoPagarFonteRecursoExeId>
+		<RestoPagarFonteRecursoExeCod>15000000000</RestoPagarFonteRecursoExeCod>
+		<RestoPagarFonteRecursoExeNome>RECURSOS NÃO VINCULADOS DE IMPOSTOS</RestoPagarFonteRecursoExeNome>
+		<RestoPagarFuncionalId>0</RestoPagarFuncionalId>
+		<RestoPagarFuncaoExeId>0</RestoPagarFuncaoExeId>
+		<RestoPagarFuncaoExeCod>04</RestoPagarFuncaoExeCod>
+		<RestoPagarFuncaoExeNome>ADMINISTRAÇÃO</RestoPagarFuncaoExeNome>
+		<RestoPagarSubFuncaoExeId>0</RestoPagarSubFuncaoExeId>
+		<RestoPagarSubFuncaoExeCod>122</RestoPagarSubFuncaoExeCod>
+		<RestoPagarSubFuncaoExeNome>ADMINISTRAÇÃO GERAL</RestoPagarSubFuncaoExeNome>
+		<RestoPagarProgramaExeId>0</RestoPagarProgramaExeId>
+		<RestoPagarProgramaExeCod>0101</RestoPagarProgramaExeCod>
+		<RestoPagarProgramaExeNome>APOIO A ADMINISTRAÇÃO PÚBLICA</RestoPagarProgramaExeNome>
+		<RestoPagarProjetoAtividadeId>0</RestoPagarProjetoAtividadeId>
+		<RestoPagarProjetoAtividadeCod>2374</RestoPagarProjetoAtividadeCod>
+		<RestoPagarProjetoAtividadeNome>GESTÃO DA COORDENADORIA DE PROTEÇÃO E DEFESA CIVIL</RestoPagarProjetoAtividadeNome>
+	</SDTRestoPagar>
+	<SDTRestoPagar xmlns="transparencianovalima">
+		<RestoPagarId>120101</RestoPagarId>
+		<RestoPagarNumero>24000119</RestoPagarNumero>
+		<RestoPagarAno>2025</RestoPagarAno>
+		<RestoPagarExerAno>2026</RestoPagarExerAno>
+		<RestoPagarMes>0</RestoPagarMes>
+		<RestoPagarData>2025-12-30</RestoPagarData>
+		<RestoPagarDsc>LOCAÇÃO DE VEICULO TIPO PICK UP, CABINE DUPLA, PARA UTILIZAÇÃO NA SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL, DURANTE OS MESES DE NOVEMBRO E DEZEMBRO DE 2025.</RestoPagarDsc>
+		<RestoPagarTipo>P</RestoPagarTipo>
+		<RestoPagarMotivo>0</RestoPagarMotivo>
+		<RestoPagarNaturezaPag>LOCAÇÕES</RestoPagarNaturezaPag>
+		<EmpenhoId>72840</EmpenhoId>
+		<RestoPagarEmpenhoNumero>24000019</RestoPagarEmpenhoNumero>
+		<RestoPagarEmpenhoData>2025-11-03</RestoPagarEmpenhoData>
+		<RestoPagarEmpenhoMes>11</RestoPagarEmpenhoMes>
+		<RestoPagarEmpenhoAno>2025</RestoPagarEmpenhoAno>
+		<RestoPagarEmpenhoDsc>LOCAÇÃO DE VEICULO TIPO PICK UP, CABINE DUPLA, PARA UTILIZAÇÃO NA SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL, DURANTE OS MESES DE NOVEMBRO E DEZEMBRO DE 2025.</RestoPagarEmpenhoDsc>
+		<RestoPagarValorInscrito>16890.00</RestoPagarValorInscrito>
+		<RestoPagarValorAnul>0.00</RestoPagarValorAnul>
+		<RestoPagarValorLiq>16890.00</RestoPagarValorLiq>
+		<RestoPagarEmpenhoSaldoAnt>0.00</RestoPagarEmpenhoSaldoAnt>
+		<RestoPagarEmpenhoValor>33780.00</RestoPagarEmpenhoValor>
+		<RestoPagarEmpenhoValorAnul>0.00</RestoPagarEmpenhoValorAnul>
+		<RestoPagarEmpenhoValorLiq>33780.00</RestoPagarEmpenhoValorLiq>
+		<RestoPagarLiquidacaoNumero/>
+		<RestoPagarLiquidacaoData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true">
+		</RestoPagarLiquidacaoData>
+		<RestoPagarLiquidacaoValor>16890.00</RestoPagarLiquidacaoValor>
+		<RestoPagarLiquidacaoValorAnul>0.00</RestoPagarLiquidacaoValorAnul>
+		<RestoPagarLiquidacaoValorLiq>16890.00</RestoPagarLiquidacaoValorLiq>
+		<RestoPagarPagamentoValor>16890.00</RestoPagarPagamentoValor>
+		<RestoPagarPagamentoValorAnul>0.00</RestoPagarPagamentoValorAnul>
+		<RestoPagarPagamentoValorLiq>16890.00</RestoPagarPagamentoValorLiq>
+		<RestoPagarFlgLiquidado>0</RestoPagarFlgLiquidado>
+		<RestoPagarCredorId>37646</RestoPagarCredorId>
+		<RestoPagarCredorDoc>19001883000182</RestoPagarCredorDoc>
+		<RestoPagarCredorNome>VIANA LOCADORA DE VEICULOS EIRELI - EPP</RestoPagarCredorNome>
+		<RestoPagarCredorRazao>VIANA LOCADORA DE VEICULOS EIRELI - EPP</RestoPagarCredorRazao>
+		<RestoPagarOrgnId>4843</RestoPagarOrgnId>
+		<RestoPagarOrgnCod>24</RestoPagarOrgnCod>
+		<RestoPagarOrgnNome>SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL</RestoPagarOrgnNome>
+		<RestoPagarUnidId>4844</RestoPagarUnidId>
+		<RestoPagarUnidCod>001</RestoPagarUnidCod>
+		<RestoPagarUnidNome>SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL</RestoPagarUnidNome>
+		<RestoPagarDotacao>240006</RestoPagarDotacao>
+		<RestoPagarContaDespId>0</RestoPagarContaDespId>
+		<RestoPagarContaDespIdPai>0</RestoPagarContaDespIdPai>
+		<RestoPagarContaDespCod>339039</RestoPagarContaDespCod>
+		<RestoPagarContaDespCodPai/>
+		<RestoPagarContaDespNome>OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA</RestoPagarContaDespNome>
+		<RestoPagarFonteRecursoExeId>0</RestoPagarFonteRecursoExeId>
+		<RestoPagarFonteRecursoExeCod>15000000000</RestoPagarFonteRecursoExeCod>
+		<RestoPagarFonteRecursoExeNome>RECURSOS NÃO VINCULADOS DE IMPOSTOS</RestoPagarFonteRecursoExeNome>
+		<RestoPagarFuncionalId>0</RestoPagarFuncionalId>
+		<RestoPagarFuncaoExeId>0</RestoPagarFuncaoExeId>
+		<RestoPagarFuncaoExeCod>04</RestoPagarFuncaoExeCod>
+		<RestoPagarFuncaoExeNome>ADMINISTRAÇÃO</RestoPagarFuncaoExeNome>
+		<RestoPagarSubFuncaoExeId>0</RestoPagarSubFuncaoExeId>
+		<RestoPagarSubFuncaoExeCod>122</RestoPagarSubFuncaoExeCod>
+		<RestoPagarSubFuncaoExeNome>ADMINISTRAÇÃO GERAL</RestoPagarSubFuncaoExeNome>
+		<RestoPagarProgramaExeId>0</RestoPagarProgramaExeId>
+		<RestoPagarProgramaExeCod>0101</RestoPagarProgramaExeCod>
+		<RestoPagarProgramaExeNome>APOIO A ADMINISTRAÇÃO PÚBLICA</RestoPagarProgramaExeNome>
+		<RestoPagarProjetoAtividadeId>0</RestoPagarProjetoAtividadeId>
+		<RestoPagarProjetoAtividadeCod>2374</RestoPagarProjetoAtividadeCod>
+		<RestoPagarProjetoAtividadeNome>GESTÃO DA COORDENADORIA DE PROTEÇÃO E DEFESA CIVIL</RestoPagarProjetoAtividadeNome>
+	</SDTRestoPagar>
+	<SDTRestoPagar xmlns="transparencianovalima">
+		<RestoPagarId>120100</RestoPagarId>
+		<RestoPagarNumero>24000118</RestoPagarNumero>
+		<RestoPagarAno>2025</RestoPagarAno>
+		<RestoPagarExerAno>2026</RestoPagarExerAno>
+		<RestoPagarMes>0</RestoPagarMes>
+		<RestoPagarData>2025-12-30</RestoPagarData>
+		<RestoPagarDsc>LOCAÇÃO DE VEICULO TIPO PICK UP, CABINE DUPLA, PARA UTILIZAÇÃO NA SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL, DURANTE OS MESES DE NOVEMBRO E DEZEMBRO DE 2025.</RestoPagarDsc>
+		<RestoPagarTipo>P</RestoPagarTipo>
+		<RestoPagarMotivo>0</RestoPagarMotivo>
+		<RestoPagarNaturezaPag>LOCAÇÕES</RestoPagarNaturezaPag>
+		<EmpenhoId>72840</EmpenhoId>
+		<RestoPagarEmpenhoNumero>24000019</RestoPagarEmpenhoNumero>
+		<RestoPagarEmpenhoData>2025-11-03</RestoPagarEmpenhoData>
+		<RestoPagarEmpenhoMes>11</RestoPagarEmpenhoMes>
+		<RestoPagarEmpenhoAno>2025</RestoPagarEmpenhoAno>
+		<RestoPagarEmpenhoDsc>LOCAÇÃO DE VEICULO TIPO PICK UP, CABINE DUPLA, PARA UTILIZAÇÃO NA SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL, DURANTE OS MESES DE NOVEMBRO E DEZEMBRO DE 2025.</RestoPagarEmpenhoDsc>
+		<RestoPagarValorInscrito>15201.00</RestoPagarValorInscrito>
+		<RestoPagarValorAnul>0.00</RestoPagarValorAnul>
+		<RestoPagarValorLiq>15201.00</RestoPagarValorLiq>
+		<RestoPagarEmpenhoSaldoAnt>0.00</RestoPagarEmpenhoSaldoAnt>
+		<RestoPagarEmpenhoValor>33780.00</RestoPagarEmpenhoValor>
+		<RestoPagarEmpenhoValorAnul>0.00</RestoPagarEmpenhoValorAnul>
+		<RestoPagarEmpenhoValorLiq>33780.00</RestoPagarEmpenhoValorLiq>
+		<RestoPagarLiquidacaoNumero/>
+		<RestoPagarLiquidacaoData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true">
+		</RestoPagarLiquidacaoData>
+		<RestoPagarLiquidacaoValor>15201.00</RestoPagarLiquidacaoValor>
+		<RestoPagarLiquidacaoValorAnul>0.00</RestoPagarLiquidacaoValorAnul>
+		<RestoPagarLiquidacaoValorLiq>15201.00</RestoPagarLiquidacaoValorLiq>
+		<RestoPagarPagamentoValor>15201.00</RestoPagarPagamentoValor>
+		<RestoPagarPagamentoValorAnul>0.00</RestoPagarPagamentoValorAnul>
+		<RestoPagarPagamentoValorLiq>15201.00</RestoPagarPagamentoValorLiq>
+		<RestoPagarFlgLiquidado>0</RestoPagarFlgLiquidado>
+		<RestoPagarCredorId>37646</RestoPagarCredorId>
+		<RestoPagarCredorDoc>19001883000182</RestoPagarCredorDoc>
+		<RestoPagarCredorNome>VIANA LOCADORA DE VEICULOS EIRELI - EPP</RestoPagarCredorNome>
+		<RestoPagarCredorRazao>VIANA LOCADORA DE VEICULOS EIRELI - EPP</RestoPagarCredorRazao>
+		<RestoPagarOrgnId>4843</RestoPagarOrgnId>
+		<RestoPagarOrgnCod>24</RestoPagarOrgnCod>
+		<RestoPagarOrgnNome>SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL</RestoPagarOrgnNome>
+		<RestoPagarUnidId>4844</RestoPagarUnidId>
+		<RestoPagarUnidCod>001</RestoPagarUnidCod>
+		<RestoPagarUnidNome>SECRETARIA MUNICIPAL DE PROTEÇÃO E DEFESA CIVIL</RestoPagarUnidNome>
+		<RestoPagarDotacao>240006</RestoPagarDotacao>
+		<RestoPagarContaDespId>0</RestoPagarContaDespId>
+		<RestoPagarContaDespIdPai>0</RestoPagarContaDespIdPai>
+		<RestoPagarContaDespCod>339039</RestoPagarContaDespCod>
+		<RestoPagarContaDespCodPai/>
+		<RestoPagarContaDespNome>OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA</RestoPagarContaDespNome>
+		<RestoPagarFonteRecursoExeId>0</RestoPagarFonteRecursoExeId>
+		<RestoPagarFonteRecursoExeCod>15000000000</RestoPagarFonteRecursoExeCod>
+		<RestoPagarFonteRecursoExeNome>RECURSOS NÃO VINCULADOS DE IMPOSTOS</RestoPagarFonteRecursoExeNome>
+		<RestoPagarFuncionalId>0</RestoPagarFuncionalId>
+		<RestoPagarFuncaoExeId>0</RestoPagarFuncaoExeId>
+		<RestoPagarFuncaoExeCod>04</RestoPagarFuncaoExeCod>
+		<RestoPagarFuncaoExeNome>ADMINISTRAÇÃO</RestoPagarFuncaoExeNome>
+		<RestoPagarSubFuncaoExeId>0</RestoPagarSubFuncaoExeId>
+		<RestoPagarSubFuncaoExeCod>122</RestoPagarSubFuncaoExeCod>
+		<RestoPagarSubFuncaoExeNome>ADMINISTRAÇÃO GERAL</RestoPagarSubFuncaoExeNome>
+		<RestoPagarProgramaExeId>0</RestoPagarProgramaExeId>
+		<RestoPagarProgramaExeCod>0101</RestoPagarProgramaExeCod>
+		<RestoPagarProgramaExeNome>APOIO A ADMINISTRAÇÃO PÚBLICA</RestoPagarProgramaExeNome>
+		<RestoPagarProjetoAtividadeId>0</RestoPagarProjetoAtividadeId>
+		<RestoPagarProjetoAtividadeCod>2374</RestoPagarProjetoAtividadeCod>
+		<RestoPagarProjetoAtividadeNome>GESTÃO DA COORDENADORIA DE PROTEÇÃO E DEFESA CIVIL</RestoPagarProjetoAtividadeNome>
+	</SDTRestoPagar>
+</SDTRestoPagarCollection>
+</Export>
