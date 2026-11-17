@@ -5,20 +5,21 @@ import crypto from 'crypto';
 import { dbDa, prismaSistema, type DbPrefeitura } from '@/lib/financas/db';
 import { ConectorAbaco } from '@/lib/financas/conectores/abaco';
 import { ConectorArquivo } from '@/lib/financas/conectores/arquivo';
-import { contratoCitado } from '@/lib/financas/conectores/abaco/leitores';
+import { contratoCitado, situacaoResumida } from '@/lib/financas/conectores/abaco/leitores';
+import { rgf, rreoSimplificado, type IndicadorC } from '@/lib/financas/conectores/siconfi';
 import type { ArquivoBaixado, Conector, EmpenhoC } from '@/lib/financas/conectores/tipos';
 import { ligarContratosEmpenhos } from './ligacoes';
 import { conciliar, type ResultadoConciliacao } from './conciliacao';
-
-// Fase 1 da Gestão $$$: despesa por órgão, receita, contratos, empenhos (liquidações e pagamentos),
-// restos a pagar e descontos retidos. Folha por servidor, SICONFI e regras ficam para as fases seguintes
-// (a folha e o SICONFI continuam no coletor Python do painel).
+import { executarRegras } from '@/lib/financas/regras/motor';
+import { chaveLigada } from '@/lib/financas/chaves';
 
 export interface OpcoesColeta {
   ano: number;
   meses: number[]; // meses de despesa/receita a coletar (0 = ano inteiro)
+  folha: string[]; // "2026/10"
   empenhos: boolean;
   contratos: boolean;
+  siconfi: boolean;
   /** restos a pagar do exercício + empenhos de origem (datas dos pagamentos) */
   restos?: boolean;
   /** descontos retidos de cada pagamento do ano ainda não lido */
@@ -37,7 +38,7 @@ export function criarConector(pref: { id: string; conector: string; conectorConf
   throw new Error(`conector desconhecido: ${pref.conector}`);
 }
 
-/** Pasta dos arquivos baixados e dos logs (no servidor: montada no contêiner do coletor). */
+/** Pasta dos arquivos baixados, anexos e logs (no servidor: dados-financas/, montada nos contêineres). */
 export const dadosDir = () => process.env.FIN_DADOS_DIR || path.resolve('dados-financas');
 const json = (o: unknown) => JSON.stringify(o, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
 
@@ -83,6 +84,11 @@ export async function executarColeta(prefeituraId: string, op: OpcoesColeta) {
   const log = op.log ?? ((m: string) => console.log(`[${new Date().toISOString()}] ${m}`));
   const pref = await prismaSistema.prefeitura.findUniqueOrThrow({ where: { id: prefeituraId } });
   const db = dbDa(prefeituraId);
+
+  if (!(await chaveLigada(prefeituraId, 'coleta_automatica'))) {
+    log('chave "coleta_automatica" desligada: nada a fazer');
+    return null;
+  }
 
   // trava: uma coleta por prefeitura de cada vez (ex.: carga inicial longa × agendamento da madrugada).
   // No servidor cada coleta roda num contêiner novo (o pid se repete entre contêineres): a trava guarda
@@ -149,10 +155,10 @@ async function coletarComTrava(
   // percentual geral, informado a cada 20% (pesos ≈ minutos de cada etapa no portal)
   const pesoDe = (nome: string) =>
     nome.startsWith('despesa') ? 0.4 : nome.startsWith('receitas') ? 1 : nome === 'contratos' ? 0.5
-      : nome.startsWith('empenhos') ? (op.completa ? 45 : 8) : nome.startsWith('retencoes') ? 5 : nome.startsWith('restos') ? (op.completa ? 12 : 2) : 0.5;
+      : nome.startsWith('empenhos') ? (op.completa ? 45 : 8) : nome.startsWith('retencoes') ? 5 : nome.startsWith('restos') ? (op.completa ? 12 : 2) : nome.startsWith('folha') ? 20 : nome.startsWith('siconfi') ? 0.2 : 0.5;
   const pesoTotal =
     op.meses.length * 0.4 + op.meses.filter((m) => m > 0).length * 1 + (op.contratos ? 0.5 : 0) +
-    (op.empenhos ? pesoDe('empenhos') : 0) + (op.restos ? pesoDe('restos') : 0) + (op.retencoes ? pesoDe('retencoes') : 0) + 2 * 0.5;
+    (op.empenhos ? pesoDe('empenhos') : 0) + (op.restos ? pesoDe('restos') : 0) + (op.retencoes ? pesoDe('retencoes') : 0) + op.folha.length * 20 + (op.siconfi ? 0.4 : 0) + 3 * 0.5;
   let pesoFeito = 0;
   let faixaInformada = 0;
   const informar = (feito: number) => {
@@ -227,7 +233,7 @@ async function coletarComTrava(
       await passo(`empenhos ${op.ano}`, async () => {
         const doAno = await db.empenho.findMany({ where: { ano: op.ano }, select: { idOrigem: true, aLiquidar: true, aPagar: true, inconsistencia: true } });
         // relê também os incoerentes: o cabeçalho costuma zerar o "a pagar" antes de o pagamento aparecer na lista
-        const reler = doAno.filter((e) => e.aLiquidar !== 0n || e.aPagar !== 0n || e.inconsistencia !== null).map((e) => e.idOrigem);
+        const reler = doAno.filter((e) => e.aLiquidar !== BigInt(0) || e.aPagar !== BigInt(0) || e.inconsistencia !== null).map((e) => e.idOrigem);
         const r = await con.empenhosDoAno({
           ano: op.ano, idsConhecidos: doAno.map((e) => e.idOrigem), relistarAnoTodo: !!op.completa, idsParaReler: reler,
           aoReceber: (e) => gravarEmpenho(db, prefeituraId, e), progresso: progressoParcial(`empenhos ${op.ano}`),
@@ -271,13 +277,13 @@ async function coletarComTrava(
         const ini = new Date(Date.UTC(op.ano, 0, 1)), fim = new Date(Date.UTC(op.ano + 1, 0, 1));
         const pagos = await db.pagamento.groupBy({ by: ['empenhoId'], where: { data: { gte: ini, lt: fim }, empenho: { idOrigem: { in: origens }, ano: { lt: op.ano } } }, _sum: { valor: true } });
         const idInterno = new Map((await db.empenho.findMany({ where: { idOrigem: { in: origens } }, select: { id: true, idOrigem: true } })).map((e) => [e.id, e.idOrigem]));
-        const datado = new Map(pagos.map((g) => [idInterno.get(g.empenhoId)!, g._sum.valor ?? 0n]));
+        const datado = new Map(pagos.map((g) => [idInterno.get(g.empenhoId)!, g._sum.valor ?? BigInt(0)]));
         const naLista = new Map<number, bigint>();
-        for (const x of r.dados) naLista.set(x.empenhoIdOrigem, (naLista.get(x.empenhoIdOrigem) ?? 0n) + x.pago);
-        const naoBatem = [...naLista].filter(([id, v]) => (datado.get(id) ?? 0n) !== v).map(([id]) => id);
+        for (const x of r.dados) naLista.set(x.empenhoIdOrigem, (naLista.get(x.empenhoIdOrigem) ?? BigInt(0)) + x.pago);
+        const naoBatem = [...naLista].filter(([id, v]) => (datado.get(id) ?? BigInt(0)) !== v).map(([id]) => id);
         if (naoBatem.length) log(`atenção: ${naoBatem.length} empenho(s) de origem cujo pago no RP difere dos pagamentos datados (ex.: ${naoBatem.slice(0, 5).join(', ')})`);
         if (falhas.length) throw new Error(`${falhas.length} empenho(s) de origem não puderam ser lidos: ${falhas.slice(0, 10).join(', ')}`);
-        const soma = (k: 'inscrito' | 'pago') => r.dados.reduce((a, x) => a + x[k], 0n).toString();
+        const soma = (k: 'inscrito' | 'pago') => r.dados.reduce((a, x) => a + x[k], BigInt(0)).toString();
         return { restos: r.dados.length, origens: origens.length, lidos: fila.length, inscrito: soma('inscrito'), pago: soma('pago'), pagoNaoConfere: naoBatem.length };
       });
 
@@ -289,14 +295,14 @@ async function coletarComTrava(
         const fila = [...new Set(pags.map((p) => p.idOrigem))].filter((id) => !lidas.has(id));
         const avisar = progressoParcial(`retencoes ${op.ano}`);
         avisar(`retenções a ler: ${fila.length} pagamento(s) de ${pags.length}`);
-        let pos = 0, feitos = 0, total = 0n;
+        let pos = 0, feitos = 0, total = BigInt(0);
         const falhas: string[] = [];
         const trabalhador = async () => {
           while (pos < fila.length) {
             const id = fila[pos++];
             try {
               const itens = await con.retencoesDoPagamento(id);
-              const soma = itens.reduce((s, x) => s + x.valor, 0n);
+              const soma = itens.reduce((s, x) => s + x.valor, BigInt(0));
               total += soma;
               await db.retencao.deleteMany({ where: { pagamentoIdOrigem: id } });
               if (itens.length) await db.retencao.createMany({ data: itens.map((x) => ({ ...x, prefeituraId })) });
@@ -312,13 +318,74 @@ async function coletarComTrava(
         return { lidos: fila.length, retido: total.toString() };
       });
 
+    for (const anoMes of op.folha) {
+      if (!(await chaveLigada(prefeituraId, 'folha'))) {
+        log('chave "folha" desligada: folha não coletada');
+        break;
+      }
+      await passo(`folha ${anoMes}`, async () => {
+        const r = await con.folhaMes(anoMes);
+        // a tela da folha traz nomes: guardamos o HTML bruto como prova, no mesmo disco local
+        await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
+        const f = r.dados;
+        if (f.linhas.length !== f.linhasInformadasPelaFonte)
+          throw new Error(`folha ${anoMes}: coletadas ${f.linhas.length} de ${f.linhasInformadasPelaFonte} linhas`);
+        await db.folhaLinha.deleteMany({ where: { anoMes } });
+        for (let i = 0; i < f.linhas.length; i += 500) {
+          await db.folhaLinha.createMany({
+            data: f.linhas.slice(i, i + 500).map(({ situacaoOriginal, ...l }) => ({ ...l, situacao: situacaoResumida(situacaoOriginal), prefeituraId })),
+          });
+        }
+        await db.folhaMes.upsert({
+          where: { prefeituraId_anoMes: { prefeituraId, anoMes } },
+          create: { prefeituraId, anoMes, linhasPortal: f.linhasInformadasPelaFonte, linhasColetadas: f.linhas.length, coletaId: coleta.id },
+          update: { linhasPortal: f.linhasInformadasPelaFonte, linhasColetadas: f.linhas.length, coletaId: coleta.id },
+        });
+        return { linhas: f.linhas.length };
+      });
+    }
   } finally {
     await con.fechar();
+  }
+
+  if (op.siconfi) {
+    const gravar = async (inds: IndicadorC[]) => {
+      for (const i of inds)
+        await db.indicadorFiscal.upsert({
+          where: { prefeituraId_ano_periodo_relatorio_chave: { prefeituraId, ano: i.ano, periodo: i.periodo, relatorio: i.relatorio, chave: i.chave } },
+          create: { ...i, prefeituraId, coletaId: coleta.id },
+          update: { valor: i.valor, coletaId: coleta.id },
+        });
+    };
+    await passo('siconfi rgf', async () => {
+      const achados = [];
+      for (const q of [1, 2, 3]) {
+        const r = await rgf(pref.ibge, op.ano, q);
+        if (!r.indicadores.length) continue;
+        await guardarBrutos(db, prefeituraId, coleta.id, 'siconfi', [{ tipo: 'rgf', referencia: `${op.ano}-Q${q}`, nomeSugerido: `siconfi_rgf_${op.ano}_q${q}.json`, conteudo: r.bruto }]);
+        await gravar(r.indicadores);
+        achados.push(`Q${q}`);
+      }
+      return { quadrimestres: achados };
+    });
+    // RREO: mínimos de educação, FUNDEB e saúde, metas fiscais e restos a pagar (Anexo 14, já apurados pela contabilidade)
+    await passo('siconfi rreo', async () => {
+      const achados = [];
+      for (let b = 1; b <= 6; b++) {
+        const r = await rreoSimplificado(pref.ibge, op.ano, b);
+        if (!r.indicadores.length) continue;
+        await guardarBrutos(db, prefeituraId, coleta.id, 'siconfi', [{ tipo: 'rreo', referencia: `${op.ano}-B${b}`, nomeSugerido: `siconfi_rreo14_${op.ano}_b${b}.json`, conteudo: r.bruto }]);
+        await gravar(r.indicadores);
+        achados.push(`B${b}`);
+      }
+      return { bimestres: achados };
+    });
   }
 
   await passo('ligacoes contrato-empenho', () => ligarContratosEmpenhos(db, prefeituraId));
   let conc: ResultadoConciliacao | null = null;
   await passo('conciliacao', async () => (conc = await conciliar(db, op.ano)));
+  await passo('regras', () => executarRegras(prefeituraId));
 
   const divergente = conc !== null && (conc as ResultadoConciliacao).divergencias > 0;
   const status = erros.length ? 'falha' : divergente ? 'divergencia' : 'ok';

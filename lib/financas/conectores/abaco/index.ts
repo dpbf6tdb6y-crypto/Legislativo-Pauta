@@ -5,7 +5,7 @@ import { centavos } from '@/lib/financas/dinheiro';
 import type { ComBruto, Conector, ContratoC, DespesaOrgaoMesC, EmpenhoC, FolhaLinhaC, FolhaMesC, ReceitaContaMesC, RestoPagarC, RetencaoC } from '../tipos';
 import { conferirEmpenho, lerContratosXml, lerDespesaOrgaoXml, lerEmpenhoHtml, lerReceitaXml, lerRestosAPagarXml, lerRetencoesHtml } from './leitores';
 
-const AGENTE = 'compliance-gavix/0.1 (leitura de dados publicos)';
+const AGENTE = 'segov-gestao/1.0 (leitura de dados publicos)';
 
 export interface ConfigAbaco {
   base: string; // https://mgnl.abaco.com.br/transparencia/servlet

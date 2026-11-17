@@ -36,3 +36,14 @@ html { -webkit-text-size-adjust: 100%; }
   /* áreas de toque confortáveis */
   main button, main a { min-height: 32px; }
 }
+
+/* Gestão $$$: classes das telas vindas do compliance.gavix (app/dashboard/fazenda/(modulos)) */
+.tabela { @apply w-full text-sm border-collapse; }
+.tabela th { @apply text-left font-semibold text-xs uppercase tracking-wide text-slate-500 border-b border-slate-200 py-2 px-2 bg-slate-50; }
+.tabela td { @apply border-b border-slate-100 py-1.5 px-2 align-top; }
+.tabela td.n, .tabela th.n { @apply text-right tabular-nums whitespace-nowrap; }
+.cartao { @apply bg-white border border-slate-200 rounded-lg p-4; }
+.btn { @apply inline-flex items-center gap-1 rounded-md bg-emerald-600 text-white text-sm px-3 py-1.5 hover:opacity-90 disabled:opacity-50; }
+.btn-sec { @apply inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white text-sm px-3 py-1.5 hover:bg-slate-50; }
+.campo { @apply border border-slate-300 rounded-md px-2 py-1.5 text-sm bg-white; }
+.selo { @apply inline-block rounded px-1.5 py-0.5 text-xs font-medium; }

@@ -191,8 +191,8 @@ export function lerEmpenhoHtml(html: string, idOrigem: number): EmpenhoC | null 
  * pago = liquidado - a pagar. Se não bater, o grid pode estar paginado/incompleto.
  */
 export function conferirEmpenho(e: EmpenhoC): string | null {
-  const liq = e.liquidacoes.reduce((s, x) => s + x.valor, 0n);
-  const pag = e.pagamentos.reduce((s, x) => s + x.valor, 0n);
+  const liq = e.liquidacoes.reduce((s, x) => s + x.valor, BigInt(0));
+  const pag = e.pagamentos.reduce((s, x) => s + x.valor, BigInt(0));
   if (liq !== e.valor - e.anulado - e.aLiquidar) return `liquidações (${liq}) ≠ empenhado − anulado − a liquidar (${e.valor - e.anulado - e.aLiquidar})`;
   if (pag !== liq - e.aPagar) return `pagamentos (${pag}) ≠ liquidado − a pagar (${liq - e.aPagar})`;
   return null;
@@ -224,7 +224,7 @@ export function lerRetencoesHtml(html: string, pagamentoIdOrigem: number): Reten
     valor: centavos(l[l.length - 1]),
   }));
   const total = html.match(/Total de Consigna[^:]*:\s*R\$\s*R\$\s*([\d.,-]+)/)?.[1];
-  const soma = itens.reduce((s, x) => s + x.valor, 0n);
+  const soma = itens.reduce((s, x) => s + x.valor, BigInt(0));
   if (total !== undefined && centavos(total) !== soma)
     throw new Error(`pagamento ${pagamentoIdOrigem}: descontos somam ${soma}, a página informa ${centavos(total)} (quadro incompleto?)`);
   return itens;

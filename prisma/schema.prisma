@@ -28,6 +28,11 @@ model User {
   podeGerenciarVereadores  Boolean  @default(true)
   podeVerAuditoria         Boolean  @default(true)
   createdAt                DateTime @default(now())
+
+  // Gestão $$$: perfil do usuário nos módulos financeiros (vazio = sem acesso aos módulos;
+  // Master/Admin sem perfil entram como "administrador"). Secretaria: só a própria (gestaoOrgaoCod).
+  gestaoPerfil   String?
+  gestaoOrgaoCod String  @default("")
 }
 
 model Vereador {
@@ -664,4 +669,293 @@ model ReceitaContaMes {
 
   @@id([prefeituraId, ano, mes, contaCod])
   @@map("fin_receita_conta_mes")
+}
+
+// ---------- Gestão $$$: acessos e chaves (liga/desliga de módulos) ----------
+
+model RegistroAcesso {
+  id           Int      @id @default(autoincrement())
+  prefeituraId String
+  usuarioId    String
+  usuarioNome  String
+  perfil       String
+  quando       DateTime @default(now())
+  acao         String // ver | buscar | exportar | login | alterar
+  tela         String
+  detalhe      String   @default("")
+
+  @@index([prefeituraId, quando])
+  @@map("fin_registro_acesso")
+}
+
+model Chave {
+  prefeituraId String
+  nome         String
+  ligada       Boolean
+  alteradoPor  String   @default("sistema")
+  alteradoEm   DateTime @default(now())
+
+  @@id([prefeituraId, nome])
+  @@map("fin_chave")
+}
+
+model ChaveHistorico {
+  id           Int      @id @default(autoincrement())
+  prefeituraId String
+  nome         String
+  de           Boolean
+  para         Boolean
+  por          String
+  quando       DateTime @default(now())
+
+  @@map("fin_chave_historico")
+}
+
+// ---------- Gestão $$$: pessoal ----------
+
+model FolhaMes {
+  prefeituraId    String
+  anoMes          String // 2026/10
+  linhasPortal    Int
+  linhasColetadas Int
+  coletaId        Int
+
+  @@id([prefeituraId, anoMes])
+  @@map("fin_folha_mes")
+}
+
+// LGPD: sem CPF, sem dados bancários, sem detalhe de descontos, situação resumida.
+// O nome só aparece na tela para os perfis autorizados e com a chave folha_nomes ligada.
+model FolhaLinha {
+  id           Int    @id @default(autoincrement())
+  prefeituraId String
+  anoMes       String
+  seq          Int // ordem da linha no portal
+  matricula    String
+  nome         String
+  cargo        String
+  ocupacao     String
+  tipoVinculo  String
+  situacao     String // em exercício | afastado | desligado | aposentado/pensionista | outro
+  lotacao      String
+  vencimentos  BigInt
+  bruto        BigInt
+  previdencia  BigInt
+  desconto     BigInt
+  irrf         BigInt
+  liquido      BigInt
+
+  @@unique([prefeituraId, anoMes, seq])
+  @@index([prefeituraId, nome])
+  @@index([prefeituraId, matricula])
+  @@map("fin_folha_linha")
+}
+
+// ---------- Gestão $$$: indicadores fiscais (SICONFI) ----------
+
+model IndicadorFiscal {
+  prefeituraId String
+  ano          Int
+  periodo      Int
+  relatorio    String // RGF | RREO
+  chave        String // rcl | dtp | dtp_pct | limite_max_pct | ...
+  valor        String // decimal em texto
+  coletaId     Int
+
+  @@id([prefeituraId, ano, periodo, relatorio, chave])
+  @@map("fin_indicador_fiscal")
+}
+
+// ---------- Gestão $$$: regras e apontamentos ----------
+
+model Regra {
+  prefeituraId String
+  codigo       String
+  titulo       String
+  baseLegal    String
+  descricao    String
+  parametros   String    @default("{}")
+  estado       String    @default("proposta") // proposta | aprovada | desligada
+  decididoPor  String?
+  decididoEm   DateTime?
+
+  @@id([prefeituraId, codigo])
+  @@map("fin_regra")
+}
+
+model Apontamento {
+  id              Int       @id @default(autoincrement())
+  prefeituraId    String
+  regraCodigo     String
+  chaveUnica      String // evita duplicar o mesmo apontamento
+  entidade        String // empenho | contrato | indicador
+  entidadeId      String
+  resumo          String
+  valorEncontrado String
+  criadoEm        DateTime  @default(now())
+  status          String    @default("para_analise") // para_analise | procedente | improcedente
+  analisadoPor    String?
+  analisadoEm     DateTime?
+  nota            String?
+
+  @@unique([prefeituraId, chaveUnica])
+  @@index([prefeituraId, status])
+  @@map("fin_apontamento")
+}
+
+// ---------- Gestão $$$: auditoria por secretaria (cobrança em reunião) ----------
+// O sistema não decide o que é irregular: um ponto de auditoria é uma cobrança registrada,
+// com responsável, prazo e o histórico de respostas. O histórico não se apaga.
+
+model ResponsavelSecretaria {
+  prefeituraId String
+  orgaoCod     String
+  nome         String
+  cargo        String   @default("")
+  alteradoPor  String
+  alteradoEm   DateTime @default(now())
+
+  @@id([prefeituraId, orgaoCod])
+  @@map("fin_responsavel_secretaria")
+}
+
+model PontoAuditoria {
+  id           Int       @id @default(autoincrement())
+  prefeituraId String
+  orgaoCod     String
+  orgaoNome    String
+  titulo       String
+  descricao    String    @default("")
+  baseLegal    String    @default("")
+  origem       String // manual | apontamento | sugestao
+  origemRef    String    @default("") // apontamento:12, sugestao:saldo:09:2026 (evita criar o mesmo ponto duas vezes)
+  prazo        DateTime?
+  status       String    @default("aberto") // aberto | respondido | resolvido | cancelado
+  criadoPor    String
+  criadoEm     DateTime  @default(now())
+  atualizadoEm DateTime  @default(now())
+
+  eventos EventoAuditoria[]
+
+  @@index([prefeituraId, orgaoCod, status])
+  @@map("fin_ponto_auditoria")
+}
+
+model EventoAuditoria {
+  id           Int            @id @default(autoincrement())
+  prefeituraId String
+  pontoId      Int
+  tipo         String // criado | resposta | cobranca | status | prazo | nota
+  texto        String         @default("")
+  por          String // usuário que registrou
+  emNomeDe     String         @default("") // quem respondeu pela secretaria (ofício, e-mail, na reunião)
+  quando       DateTime       @default(now())
+  ponto        PontoAuditoria @relation(fields: [pontoId], references: [id], onDelete: Cascade)
+
+  @@index([prefeituraId, pontoId])
+  @@map("fin_evento_auditoria")
+}
+
+model ReuniaoSecretaria {
+  id            Int      @id @default(autoincrement())
+  prefeituraId  String
+  orgaoCod      String
+  quando        DateTime @default(now())
+  registradoPor String
+  participantes String   @default("")
+  notas         String   @default("")
+
+  @@index([prefeituraId, orgaoCod, quando])
+  @@map("fin_reuniao_secretaria")
+}
+
+// ---------- Gestão $$$: fila de documentos para assinar ----------
+// A secretaria envia, o sistema confere, o controlador/jurídico dá parecer e o prefeito decide.
+// Cada passo fica registrado, inclusive o que o prefeito tinha diante de si ao assinar.
+
+model DocumentoAssinatura {
+  id            Int       @id @default(autoincrement())
+  prefeituraId  String
+  tipo          String // empenho | pagamento | aditivo | contrato_novo | nomeacao | outro
+  assunto       String
+  descricao     String    @default("")
+  valor         BigInt    @default(0) // centavos; nomeação: remuneração mensal
+  dataAto       DateTime
+  credorDoc     String    @default("")
+  credorNome    String    @default("")
+  orgaoCod      String
+  orgaoNome     String
+  contrato      String    @default("") // 252/2025
+  prazo         DateTime? // até quando precisa ser assinado
+  status        String    @default("em_conferencia") // em_conferencia | para_assinatura | assinado | devolvido | cancelado
+  checagens     String    @default("[]") // JSON: última conferência automática
+  checadoEm     DateTime  @default(now())
+  dadosDe       String    @default("")
+  parecer       String? // pode_assinar | com_ressalva | nao_assinar
+  parecerTexto  String    @default("")
+  parecerPor    String?
+  parecerEm     DateTime?
+  decisaoPor    String?
+  decisaoEm     DateTime?
+  decisaoTexto  String    @default("")
+  enviadoPor    String
+  enviadoPorId  String    @default("")
+  enviadoPerfil String
+  enviadoEm     DateTime  @default(now())
+
+  eventos EventoDocumento[]
+  anexos  AnexoDocumento[]
+
+  @@index([prefeituraId, status])
+  @@index([prefeituraId, orgaoCod])
+  @@map("fin_documento_assinatura")
+}
+
+model EventoDocumento {
+  id           Int                 @id @default(autoincrement())
+  prefeituraId String
+  documentoId  Int
+  tipo         String // enviado | conferido | parecer | assinado | devolvido | cancelado | nota | anexo
+  texto        String              @default("")
+  por          String
+  quando       DateTime            @default(now())
+  documento    DocumentoAssinatura @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+
+  @@index([prefeituraId, documentoId])
+  @@map("fin_evento_documento")
+}
+
+// PDF do documento. O arquivo fica em FIN_DADOS_DIR/<prefeitura>/anexos/, com o nome = SHA-256 do conteúdo.
+// Não se apaga: "retirar" só esconde, e o hash entra na ciência do prefeito (prova de qual arquivo ele viu).
+model AnexoDocumento {
+  id           Int                 @id @default(autoincrement())
+  prefeituraId String
+  documentoId  Int
+  nome         String // nome original do arquivo, só para exibir
+  bytes        Int
+  sha256       String
+  enviadoPor   String
+  enviadoEm    DateTime            @default(now())
+  removidoPor  String?
+  removidoEm   DateTime?
+  documento    DocumentoAssinatura @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+
+  @@index([prefeituraId, documentoId])
+  @@map("fin_anexo_documento")
+}
+
+// Relatório de auditoria interna gerado e guardado: o conteúdo (JSON) não muda depois de gravado e o
+// SHA-256 prova o que o relatório mostrava naquela data.
+model RelatorioAuditoria {
+  id           Int      @id @default(autoincrement())
+  prefeituraId String
+  geradoEm     DateTime @default(now())
+  geradoPor    String
+  conteudo     String // JSON
+  sha256       String
+  criticos     Int
+  atencao      Int
+
+  @@index([prefeituraId, geradoEm])
+  @@map("fin_relatorio_auditoria")
 }

@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { normalizaAcessos } from "@/lib/acessos-servidor";
+import { normalizaPerfilGestao } from "@/lib/financas/perfis";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -17,7 +18,7 @@ export async function GET() {
       id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true, createdAt: true,
       acessos: true, fluxoResumido: true, senhaAreaRestrita: true, podeUsarMicrofone: true, podeVerConfiguracoes: true,
       podeCriar: true, podeEditar: true, podeExcluir: true, podeImportar: true, podeExportar: true,
-      podeGerenciarVereadores: true, podeVerAuditoria: true,
+      podeGerenciarVereadores: true, podeVerAuditoria: true, gestaoPerfil: true, gestaoOrgaoCod: true,
     },
   });
   return NextResponse.json(usuarios);
@@ -41,6 +42,10 @@ export async function POST(req: Request) {
   if (!nome || !email || !senha) return NextResponse.json({ error: "Campos obrigatórios" }, { status: 400 });
   if (senha.length < 6) return NextResponse.json({ error: "A senha deve ter no mínimo 6 caracteres." }, { status: 400 });
 
+  // Gestão $$$: o perfil nos módulos financeiros só o Master define
+  const gestao = meuPerfil === "master" ? normalizaPerfilGestao(body.gestaoPerfil, body.gestaoOrgaoCod) : { gestaoPerfil: null, gestaoOrgaoCod: "" };
+  if ("erro" in gestao) return NextResponse.json({ error: gestao.erro }, { status: 400 });
+
   try {
     const acessos = normalizaAcessos(body.acessos);
     // Ind. liberada nos acessos por menu também libera a área de Indicações (dados sigilosos)
@@ -56,6 +61,7 @@ export async function POST(req: Request) {
         podeCriar: acessos ? algumCadastro : !!body.podeCriar, podeEditar: acessos ? algumCadastro : !!body.podeEditar, podeExcluir: !!body.podeExcluir,
         podeImportar: !!body.podeImportar, podeExportar: !!body.podeExportar,
         podeGerenciarVereadores: !!body.podeGerenciarVereadores, podeVerAuditoria: !!body.podeVerAuditoria,
+        gestaoPerfil: gestao.gestaoPerfil, gestaoOrgaoCod: gestao.gestaoOrgaoCod,
       },
       select: { id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true },
     });

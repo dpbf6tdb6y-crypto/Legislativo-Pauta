@@ -2,9 +2,9 @@
 
 /** "R$ -76.000,00" | "4361,55" | "7500.00" | "  2534.14 " -> centavos */
 export function centavos(txt: string | number | null | undefined): bigint {
-  if (txt === null || txt === undefined) return 0n;
+  if (txt === null || txt === undefined) return BigInt(0);
   let s = String(txt).replace(/R\$/g, '').replace(/\s/g, '');
-  if (s === '' || s === '-') return 0n;
+  if (s === '' || s === '-') return BigInt(0);
   const neg = s.startsWith('-');
   if (neg) s = s.slice(1);
   let inteiro: string, frac: string;
@@ -22,33 +22,33 @@ export function centavos(txt: string | number | null | undefined): bigint {
   }
   if (!/^\d*$/.test(inteiro) || !/^\d*$/.test(frac)) throw new Error(`valor inválido: ${txt}`);
   frac = (frac + '00').slice(0, 2);
-  const v = BigInt(inteiro || '0') * 100n + BigInt(frac);
+  const v = BigInt(inteiro || '0') * BigInt(100) + BigInt(frac);
   return neg ? -v : v;
 }
 
 /** centavos -> "R$ 1.234,56" */
 export function brl(c: bigint | number | null | undefined): string {
   const v = BigInt(c ?? 0);
-  const neg = v < 0n;
+  const neg = v < BigInt(0);
   const a = neg ? -v : v;
-  const reais = (a / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  const cent = (a % 100n).toString().padStart(2, '0');
+  const reais = (a / BigInt(100)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const cent = (a % BigInt(100)).toString().padStart(2, '0');
   return `${neg ? '-' : ''}R$ ${reais},${cent}`;
 }
 
 export function somar(vs: Iterable<bigint>): bigint {
-  let t = 0n;
+  let t = BigInt(0);
   for (const v of vs) t += v;
   return t;
 }
 
 /** percentual a/b com 2 casas, como texto */
 export function pct(a: bigint, b: bigint): string {
-  if (b === 0n) return '—';
-  const x = (a * 10000n) / b;
-  const neg = x < 0n;
+  if (b === BigInt(0)) return '—';
+  const x = (a * BigInt(10000)) / b;
+  const neg = x < BigInt(0);
   const ax = neg ? -x : x;
-  return `${neg ? '-' : ''}${ax / 100n},${(ax % 100n).toString().padStart(2, '0')}%`;
+  return `${neg ? '-' : ''}${ax / BigInt(100)},${(ax % BigInt(100)).toString().padStart(2, '0')}%`;
 }
 
 /** centavos -> "R$ 260,5 mi" / "R$ 1,35 bi" / "R$ 830 mil" (só para exibir; as contas continuam em centavos) */

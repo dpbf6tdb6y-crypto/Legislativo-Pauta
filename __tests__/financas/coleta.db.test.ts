@@ -27,7 +27,7 @@ describe('abrir o navegador com novas tentativas', () => {
 descreverComBanco('coleta com banco (Postgres de teste)', () => {
   const DEMO = 'teste-demo', OUTRA = 'teste-outra', RUIM = 'teste-ruim';
   const pastaDemo = path.resolve('__tests__/financas/fixtures/demo');
-  const op = { ano: 2026, meses: [0, 10], empenhos: true, contratos: true, log: () => {}, esperasAbrirMs: [1, 1] };
+  const op = { ano: 2026, meses: [0, 10], folha: [] as string[], siconfi: false, empenhos: true, contratos: true, log: () => {}, esperasAbrirMs: [1, 1] };
 
   // importados aqui dentro: o cliente Prisma só é criado quando há banco de teste
   let m: {
@@ -89,7 +89,6 @@ descreverComBanco('coleta com banco (Postgres de teste)', () => {
     const fontes = await m.fr.frescorFontes(db);
     expect(fontes.find((f) => f.chave === 'despesa')?.baixadoEm).not.toBeNull();
     expect(fontes.find((f) => f.chave === 'empenhos')?.baixadoEm).not.toBeNull();
-    expect(fontes.map((f) => f.chave)).not.toContain('folha');
   });
 
   it('quando a fonte não abre, a coleta fica "falha" com o motivo, e não "rodando"', async () => {

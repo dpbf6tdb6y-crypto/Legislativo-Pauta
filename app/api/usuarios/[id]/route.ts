@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { normalizaAcessos } from "@/lib/acessos-servidor";
+import { normalizaPerfilGestao } from "@/lib/financas/perfis";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -47,6 +48,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     podeGerenciarVereadores: !!body.podeGerenciarVereadores,
     podeVerAuditoria: !!body.podeVerAuditoria,
   };
+
+  // Gestão $$$: o perfil nos módulos financeiros (prefeito, controlador...) só o Master define
+  if (meuPerfil === "master" && "gestaoPerfil" in body) {
+    const g = normalizaPerfilGestao(body.gestaoPerfil, body.gestaoOrgaoCod);
+    if ("erro" in g) return NextResponse.json({ error: g.erro }, { status: 400 });
+    data.gestaoPerfil = g.gestaoPerfil;
+    data.gestaoOrgaoCod = g.gestaoOrgaoCod;
+  }
 
   if (body.novaSenha) {
     if (String(body.novaSenha).length < 6) {
