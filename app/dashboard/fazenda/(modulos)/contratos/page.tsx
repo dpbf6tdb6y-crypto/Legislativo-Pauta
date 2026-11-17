@@ -109,7 +109,7 @@ export default async function Contratos({ searchParams }: { searchParams: Params
         <Botao ativo={!!maior && filtros.credor === maior.nome} aplicar={{ credor: maior?.nome }} desfazer={{ credor: undefined }} titulo={maior ? `Filtrar os contratos de ${maior.nome}` : 'Sem contratos'}>
           <Rotulo>Maior fornecedor</Rotulo><div className="text-sm font-semibold leading-tight truncate">{maior?.nome ?? '—'}</div><Rotulo>{maior ? `${brlCurto(maior.valor)} · ${pct(maior.valor, resumo.valorTotal)}` : ''}</Rotulo>
         </Botao>
-        <Botao ativo={filtros.ligacao === 'empenhado'} aplicar={{ ligacao: 'empenhado' }} desfazer={{ ligacao: undefined }} titulo={`Empenhado nos contratos da tabela: ${brl(totEmp)}. Clique para ver só os que têm empenho ligado`}>
+        <Botao ativo={filtros.ligacao === 'empenhado'} aplicar={{ ligacao: 'empenhado' }} desfazer={{ ligacao: undefined }} titulo={`Empenhado nos contratos da tabela: ${brl(totEmp)}. Clique para ver só os que têm empenho`}>
           <Rotulo>Empenhado</Rotulo><div className="text-xl font-bold tabular-nums">{brlCurto(totEmp)}</div><Rotulo>{pct(totEmp, resumo.valorTotal)} do contratado</Rotulo>
         </Botao>
         <Botao ativo={filtros.ligacao === 'liquidado'} aplicar={{ ligacao: 'liquidado' }} desfazer={{ ligacao: undefined }} titulo={`Liquidado nos contratos da tabela: ${brl(totLiq)}. Clique para ver só os que têm liquidação`}>
@@ -125,7 +125,7 @@ export default async function Contratos({ searchParams }: { searchParams: Params
         {' '}<b>Secretaria</b> e <b>empenhado/pago</b> vêm dos empenhos ligados ao contrato: o portal não informa essa ligação, ela é deduzida
         (<b>alta</b>: descrição do empenho cita o contrato e o CNPJ confere; <b>média</b>: único contrato vigente do credor na data). Contrato sem empenho ligado fica sem secretaria. Valores parciais: só empenhos já coletados.
       </p>
-      <form method="get" className="cartao overflow-x-auto p-0">
+      <form method="get" key={JSON.stringify([filtros, coluna, dir])} className="cartao overflow-x-auto p-0">
         <input type="hidden" name="ord" value={coluna} />
         <input type="hidden" name="dir" value={dir} />
         <input type="hidden" name="ligacao" value={filtros.ligacao} />
@@ -139,9 +139,9 @@ export default async function Contratos({ searchParams }: { searchParams: Params
               <Cab col="vigencia">Vigência</Cab>
               <Cab col="prazo">Prazo</Cab>
               <Cab col="valor" n>Valor atual</Cab>
-              <Cab col="empenhado" n>Empenhado ligado</Cab>
-              <Cab col="liquidado" n>Liquidado ligado</Cab>
-              <Cab col="pago" n>Pago ligado</Cab>
+              <Cab col="empenhado" n>Empenhado</Cab>
+              <Cab col="liquidado" n>Liquidado</Cab>
+              <Cab col="pago" n>Pago</Cab>
             </tr>
             <tr className="bg-slate-50 align-top">
               <th className="normal-case font-normal">
