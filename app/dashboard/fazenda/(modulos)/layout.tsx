@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 export default async function LayoutModulos({ children }: { children: ReactNode }) {
   const s = await sessaoAtual();
   // sem perfil da Gestão: só a página (a de "sem permissão" explica o que falta)
-  if (!s) return <div className="max-w-7xl mx-auto">{children}</div>;
+  if (!s) return <div className="max-w-[1800px] mx-auto">{children}</div>;
 
   const db = dbDa(s.prefeituraId);
   const ultima = await db.coleta.findFirst({ where: { status: { in: STATUS_TERMINADA } }, orderBy: { id: 'desc' } });
@@ -30,7 +30,7 @@ export default async function LayoutModulos({ children }: { children: ReactNode 
   const itens = menuDoPerfil(s.perfil);
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-[1800px] mx-auto">
       <div className="bg-white border border-slate-200 rounded-xl mb-4 overflow-hidden">
         <div className={`text-xs px-4 py-1.5 ${cor}`}>
           <span className="float-right opacity-80 ml-3">{s.nome} · {PERFIS[s.perfil]?.nome}</span>

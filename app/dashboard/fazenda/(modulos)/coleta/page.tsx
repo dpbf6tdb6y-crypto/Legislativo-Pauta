@@ -62,7 +62,7 @@ export default function SituacaoColetaPage() {
   const semColeta = d && d.coletas.length === 0;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5 pb-8">
+    <div className="space-y-5 pb-8">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Situação da coleta</h1>
