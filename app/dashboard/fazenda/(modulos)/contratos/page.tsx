@@ -129,7 +129,11 @@ export default async function Contratos({ searchParams }: { searchParams: Params
         <input type="hidden" name="ord" value={coluna} />
         <input type="hidden" name="dir" value={dir} />
         <input type="hidden" name="ligacao" value={filtros.ligacao} />
-        <table className="tabela">
+        <table className="tabela table-fixed w-full min-w-[1100px] !text-xs">
+          <colgroup>
+            <col style={{ width: '7%' }} /><col style={{ width: '10%' }} /><col style={{ width: '13%' }} /><col style={{ width: '16%' }} /><col style={{ width: '8%' }} />
+            <col style={{ width: '9%' }} /><col style={{ width: '9%' }} /><col style={{ width: '9%' }} /><col style={{ width: '9%' }} /><col style={{ width: '10%' }} />
+          </colgroup>
           <thead>
             <tr>
               <Cab col="contrato">Contrato</Cab>
@@ -145,24 +149,24 @@ export default async function Contratos({ searchParams }: { searchParams: Params
             </tr>
             <tr className="bg-slate-50 align-top">
               <th className="normal-case font-normal">
-                <input name="contrato" defaultValue={filtros.contrato} placeholder="252/2025" className="campo w-24 py-1" />
-                <select name="situacao" defaultValue={filtros.situacao || 'todas'} className="campo w-28 py-1 mt-1 block">
+                <input name="contrato" defaultValue={filtros.contrato} placeholder="252/2025" className="campo !text-xs w-full py-1 font-normal" />
+                <select name="situacao" defaultValue={filtros.situacao || 'todas'} className="campo !text-xs w-full py-1 mt-1 block font-normal">
                   <option value="todas">Todas as situações</option>
                   {situacoes.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
               </th>
               <th className="normal-case font-normal">
-                <select name="secretaria" defaultValue={filtros.secretaria} className="campo w-44 py-1">
+                <select name="secretaria" defaultValue={filtros.secretaria} className="campo !text-xs w-full py-1 font-normal">
                   <option value="">Todas</option>
                   <option value="__sem">Sem secretaria (sem empenho)</option>
                   {secretarias.map((x) => <option key={x} value={x}>{x}</option>)}
                 </select>
               </th>
-              <th className="normal-case font-normal"><input name="credor" defaultValue={filtros.credor} placeholder="nome ou CNPJ" className="campo w-40 py-1" /></th>
-              <th className="normal-case font-normal"><input name="objeto" defaultValue={filtros.objeto} placeholder="palavra do objeto" className="campo w-40 py-1" /></th>
+              <th className="normal-case font-normal"><input name="credor" defaultValue={filtros.credor} placeholder="nome ou CNPJ" className="campo !text-xs w-full py-1 font-normal" /></th>
+              <th className="normal-case font-normal"><input name="objeto" defaultValue={filtros.objeto} placeholder="palavra do objeto" className="campo !text-xs w-full py-1 font-normal" /></th>
               <th />
               <th className="normal-case font-normal">
-                <select name="prazo" defaultValue={filtros.prazo} className="campo w-36 py-1">
+                <select name="prazo" defaultValue={filtros.prazo} className="campo !text-xs w-full py-1 font-normal">
                   <option value="">Todos</option>
                   <option value="30">Vencem em até 30 dias</option>
                   <option value="60">Vencem em até 60 dias</option>
@@ -171,8 +175,8 @@ export default async function Contratos({ searchParams }: { searchParams: Params
                   <option value="semfim">Sem data de fim</option>
                 </select>
               </th>
-              <th className="n normal-case font-normal"><input name="valorMin" defaultValue={filtros.valorMin} placeholder="mínimo R$" inputMode="decimal" className="campo w-28 py-1 text-right" /></th>
-              <th colSpan={3} className="normal-case font-normal"><button className="btn-sec py-1">Filtrar</button></th>
+              <th className="n normal-case font-normal"><input name="valorMin" defaultValue={filtros.valorMin} placeholder="mínimo R$" inputMode="decimal" className="campo !text-xs w-full py-1 text-right font-normal" /></th>
+              <th colSpan={3} className="normal-case font-normal"><button className="btn-sec !text-xs py-1">Filtrar</button></th>
             </tr>
           </thead>
           <tbody>
@@ -182,16 +186,16 @@ export default async function Contratos({ searchParams }: { searchParams: Params
               const ligado = c.alta + c.media > 0;
               return (
                 <tr key={c.id}>
-                  <td className="whitespace-nowrap"><Link className="text-emerald-700 hover:underline" href={`/dashboard/fazenda/contratos/${c.id}`}>{c.numero}/{c.ano}</Link><div className="text-xs text-slate-500">{c.situacao}</div></td>
-                  <td className="text-xs max-w-[14rem]">{c.secretaria ? <>{c.secretaria}{c.outrasSecretarias > 0 && <span className="text-slate-500" title="Há empenhos deste contrato em outras secretarias; aparece a que mais empenhou"> · +{c.outrasSecretarias}</span>}</> : <span className="text-slate-400">—</span>}</td>
-                  <td>{c.fornecedorNome}<div className="text-xs text-slate-500">{c.fornecedorDoc}</div></td>
-                  <td className="max-w-md text-xs">{c.objeto.slice(0, 160)}{c.objeto.length > 160 ? '…' : ''}</td>
-                  <td className="whitespace-nowrap text-xs">{d(c.inicio)} → {d(c.fim)}</td>
-                  <td className="whitespace-nowrap"><span className={`selo ${SELO[prazo.tom]}`}>{prazo.texto}</span></td>
+                  <td><Link className="text-emerald-700 hover:underline" href={`/dashboard/fazenda/contratos/${c.id}`}>{c.numero}/{c.ano}</Link><div className="text-slate-500">{c.situacao}</div></td>
+                  <td>{c.secretaria ? <>{c.secretaria}{c.outrasSecretarias > 0 && <span className="text-slate-500" title="Há empenhos deste contrato em outras secretarias; aparece a que mais empenhou"> · +{c.outrasSecretarias}</span>}</> : <span className="text-slate-400">—</span>}</td>
+                  <td>{c.fornecedorNome}<div className="text-slate-500">{c.fornecedorDoc}</div></td>
+                  <td>{c.objeto.slice(0, 160)}{c.objeto.length > 160 ? '…' : ''}</td>
+                  <td>{d(c.inicio)}<div className="text-slate-500">até {d(c.fim)}</div></td>
+                  <td><span className={`selo !text-xs ${SELO[prazo.tom]}`}>{prazo.texto}</span></td>
                   <td className="n">{brl(c.valorAtual)}</td>
                   <td className="n">{ligado ? brl(c.empenhado) : '—'}</td>
                   <td className="n">{ligado ? brl(c.liquidado) : '—'}</td>
-                  <td className="n">{ligado ? brl(c.pago) : '—'}<div className="text-xs text-slate-500 font-normal">{ligado ? `${c.alta} alta · ${c.media} média` : 'sem ligação'}</div></td>
+                  <td className="n">{ligado ? brl(c.pago) : '—'}<div className="text-slate-500 font-normal">{ligado ? `${c.alta} alta · ${c.media} média` : 'sem ligação'}</div></td>
                 </tr>
               );
             })}
