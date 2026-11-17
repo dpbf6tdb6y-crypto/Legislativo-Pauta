@@ -413,3 +413,255 @@ model AndamentoPedido {
 
   @@index([pedidoId])
 }
+
+// =====================================================================
+// Gestão $$$: dados financeiros da Prefeitura (base vinda do compliance.gavix)
+// Tabelas com prefixo fin_. Dinheiro sempre em CENTAVOS inteiros (BigInt).
+// Toda tabela tem prefeituraId ("nova-lima"): o código de coleta usa um
+// cliente preso à prefeitura (lib/financas/db.ts).
+// =====================================================================
+
+model Prefeitura {
+  id             String   @id
+  nome           String
+  uf             String
+  ibge           Int
+  conector       String // abaco | arquivo
+  conectorConfig String   @default("{}")
+  criadoEm       DateTime @default(now())
+
+  @@map("fin_prefeitura")
+}
+
+model Coleta {
+  id                 Int       @id @default(autoincrement())
+  prefeituraId       String
+  inicio             DateTime  @default(now())
+  fim                DateTime?
+  status             String // rodando | ok | divergencia | falha | interrompida
+  portalAtualizadoEm String    @default("")
+  resumo             String    @default("{}") // JSON
+  erros              String    @default("")
+
+  @@index([prefeituraId, inicio])
+  @@map("fin_coleta")
+}
+
+// arquivo baixado do portal: fica em disco por 30 dias; o SHA-256 fica aqui para sempre
+model ArquivoBruto {
+  id           Int       @id @default(autoincrement())
+  prefeituraId String
+  coletaId     Int
+  fonte        String
+  tipo         String
+  referencia   String
+  caminho      String
+  sha256       String
+  bytes        Int
+  baixadoEm    DateTime  @default(now())
+  apagadoEm    DateTime? // quando o arquivo saiu do disco (limpeza de 30 dias)
+
+  @@index([prefeituraId, tipo, baixadoEm])
+  @@map("fin_arquivo_bruto")
+}
+
+model DespesaOrgaoMes {
+  prefeituraId String
+  ano          Int
+  mes          Int // 0 = ano inteiro (acumulado)
+  orgaoCod     String
+  orgaoNome    String
+  dotInicial   BigInt
+  dotAtual     BigInt
+  empenhado    BigInt
+  liquidado    BigInt
+  pago         BigInt
+  coletaId     Int
+
+  @@id([prefeituraId, ano, mes, orgaoCod])
+  @@map("fin_despesa_orgao_mes")
+}
+
+model Empenho {
+  id             Int      @id @default(autoincrement())
+  prefeituraId   String
+  idOrigem       Int
+  numero         String
+  data           DateTime
+  ano            Int
+  tipo           String
+  orgao          String
+  unidade        String
+  credorDoc      String
+  credorNome     String
+  processo       String
+  natureza       String
+  contaDespesa   String
+  fonte          String
+  funcao         String
+  subfuncao      String
+  programa       String
+  projeto        String
+  descricao      String
+  contratoCitado String? // 0252/2025, extraído da descrição
+  valor          BigInt
+  anulado        BigInt
+  aLiquidar      BigInt
+  aPagar         BigInt
+  // a fonte publica valores que não fecham entre si (ex.: a liquidar negativo); gravado como veio, com o motivo
+  inconsistencia String?
+  atualizadoEm   DateTime @default(now())
+
+  liquidacoes Liquidacao[]
+  pagamentos  Pagamento[]
+
+  @@unique([prefeituraId, idOrigem])
+  @@index([prefeituraId, credorDoc])
+  @@index([prefeituraId, data])
+  @@index([prefeituraId, ano])
+  @@map("fin_empenho")
+}
+
+model Liquidacao {
+  id           Int      @id @default(autoincrement())
+  prefeituraId String
+  idOrigem     Int
+  empenhoId    Int
+  numero       String
+  data         DateTime
+  valor        BigInt
+  empenho      Empenho  @relation(fields: [empenhoId], references: [id], onDelete: Cascade)
+
+  @@unique([prefeituraId, idOrigem])
+  @@index([prefeituraId, data])
+  @@index([empenhoId])
+  @@map("fin_liquidacao")
+}
+
+model Pagamento {
+  id           Int      @id @default(autoincrement())
+  prefeituraId String
+  idOrigem     Int
+  empenhoId    Int
+  numero       String
+  data         DateTime
+  valor        BigInt
+  empenho      Empenho  @relation(fields: [empenhoId], references: [id], onDelete: Cascade)
+
+  @@unique([prefeituraId, idOrigem])
+  @@index([prefeituraId, data])
+  @@index([empenhoId])
+  @@map("fin_pagamento")
+}
+
+// descontos retidos em cada pagamento (IRRF, ISS, INSS, consignados). Ligados pelo id do pagamento NA FONTE,
+// para sobreviver à releitura do empenho (que recria os pagamentos). Lido uma vez por pagamento.
+model RetencaoLeitura {
+  id                Int      @id @default(autoincrement())
+  prefeituraId      String
+  pagamentoIdOrigem Int
+  total             BigInt
+  itens             Int
+  lidaEm            DateTime @default(now())
+
+  @@unique([prefeituraId, pagamentoIdOrigem])
+  @@map("fin_retencao_leitura")
+}
+
+model Retencao {
+  id                Int       @id @default(autoincrement())
+  prefeituraId      String
+  pagamentoIdOrigem Int
+  seq               Int
+  descricao         String
+  tipo              String
+  data              DateTime?
+  valor             BigInt
+
+  @@unique([prefeituraId, pagamentoIdOrigem, seq])
+  @@map("fin_retencao")
+}
+
+// restos a pagar do exercício (posição do dia). Os pagamentos com data ficam no empenho de origem (empenho de ano anterior).
+model RestoPagar {
+  id              Int      @id @default(autoincrement())
+  prefeituraId    String
+  idOrigem        Int
+  numero          String
+  anoOrigem       Int
+  exercicio       Int
+  tipo            String // P processado | N não processado | L não processado liquidado
+  empenhoIdOrigem Int
+  empenhoNumero   String
+  orgaoCod        String
+  orgaoNome       String
+  credorDoc       String
+  credorNome      String
+  inscrito        BigInt
+  anulado         BigInt
+  liquidado       BigInt
+  pago            BigInt
+  atualizadoEm    DateTime @default(now())
+
+  @@unique([prefeituraId, idOrigem])
+  @@index([prefeituraId, exercicio])
+  @@index([prefeituraId, empenhoIdOrigem])
+  @@map("fin_resto_pagar")
+}
+
+model Contrato {
+  id                Int       @id @default(autoincrement())
+  prefeituraId      String
+  idOrigem          Int
+  numero            String // 0252
+  ano               Int
+  assinatura        DateTime?
+  inicio            DateTime?
+  fim               DateTime?
+  publicacaoData    DateTime?
+  publicacaoVeiculo String
+  objeto            String
+  tipo              String
+  situacao          String
+  valorInicial      BigInt
+  valorAtual        BigInt
+  processo          String
+  modalidade        String
+  fornecedorDoc     String
+  fornecedorNome    String
+
+  @@unique([prefeituraId, idOrigem])
+  @@index([prefeituraId, fornecedorDoc])
+  @@map("fin_contrato")
+}
+
+// o portal não publica a ligação: ela é deduzida e o grau de certeza fica visível
+model LigacaoContratoEmpenho {
+  prefeituraId String
+  contratoId   Int
+  empenhoId    Int
+  certeza      String // alta | media
+  motivo       String
+
+  @@id([prefeituraId, contratoId, empenhoId])
+  @@index([prefeituraId, empenhoId])
+  @@map("fin_ligacao_contrato_empenho")
+}
+
+model ReceitaContaMes {
+  prefeituraId    String
+  ano             Int
+  mes             Int
+  contaCod        String
+  contaPai        String
+  nome            String
+  redutora        Boolean
+  previstoInicial BigInt
+  previstoAtual   BigInt
+  arrecAnterior   BigInt
+  arrecMes        BigInt
+  arrecAteMes     BigInt
+
+  @@id([prefeituraId, ano, mes, contaCod])
+  @@map("fin_receita_conta_mes")
+}

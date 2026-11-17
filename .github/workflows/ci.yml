@@ -9,6 +9,24 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Postgres VAZIO, só para os testes da Gestão $$$ (coleta, conferência, isolamento).
+    # Mesma versão do banco de produção (docker-compose.yml).
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: teste
+          POSTGRES_PASSWORD: teste
+          POSTGRES_DB: segov_teste
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U teste -d segov_teste"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://teste:teste@localhost:5432/segov_teste
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,8 +44,13 @@ jobs:
         run: npx tsc --noEmit
         continue-on-error: true
 
+      - name: Criar as tabelas no banco de teste (as mesmas migrações da produção)
+        run: npx prisma migrate deploy
+
       - name: Rodar testes
         run: npm test
+        env:
+          FIN_TESTE_BANCO: '1'
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -37,3 +60,18 @@ jobs:
       - name: Testes dos cálculos do painel Gestão (Python)
         working-directory: scripts/fazenda-atualizador
         run: python -m unittest discover -s tests -v
+
+  # A imagem do coletor da Gestão $$$ monta e o navegador abre (o mesmo que roda no servidor às 02:30).
+  coletor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Montar a imagem do coletor
+        run: docker build -f docker/coletor.Dockerfile -t segov-coletor:ci .
+
+      - name: O Chromium abre dentro da imagem e o código da coleta carrega
+        run: |
+          docker run --rm --shm-size=256m segov-coletor:ci node -e "require('playwright').chromium.launch().then(b => b.newPage().then(p => p.setContent('<p>ok</p>')).then(() => b.close())).then(() => console.log('chromium ok'))"
+          docker run --rm segov-coletor:ci npx tsx -e "import('./lib/financas/coleta/executar').then(m => console.log('coleta carrega:', typeof m.executarColeta))"

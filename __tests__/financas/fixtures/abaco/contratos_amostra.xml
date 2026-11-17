@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export>
+<SDTContratoCollection xmlns="transparencianovalima">
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>14917</ContratoId>
+		<ContratoNumero>062</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-05-26</ContratoDataAssinatura>
+		<ContratoDataIni>2026-05-26</ContratoDataIni>
+		<ContratoDataFim>2031-05-26</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-05-26</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2031-05-26</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-05-27</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>Contratação de instituição financeira autorizada pelo Banco Central do Brasil para processar, de forma exclusiva, os créditos decorrentes da folha de pagamento dos subsídios, vencimentos e vantagens remuneratórias dos agentes políticos, servidores públicos ativos, inativos, contratos temporários e estagiários do Município de Nova Lima.</ContratoDsc>
+		<ContratoTipoId>28</ContratoTipoId>
+		<ContratoTipoNome>OUTROS TIPOS DE CONTRATOS</ContratoTipoNome>
+		<ContratoClassificacao>OUTROS TIPOS DE CONTRATOS</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>8830000.00</ContratoValor>
+		<ContratoValorAtual>8830000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>11</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Sem Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>0</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero/>
+		<ContratoLicitacaoAno>0</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>PREGAO ELETRÔNICO - NORMAL</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>24023</ContratoFornecedorId>
+		<ContratoFornecedorDoc>90400888000142</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>BANCO SANTANDER (BRASIL) S.A.</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>BANCO SANTANDER (BRASIL) S.A.</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0396</ContratoProcessoNumero>
+		<ContratoProcessoAno>2025</ContratoProcessoAno>
+		<ContratoEditalNumero>53</ContratoEditalNumero>
+		<ContratoEditalAno>2025</ContratoEditalAno>
+		<ContratoEditalIntencaoId>0</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>16014</ContratoId>
+		<ContratoNumero>0215</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2026</ContratoAno>
+		<ContratoDataAssinatura>2026-10-22</ContratoDataAssinatura>
+		<ContratoDataIni>2026-10-22</ContratoDataIni>
+		<ContratoDataFim>2029-10-22</ContratoDataFim>
+		<ContratoExecucaoDataIni>2026-10-22</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2029-10-22</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2026-11-11</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>CONTRATAÇÃO DE EMPRESA ESPECIALIZADA NA PRESTAÇÃO DE SERVIÇOS DE LINKS DE COMUNICAÇÃO DE DADOS SIMETRICOS, FILTROS DE CONTEUDO E FUNCIONABILIDADE DO SD-WAN.</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>5273019.00</ContratoValor>
+		<ContratoValorAtual>5273019.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>0</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero/>
+		<ContratoLicitacaoAno>0</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade/>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>24987</ContratoFornecedorId>
+		<ContratoFornecedorDoc>05684180000191</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>COMPANHIA ITABIRANA DE TELECOMUNICACOES LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>VALENET</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0243</ContratoProcessoNumero>
+		<ContratoProcessoAno>2026</ContratoProcessoAno>
+		<ContratoEditalNumero>0</ContratoEditalNumero>
+		<ContratoEditalAno>0</ContratoEditalAno>
+		<ContratoEditalIntencaoId>0</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>13700</ContratoId>
+		<ContratoNumero>0252</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2025</ContratoAno>
+		<ContratoDataAssinatura>2025-11-13</ContratoDataAssinatura>
+		<ContratoDataIni>2025-11-13</ContratoDataIni>
+		<ContratoDataFim>2027-07-13</ContratoDataFim>
+		<ContratoExecucaoDataIni>2025-11-13</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-07-13</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2025-11-14</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>CONSTITUI O OBJETO DA LICITAÇÃO A CONTRATAÇÃO DE EMPRESA ESPECIALIZADA OU CONSÓRCIO DE EMPRESAS PARA EXECUÇÃO DE SERVIÇOS NECESSÁRIOS PARA A CONTINUIDADE DO PROJETO SIG-PNL (SISTEMA DE INFORMAÇÕES GEOGRÁFICAS – PREFEITURA DE NOVA LIMA), ABRANGENDO: •	A REALIZAÇÃO DE AEROLEVANTAMENTO PARA A ATUALIZAÇÃO DA BASE CARTOGRÁFICA EMPREGANDO SENSOR LASER SCANNER AEROTRANSPORTADO, ELABORAÇÃO DE PERFILAMENTO LASER; •	OS SERVIÇOS DE APOIO DE CAMPO E AEROTRIANGULAÇÃO;  •	A DENSIFICAÇÃO DA REDE DE REFERÊNCIA CADASTRAL MUNICIPAL; •	A GERAÇÃO DO MODELO DIGITAL DE SUPERFÍCIE, MODELO DIGITAL DE ELEVAÇÃO, CURVAS</ContratoDsc>
+		<ContratoTipoId>24</ContratoTipoId>
+		<ContratoTipoNome>OBRAS E SERVIÇOS DE ENGENHARIA</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇOS TOPOGRÁFICOS</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>13900000.00</ContratoValor>
+		<ContratoValorAtual>13900000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>54982</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0148</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2025</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>CONCORRÊNCIA ELETRÔNICA INTEGRAÇÃO - NORMAL</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>126747</ContratoFornecedorId>
+		<ContratoFornecedorDoc>26994285000117</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>TOPOCART TOPOGRAFIA, ENGENHARIA E AEROLEVANTAMENTOS LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>TOPOCART TOPOGRAFIA, ENGENHARIA E AEROLEVANTAMENTOS LTDA</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0148</ContratoProcessoNumero>
+		<ContratoProcessoAno>2025</ContratoProcessoAno>
+		<ContratoEditalNumero>4</ContratoEditalNumero>
+		<ContratoEditalAno>2025</ContratoEditalAno>
+		<ContratoEditalIntencaoId>54982</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>13676</ContratoId>
+		<ContratoNumero>0245</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2025</ContratoAno>
+		<ContratoDataAssinatura>2025-11-11</ContratoDataAssinatura>
+		<ContratoDataIni>2025-11-11</ContratoDataIni>
+		<ContratoDataFim>2030-11-11</ContratoDataFim>
+		<ContratoExecucaoDataIni>2025-11-11</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2030-11-11</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2025-11-11</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>Contratação de empresa especializada em serviços de solução de gerenciamento de ponto eletrônico, incluindo locação de aparelho para registro com leitor fácil.</ContratoDsc>
+		<ContratoTipoId>3</ContratoTipoId>
+		<ContratoTipoNome>AQUISIÇÃO DE MATERIAIS / PRESTAÇÃO DE SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>AQUISIÇÃO DE MATERIAIS / PRESTAÇÃO DE SERVIÇOS</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>2614000.00</ContratoValor>
+		<ContratoValorAtual>2614000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>51553</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0411</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2024</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>PREGAO ELETRÔNICO - INTEGRAÇÃO</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>18223</ContratoFornecedorId>
+		<ContratoFornecedorDoc>07585966000187</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>ID STORE SERVICOS DE SISTEMAS E ELETRONICOS LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>PRISCILA KAUBATZ ROJAS ME</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>1</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0411</ContratoProcessoNumero>
+		<ContratoProcessoAno>2024</ContratoProcessoAno>
+		<ContratoEditalNumero>73</ContratoEditalNumero>
+		<ContratoEditalAno>2024</ContratoEditalAno>
+		<ContratoEditalIntencaoId>51553</ContratoEditalIntencaoId>
+	</SDTContrato>
+	<SDTContrato xmlns="transparencianovalima">
+		<ContratoId>5794</ContratoId>
+		<ContratoNumero>0036</ContratoNumero>
+		<ContratoEntidadeId>181</ContratoEntidadeId>
+		<ContratoAno>2023</ContratoAno>
+		<ContratoDataAssinatura>2023-04-01</ContratoDataAssinatura>
+		<ContratoDataIni>2023-04-01</ContratoDataIni>
+		<ContratoDataFim>2027-04-01</ContratoDataFim>
+		<ContratoExecucaoDataIni>2023-04-01</ContratoExecucaoDataIni>
+		<ContratoExecucaoDataFim>2027-04-01</ContratoExecucaoDataFim>
+		<ContratoPublicacaoData>2023-04-01</ContratoPublicacaoData>
+		<ContratoPublicacaoTipo>ORGÃO OFICIAL</ContratoPublicacaoTipo>
+		<ContratoPublicacaoPagina/>
+		<ContratoDsc>EMPRESA PARA COMERCIALIZAÇÃO DE CARTÕES DE VALE TRANSPORTE ELETRONICO, PRESTAÇÃO DE SERVIÇOS DE CRÉDITOS ELETRONICOS EM CARTÕES DE VALE TRANSPORTE E OUTRAS AVENÇAS PARA OS FUNCIONÁRIOS DA PREFEITURA MUNICIPAL DE NOVA LIMA ENTREGA PRODUTO:	LOCAL FÍSICO: ADMINISTRAÇÃO CENTRAL CEP: 34000279 LOGRADOURO: PRAÇA BERNARDINO DE LIMA Nº: 80 BAIRRO: CENTRO COMPLEMENTO: MUNICÍPIO: NOVA LIMA TELEFONE: 3135414334</ContratoDsc>
+		<ContratoTipoId>21</ContratoTipoId>
+		<ContratoTipoNome>COMPRAS E OUTROS SERVIÇOS</ContratoTipoNome>
+		<ContratoClassificacao>PRESTAÇÃO DE SERVIÇO</ContratoClassificacao>
+		<ContratoStatus>V</ContratoStatus>
+		<ContratoStatusDesc>Contrato Vigente</ContratoStatusDesc>
+		<ContratoValor>30000.00</ContratoValor>
+		<ContratoValorAtual>30000.00</ContratoValorAtual>
+		<ContratoTipoProcesso>10</ContratoTipoProcesso>
+		<ContratoTipoProcessoDsc>Com Processo</ContratoTipoProcessoDsc>
+		<ContratoLicitacaoId>31762</ContratoLicitacaoId>
+		<ContratoLicitacaoNumero>0129</ContratoLicitacaoNumero>
+		<ContratoLicitacaoAno>2023</ContratoLicitacaoAno>
+		<ContratoLicitacaoModalidade>INEXIGIBILIDADE</ContratoLicitacaoModalidade>
+		<ContratoConcursoTipoDsc/>
+		<ContratoConcursoNumero>0</ContratoConcursoNumero>
+		<ContratoConcursoAno>0</ContratoConcursoAno>
+		<ContratoResponsavel/>
+		<ContratoResponsavelNumeroOAB/>
+		<ContratoFornecedorId>14855</ContratoFornecedorId>
+		<ContratoFornecedorDoc>01005845001376</ContratoFornecedorDoc>
+		<ContratoFornecedorRazao>TACOM PROJETOS DE BILHETAGEM INTELIGENTE LTDA</ContratoFornecedorRazao>
+		<ContratoFornecedorNome>TACOM</ContratoFornecedorNome>
+		<ContratoPossuiDocumento>0</ContratoPossuiDocumento>
+		<ContratoProcessoNumero>0129</ContratoProcessoNumero>
+		<ContratoProcessoAno>2023</ContratoProcessoAno>
+		<ContratoEditalNumero>15</ContratoEditalNumero>
+		<ContratoEditalAno>2023</ContratoEditalAno>
+		<ContratoEditalIntencaoId>31762</ContratoEditalIntencaoId>
+	</SDTContrato>
+</SDTContratoCollection>
+</Export>
