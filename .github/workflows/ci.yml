@@ -55,9 +55,21 @@ jobs:
             | npx prisma db execute --stdin --schema prisma/schema.prisma
 
       - name: Rodar testes
-        run: npm test
+        run: npx vitest run --reporter=default --reporter=json --outputFile=vitest-relatorio.json
         env:
           FIN_TESTE_BANCO: '1'
+
+      # prova de que os testes com banco da Gestão $$$ rodaram (e não foram pulados)
+      - name: Conferir os testes com banco
+        run: |
+          node -e "
+            const r = require('./vitest-relatorio.json');
+            const db = r.testResults.filter((t) => t.name.endsWith('.db.test.ts'));
+            const n = (s) => db.reduce((t, f) => t + f.assertionResults.filter((a) => a.status === s).length, 0);
+            const msg = 'testes com banco: ' + db.length + ' arquivos, ' + n('passed') + ' passaram, ' + n('failed') + ' falharam, ' + (n('skipped') + n('pending')) + ' pulados';
+            console.log('::notice title=Gestão \$\$\$::' + msg);
+            if (db.length < 10 || n('passed') < 60 || n('failed') > 0) process.exit(1);
+          "
 
       - name: Setup Python
         uses: actions/setup-python@v5
