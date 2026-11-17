@@ -1311,13 +1311,6 @@ HTML = r'''<!DOCTYPE html>
     .pcard .pb{ font-size:24px !important; }
     .lcaixa, .lnota{ overflow-wrap:anywhere; }
   }
-  /* Contratos: sem reticências — o texto quebra em mais linhas para aparecer inteiro */
-  #pg-ctr .alerta{ align-items:start; }
-  #pg-ctr .alerta .cr, #pg-ctr .alerta .ds{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; }
-  #pg-ctr .lin{ align-items:start; }
-  #pg-ctr .lin .n{ white-space:normal; overflow:visible; text-overflow:clip; overflow-wrap:anywhere; line-height:1.3; }
-  #pg-ctr .rolatab table{ table-layout:fixed; }
-  #pg-ctr .rolatab td{ white-space:normal !important; overflow:visible !important; text-overflow:clip !important; overflow-wrap:anywhere; vertical-align:top; line-height:1.35; }
   .subrec{ display:flex; gap:6px; margin:0 0 18px; border-bottom:1px solid var(--linha); }
   .subrec b{ cursor:pointer; padding:8px 14px; font-size:13.5px; font-weight:600; color:var(--t3); border-bottom:2px solid transparent; margin-bottom:-1px; }
   .subrec b:hover{ color:var(--t1); }
@@ -1355,7 +1348,6 @@ HTML = r'''<!DOCTYPE html>
     <b data-p="rc">Receita</b>
     <span class="espaco"></span>
     <b data-p="desp">Despesas</b>
-    <b data-p="ctr">Contratos</b>
     <span class="espaco"></span>
     <b data-p="eq">Limites legais</b>
   </nav>
@@ -1386,7 +1378,6 @@ HTML = r'''<!DOCTYPE html>
   <div class="pg" id="pg-rc"></div>
   <div class="pg" id="pg-cap"></div>
   <div class="pg" id="pg-ded"></div>
-  <div class="pg" id="pg-ctr"></div>
   <div class="pg" id="pg-pes"></div>
   <div class="pg" id="pg-desp"></div>
   <div class="pg" id="pg-eq"></div>
@@ -1411,8 +1402,7 @@ const PAGS = {
 
 let pagina='cmd';
 const estado={ rc:{anos:new Set([PARCIAL]),tipo:null,mes:null}, cap:{anos:new Set([PARCIAL]),tipo:null,mes:null},
-               ded:{anos:new Set([PARCIAL]),tipo:null,mes:null}, pes:{busca:'',corte:null},
-               ctr:{sit:'vigente', tipo:null, busca:''} };
+               ded:{anos:new Set([PARCIAL]),tipo:null,mes:null}, pes:{busca:'',corte:null} };
 
 const nf=(a,b)=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:a,maximumFractionDigits:b});
 const f0=nf(0,0), f1=nf(1,1), f2=nf(2,2);
@@ -1831,161 +1821,6 @@ function montaReceita(id){
   };
 }
 
-
-/* ---------------- página de contratos ---------------- */
-function montaContratos(){
-  const st=estado.ctr, host=document.getElementById('pg-ctr');
-  host.innerHTML='';
-  const C=DATA.contratos||[];
-  const topopag=el('div','topopag'); host.appendChild(topopag);
-  const cab=el('div','cab');
-  cab.innerHTML='<div><h1>Contratos</h1><p>Contratos da Prefeitura de Nova Lima &middot; vig&ecirc;ncia calculada pelas datas de in&iacute;cio e fim</p></div>';
-  topopag.appendChild(cab);
-
-  const filtros=el('div','filtros'); topopag.appendChild(filtros);
-  const kpis=el('div','kpis'); host.appendChild(kpis);
-
-  const sAl=bloco(host,'Vencimentos próximos · contratos vigentes que terminam em até 90 dias');
-  const listaAl=el('div','lista rola'); listaAl.style.maxHeight='300px'; sAl.appendChild(listaAl);
-
-  const sDois=el('div','secao'); const dois=el('div','duplo');
-  sDois.appendChild(dois); host.appendChild(sDois);
-  const cTipo=el('div'), cForn=el('div');
-  cTipo.innerHTML='<div class="rot" style="margin-bottom:16px">Por tipo · clique para filtrar</div>';
-  cForn.innerHTML='<div class="rot" style="margin-bottom:16px">Maiores fornecedores</div>';
-  dois.appendChild(cTipo); dois.appendChild(cForn);
-  const listaTipo=el('div','lista'), listaForn=el('div','lista');
-  cTipo.appendChild(listaTipo); cForn.appendChild(listaForn);
-
-  const sTab=bloco(host,'Todos os contratos');
-  const barra=el('div');
-  barra.style.cssText='display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px';
-  const inp=el('input','busca'); inp.type='text';
-  inp.placeholder='Buscar por número, fornecedor ou objeto…';
-  const info=el('span','resumo'); info.style.marginLeft='0';
-  barra.appendChild(inp); barra.appendChild(info); sTab.appendChild(barra);
-  const rola=el('div','rolatab'); sTab.appendChild(rola);
-  inp.addEventListener('input',function(){ st.busca=inp.value.trim().toLowerCase(); render(); });
-
-  const nota=el('div','nota'); host.appendChild(nota);
-
-  function base(ignorarTipo){
-    let r=C;
-    if(st.sit) r=r.filter(function(c){ return c[7]===st.sit; });
-    if(st.tipo && !ignorarTipo) r=r.filter(function(c){ return c[5]===st.tipo; });
-    if(st.busca) r=r.filter(function(c){
-      return (c[0]+' '+c[3]+' '+c[4]).toLowerCase().indexOf(st.busca)>=0; });
-    return r;
-  }
-
-  return function(){
-    filtros.innerHTML='';
-    [['vigente','Vigentes'],['encerrado','Encerrados'],[null,'Todos']].forEach(function(par){
-      const b=el('div','ano'+(st.sit===par[0]?' on':'')); b.textContent=par[1];
-      b.onclick=function(){ st.sit=par[0]; render(); }; filtros.appendChild(b);
-    });
-    const btnLimpar=el('div','ano'); btnLimpar.textContent='🗑️ Limpar'; btnLimpar.title='Limpar todos os filtros';
-    btnLimpar.onclick=function(){ st.sit=null; st.tipo=null; st.busca=''; inp.value=''; render(); }; filtros.appendChild(btnLimpar);
-    const res=el('div','resumo'); filtros.appendChild(res);
-
-    const lista=base();
-    const total=lista.reduce(function(s,c){ return s+c[6]; },0);
-    const venc=lista.filter(function(c){ return c[7]==='vigente'&&c[8]!==null&&c[8]<=90&&c[8]>=0; })
-                    .sort(function(a,b){ return a[8]-b[8]; });
-    res.innerHTML='<b>'+f0.format(lista.length)+'</b> contratos'
-      + (st.tipo?' · <u>'+esc(st.tipo)+'</u>':'')
-      + (st.busca?' · busca "'+esc(st.busca)+'"':'');
-
-    kpis.innerHTML='';
-    const rotulo = st.sit==='vigente' ? 'Contratos vigentes'
-                 : st.sit==='encerrado' ? 'Contratos encerrados' : 'Contratos';
-    const somaVenc=venc.reduce(function(s,c){ return s+c[6]; },0);
-    [[rotulo, f0.format(lista.length), 'de '+f0.format(C.length)+' no total', null],
-     ['Valor contratado', brlx(total),
-      st.sit==='vigente'?'soma dos contratos em vigência':'soma do filtro atual', total],
-     ['Vencendo em 90 dias', f0.format(venc.length),
-      venc.length? 'valor em jogo' : 'nenhum no filtro atual', venc.length?somaVenc:null],
-     ['Ticket médio', brlx(lista.length?total/lista.length:0), 'por contrato',
-      lista.length?total/lista.length:null]
-    ].forEach(function(k){
-      const d=el('div','kpi');
-      d.innerHTML=kpiHtml(k[0],k[1],k[2],k[3]);
-      kpis.appendChild(d);
-    });
-
-    listaAl.innerHTML='';
-    if(!venc.length){
-      const v=el('div','vazio');
-      v.textContent='Nenhum contrato vencendo nos próximos 90 dias neste filtro.';
-      listaAl.appendChild(v);
-    } else venc.forEach(function(c){
-      const d=el('div','alerta');
-      const cls=c[8]<=30?'r':(c[8]<=60?'a':'n');
-      d.innerHTML='<span class="pz '+cls+'">'+(c[8]===0?'hoje':c[8]+' dias')+'</span>'
-        +'<span class="cr">'+esc(c[3])+'</span>'
-        +'<span class="ds">'+esc(c[0])+' · '+esc(c[4])+'</span>'
-        +'<span class="vl">'+exato(c[6])+'</span>';
-      dica(d, c[0]+' · '+c[3], '<em>'+brl(c[6])+'</em><br>'+esc(c[4])
-           +'<br>vigência '+c[1]+' a '+c[2]);
-      listaAl.appendChild(d);
-    });
-
-    const mt=new Map();
-    base(true).forEach(function(c){ mt.set(c[5],(mt.get(c[5])||0)+c[6]); });
-    const lt=Array.from(mt).sort(function(a,b){ return b[1]-a[1]; });
-    const mxt=lt.length?lt[0][1]:1;
-    const somat=lt.reduce(function(s,x){ return s+x[1]; },0);
-    listaTipo.innerHTML='';
-    lt.forEach(function(par){
-      const l=linha(par[0], exato(par[1]), par[1]/mxt,
-        somat?f1.format(par[1]/somat*100)+'%':'',
-        { click:function(){ st.tipo=(st.tipo===par[0]?null:par[0]); render(); },
-          sel:st.tipo===par[0], esm:st.tipo&&st.tipo!==par[0] });
-      dica(l,par[0],'<em>'+brl(par[1])+'</em>');
-      listaTipo.appendChild(l);
-    });
-
-    const mf=new Map();
-    lista.forEach(function(c){ mf.set(c[3],(mf.get(c[3])||0)+c[6]); });
-    const lf=Array.from(mf).sort(function(a,b){ return b[1]-a[1]; }).slice(0,8);
-    const mxf=lf.length?lf[0][1]:1;
-    listaForn.innerHTML='';
-    lf.forEach(function(par){
-      const l=linha(par[0], exato(par[1]), par[1]/mxf,
-        total?f1.format(par[1]/total*100)+'%':'');
-      dica(l,par[0],'<em>'+brl(par[1])+'</em><br>'
-        +f1.format(par[1]/total*100)+'% do filtro atual');
-      listaForn.appendChild(l);
-    });
-
-    info.innerHTML='<b>'+f0.format(lista.length)+'</b> de '+f0.format(C.length);
-    rola.innerHTML='';
-    const t=el('table');
-    t.innerHTML='<thead><tr><th class="e" style="width:9%">Número</th>'
-      +'<th class="e" style="width:8%">Início</th><th class="e" style="width:8%">Fim</th>'
-      +'<th class="e" style="width:24%">Fornecedor</th>'
-      +'<th class="e" style="width:32%">Objeto</th>'
-      +'<th style="width:12%">Valor (R$)</th>'
-      +'<th class="e" style="width:7%">Situação</th></tr></thead>';
-    const tb=el('tbody');
-    lista.slice().sort(function(a,b){ return b[6]-a[6]; }).slice(0,600).forEach(function(c){
-      const tr=el('tr');
-      tr.innerHTML='<td class="e">'+esc(c[0])+'</td>'
-        +'<td class="e" style="color:var(--t3)">'+esc(c[1])+'</td>'
-        +'<td class="e" style="color:var(--t3)">'+esc(c[2])+'</td>'
-        +'<td class="e">'+esc(c[3])+'</td>'
-        +'<td class="e" style="color:var(--t2)">'+esc(c[4])+'</td>'
-        +'<td>'+exato(c[6])+'</td>'
-        +'<td class="e"><span class="tagsit '+(c[7]==='vigente'?'v':'e')+'">'
-          +(c[7]==='vigente'?'vigente':'encerrado')+'</span></td>';
-      tb.appendChild(tr);
-    });
-    t.appendChild(tb); rola.appendChild(t);
-    nota.textContent='Os valores são o total contratado, não o pago. '
-      + (DATA.ct_coleta ? 'Coletado do Portal da Transparência em '
-          + DATA.ct_coleta.split('-').reverse().join('/') : '');
-  };
-}
 
 /* ---------------- página de pessoal ---------------- */
 function montaPessoal(){
@@ -2667,7 +2502,9 @@ function montaEquilibrio(){
 const COR_ST={ ok:'var(--alta)', at:'var(--parcial)', ruim:'var(--baixa)', info:'var(--acento)', esp:'var(--t3)' };
 const TAG_LEI={ ok:'DENTRO DO LIMITE', at:'ATENÇÃO', ruim:'FORA DO LIMITE' };
 const TAG_ST={ ok:'OK', at:'ATENÇÃO', ruim:'ALERTA', info:'INFORMATIVO', esp:'AGUARDANDO' };
-function irPara(p){ pagina=p; render(); scrollTo({top:0,behavior:'smooth'}); }
+function irPara(p){
+  if(p==='ctr'){ (window.top||window).location.href='/dashboard/fazenda/contratos'; return; }   /* contratos moram na Gestão */
+  pagina=p; render(); scrollTo({top:0,behavior:'smooth'}); }
 
 
 /* datas de cada fonte (a data que vale é a da própria fonte, não a "última coleta") */
@@ -3689,7 +3526,7 @@ function montaBusca(){
           }
           const soma=L.reduce((s,c)=>s+c[6],0);
           return {ok:true,entendi:L.length+' contratos de "'+tk.join(' ')+'"',titulo:'Contratos · '+tk.join(' '),destaque:L.length+' contratos',
-            linhas:L.slice(0,6).map(c=>[c[0]+' · '+c[3]+' · vence '+quando(c),R$(c[6])]).concat(L.length>6?[['… e mais '+(L.length-6),'veja na aba Contratos']]:[]),
+            linhas:L.slice(0,6).map(c=>[c[0]+' · '+c[3]+' · vence '+quando(c),R$(c[6])]).concat(L.length>6?[['… e mais '+(L.length-6),'veja em Gestão › Contratos']]:[]),
             nota:'Valor contratado somado: '+R$(soma)+'.',fonte:FONTE_C,ir:'ctr',
             fala:'Encontrei '+L.length+' contratos, somando '+falado(soma)+'.'};
         }
@@ -3703,7 +3540,7 @@ function montaBusca(){
       const soma=lista.reduce((s,c)=>s+c[6],0);
       return {ok:true,entendi:'contratos vigentes que vencem · '+iv.rot,titulo:'Contratos que vencem · '+iv.rot,
         destaque:String(lista.length)+(lista.length===1?' contrato':' contratos'),
-        linhas:lista.slice(0,6).map(c=>[c[2]+' · '+c[3],R$(c[6])]).concat(lista.length>6?[['… e mais '+(lista.length-6),'veja na aba Contratos']]:[]),
+        linhas:lista.slice(0,6).map(c=>[c[2]+' · '+c[3],R$(c[6])]).concat(lista.length>6?[['… e mais '+(lista.length-6),'veja em Gestão › Contratos']]:[]),
         nota:lista.length?'Valor contratado somado: '+R$(soma)+'.':'Nenhum contrato vence nesse período.',
         fonte:'Portal da Transparência · contratos'+(DATA.ct_coleta?' · coletado em '+DATA.ct_coleta.split('-').reverse().join('/'):''),ir:'ctr',
         fala:lista.length?(lista.length+(lista.length===1?' contrato vence ':' contratos vencem ')+iv.rot.replace(/\s*\(.*\)/,'')+', somando '+falado(soma)+'.'
@@ -4345,7 +4182,7 @@ function montaBusca(){
 
 /* ---------------- montagem ---------------- */
 const desenha={ rc:montaReceita('rc'), cap:montaReceita('cap'),
-                ded:montaReceita('ded'), ctr:montaContratos(), pes:montaPessoal(),
+                ded:montaReceita('ded'), pes:montaPessoal(),
                 desp:montaDespesas(), eq:montaEquilibrio(), cmd:montaComando() };
 montaBusca();
 function render(){
