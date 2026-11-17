@@ -1,6 +1,6 @@
 import { exigir } from '@/lib/financas/auth';
 import { brl, brlCurto, pct, pctBp } from '@/lib/financas/dinheiro';
-import { resumoReceita, tempoDecorridoBp } from '@/lib/financas/painel/fiscal';
+import { equilibrioLOA, projecaoReceita, resumoReceita, tempoDecorridoBp, type Totais } from '@/lib/financas/painel/fiscal';
 
 const MESES = ['Ano inteiro', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
@@ -20,6 +20,25 @@ export default async function Orcamento({ searchParams }: { searchParams: { ano?
   const agora = new Date();
   const tempo = ano === agora.getFullYear() && mesReceita === agora.getMonth() + 1 ? tempoDecorridoBp(ano, agora) : BigInt(Math.round((mesReceita * 10000) / 12));
   const cfem = receitas.find((r) => r.contaCod === '1712510000');
+
+  // Posição do ano inteiro (mes 0), sempre: é a base do equilíbrio da LOA e do quadro "fixada × executada",
+  // mesmo quando a tabela por órgão está mostrando o movimento de um mês.
+  const orgaosAno = mes === 0 ? orgaos : await db.despesaOrgaoMes.findMany({ where: { ano, mes: 0 } });
+  const tAno: Totais = {
+    dotInicial: orgaosAno.reduce((a, o) => a + o.dotInicial, BigInt(0)), dotAtual: orgaosAno.reduce((a, o) => a + o.dotAtual, BigInt(0)),
+    empenhado: orgaosAno.reduce((a, o) => a + o.empenhado, BigInt(0)), liquidado: orgaosAno.reduce((a, o) => a + o.liquidado, BigInt(0)),
+    pago: orgaosAno.reduce((a, o) => a + o.pago, BigInt(0)),
+  };
+  const equilibrio = equilibrioLOA(resumo, orgaosAno.length ? tAno : null);
+  // projeção: usa a receita do ano anterior (até o mesmo mês e no ano todo)
+  const recAnt = async (m: number) => resumoReceita(ano - 1, m, await db.receitaContaMes.findMany({ where: { ano: ano - 1, mes: m } }));
+  const antAteMes = mesReceita ? await recAnt(mesReceita) : null;
+  const antAno = mesReceita ? await recAnt(12) : null;
+  const projecao = resumo && equilibrio && antAteMes && antAno
+    ? projecaoReceita({ realizado: resumo.liquida.arrecadado, anteriorAteMes: antAteMes.liquida.arrecadado, anteriorAno: antAno.liquida.arrecadado, previstoAtual: resumo.liquida.previstoAtual, despAtual: equilibrio.despAtual })
+    : null;
+  const sinalBrl = (v: bigint) => `${v >= BigInt(0) ? '+' : '−'} ${brl(v < BigInt(0) ? -v : v)}`;
+  const posicao = mesReceita ? (MESES[mesReceita] ?? '—').toLowerCase() : '—';
 
   const ind = await db.indicadorFiscal.findMany({ where: { ano, relatorio: 'RGF' }, orderBy: { periodo: 'asc' } });
   const quads = [...new Set(ind.map((i) => i.periodo))];
@@ -43,13 +62,86 @@ export default async function Orcamento({ searchParams }: { searchParams: { ano?
         </form>
       </div>
 
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* ---------- equilíbrio da LOA ---------- */}
+        <div className="cartao">
+          <h2 className="font-semibold mb-1">Equilíbrio da LOA · receita prevista × despesa autorizada</h2>
+          <p className="text-xs text-slate-500 mb-2">Município inteiro (Câmara incluída) · {ano}</p>
+          {!equilibrio ? <p className="text-sm text-slate-500">Sem receita e despesa coletadas.</p> : (
+            <>
+              <table className="tabela">
+                <tbody>
+                  <tr><td>Receita prevista na LOA (inicial)</td><td className="n">{brl(equilibrio.recIni)}</td></tr>
+                  <tr><td>Despesa fixada na LOA (inicial)</td><td className="n">{brl(equilibrio.despIni)}</td></tr>
+                  <tr><td>Receita prevista atualizada</td><td className="n">{brl(equilibrio.recAtual)}</td></tr>
+                  <tr className="font-semibold"><td>Despesa autorizada (atualizada)</td><td className="n">{brl(equilibrio.despAtual)}</td></tr>
+                </tbody>
+              </table>
+              <p className="text-xs text-slate-600 mt-2">
+                Na aprovação, a LOA {equilibrio.difIni === BigInt(0) ? <b>estava equilibrada</b> : <>tinha diferença de <b>{brl(equilibrio.difIni < BigInt(0) ? -equilibrio.difIni : equilibrio.difIni)}</b></>}.
+              </p>
+              {equilibrio.difAtual > BigInt(0) ? (
+                <p className="text-sm mt-2 rounded border border-amber-300 bg-amber-50 text-amber-900 p-2">
+                  <b>Atenção:</b> a despesa autorizada está <b>{brl(equilibrio.difAtual)}</b> ({pct(equilibrio.difAtual, equilibrio.recAtual)}) acima da receita prevista atualizada. Os créditos adicionais ({sinalBrl(equilibrio.creditos)} sobre a LOA) precisam de cobertura: superávit do ano anterior, excesso de arrecadação, anulação de outra dotação ou operação de crédito. O sistema não vê a fonte desses créditos; confirme com a contabilidade (decretos de abertura).
+                </p>
+              ) : (
+                <p className="text-sm mt-2 rounded border border-emerald-300 bg-emerald-50 text-emerald-900 p-2">A despesa autorizada está dentro da receita prevista atualizada.</p>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* ---------- projeção de fechamento ---------- */}
+        <div className="cartao">
+          <h2 className="font-semibold mb-1">Projeção de fechamento da receita · estimativa</h2>
+          <p className="text-xs text-slate-500 mb-2">Receita líquida de {ano} até {posicao}, projetada para o ano</p>
+          {!projecao ? <p className="text-sm text-slate-500">Sem a série completa de {ano - 1} para projetar.</p> : (
+            <>
+              <table className="tabela">
+                <tbody>
+                  <tr><td>Parte da receita de {ano - 1} que já tinha entrado até {posicao}</td><td className="n">{pctBp(projecao.fracaoBp)}</td></tr>
+                  <tr><td>Receita líquida realizada em {ano}</td><td className="n">{brl(projecao.realizado)}</td></tr>
+                  <tr className="font-semibold"><td>Receita líquida projetada para o ano</td><td className="n">{brl(projecao.projetada)}</td></tr>
+                  <tr><td>Contra a previsão atualizada ({brl(resumo!.liquida.previstoAtual)})</td><td className={`n ${projecao.contraPrevisao < BigInt(0) ? 'text-red-700' : 'text-emerald-800'}`}>{sinalBrl(projecao.contraPrevisao)} ({pctBp(projecao.contraPrevisaoBp)} da previsão)</td></tr>
+                  <tr><td>Contra a despesa autorizada ({brl(equilibrio!.despAtual)})</td><td className={`n ${projecao.contraDespesa < BigInt(0) ? 'text-red-700' : 'text-emerald-800'}`}>{sinalBrl(projecao.contraDespesa)}</td></tr>
+                </tbody>
+              </table>
+              <p className="text-xs text-slate-600 mt-2"><b>Isto é uma estimativa, não um dado.</b> Assume que {ano} repete a distribuição da arrecadação ao longo do ano de {ano - 1}. Mudança de alíquota, receita extraordinária e a sazonalidade das transferências podem alterar o resultado. Use como ordem de grandeza.</p>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ---------- despesa: fixada × executada ---------- */}
+      <div className="cartao overflow-x-auto">
+        <h2 className="font-semibold mb-1">Despesa · fixada × executada · acumulado de {ano}</h2>
+        {!orgaosAno.length ? <p className="text-sm text-slate-500">Sem despesa coletada.</p> : (
+          <>
+            <table className="tabela">
+              <thead><tr><th>Despesa</th><th className="n">Valor</th><th className="n">% da dotação atualizada</th></tr></thead>
+              <tbody>
+                <tr><td>Fixada na LOA (valor inicial)</td><td className="n">{brl(tAno.dotInicial)}</td><td className="n">—</td></tr>
+                <tr className="font-semibold"><td>Atualizada (valor atual)</td><td className="n">{brl(tAno.dotAtual)}</td><td className="n">{tAno.dotAtual >= tAno.dotInicial ? '▲ +' : '▼ −'}{pct(tAno.dotAtual >= tAno.dotInicial ? tAno.dotAtual - tAno.dotInicial : tAno.dotInicial - tAno.dotAtual, tAno.dotInicial)} s/ LOA</td></tr>
+                <tr><td>Empenhada</td><td className="n">{brl(tAno.empenhado)}</td><td className="n">{pct(tAno.empenhado, tAno.dotAtual)}</td></tr>
+                <tr><td>Liquidada</td><td className="n">{brl(tAno.liquidado)}</td><td className="n">{pct(tAno.liquidado, tAno.dotAtual)}</td></tr>
+                <tr><td>Paga</td><td className="n">{brl(tAno.pago)}</td><td className="n">{pct(tAno.pago, tAno.dotAtual)}</td></tr>
+                <tr className="font-semibold"><td>Saldo de dotação (a empenhar)</td><td className={`n ${tAno.dotAtual - tAno.empenhado < BigInt(0) ? 'text-red-700' : ''}`}>{brl(tAno.dotAtual - tAno.empenhado)}</td><td className="n">{pct(tAno.dotAtual - tAno.empenhado, tAno.dotAtual)}</td></tr>
+                <tr className="bg-slate-50"><td>Empenhado e ainda não liquidado</td><td className="n">{brl(tAno.empenhado - tAno.liquidado)}</td><td className="n">{pct(tAno.empenhado - tAno.liquidado, tAno.empenhado)} do empenhado</td></tr>
+                <tr className="bg-slate-50"><td>Liquidado e ainda não pago</td><td className="n">{brl(tAno.liquidado - tAno.pago)}</td><td className="n">{pct(tAno.liquidado - tAno.pago, tAno.liquidado)} do liquidado</td></tr>
+              </tbody>
+            </table>
+            <p className="text-xs text-slate-500 mt-2">Município inteiro (Câmara incluída). Já passaram {pctBp(tempoDecorridoBp(ano, new Date()))} do ano; o empenhado representa {pct(tAno.empenhado, tAno.dotAtual)} da dotação atualizada. O detalhe por secretaria está logo abaixo.</p>
+          </>
+        )}
+      </div>
+
       <div className="cartao overflow-x-auto">
         <h2 className="font-semibold mb-1">Execução da despesa por órgão · {MESES[mes]}</h2>
         <p className="text-xs text-slate-500 mb-2">
           {mes === 0 ? 'Acumulado do ano.' : 'Movimento do mês. Empenhado do mês já desconta anulações (pode ficar negativo).'} Fonte: portal, aba Órgão.
         </p>
         <table className="tabela">
-          <thead><tr><th>Órgão</th><th className="n">Dotação inicial</th><th className="n">Dotação atual</th><th className="n">Empenhado</th><th className="n">Liquidado</th><th className="n">Pago</th>{mes === 0 && <th className="n">Saldo da dotação</th>}{mes === 0 && <th className="n">% empenhado</th>}</tr></thead>
+          <thead><tr><th>Órgão</th><th className="n">Dotação inicial</th><th className="n">Dotação atual</th><th className="n">Empenhado</th><th className="n">Liquidado</th><th className="n">Pago</th>{mes === 0 && <th className="n" title="Dotação atual − dotação inicial: créditos adicionais líquidos de anulações. Autoriza gastar, mas não é receita nova.">Variação sobre a LOA</th>}{mes === 0 && <th className="n">Saldo da dotação</th>}{mes === 0 && <th className="n">% empenhado</th>}</tr></thead>
           <tbody>
             {orgaos.map((o) => (
               <tr key={o.orgaoCod}>
@@ -57,12 +149,14 @@ export default async function Orcamento({ searchParams }: { searchParams: { ano?
                 <td className="n">{brl(o.dotInicial)}</td><td className="n">{brl(o.dotAtual)}</td>
                 <td className={`n ${o.empenhado < BigInt(0) ? 'text-amber-700' : ''}`}>{brl(o.empenhado)}</td>
                 <td className="n">{brl(o.liquidado)}</td><td className="n">{brl(o.pago)}</td>
+                {mes === 0 && <td className={`n ${o.dotAtual < o.dotInicial ? 'text-red-700' : ''}`}>{o.dotAtual === o.dotInicial ? '—' : o.dotInicial === BigInt(0) ? 'novo' : `${sinalBrl(o.dotAtual - o.dotInicial)} (${o.dotAtual > o.dotInicial ? '+' : '−'}${pct(o.dotAtual > o.dotInicial ? o.dotAtual - o.dotInicial : o.dotInicial - o.dotAtual, o.dotInicial)})`}</td>}
                 {mes === 0 && <td className={`n ${o.dotAtual - o.empenhado < BigInt(0) ? 'text-red-700 font-semibold' : ''}`}>{brl(o.dotAtual - o.empenhado)}</td>}
                 {mes === 0 && <td className="n">{pct(o.empenhado, o.dotAtual)}</td>}
               </tr>
             ))}
             <tr className="font-semibold">
               <td>Total</td><td className="n">{brl(t('dotInicial'))}</td><td className="n">{brl(t('dotAtual'))}</td><td className="n">{brl(t('empenhado'))}</td><td className="n">{brl(t('liquidado'))}</td><td className="n">{brl(t('pago'))}</td>
+              {mes === 0 && <td className="n">{sinalBrl(t('dotAtual') - t('dotInicial'))}</td>}
               {mes === 0 && <td className="n">{brl(t('dotAtual') - t('empenhado'))}</td>}{mes === 0 && <td className="n">{pct(t('empenhado'), t('dotAtual'))}</td>}
             </tr>
           </tbody>

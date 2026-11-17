@@ -185,6 +185,56 @@ export function resumoReceita(ano: number, mes: number, contas: ContaReceita[], 
   };
 }
 
+// ---------------------------------------------------------------- equilíbrio da LOA e projeção da receita
+
+export interface EquilibrioLOA {
+  recIni: bigint;   // receita líquida prevista na LOA (correntes + capital − deduções)
+  recAtual: bigint; // receita líquida prevista, atualizada
+  despIni: bigint;  // despesa fixada na LOA
+  despAtual: bigint;// despesa autorizada (LOA + créditos adicionais líquidos)
+  difIni: bigint;   // despesa − receita na aprovação
+  difAtual: bigint; // despesa autorizada − receita prevista atualizada (positivo = despesa acima da receita)
+  difAtualBp: bigint | null;
+  creditos: bigint; // despesa atual − inicial
+}
+
+/** Município inteiro (Câmara incluída): a LOA é um orçamento só, receita e despesa do mesmo conjunto. */
+export function equilibrioLOA(rec: ResumoReceita | null, despesa: Totais | null): EquilibrioLOA | null {
+  if (!rec || !despesa || !rec.correntes) return null;
+  const z = BigInt(0);
+  const recIni = rec.correntes.previstoInicial + (rec.capital?.previstoInicial ?? z) - (rec.deducoes?.previstoInicial ?? z);
+  const recAtual = rec.liquida.previstoAtual;
+  return {
+    recIni, recAtual, despIni: despesa.dotInicial, despAtual: despesa.dotAtual,
+    difIni: despesa.dotInicial - recIni, difAtual: despesa.dotAtual - recAtual,
+    difAtualBp: razaoBp(despesa.dotAtual - recAtual, recAtual), creditos: despesa.dotAtual - despesa.dotInicial,
+  };
+}
+
+export interface ProjecaoReceita {
+  fracaoBp: bigint;         // parte da receita do ano anterior que já tinha entrado até o mesmo mês
+  realizado: bigint;
+  projetada: bigint;
+  contraPrevisao: bigint;   // projetada − previsão atualizada
+  contraPrevisaoBp: bigint | null;
+  contraDespesa: bigint;    // projetada − despesa autorizada
+}
+
+/**
+ * Estimativa: assume que o ano repete a distribuição da arrecadação do ano anterior.
+ * `anteriorAteMes` e `anteriorAno`: receita líquida arrecadada no ano anterior até o mesmo mês e no ano todo.
+ */
+export function projecaoReceita(p: { realizado: bigint; anteriorAteMes: bigint; anteriorAno: bigint; previstoAtual: bigint; despAtual: bigint }): ProjecaoReceita | null {
+  const z = BigInt(0);
+  if (p.anteriorAteMes <= z || p.anteriorAno <= z || p.realizado <= z || p.anteriorAteMes > p.anteriorAno) return null;
+  const projetada = (p.realizado * p.anteriorAno) / p.anteriorAteMes;
+  return {
+    fracaoBp: razaoBp(p.anteriorAteMes, p.anteriorAno) ?? z, realizado: p.realizado, projetada,
+    contraPrevisao: projetada - p.previstoAtual, contraPrevisaoBp: razaoBp(projetada, p.previstoAtual),
+    contraDespesa: projetada - p.despAtual,
+  };
+}
+
 // ---------------------------------------------------------------- confiança dos dados
 
 export interface ItemConfianca { nivel: Nivel; titulo: string; detalhe: string }
