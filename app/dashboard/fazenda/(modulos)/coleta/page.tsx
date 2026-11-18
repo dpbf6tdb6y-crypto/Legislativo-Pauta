@@ -127,6 +127,42 @@ export default function SituacaoColetaPage() {
             </table>
           </div>
 
+          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+            <div className="px-4 py-3 border-b border-gray-200">
+              <p className="text-sm font-semibold text-gray-700">Conferência com o RREO homologado ({d.ano})</p>
+              <p className="text-xs text-gray-500">
+                {d.oficial.length
+                  ? `${num(d.oficial.filter((l) => l.confere).length)} de ${num(d.oficial.length)} itens iguais ao relatório oficial do Tesouro (SICONFI). Aparecem os itens principais e tudo o que não confere.`
+                  : "Ainda sem conferência: ela roda quando há RREO homologado e os meses do bimestre já foram coletados."}
+              </p>
+            </div>
+            {d.oficial.length > 0 && (
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    {["Bimestre", "Item", "RREO oficial", "Portal", "Diferença", ""].map((h) => (
+                      <th key={h} className="text-left px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {d.oficial.filter((l) => !l.confere || ["receita", "empenhado", "liquidado", "pago"].includes(l.item)).map((l) => (
+                    <tr key={`${l.bimestre}-${l.item}`}>
+                      <td className="px-3 py-2 whitespace-nowrap">{l.bimestre}º</td>
+                      <td className="px-3 py-2">{l.rotulo}</td>
+                      <td className="px-3 py-2 tabular-nums whitespace-nowrap">{reais(l.oficial)}</td>
+                      <td className="px-3 py-2 tabular-nums whitespace-nowrap">{reais(l.portal)}</td>
+                      <td className="px-3 py-2 tabular-nums whitespace-nowrap">{reais(l.diferenca)}</td>
+                      <td className="px-3 py-2 text-xs whitespace-nowrap">
+                        {l.confere ? <span className="text-green-700">confere</span> : <span className="text-amber-700 font-semibold">não confere</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
           {d.conferencia && (
             <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
               <div className="px-4 py-3 border-b border-gray-200">

@@ -2,8 +2,8 @@
 // SOMENTE LEITURA: abre telas públicas, aplica filtros e aciona exportações.
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
 import { centavos } from '@/lib/financas/dinheiro';
-import type { ComBruto, Conector, ContratoC, DespesaOrgaoMesC, EmpenhoC, FolhaLinhaC, FolhaMesC, ReceitaContaMesC, RestoPagarC, RetencaoC } from '../tipos';
-import { conferirEmpenho, lerContratosXml, lerDespesaOrgaoXml, lerEmpenhoHtml, lerReceitaXml, lerRestosAPagarXml, lerRetencoesHtml } from './leitores';
+import type { ComBruto, Conector, ContratoC, DespesaFuncaoMesC, DespesaNaturezaMesC, DespesaOrgaoMesC, EmpenhoC, FolhaLinhaC, FolhaMesC, ReceitaContaMesC, RestoPagarC, RetencaoC } from '../tipos';
+import { conferirEmpenho, lerContratosXml, lerDespesaFuncaoXml, lerDespesaNaturezaXml, lerDespesaOrgaoXml, lerEmpenhoHtml, lerReceitaXml, lerRestosAPagarXml, lerRetencoesHtml } from './leitores';
 
 const AGENTE = 'segov-gestao/1.0 (leitura de dados publicos)';
 
@@ -176,6 +176,28 @@ export class ConectorAbaco implements Conector {
     return { dados, brutos: [{ tipo: 'despesa_orgao', referencia: ref, nomeSugerido: `despesa_orgao_${ref}.xml`, conteudo: b }] };
   }
 
+  async despesaNaturezaMes(ano: number, mes: number): Promise<ComBruto<DespesaNaturezaMesC[]>> {
+    await this.ir('wmdespesas?17,0');
+    await this.mudar('vFILTROANO', String(ano));
+    await this.mudar('vFILTROMES', String(mes));
+    await this.buscar();
+    const b = await this.exportar('xml');
+    const dados = lerDespesaNaturezaXml(b.toString('utf-8'), ano, mes);
+    const ref = `${ano}-${String(mes).padStart(2, '0')}`;
+    return { dados, brutos: [{ tipo: 'despesa_natureza', referencia: ref, nomeSugerido: `despesa_natureza_${ref}.xml`, conteudo: b }] };
+  }
+
+  async despesaFuncaoMes(ano: number, mes: number): Promise<ComBruto<DespesaFuncaoMesC[]>> {
+    await this.ir('wmdespesas?15,0');
+    await this.mudar('vFILTROANO', String(ano));
+    await this.mudar('vFILTROMES', String(mes));
+    await this.buscar();
+    const b = await this.exportar('xml');
+    const dados = lerDespesaFuncaoXml(b.toString('utf-8'), ano, mes);
+    const ref = `${ano}-${String(mes).padStart(2, '0')}`;
+    return { dados, brutos: [{ tipo: 'despesa_funcao', referencia: ref, nomeSugerido: `despesa_funcao_${ref}.xml`, conteudo: b }] };
+  }
+
   async receitasMes(ano: number, mes: number): Promise<ComBruto<ReceitaContaMesC[]>> {
     await this.ir('wmreceitas?1');
     await this.mudar('vFILTROANO', String(ano));
@@ -313,6 +335,18 @@ export class ConectorAbaco implements Conector {
     await Promise.all(Array.from({ length: paralelo }, trabalhador));
     if (falhas.length) throw new Error(`${falhas.length} empenho(s) não puderam ser lidos (ficam para a próxima coleta): ${falhas.slice(0, 10).join(', ')}${falhas.length > 10 ? '…' : ''}`);
     return { verificados, entregues };
+  }
+
+  /** Número de registros que a tela de servidores informa hoje para o mês (sem ler as linhas). */
+  async contagemFolha(anoMes: string): Promise<number> {
+    const [ano, mes] = anoMes.split('/').map(Number);
+    await this.ir('wmservidores?0');
+    await this.mudar('vFILTROANO', String(ano));
+    await this.mudar('vFILTROMES', String(mes));
+    await this.buscar();
+    const n = await this.p.evaluate(() => Number((document.querySelector('input[id$="vNREGISTROS"]') as HTMLInputElement | null)?.value ?? 'NaN'));
+    if (!Number.isInteger(n) || n < 0) throw new Error(`folha ${anoMes}: o portal não informou o número de registros`);
+    return n;
   }
 
   async folhaMes(anoMes: string): Promise<ComBruto<FolhaMesC>> {

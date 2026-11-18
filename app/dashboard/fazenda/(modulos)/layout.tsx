@@ -1,13 +1,13 @@
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { sessaoAtual } from '@/lib/financas/auth';
 import { dbDa } from '@/lib/financas/db';
 import { PERFIS } from '@/lib/financas/perfis';
-import { menuDoPerfil } from '@/lib/financas/menu';
+import { gruposDoPerfil } from '@/lib/financas/menu';
 import { dataCurta, frescorFontes, idadeDias, STATUS_TERMINADA } from '@/lib/financas/coleta/frescor';
+import MenuCompliance from '@/app/dashboard/fazenda/_componentes/MenuCompliance';
 
-// Módulos da Gestão $$$ (vindos do compliance.gavix). Fica dentro do layout do SEGOV (menu lateral);
-// aqui só o submenu e a faixa com a data dos dados do portal. Cada página confere a própria permissão.
+// Compliance. Fica dentro do layout do SEGOV (menu lateral);
+// aqui só o menu das áreas e a faixa com a data dos dados do portal. Cada página confere a própria permissão.
 export const dynamic = 'force-dynamic';
 
 
@@ -25,9 +25,8 @@ export default async function LayoutModulos({ children }: { children: ReactNode 
   const velha = diarias.some((f) => idadeDias(f.baixadoEm, hoje) > 1.5);
   const cor = !diarias.length || ultima?.status === 'falha' ? 'bg-red-100 text-red-900' : velha || ultima?.status === 'divergencia' ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900';
   const desp = fontes.find((f) => f.chave === 'despesa')?.baixadoEm;
-  const resumoFontes = fontes.filter((f) => f.baixadoEm && f.chave !== 'despesa' && f.chave !== 'receita' && f.chave !== 'restos')
+  const resumoFontes = fontes.filter((f) => f.baixadoEm && !['despesa', 'receita', 'restos', 'natureza', 'funcao'].includes(f.chave))
     .map((f) => `${f.nome.replace(' (SICONFI)', '')} ${dataCurta(f.baixadoEm!)}`).join(' · ');
-  const itens = menuDoPerfil(s.perfil);
 
   return (
     <div className="max-w-[1800px] mx-auto">
@@ -38,11 +37,7 @@ export default async function LayoutModulos({ children }: { children: ReactNode 
             ? <>Despesa e receita baixadas em <b>{dataCurta(desp)}</b>{velha && <b> · dados do portal desatualizados</b>}{resumoFontes && <> · {resumoFontes}</>}{ultima && <> · última coleta: <b>{ultima.status === 'ok' ? 'ok' : ultima.status === 'divergencia' ? 'com divergência na conferência' : 'falhou'}</b></>}</>
             : <>Ainda não há dados do portal coletados.</>}
         </div>
-        <nav className="flex flex-wrap gap-1 px-2 py-1.5">
-          {itens.map((m) => (
-            <Link key={m.href} href={m.href} className="text-sm px-2 py-1 rounded text-slate-700 hover:bg-emerald-50 hover:text-emerald-800">{m.rotulo}</Link>
-          ))}
-        </nav>
+        <MenuCompliance grupos={gruposDoPerfil(s.perfil)} />
       </div>
       {children}
     </div>

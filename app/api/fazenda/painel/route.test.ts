@@ -76,6 +76,48 @@ describe("GET /api/fazenda/painel", () => {
     expect(await (await GET()).text()).toBe(HTML)
   })
 
+  const COM_FOLHA = '<script>\nconst DATA = {"rc":[1],"rh":[["Servidor 0001","CARGO X","Efetivo","Ativo","SECRETARIA",1000,1500,1200]],"pessoal_hist":[{"mes":9}]};\nconst LOGO_SRC = "";</script>'
+
+  it("sem a permissão de folha: a lista por servidor não sai do servidor, os totais continuam", async () => {
+    sessao.mockResolvedValue({ user: { id: "u1" } })
+    achaUsuario.mockResolvedValue(usuario({ gestaoPerfil: "financeiro" }))
+    lerArquivo.mockResolvedValue(COM_FOLHA)
+    const corpo = await (await GET()).text()
+    expect(corpo).not.toContain("CARGO X")
+    expect(corpo).toContain('"rh":[]')
+    expect(corpo).toContain('"pessoal_hist":[{"mes":9}]')
+  })
+
+  it("master sem perfil no Compliance também não recebe a lista por servidor", async () => {
+    sessao.mockResolvedValue({ user: { id: "u1" } })
+    achaUsuario.mockResolvedValue(usuario({ perfil: "master" }))
+    lerArquivo.mockResolvedValue(COM_FOLHA)
+    expect(await (await GET()).text()).not.toContain("CARGO X")
+  })
+
+  it("com a permissão de folha: recebe o painel completo", async () => {
+    sessao.mockResolvedValue({ user: { id: "u1" } })
+    achaUsuario.mockResolvedValue(usuario({ gestaoPerfil: "controlador" }))
+    lerArquivo.mockResolvedValue(COM_FOLHA)
+    expect(await (await GET()).text()).toContain("CARGO X")
+  })
+
+  it("arquivo que não dá para limpar não é entregue", async () => {
+    sessao.mockResolvedValue({ user: { id: "u1" } })
+    achaUsuario.mockResolvedValue(usuario({ gestaoPerfil: "financeiro" }))
+    lerArquivo.mockResolvedValue('const DATA = {"rh":[["CARGO X"]]')
+    const r = await GET()
+    expect(r.status).toBe(403)
+    expect(await r.text()).not.toContain("CARGO X")
+  })
+
+  it("perfil Secretaria não abre o painel anterior", async () => {
+    sessao.mockResolvedValue({ user: { id: "u1" } })
+    achaUsuario.mockResolvedValue(usuario({ gestaoPerfil: "secretaria" }))
+    expect((await GET()).status).toBe(403)
+    expect(lerArquivo).not.toHaveBeenCalled()
+  })
+
   it("painel ainda não gerado: 404 com mensagem, sem vazar caminho nem erro", async () => {
     sessao.mockResolvedValue({ user: { id: "u1" } })
     achaUsuario.mockResolvedValue(usuario())

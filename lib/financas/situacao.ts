@@ -24,6 +24,7 @@ export async function situacaoColeta(hoje = new Date(), prefeituraId = PREFEITUR
   ]);
   const inconsistentes = await db.empenho.count({ where: { ano, inconsistencia: { not: null } } });
   const conferencia = empenhos ? await conciliar(db, ano) : null;
+  const oficial = await db.conferenciaOficial.findMany({ where: { ano }, orderBy: [{ bimestre: 'desc' }, { item: 'asc' }] });
 
   return {
     ano,
@@ -45,6 +46,10 @@ export async function situacaoColeta(hoje = new Date(), prefeituraId = PREFEITUR
       mbNoDisco: Math.round((arquivos._sum.bytes ?? 0) / 1048576),
     },
     conferencia,
+    oficial: oficial.map((l) => ({
+      bimestre: l.bimestre, item: l.item, rotulo: l.rotulo, confere: l.confere,
+      oficial: l.oficial.toString(), portal: l.portal.toString(), diferenca: l.diferenca.toString(),
+    })),
   };
 }
 

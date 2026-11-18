@@ -11,7 +11,7 @@
 //   folha.csv          anoMes;seq;matricula;nome;cargo;ocupacao;tipoVinculo;situacaoOriginal;lotacao;vencimentos;bruto;previdencia;desconto;irrf;liquido
 import fs from 'fs';
 import path from 'path';
-import type { ComBruto, Conector, ContratoC, DespesaOrgaoMesC, EmpenhoC, EventoC, FolhaMesC, ReceitaContaMesC, RestoPagarC, RetencaoC } from './tipos';
+import type { ComBruto, Conector, ContratoC, DespesaFuncaoMesC, DespesaNaturezaMesC, DespesaOrgaoMesC, EmpenhoC, EventoC, FolhaMesC, ReceitaContaMesC, RestoPagarC, RetencaoC } from './tipos';
 
 const dt = (s: string) => (s ? new Date(`${s}T12:00:00Z`) : null);
 
@@ -55,6 +55,14 @@ export class ConectorArquivo implements Conector {
         empenhado: BigInt(l.empenhado), liquidado: BigInt(l.liquidado), pago: BigInt(l.pago),
       }));
     return { dados, brutos: this.bruto('despesa_orgao', `${ano}-${mes}`, 'despesa_orgao.csv', bruto) };
+  }
+
+  // a fonte por arquivo não tem os relatórios consolidados: a coleta segue sem eles
+  async despesaNaturezaMes(): Promise<ComBruto<DespesaNaturezaMesC[]>> {
+    return { dados: [], brutos: [] };
+  }
+  async despesaFuncaoMes(): Promise<ComBruto<DespesaFuncaoMesC[]>> {
+    return { dados: [], brutos: [] };
   }
 
   async receitasMes(ano: number, mes: number): Promise<ComBruto<ReceitaContaMesC[]>> {

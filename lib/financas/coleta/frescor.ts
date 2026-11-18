@@ -11,6 +11,8 @@ const FONTES: { chave: string; nome: string; tipos: string[]; diaria: boolean }[
   { chave: 'receita', nome: 'Receita', tipos: ['receitas'], diaria: true },
   { chave: 'contratos', nome: 'Contratos', tipos: ['contratos'], diaria: true },
   { chave: 'restos', nome: 'Restos a pagar', tipos: ['restos_a_pagar'], diaria: true },
+  { chave: 'natureza', nome: 'Despesa por natureza', tipos: ['despesa_natureza'], diaria: true },
+  { chave: 'funcao', nome: 'Despesa por função', tipos: ['despesa_funcao'], diaria: true },
   { chave: 'folha', nome: 'Folha', tipos: ['folha_tela', 'folha'], diaria: false },
   { chave: 'rgf', nome: 'RGF (SICONFI)', tipos: ['rgf'], diaria: false },
   { chave: 'rreo', nome: 'RREO (SICONFI)', tipos: ['rreo'], diaria: false },

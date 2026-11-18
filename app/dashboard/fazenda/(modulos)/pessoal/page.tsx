@@ -2,8 +2,12 @@ import Link from 'next/link';
 import { exigir } from '@/lib/financas/auth';
 import { brl } from '@/lib/financas/dinheiro';
 import { nomeExibido, podeVerNomes } from '@/lib/financas/folha';
+import { resumirFolha } from '@/lib/financas/painel/compliance';
+import { BarrasH, Numero } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
 
-export default async function Pessoal({ searchParams }: { searchParams: { q?: string; mes?: string } }) {
+const nomeSecretaria = (n: string) => n.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /, '');
+
+export default async function Pessoal({ searchParams }: { searchParams: { q?: string; mes?: string; vinculo?: string } }) {
   const q = (searchParams.q ?? '').trim().toUpperCase();
   const { s, db } = await exigir('folha', 'Pessoal', { detalhe: q ? `busca="${q}" mês=${searchParams.mes ?? ''}` : `mês=${searchParams.mes ?? ''}`, acao: q ? 'buscar' : 'ver', modulo: 'folha' });
 
@@ -18,14 +22,47 @@ export default async function Pessoal({ searchParams }: { searchParams: { q?: st
 
   // LGPD: sem permissão para nomes, a busca é só por matrícula e a lista sai na ordem da matrícula
   const verNomes = await podeVerNomes(s);
-  const where: any = { anoMes: mes };
+  const vinculo = searchParams.vinculo ?? '';
+  const where: any = { anoMes: mes, ...(vinculo ? { tipoVinculo: vinculo } : {}) };
   if (q) where.OR = verNomes ? [{ nome: { contains: q } }, { matricula: q }] : [{ matricula: q }];
   const linhas = q || mes ? await db.folhaLinha.findMany({ where, orderBy: verNomes ? [{ nome: 'asc' }, { seq: 'asc' }] : [{ matricula: 'asc' }, { seq: 'asc' }], take: q ? 200 : 100 }) : [];
 
+  // quadro do mês: totais, secretarias e vínculos (o vínculo escolhido filtra tudo, menos a própria lista de vínculos)
+  const campos = { matricula: true, lotacao: true, tipoVinculo: true, vencimentos: true, bruto: true, liquido: true } as const;
+  const doMes = mes ? await db.folhaLinha.findMany({ where: { anoMes: mes }, select: campos }) : [];
+  const geral = resumirFolha(doMes);
+  const r = vinculo ? resumirFolha(doMes.filter((l) => l.tipoVinculo === vinculo)) : geral;
+  const linkVinculo = (v: string) => `?${new URLSearchParams({ mes, ...(searchParams.q ? { q: searchParams.q } : {}), ...(v && v !== vinculo ? { vinculo: v } : {}) })}`;
+
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-semibold">Pessoal · últimos 12 meses</h1>
+      <div>
+        <h1 className="text-lg font-semibold">Pessoal · folha de {mes || '—'}</h1>
+        <p className="text-xs text-slate-500">Portal da Transparência, tela completa de servidores.{vinculo && <> Filtro: <b>{vinculo}</b>.</>}</p>
+      </div>
+
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <Numero titulo="Servidores" valor={r.servidores.toLocaleString('pt-BR')} detalhe={`${r.comVencimento.toLocaleString('pt-BR')} com vencimento no mês`} />
+        <Numero titulo="Vencimentos" valor={brl(r.vencimentos)} detalhe="base da folha" />
+        <Numero titulo="Bruto" valor={brl(r.bruto)} detalhe="com vantagens, adicionais e lançamentos sem vencimento" />
+        <Numero titulo="Vencimento médio" valor={brl(r.mediaVencimento)} detalhe="por servidor com vencimento" />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="cartao">
+          <h2 className="font-semibold mb-2">Folha por secretaria</h2>
+          <BarrasH total={r.vencimentos} formato={brl} itens={r.porLotacao.map((l) => ({ nome: nomeSecretaria(l.nome), valor: l.valor }))} />
+          <p className="text-xs text-slate-500 mt-2">As 8 maiores, pelos vencimentos.</p>
+        </section>
+        <section className="cartao">
+          <h2 className="font-semibold mb-2">Vínculo dos servidores</h2>
+          <BarrasH formato={(v) => Number(v).toLocaleString('pt-BR')} itens={geral.porVinculo.map((v) => ({ nome: v.nome, valor: BigInt(v.servidores), href: linkVinculo(v.nome), ativo: v.nome === vinculo }))} />
+          <p className="text-xs text-slate-500 mt-2">Clique em um vínculo para filtrar a tela. Clique de novo para limpar.</p>
+        </section>
+      </div>
+
       <div className="cartao overflow-x-auto">
+        <h2 className="font-semibold mb-1">Últimos 12 meses</h2>
         <table className="tabela">
           <thead><tr><th>Mês</th><th className="n">Servidores</th><th className="n">Linhas</th><th className="n">Bruto</th><th className="n">Previdência</th><th className="n">Desconto</th><th className="n">IRRF</th><th className="n">Líquido</th><th>Conferência</th></tr></thead>
           <tbody>
@@ -47,6 +84,7 @@ export default async function Pessoal({ searchParams }: { searchParams: { q?: st
 
       <form className="flex flex-wrap gap-2 items-end">
         <input type="hidden" name="mes" value={mes} />
+        {vinculo && <input type="hidden" name="vinculo" value={vinculo} />}
         <label className="text-sm">Buscar por {verNomes ? 'nome ou matrícula' : 'matrícula'} · {mes}
           <input name="q" defaultValue={searchParams.q ?? ''} className="campo w-72 block mt-1" placeholder={verNomes ? 'nome ou matrícula' : 'matrícula'} />
         </label>

@@ -1,0 +1,1354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export>
+	<Filtros>
+		<Ano>2026</Ano>
+		<Mes>AGOSTO</Mes>
+	</Filtros>
+<SDTDespesaFuncaoCollection xmlns="transparencianovalima">
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>129</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO DE RECEITAS</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>3153000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>2953000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>25159.49</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>188367.22</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>232337.79</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>313170150.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>312905953.69</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>7727047.70</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>25666367.10</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>25531801.77</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>244</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ASSISTÊNCIA COMUNITÁRIA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>3986120.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>3964120.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>-192649.13</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>3706.31</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>3776.04</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>131</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>COMUNICAÇÃO SOCIAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>7315460.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>7315460.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>961.44</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>684114.38</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>998015.62</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>363</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ENSINO PROFISSIONAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>2300000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>2300000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>1400000.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>1400000.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>127</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ORDENAMENTO TERRITORIAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>8368710.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>8368710.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>1262166.88</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>181</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>POLICIAMENTO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>6639160.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>5449640.72</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>350790.44</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>512291.65</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>62165.82</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>331</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>PROTEÇÃO E BENEFÍCIO AO TRABALHADOR</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>22893640.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>22893640.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>1000899.19</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>1334936.33</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>1277640.24</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>452</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>SERVIÇOS URBANOS</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>8580000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>8692993.47</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>256654.44</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>2049255.28</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>2040909.88</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>126</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>TECNOLOGIA DA INFORMAÇÃO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>5715755.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>5346095.02</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>426489.40</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>931513.60</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>1288361.47</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>04</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>695</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>TURISMO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>27200.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>27200.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>0.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>08</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ASSISTÊNCIA SOCIAL</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>4824520.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>4247406.13</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>142551.47</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>176416.87</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>216139.36</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>08</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ASSISTÊNCIA SOCIAL</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>244</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ASSISTÊNCIA COMUNITÁRIA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>7607560.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>7607560.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>167718.18</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>238886.70</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>330026.27</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>08</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ASSISTÊNCIA SOCIAL</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>246</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>SEGURANÇA DE RENDA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>10250550.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>9754787.21</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>457011.41</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>457011.41</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>08</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ASSISTÊNCIA SOCIAL</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>245</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>SERVIÇOS SOCIOASSISTENCIAIS</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>22531830.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>23899936.10</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>596854.31</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>1178251.41</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>1518592.64</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>19</DespesaFuncaoCod>
+		<DespesaFuncaoNome>CIÊNCIA E TECNOLOGIA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>572</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>DESENVOLVIMENTO TECNOLÓGICO E ENGELHARIA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>16760600.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>16760600.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>1054617.35</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>43373.05</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>1105189.10</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>23</DespesaFuncaoCod>
+		<DespesaFuncaoNome>COMÉRCIO E SERVIÇOS</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>695</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>TURISMO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>4939730.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>5068098.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>217565.67</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>641113.66</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>296142.66</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>13</DespesaFuncaoCod>
+		<DespesaFuncaoNome>CULTURA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>10000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>10000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>0.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>13</DespesaFuncaoCod>
+		<DespesaFuncaoNome>CULTURA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>392</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>DIFUSÃO CULTURAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>23797880.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>24680543.25</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>1656601.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>4430848.87</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>4465983.77</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>13</DespesaFuncaoCod>
+		<DespesaFuncaoNome>CULTURA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>391</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>PATRIMÔNIO HISTÓRICO, ARTÍSTICO E ARQUEOLÓGICO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>2052580.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>1160076.75</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>53295.09</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>48091.23</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>27</DespesaFuncaoCod>
+		<DespesaFuncaoNome>DESPORTO E LAZER</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>6047495.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>6197495.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>-745461.96</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>663949.60</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>876350.98</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>27</DespesaFuncaoCod>
+		<DespesaFuncaoNome>DESPORTO E LAZER</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>812</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>DESPORTO COMUNITÁRIO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>14014835.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>14014835.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>1079114.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>2008322.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>982738.80</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>27</DespesaFuncaoCod>
+		<DespesaFuncaoNome>DESPORTO E LAZER</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>811</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>DESPORTO DE RENDIMENTO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>635000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>635000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>41340.32</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>53740.32</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>27</DespesaFuncaoCod>
+		<DespesaFuncaoNome>DESPORTO E LAZER</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>813</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>LAZER</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>1595000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>1525000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>202324.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>205355.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>116295.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>14</DespesaFuncaoCod>
+		<DespesaFuncaoNome>DIREITOS DA CIDADANIA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>241</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ASSISTÊNCIA A PESSOA IDOSA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>2645290.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>2645290.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>9750.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>12235.33</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>406002.36</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>14</DespesaFuncaoCod>
+		<DespesaFuncaoNome>DIREITOS DA CIDADANIA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>243</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ASSISTÊNCIA À CRIANÇA E AO ADOLESCENTE</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>1855470.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>2801906.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>956051.84</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>85208.07</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>79901.76</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>14</DespesaFuncaoCod>
+		<DespesaFuncaoNome>DIREITOS DA CIDADANIA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>422</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>DIREITOS INDIVIDUAIS, COLETIVOS E DIFUSOS</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>2237530.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>1937692.14</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>164245.68</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>123184.28</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>95332.18</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>12</DespesaFuncaoCod>
+		<DespesaFuncaoNome>EDUCAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>109359808.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>108540409.19</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>2667004.28</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>8317872.62</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>8729402.10</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>12</DespesaFuncaoCod>
+		<DespesaFuncaoNome>EDUCAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>366</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>EDUCAÇÃO DE JOVENS E ADULTOS</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>1593222.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>1500874.17</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>201566.70</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>139146.87</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>134674.13</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>12</DespesaFuncaoCod>
+		<DespesaFuncaoNome>EDUCAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>367</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>EDUCAÇÃO ESPECIAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>9335784.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>9314396.11</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>490939.81</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>817251.30</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>816964.58</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>12</DespesaFuncaoCod>
+		<DespesaFuncaoNome>EDUCAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>365</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>EDUCAÇÃO INFANTIL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>84714799.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>82616513.70</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>1516944.04</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>7040424.81</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>7059034.72</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>12</DespesaFuncaoCod>
+		<DespesaFuncaoNome>EDUCAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>361</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ENSINO FUNDAMENTAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>143273882.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>144063321.03</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>8029920.97</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>17972148.71</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>17684386.84</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>28</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ENCARGOS ESPECIAIS</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>846</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>OUTROS ENCARGOS ESPECIAIS</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>2685000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>3913921.08</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>1228921.08</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>1308297.02</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>1308297.02</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>28</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ENCARGOS ESPECIAIS</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>841</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>REFINANCIAMENTO DA DÍVIDA INTERNA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>1315000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>1315000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>0.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>28</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ENCARGOS ESPECIAIS</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>843</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>SERVIÇOS DA DÍVIDA INTERNA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>4321940.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>4321940.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>371085.41</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>371085.41</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>03</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ESSENCIAL À JUSTIÇA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>1900000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>1820000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>0.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>03</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ESSENCIAL À JUSTIÇA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>061</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>AÇÃO JUDICIÁRIA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>17161630.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>19567252.11</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>4471015.19</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>5457020.23</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>3156307.84</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>03</DespesaFuncaoCod>
+		<DespesaFuncaoNome>ESSENCIAL À JUSTIÇA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>092</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>REPRESENTAÇÃO JUDICIAL E EXTRAJUDICIAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>875000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>875000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>24000.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>64000.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>394000.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>18</DespesaFuncaoCod>
+		<DespesaFuncaoNome>GESTÃO AMBIENTAL</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>204000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>204000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>17290.57</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>18</DespesaFuncaoCod>
+		<DespesaFuncaoNome>GESTÃO AMBIENTAL</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>542</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>CONTROLE AMBIENTAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>51440000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>52510242.84</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>1209192.84</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>5868611.46</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>6701339.68</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>18</DespesaFuncaoCod>
+		<DespesaFuncaoNome>GESTÃO AMBIENTAL</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>541</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>PRESERVAÇÃO E CONSERVAÇÃO AMBIENTAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>641380.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>641380.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>30500.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>103000.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>100000.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>16</DespesaFuncaoCod>
+		<DespesaFuncaoNome>HABITAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>330000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>330000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>0.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>16</DespesaFuncaoCod>
+		<DespesaFuncaoNome>HABITAÇÃO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>482</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>HABITAÇÃO URBANA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>13567820.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>13567820.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>103401.92</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>49025.80</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>105759.36</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>01</DespesaFuncaoCod>
+		<DespesaFuncaoNome>LEGISLATIVA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>031</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>AÇÃO LEGISLATIVA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>63570000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>63570000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>647269.75</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>5014030.90</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>4989362.37</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>09</DespesaFuncaoCod>
+		<DespesaFuncaoNome>PREVIDÊNCIA SOCIAL</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>271</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>PREVIDÊNCIA BÁSICA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>6233890.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>6233890.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>3000.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>325515.29</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>310620.45</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>99</DespesaFuncaoCod>
+		<DespesaFuncaoNome>RESERVA DE CONTINGÊNCIA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>999</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>RESERVA DE CONTINGÊNCIA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>3151230.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>3151230.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>0.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>17</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SANEAMENTO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>512</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>SANEAMENTO BÁSICO URBANO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>37237460.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>37028739.04</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>277435.78</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>2879404.81</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>788365.76</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>10</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SAÚDE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>122</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>35139628.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>35198028.63</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>527824.16</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>2398622.89</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>2444588.74</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>10</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SAÚDE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>306</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ALIMENTAÇÃO E NUTRIÇÃO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>872529.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>872529.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>42096.66</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>97524.61</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>30626.96</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>10</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SAÚDE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>302</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ASSISTÊNCIA HOSPITALAR E AMBULATORIAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>148409127.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>149851233.98</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>9056586.24</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>14850596.34</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>13402417.79</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>10</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SAÚDE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>301</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ATENÇÃO BÁSICA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>74287056.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>72909219.86</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>4581371.57</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>7811868.14</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>7912054.97</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>10</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SAÚDE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>303</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>SUPORTE PROFILÁTICO E TERAPÊUTICO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>36257530.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>37144807.89</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>2559581.65</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>3971690.42</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>2319839.31</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>10</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SAÚDE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>126</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>TECNOLOGIA DA INFORMAÇÃO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>2735236.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>2682226.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>46361.64</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>212014.70</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>485366.74</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>10</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SAÚDE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>305</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>VIGILÂNCIA EPIDEMIOLÓGICA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>13190727.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>12700925.35</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>484221.38</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>824497.24</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>811585.57</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>10</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SAÚDE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>304</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>VIGILÂNCIA SANITÁRIA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>3268757.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>3319887.76</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>462575.24</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>462504.97</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>458179.71</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>06</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SEGURANÇA PÚBLICA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>182</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>DEFESA CIVIL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>663000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>663000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>0.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>06</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SEGURANÇA PÚBLICA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>183</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>INFORMAÇÃO E INTELIGÊNCIA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>4540000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>4540000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>28747.35</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>06</DespesaFuncaoCod>
+		<DespesaFuncaoNome>SEGURANÇA PÚBLICA</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>181</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>POLICIAMENTO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>1405760.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>1405760.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>-13783.12</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>117658.37</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>136365.57</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>11</DespesaFuncaoCod>
+		<DespesaFuncaoNome>TRABALHO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>333</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>EMPREGABILIDADE</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>3670130.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>3670130.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>34447.46</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>79377.72</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>23417.18</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>11</DespesaFuncaoCod>
+		<DespesaFuncaoNome>TRABALHO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>334</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>FOMENTO AO TRABALHO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>9646510.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>12911130.36</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>2779040.67</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>2562416.61</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>2071719.88</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>26</DespesaFuncaoCod>
+		<DespesaFuncaoNome>TRANSPORTE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>125</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>NORMATIZAÇÃO E FISCALIZAÇÃO</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>7042100.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>5815752.87</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>39720.24</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>679973.39</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>134541.48</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>26</DespesaFuncaoCod>
+		<DespesaFuncaoNome>TRANSPORTE</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>453</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>TRANSPORTES COLETIVOS URBANOS</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>30000000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>32415866.41</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>2415866.41</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>1266239.95</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>3000000.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>15</DespesaFuncaoCod>
+		<DespesaFuncaoNome>URBANISMO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>451</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>INFRA-ESTRUTURA URBANA</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>147650000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>148691942.58</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>2608258.96</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>14639349.73</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>14061128.14</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+	<SDTDespesaFuncao xmlns="transparencianovalima">
+		<DespesaFuncaoId>0</DespesaFuncaoId>
+		<DespesaFuncaoCod>15</DespesaFuncaoCod>
+		<DespesaFuncaoNome>URBANISMO</DespesaFuncaoNome>
+		<DespesaFuncaoAno>2026</DespesaFuncaoAno>
+		<DespesaFuncaoMes>0</DespesaFuncaoMes>
+		<DespesaSubFuncaoId>0</DespesaSubFuncaoId>
+		<DespesaSubFuncaoCod>127</DespesaSubFuncaoCod>
+		<DespesaSubFuncaoNome>ORDENAMENTO TERRITORIAL</DespesaSubFuncaoNome>
+		<DespesaFuncaoOrcValorInicial>1170000.00</DespesaFuncaoOrcValorInicial>
+		<DespesaFuncaoOrcValorAtual>970000.00</DespesaFuncaoOrcValorAtual>
+		<DespesaFuncaoEmpTot>0.00</DespesaFuncaoEmpTot>
+		<DespesaFuncaoLiqTot>0.00</DespesaFuncaoLiqTot>
+		<DespesaFuncaoPagTot>0.00</DespesaFuncaoPagTot>
+		<DespesaFuncaoOrgaoId>0</DespesaFuncaoOrgaoId>
+		<DespesaFuncaoOrgaoCod/>
+		<DespesaFuncaoOrgaoNome/>
+		<DespesaFuncaoUnidadeId>0</DespesaFuncaoUnidadeId>
+		<DespesaFuncaoUnidadeCod/>
+		<DespesaFuncaoUnidadeNome/>
+	</SDTDespesaFuncao>
+</SDTDespesaFuncaoCollection>
+
+</Export>

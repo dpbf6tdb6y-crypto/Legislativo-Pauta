@@ -1,0 +1,805 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export>
+	<Filtros>
+		<Ano>2026</Ano>
+		<Mes>AGOSTO</Mes>
+	</Filtros>
+<SDTDespesaNaturezaCollection xmlns="transparencianovalima">
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>317170</DespesaNaturezaCod>
+		<DespesaNaturezaNome>RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>824752.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>824752.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>8000.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>13625.84</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>17046.74</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319001</DespesaNaturezaCod>
+		<DespesaNaturezaNome>APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>3146035.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>3146035.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>240835.23</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>240835.23</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319003</DespesaNaturezaCod>
+		<DespesaNaturezaNome>PENSÕES DO RPPS E DO MILITAR</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>605085.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>605085.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>45587.41</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>45587.41</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319004</DespesaNaturezaCod>
+		<DespesaNaturezaNome>CONTRATAÇÃO POR TEMPO DETERMINADO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>69415500.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>71658722.46</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>3559147.40</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>7083470.49</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>6984067.80</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319011</DespesaNaturezaCod>
+		<DespesaNaturezaNome>VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>317945748.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>317062213.54</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>-889518.20</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>24810770.87</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>24801081.40</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319013</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OBRIGAÇÕES PATRONAIS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>60917247.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>59471321.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>523946.53</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>4480971.89</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>4320882.52</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319016</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>0.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>520698.26</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>173365.38</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319091</DespesaNaturezaCod>
+		<DespesaNaturezaNome>SENTENCAS JUDICIAIS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>16761630.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>16761630.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>2179369.44</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>3174053.71</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>3118097.19</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319092</DespesaNaturezaCod>
+		<DespesaNaturezaNome>DESPESAS DE EXERCÍCIOS ANTERIORES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>0.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>0.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>319094</DespesaNaturezaCod>
+		<DespesaNaturezaNome>INDENIZACOES E RESTITUICOES TRABALHISTAS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>2854679.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>2878565.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>73780.26</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>212642.98</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>137897.64</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>329021</DespesaNaturezaCod>
+		<DespesaNaturezaNome>JUROS SOBRE A DIVIDA POR CONTRATO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>885830.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>885830.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>74280.58</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>74280.58</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>329022</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>396920.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>396920.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>33426.25</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>33426.25</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>333041</DespesaNaturezaCod>
+		<DespesaNaturezaNome>CONTRIBUIÇÕES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>39000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>39000.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>3250.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>3250.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>335041</DespesaNaturezaCod>
+		<DespesaNaturezaNome>CONTRIBUIÇÕES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>55182118.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>59754960.95</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>4391327.23</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>7082059.73</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>6183756.14</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>335042</DespesaNaturezaCod>
+		<DespesaNaturezaNome>AUXÍLIOS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>500000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>500000.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>335043</DespesaNaturezaCod>
+		<DespesaNaturezaNome>SUBVENÇÕES SOCIAIS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>19719311.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>20666113.73</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>208333.33</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>416666.66</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>1406554.52</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>336041</DespesaNaturezaCod>
+		<DespesaNaturezaNome>CONTRIBUICOES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>2806160.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>2806160.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>336045</DespesaNaturezaCod>
+		<DespesaNaturezaNome>SUBVENCOES ECONOMICAS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>31259500.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>33675366.41</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>2415866.41</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>1266239.95</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>3000000.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>336783</DespesaNaturezaCod>
+		<DespesaNaturezaNome>DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>28398858.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>29482711.46</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>1083853.39</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>2915995.50</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>2915995.50</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>337170</DespesaNaturezaCod>
+		<DespesaNaturezaNome>RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>811299.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>811299.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>5499.16</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>2078.26</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339014</DespesaNaturezaCod>
+		<DespesaNaturezaNome>DIÁRIAS – PESSOAL CIVIL</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>1096580.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>966711.44</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>23109.03</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>32005.03</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>42352.53</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339019</DespesaNaturezaCod>
+		<DespesaNaturezaNome>AUXÍLIO-FARDAMENTO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>300000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>300000.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339030</DespesaNaturezaCod>
+		<DespesaNaturezaNome>MATERIAL DE CONSUMO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>48298756.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>45772030.07</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>3043656.49</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>3475683.74</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>2739701.15</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339031</DespesaNaturezaCod>
+		<DespesaNaturezaNome>PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>1633150.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>1437869.44</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>156000.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>81260.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>81260.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339032</DespesaNaturezaCod>
+		<DespesaNaturezaNome>MATERIAL DE DISTRIBUICAO GRATUITA</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>39223254.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>34994187.73</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>2234263.79</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>1724986.77</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>2074528.59</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339033</DespesaNaturezaCod>
+		<DespesaNaturezaNome>PASSAGENS E DESPESAS COM LOCOMOCAO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>1446479.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>1323617.46</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>19095.41</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>43791.11</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>51902.24</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339034</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>50204519.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>56595204.97</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>7982095.57</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>7386370.52</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>7522872.29</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339035</DespesaNaturezaCod>
+		<DespesaNaturezaNome>SERVICOS DE CONSULTORIA</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>10871380.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>10888884.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>109334.35</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>172419.39</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>147608.97</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339036</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>10045835.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>9489496.72</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>261890.88</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>560504.57</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>669872.18</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339037</DespesaNaturezaCod>
+		<DespesaNaturezaNome>LOCACAO DE MAO-DE-OBRA</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>3765844.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>3709580.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>104095.21</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>197621.99</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>217469.04</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339039</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>463309498.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>459206229.99</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>18438554.28</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>52432870.44</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>45148448.47</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339040</DespesaNaturezaCod>
+		<DespesaNaturezaNome>SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>53631102.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>53188985.92</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>3677264.35</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>2652533.01</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>4375365.75</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339046</DespesaNaturezaCod>
+		<DespesaNaturezaNome>AUXILIO-ALIMENTACAO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>86745440.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>86792032.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>46592.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>7592505.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>7592505.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339047</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>3280636.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>4198376.04</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>1231920.28</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>1310461.38</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>1353027.12</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339048</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>2303640.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>2303640.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>99760.96</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>104160.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>146069.36</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339049</DespesaNaturezaCod>
+		<DespesaNaturezaNome>AUXILIO-TRANSPORTE</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>8938882.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>8696117.75</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>477463.23</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>405045.73</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>441882.45</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339091</DespesaNaturezaCod>
+		<DespesaNaturezaNome>SENTENCAS JUDICIAIS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>400000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>2805622.11</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>2291645.75</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>2282966.52</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>38210.65</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339092</DespesaNaturezaCod>
+		<DespesaNaturezaNome>DESPESAS DE EXERCÍCIOS ANTERIORES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>1000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>1000.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>5979.06</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>5979.06</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>5979.06</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>339093</DespesaNaturezaCod>
+		<DespesaNaturezaNome>INDENIZAÇÕES E RESTITUIÇÕES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>147860.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>133962.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>63052.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>60424.72</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>60424.72</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>443041</DespesaNaturezaCod>
+		<DespesaNaturezaNome>CONTRIBUIÇÕES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>127000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>127000.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>9750.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>9750.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>445042</DespesaNaturezaCod>
+		<DespesaNaturezaNome>AUXÍLIOS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>1948269.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>1338402.80</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>244411.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>244411.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>1400.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>447170</DespesaNaturezaCod>
+		<DespesaNaturezaNome>RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>128886.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>128886.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>449030</DespesaNaturezaCod>
+		<DespesaNaturezaNome>MATERIAL DE CONSUMO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>0.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>0.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>449040</DespesaNaturezaCod>
+		<DespesaNaturezaNome>SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>1860000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>1860000.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>449051</DespesaNaturezaCod>
+		<DespesaNaturezaNome>OBRAS E INSTALACOES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>140368070.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>137231398.78</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>817261.27</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>8822073.66</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>9275911.87</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>449052</DespesaNaturezaCod>
+		<DespesaNaturezaNome>EQUIPAMENTOS E MATERIAL PERMANENTE</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>11699043.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>10546116.71</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>127419.53</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>6180067.75</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>6143894.20</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>449061</DespesaNaturezaCod>
+		<DespesaNaturezaNome>AQUISICAO DE IMOVEIS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>1400000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>1400000.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>449092</DespesaNaturezaCod>
+		<DespesaNaturezaNome>DESPESAS DE EXERCICIOS ANTERIORES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>0.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>3377.40</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>3377.40</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>3377.40</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>449093</DespesaNaturezaCod>
+		<DespesaNaturezaNome>INDENIZACOES E RESTITUICOES</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>0.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>0.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>456782</DespesaNaturezaCod>
+		<DespesaNaturezaNome>APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>12714785.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>18249875.30</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>6436853.02</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>2234695.02</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>2135327.37</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>459061</DespesaNaturezaCod>
+		<DespesaNaturezaNome>AQUISIÇÃO DE IMÓVEIS</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>950000.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>870000.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>469071</DespesaNaturezaCod>
+		<DespesaNaturezaNome>PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>4354190.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>4354190.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>263378.58</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>263378.58</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+	<SDTDespesaNatureza xmlns="transparencianovalima">
+		<DespesaNaturezaCod>999999</DespesaNaturezaCod>
+		<DespesaNaturezaNome>RESERVA DE CONTINGÊNCIA</DespesaNaturezaNome>
+		<DespesaNaturezaAno>2026</DespesaNaturezaAno>
+		<DespesaNaturezaMes>0</DespesaNaturezaMes>
+		<DespesaNaturezaOrcValorInicial>3151230.00</DespesaNaturezaOrcValorInicial>
+		<DespesaNaturezaOrcValorAtual>3151230.00</DespesaNaturezaOrcValorAtual>
+		<DespesaNaturezaEmpTot>0.00</DespesaNaturezaEmpTot>
+		<DespesaNaturezaLiqTot>0.00</DespesaNaturezaLiqTot>
+		<DespesaNaturezaPagTot>0.00</DespesaNaturezaPagTot>
+		<DespesaNaturezaOrgaoCod/>
+		<DespesaNaturezaOrgaoNome/>
+		<DespesaNaturezaUnidadeCod/>
+		<DespesaNaturezaUnidadeNome/>
+	</SDTDespesaNatureza>
+</SDTDespesaNaturezaCollection>
+
+</Export>

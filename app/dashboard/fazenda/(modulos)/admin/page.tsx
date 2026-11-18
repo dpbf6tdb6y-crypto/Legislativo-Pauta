@@ -18,7 +18,7 @@ export default async function Admin() {
   });
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-semibold">Chaves e perfis da Gestão</h1>
+      <h1 className="text-lg font-semibold">Chaves e perfis do Compliance</h1>
       <div className="cartao">
         <h2 className="font-semibold mb-2">Chaves liga/desliga</h2>
         <table className="tabela">
@@ -37,14 +37,14 @@ export default async function Admin() {
         <ul className="text-xs text-slate-600">{hist.map((h) => <li key={h.id}>{h.quando.toLocaleString('pt-BR')} · {h.nome}: {h.de ? 'ligada' : 'desligada'} → {h.para ? 'ligada' : 'desligada'} · {h.por}</li>)}</ul>
       </div>
       <div className="cartao">
-        <h2 className="font-semibold">Perfis da Gestão</h2>
+        <h2 className="font-semibold">Perfis do Compliance</h2>
         <p className="text-xs text-slate-500 mb-2">
           O perfil é escolhido no cadastro de cada usuário do SEGOV (<Link href="/dashboard/usuarios" className="text-emerald-700 hover:underline">Usuários</Link>),
-          junto com o menu &quot;Gestão - $$$&quot;. O perfil Secretaria vê e responde só a própria secretaria. Master e Admin sem perfil da Gestão
+          junto com o menu &quot;Compliance&quot;. O perfil Secretaria vê e responde só a própria secretaria. Master e Admin sem perfil do Compliance
           só configuram as chaves e veem o registro de acessos.
         </p>
         <table className="tabela">
-          <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil da Gestão</th><th>Ativo</th></tr></thead>
+          <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil do Compliance</th><th>Ativo</th></tr></thead>
           <tbody>
             {usuarios.map((u) => (
               <tr key={u.id}>

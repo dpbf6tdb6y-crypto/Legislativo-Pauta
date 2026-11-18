@@ -21,6 +21,34 @@ export interface DespesaOrgaoMesC {
   pago: bigint;
 }
 
+/** Relatório consolidado do portal por natureza da despesa. */
+export interface DespesaNaturezaMesC {
+  ano: number;
+  mes: number; // 0 = ano inteiro
+  naturezaCod: string;
+  naturezaNome: string;
+  dotInicial: bigint;
+  dotAtual: bigint;
+  empenhado: bigint;
+  liquidado: bigint;
+  pago: bigint;
+}
+
+/** Relatório consolidado do portal por função e subfunção. */
+export interface DespesaFuncaoMesC {
+  ano: number;
+  mes: number; // 0 = ano inteiro
+  funcaoCod: string;
+  funcaoNome: string;
+  subfuncaoCod: string;
+  subfuncaoNome: string;
+  dotInicial: bigint;
+  dotAtual: bigint;
+  empenhado: bigint;
+  liquidado: bigint;
+  pago: bigint;
+}
+
 export interface EventoC {
   idOrigem: number;
   numero: string;
@@ -157,6 +185,10 @@ export interface Conector {
   /** data/hora da última atualização informada pela fonte (texto livre) */
   ultimaAtualizacao(): Promise<string>;
   despesaOrgaoMes(ano: number, mes: number): Promise<ComBruto<DespesaOrgaoMesC[]>>;
+  /** relatório consolidado por natureza ([] se a fonte não publica) */
+  despesaNaturezaMes(ano: number, mes: number): Promise<ComBruto<DespesaNaturezaMesC[]>>;
+  /** relatório consolidado por função e subfunção ([] se a fonte não publica) */
+  despesaFuncaoMes(ano: number, mes: number): Promise<ComBruto<DespesaFuncaoMesC[]>>;
   receitasMes(ano: number, mes: number): Promise<ComBruto<ReceitaContaMesC[]>>;
   contratos(): Promise<ComBruto<ContratoC[]>>;
   /** devolve o empenho pelo id da fonte, ou null se o id não existir */
@@ -176,6 +208,8 @@ export interface Conector {
     progresso?: (msg: string) => void;
   }): Promise<{ verificados: number; entregues: number }>;
   folhaMes(anoMes: string): Promise<ComBruto<FolhaMesC>>;
+  /** quantos registros a fonte informa hoje para o mês (rápido: descobre mês fechado que foi alterado) */
+  contagemFolha?(anoMes: string): Promise<number>;
   /** restos a pagar sendo pagos no exercício (lista do dia) */
   restosAPagar(exercicio: number): Promise<ComBruto<RestoPagarC[]>>;
   /** descontos retidos num pagamento ([] se não houver) */

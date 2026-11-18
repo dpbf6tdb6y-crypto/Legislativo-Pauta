@@ -3,6 +3,8 @@
 import { brlCurto, pctBp } from '@/lib/financas/dinheiro';
 import type { DividaLRF, Nivel, ResumoRREO } from '@/lib/financas/painel/fiscal';
 import { COR_NIVEL } from './Medidor';
+import SeloDado from './SeloDado';
+import { SELO_OFICIAL } from '@/lib/financas/coleta/selos';
 
 const pctNum = (bp: bigint) => Number(bp) / 100;
 const sinal = (v: bigint | null) => (v === null ? '—' : `${v < BigInt(0) ? '−' : '+'}${brlCurto(v < BigInt(0) ? -v : v)}`);
@@ -24,7 +26,7 @@ export default function BlocoRREO({ r, divida }: { r: ResumoRREO | null; divida:
     <div className="grid gap-4 md:grid-cols-3">
       {/* ---------- mínimos constitucionais ---------- */}
       <section className="cartao">
-        <h2 className="font-semibold">Mínimos da Constituição</h2>
+        <h2 className="font-semibold">Mínimos da Constituição {r && <SeloDado selo={SELO_OFICIAL} />}</h2>
         <p className="text-xs text-slate-500">RREO (SICONFI) · {pos || 'sem RREO coletado'}</p>
         {r?.minimos.map((m) => {
           const escala = Math.max(pctNum(m.minimoBp) * 1.6, pctNum(m.pctBp) * 1.05);

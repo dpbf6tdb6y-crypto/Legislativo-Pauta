@@ -2,6 +2,7 @@ import { exigir } from '@/lib/financas/auth';
 import { pode } from '@/lib/financas/perfis';
 import { REGRAS, previaRegra, registrarRegras } from '@/lib/financas/regras/motor';
 import { decidirRegra } from '../acoes';
+import AbasAuditoriaInterna from '@/app/dashboard/fazenda/_componentes/AbasAuditoriaInterna';
 
 const COR: Record<string, string> = { proposta: 'bg-slate-100 text-slate-700', aprovada: 'bg-emerald-100 text-emerald-900', desligada: 'bg-red-100 text-red-900' };
 
@@ -14,7 +15,8 @@ export default async function Regras({ searchParams }: { searchParams: { previa?
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-semibold">Regras de conferência</h1>
+      <AbasAuditoriaInterna atual="regras" />
+      <h1 className="text-lg font-semibold">Auditoria interna · regras de conferência</h1>
       <p className="text-sm text-slate-600">
         O sistema não decide o que é irregular. Cada regra nasce como <b>proposta</b> e só gera apontamentos depois de <b>aprovada</b> pelo controlador.
         Apontamento = &quot;para análise&quot;, com a base legal; quem classifica é uma pessoa.

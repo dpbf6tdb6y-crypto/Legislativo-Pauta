@@ -5,6 +5,7 @@ import { classificarApontamento } from '../acoes';
 import { acaoCriarPonto } from '../auditoria/acoes';
 import { orgaosExecutivo } from '@/lib/financas/auditoria/dados';
 import { sugerirOrgao } from '@/lib/financas/auditoria/regras';
+import AbasAuditoriaInterna from '@/app/dashboard/fazenda/_componentes/AbasAuditoriaInterna';
 
 const ROT: Record<string, string> = { para_analise: 'para análise', procedente: 'procedente', improcedente: 'improcedente' };
 
@@ -34,8 +35,9 @@ export default async function Apontamentos({ searchParams }: { searchParams: { s
   const prazoPadrao = new Date(Date.now() + 15 * 86400000).toISOString().slice(0, 10);
   return (
     <div className="space-y-3">
-      <div className="flex gap-2 items-center">
-        <h1 className="text-lg font-semibold mr-auto">Apontamentos</h1>
+      <AbasAuditoriaInterna atual="apontamentos" />
+      <div className="flex flex-wrap gap-2 items-center">
+        <h1 className="text-lg font-semibold mr-auto">Auditoria interna · apontamentos</h1>
         {['para_analise', 'procedente', 'improcedente', 'todos'].map((x) => (
           <Link key={x} href={`?status=${x}`} className={x === status ? 'btn' : 'btn-sec'}>{ROT[x] ?? x}</Link>
         ))}

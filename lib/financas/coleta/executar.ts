@@ -6,17 +6,23 @@ import { dbDa, prismaSistema, type DbPrefeitura } from '@/lib/financas/db';
 import { ConectorAbaco } from '@/lib/financas/conectores/abaco';
 import { ConectorArquivo } from '@/lib/financas/conectores/arquivo';
 import { contratoCitado, situacaoResumida } from '@/lib/financas/conectores/abaco/leitores';
-import { rgf, rreoSimplificado, type IndicadorC } from '@/lib/financas/conectores/siconfi';
+import { entregasHomologadas, rgf, rreoCompleto, type IndicadorC } from '@/lib/financas/conectores/siconfi';
 import type { ArquivoBaixado, Conector, EmpenhoC } from '@/lib/financas/conectores/tipos';
 import { ligarContratosEmpenhos } from './ligacoes';
 import { conciliar, type ResultadoConciliacao } from './conciliacao';
+import { conferirComOficial, conferirVisoes } from './conferenciaOficial';
+import { conferirListaContratos, conferirSomaReceita, conferirVolumeFolha } from './travas';
 import { executarRegras } from '@/lib/financas/regras/motor';
 import { chaveLigada } from '@/lib/financas/chaves';
 
 export interface OpcoesColeta {
   ano: number;
   meses: number[]; // meses de despesa/receita a coletar (0 = ano inteiro)
+  /** meses dos relatórios consolidados de natureza e função (0 = ano inteiro) */
+  mesesVisoes?: number[];
   folha: string[]; // "2026/10"
+  /** meses fechados da folha a verificar: só relê o mês se o portal informar outro número de registros */
+  folhaVerificar?: string[];
   empenhos: boolean;
   contratos: boolean;
   siconfi: boolean;
@@ -41,6 +47,8 @@ export function criarConector(pref: { id: string; conector: string; conectorConf
 /** Pasta dos arquivos baixados, anexos e logs (no servidor: dados-financas/, montada nos contêineres). */
 export const dadosDir = () => process.env.FIN_DADOS_DIR || path.resolve('dados-financas');
 const json = (o: unknown) => JSON.stringify(o, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
+/** Troca de dados é tudo ou nada: se a gravação cair no meio, o dado anterior continua inteiro. */
+const TROCA = { timeout: 180_000, maxWait: 30_000 };
 
 async function guardarBrutos(db: DbPrefeitura, prefeituraId: string, coletaId: number, fonte: string, arqs: ArquivoBaixado[]) {
   const dia = new Date().toISOString().slice(0, 10);
@@ -72,12 +80,14 @@ async function gravarEmpenho(db: DbPrefeitura, prefeituraId: string, e: EmpenhoC
     create: { ...base, prefeituraId, idOrigem: e.idOrigem },
     update: base,
   });
-  await db.liquidacao.deleteMany({ where: { empenhoId: emp.id } });
-  await db.pagamento.deleteMany({ where: { empenhoId: emp.id } });
-  if (e.liquidacoes.length)
-    await db.liquidacao.createMany({ data: e.liquidacoes.map((x) => ({ prefeituraId, empenhoId: emp.id, idOrigem: x.idOrigem, numero: x.numero, data: x.data, valor: x.valor })) });
-  if (e.pagamentos.length)
-    await db.pagamento.createMany({ data: e.pagamentos.map((x) => ({ prefeituraId, empenhoId: emp.id, idOrigem: x.idOrigem, numero: x.numero, data: x.data, valor: x.valor })) });
+  await db.$transaction(async (tx) => {
+    await tx.liquidacao.deleteMany({ where: { empenhoId: emp.id } });
+    await tx.pagamento.deleteMany({ where: { empenhoId: emp.id } });
+    if (e.liquidacoes.length)
+      await tx.liquidacao.createMany({ data: e.liquidacoes.map((x) => ({ prefeituraId, empenhoId: emp.id, idOrigem: x.idOrigem, numero: x.numero, data: x.data, valor: x.valor })) });
+    if (e.pagamentos.length)
+      await tx.pagamento.createMany({ data: e.pagamentos.map((x) => ({ prefeituraId, empenhoId: emp.id, idOrigem: x.idOrigem, numero: x.numero, data: x.data, valor: x.valor })) });
+  }, TROCA);
 }
 
 export async function executarColeta(prefeituraId: string, op: OpcoesColeta) {
@@ -157,7 +167,7 @@ async function coletarComTrava(
     nome.startsWith('despesa') ? 0.4 : nome.startsWith('receitas') ? 1 : nome === 'contratos' ? 0.5
       : nome.startsWith('empenhos') ? (op.completa ? 45 : 8) : nome.startsWith('retencoes') ? 5 : nome.startsWith('restos') ? (op.completa ? 12 : 2) : nome.startsWith('folha') ? 20 : nome.startsWith('siconfi') ? 0.2 : 0.5;
   const pesoTotal =
-    op.meses.length * 0.4 + op.meses.filter((m) => m > 0).length * 1 + (op.contratos ? 0.5 : 0) +
+    op.meses.length * 0.4 + op.meses.filter((m) => m > 0).length * 1 + (op.mesesVisoes?.length ?? 0) * 0.8 + (op.contratos ? 0.5 : 0) +
     (op.empenhos ? pesoDe('empenhos') : 0) + (op.restos ? pesoDe('restos') : 0) + (op.retencoes ? pesoDe('retencoes') : 0) + op.folha.length * 20 + (op.siconfi ? 0.4 : 0) + 3 * 0.5;
   let pesoFeito = 0;
   let faixaInformada = 0;
@@ -190,6 +200,7 @@ async function coletarComTrava(
     if (x) informar(pesoFeito + pesoDe(nome) * (Number(x[1]) / Number(x[2])));
   };
 
+  let divergenciasVisoes = 0;
   const con = criarConector(pref);
   await abrirComTentativas(con, log, op.esperasAbrirMs);
   let portal = '';
@@ -201,24 +212,63 @@ async function coletarComTrava(
       await passo(`despesa_orgao ${op.ano}-${mes}`, async () => {
         const r = await con.despesaOrgaoMes(op.ano, mes);
         await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
-        await db.despesaOrgaoMes.deleteMany({ where: { ano: op.ano, mes } });
-        await db.despesaOrgaoMes.createMany({ data: r.dados.map((d) => ({ ...d, prefeituraId, coletaId: coleta.id })) });
+        await db.$transaction(async (tx) => {
+          await tx.despesaOrgaoMes.deleteMany({ where: { ano: op.ano, mes } });
+          await tx.despesaOrgaoMes.createMany({ data: r.dados.map((d) => ({ ...d, prefeituraId, coletaId: coleta.id })) });
+        }, TROCA);
         return { orgaos: r.dados.length };
       });
       if (mes > 0)
         await passo(`receitas ${op.ano}-${mes}`, async () => {
           const r = await con.receitasMes(op.ano, mes);
           await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
-          await db.receitaContaMes.deleteMany({ where: { ano: op.ano, mes } });
-          await db.receitaContaMes.createMany({ data: r.dados.map((d) => ({ ...d, prefeituraId })) });
+          conferirSomaReceita(r.dados); // soma que não fecha: recusa e mantém o que já estava gravado
+          await db.$transaction(async (tx) => {
+            await tx.receitaContaMes.deleteMany({ where: { ano: op.ano, mes } });
+            await tx.receitaContaMes.createMany({ data: r.dados.map((d) => ({ ...d, prefeituraId })) });
+          }, TROCA);
           return { contas: r.dados.length };
         });
     }
+
+    // relatórios consolidados: o total por natureza e por função vem daqui, nunca da soma de empenhos
+    for (const mes of op.mesesVisoes ?? []) {
+      await passo(`despesa_natureza ${op.ano}-${mes}`, async () => {
+        const r = await con.despesaNaturezaMes(op.ano, mes);
+        if (!r.dados.length) return { naturezas: 0 };
+        await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
+        await db.$transaction(async (tx) => {
+          await tx.despesaNaturezaMes.deleteMany({ where: { ano: op.ano, mes } });
+          await tx.despesaNaturezaMes.createMany({ data: r.dados.map((d) => ({ ...d, prefeituraId, coletaId: coleta.id })) });
+        }, TROCA);
+        return { naturezas: r.dados.length };
+      });
+      await passo(`despesa_funcao ${op.ano}-${mes}`, async () => {
+        const r = await con.despesaFuncaoMes(op.ano, mes);
+        if (!r.dados.length) return { funcoes: 0 };
+        await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
+        await db.$transaction(async (tx) => {
+          await tx.despesaFuncaoMes.deleteMany({ where: { ano: op.ano, mes } });
+          await tx.despesaFuncaoMes.createMany({ data: r.dados.map((d) => ({ ...d, prefeituraId, coletaId: coleta.id })) });
+        }, TROCA);
+        return { funcoes: r.dados.length };
+      });
+    }
+    // órgão, natureza e função são três visões do mesmo gasto: baixados na mesma coleta, têm de somar igual
+    const mesmosMeses = (op.mesesVisoes ?? []).filter((m) => op.meses.includes(m));
+    if (mesmosMeses.length)
+      await passo('conferencia das visoes', async () => {
+        const dif = await conferirVisoes(db, op.ano, mesmosMeses);
+        divergenciasVisoes = dif.length;
+        dif.forEach((d) => log(`atenção: ${d}`));
+        return { meses: mesmosMeses.length, divergencias: dif };
+      });
 
     if (op.contratos)
       await passo('contratos', async () => {
         const r = await con.contratos();
         await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
+        conferirListaContratos(r.dados.length, await db.contrato.count());
         for (const c of r.dados) {
           await db.contrato.upsert({
             where: { prefeituraId_idOrigem: { prefeituraId, idOrigem: c.idOrigem } },
@@ -249,9 +299,11 @@ async function coletarComTrava(
         await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
         // o que mudou desde a última coleta indica quais empenhos de origem reler
         const antes = new Map((await db.restoPagar.findMany({ where: { exercicio: op.ano } })).map((x) => [x.idOrigem, `${x.liquidado}|${x.pago}|${x.anulado}`]));
-        await db.restoPagar.deleteMany({ where: { exercicio: op.ano } });
-        for (let i = 0; i < r.dados.length; i += 500)
-          await db.restoPagar.createMany({ data: r.dados.slice(i, i + 500).map((x) => ({ ...x, prefeituraId })) });
+        await db.$transaction(async (tx) => {
+          await tx.restoPagar.deleteMany({ where: { exercicio: op.ano } });
+          for (let i = 0; i < r.dados.length; i += 500)
+            await tx.restoPagar.createMany({ data: r.dados.slice(i, i + 500).map((x) => ({ ...x, prefeituraId })) });
+        }, TROCA);
         const origens = [...new Set(r.dados.map((x) => x.empenhoIdOrigem).filter((x) => x > 0))];
         const conhecidos = new Set((await db.empenho.findMany({ where: { idOrigem: { in: origens } }, select: { idOrigem: true } })).map((e) => e.idOrigem));
         const mudaram = new Set(r.dados.filter((x) => antes.get(x.idOrigem) !== `${x.liquidado}|${x.pago}|${x.anulado}`).map((x) => x.empenhoIdOrigem));
@@ -318,7 +370,23 @@ async function coletarComTrava(
         return { lidos: fila.length, retido: total.toString() };
       });
 
-    for (const anoMes of op.folha) {
+    // o portal altera meses fechados da folha: relê só o mês cujo número de registros mudou
+    const folhas = [...op.folha];
+    if (op.folhaVerificar?.length && con.contagemFolha && (await chaveLigada(prefeituraId, 'folha')))
+      await passo('folha verificar meses fechados', async () => {
+        const mudaram: string[] = [];
+        for (const anoMes of op.folhaVerificar!) {
+          if (folhas.includes(anoMes)) continue;
+          const hoje = await con.contagemFolha!(anoMes);
+          const gravado = await db.folhaMes.findFirst({ where: { anoMes }, select: { linhasPortal: true } });
+          if (gravado?.linhasPortal !== hoje) mudaram.push(anoMes);
+        }
+        if (mudaram.length) log(`folha: ${mudaram.join(', ')} mudou no portal e será lida de novo`);
+        folhas.push(...mudaram);
+        return { verificados: op.folhaVerificar!.length, mudaram };
+      });
+
+    for (const anoMes of folhas) {
       if (!(await chaveLigada(prefeituraId, 'folha'))) {
         log('chave "folha" desligada: folha não coletada');
         break;
@@ -330,12 +398,15 @@ async function coletarComTrava(
         const f = r.dados;
         if (f.linhas.length !== f.linhasInformadasPelaFonte)
           throw new Error(`folha ${anoMes}: coletadas ${f.linhas.length} de ${f.linhasInformadasPelaFonte} linhas`);
-        await db.folhaLinha.deleteMany({ where: { anoMes } });
-        for (let i = 0; i < f.linhas.length; i += 500) {
-          await db.folhaLinha.createMany({
-            data: f.linhas.slice(i, i + 500).map(({ situacaoOriginal, ...l }) => ({ ...l, situacao: situacaoResumida(situacaoOriginal), prefeituraId })),
-          });
-        }
+        conferirVolumeFolha(anoMes, f.linhas.length, await db.folhaLinha.count({ where: { anoMes } }));
+        await db.$transaction(async (tx) => {
+          await tx.folhaLinha.deleteMany({ where: { anoMes } });
+          for (let i = 0; i < f.linhas.length; i += 500) {
+            await tx.folhaLinha.createMany({
+              data: f.linhas.slice(i, i + 500).map(({ situacaoOriginal, ...l }) => ({ ...l, situacao: situacaoResumida(situacaoOriginal), prefeituraId })),
+            });
+          }
+        }, TROCA);
         await db.folhaMes.upsert({
           where: { prefeituraId_anoMes: { prefeituraId, anoMes } },
           create: { prefeituraId, anoMes, linhasPortal: f.linhasInformadasPelaFonte, linhasColetadas: f.linhas.length, coletaId: coleta.id },
@@ -357,6 +428,17 @@ async function coletarComTrava(
           update: { valor: i.valor, coletaId: coleta.id },
         });
     };
+    // só o relatório HOMOLOGADO vale como oficial; se a homologação cair (retificação), a marca sai
+    const marcarHomologado = async (relatorio: 'RGF' | 'RREO', periodo: number, homologado: boolean) => {
+      if (homologado) await gravar([{ ano: op.ano, periodo, relatorio, chave: 'homologado', valor: '1' }]);
+      else await db.indicadorFiscal.deleteMany({ where: { ano: op.ano, periodo, relatorio, chave: 'homologado' } });
+    };
+    let homologados: Awaited<ReturnType<typeof entregasHomologadas>> | null = null;
+    await passo('siconfi entregas', async () => {
+      homologados = await entregasHomologadas(pref.ibge, op.ano);
+      return { rreo: [...homologados.rreo], rgf: [...homologados.rgf] };
+    });
+    const hom = () => homologados as Awaited<ReturnType<typeof entregasHomologadas>> | null;
     await passo('siconfi rgf', async () => {
       const achados = [];
       for (const q of [1, 2, 3]) {
@@ -364,30 +446,44 @@ async function coletarComTrava(
         if (!r.indicadores.length) continue;
         await guardarBrutos(db, prefeituraId, coleta.id, 'siconfi', [{ tipo: 'rgf', referencia: `${op.ano}-Q${q}`, nomeSugerido: `siconfi_rgf_${op.ano}_q${q}.json`, conteudo: r.bruto }]);
         await gravar(r.indicadores);
+        if (hom()) await marcarHomologado('RGF', q, hom()!.rgf.has(q));
         achados.push(`Q${q}`);
       }
       return { quadrimestres: achados };
     });
-    // RREO: mínimos de educação, FUNDEB e saúde, metas fiscais e restos a pagar (Anexo 14, já apurados pela contabilidade)
+    // RREO: mínimos, metas fiscais e restos (Anexo 14), grupos (01), funções (02), caixa (06), restos detalhados (07) e população
     await passo('siconfi rreo', async () => {
       const achados = [];
+      const avisos: string[] = [];
       for (let b = 1; b <= 6; b++) {
-        const r = await rreoSimplificado(pref.ibge, op.ano, b);
+        const r = await rreoCompleto(pref.ibge, op.ano, b);
         if (!r.indicadores.length) continue;
-        await guardarBrutos(db, prefeituraId, coleta.id, 'siconfi', [{ tipo: 'rreo', referencia: `${op.ano}-B${b}`, nomeSugerido: `siconfi_rreo14_${op.ano}_b${b}.json`, conteudo: r.bruto }]);
+        await guardarBrutos(db, prefeituraId, coleta.id, 'siconfi', r.brutos.map((x) => ({ tipo: 'rreo', referencia: `${op.ano}-B${b}-A${x.anexo}`, nomeSugerido: `siconfi_rreo${x.anexo}_${op.ano}_b${b}.json`, conteudo: x.bruto })));
         await gravar(r.indicadores);
+        if (hom()) await marcarHomologado('RREO', b, hom()!.rreo.has(b));
+        avisos.push(...r.avisos);
         achados.push(`B${b}`);
       }
-      return { bimestres: achados };
+      avisos.forEach((a) => log(`atenção: ${a}`));
+      return { bimestres: achados, avisos };
     });
   }
+
+  // trava de conferência: portal × RREO homologado, bimestre a bimestre
+  let divergenciasOficiais = 0;
+  await passo('conferencia oficial', async () => {
+    const r = await conferirComOficial(db, prefeituraId, op.ano, coleta.id);
+    divergenciasOficiais = r.divergencias;
+    if (r.divergencias) log(`atenção: ${r.divergencias} item(ns) diferentes do RREO homologado`);
+    return r;
+  });
 
   await passo('ligacoes contrato-empenho', () => ligarContratosEmpenhos(db, prefeituraId));
   let conc: ResultadoConciliacao | null = null;
   await passo('conciliacao', async () => (conc = await conciliar(db, op.ano)));
   await passo('regras', () => executarRegras(prefeituraId));
 
-  const divergente = conc !== null && (conc as ResultadoConciliacao).divergencias > 0;
+  const divergente = (conc !== null && (conc as ResultadoConciliacao).divergencias > 0) || divergenciasOficiais > 0 || divergenciasVisoes > 0;
   const status = erros.length ? 'falha' : divergente ? 'divergencia' : 'ok';
   await db.coleta.update({
     where: { id: coleta.id },

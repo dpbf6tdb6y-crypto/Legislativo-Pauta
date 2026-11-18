@@ -335,12 +335,12 @@ export default function UsuariosPage() {
                           <label className="flex items-center gap-2 mt-1 ml-1 text-xs text-gray-600 cursor-pointer">
                             <input type="checkbox" checked={podeUsarMicrofone} onChange={e => setPodeUsarMicrofone(e.target.checked)}
                               className="w-3.5 h-3.5 accent-purple-600" />
-                            🎤 Pode usar a pesquisa por pergunta e o microfone (voz) no Painel de Gestão
+                            🎤 Pode usar a pesquisa por pergunta e o microfone (voz) no painel anterior do Compliance
                           </label>
                         )}
                         {m.chave === "gestao" && (a.ver || a.cad) && (
                           <div className="mt-1 ml-1 mb-1 text-xs text-gray-600 flex flex-wrap items-center gap-2">
-                            <span>Perfil nos módulos da Gestão:</span>
+                            <span>Perfil no Compliance:</span>
                             <select value={gestaoPerfil} onChange={e => setGestaoPerfil(e.target.value)} disabled={!souMaster}
                               className="border border-gray-300 rounded px-1.5 py-0.5 text-xs disabled:bg-gray-100">
                               {PERFIS_GESTAO_ROTULO.map(([v, r]) => <option key={v} value={v}>{r}</option>)}

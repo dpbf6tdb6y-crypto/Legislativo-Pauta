@@ -67,7 +67,7 @@ export default function AuditoriaPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-5 pb-8">
       <div>
-        <h1 className="text-xl font-bold text-gray-800">Auditoria</h1>
+        <h1 className="text-xl font-bold text-gray-800">Log do sistema</h1>
         <p className="text-sm text-gray-500">Registro de todas as ações realizadas no sistema. {total} registro(s).</p>
       </div>
 

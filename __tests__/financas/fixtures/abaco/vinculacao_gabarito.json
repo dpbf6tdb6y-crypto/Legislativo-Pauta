@@ -1,0 +1,996 @@
+{
+"receita": [
+{
+"cod": "1112500100",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1112500200",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1112500300",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1112500400",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1112530100",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1112530300",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1112530400",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1113031100",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1113034100",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1114511100",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1114511200",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1114511300",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1114511400",
+"tipo": "Impostos",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1121010100",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1121010300",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1121010400",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1121022100",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1121022400",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1121040100",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1121500100",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122010101",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122010102",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122010110",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122010300",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122010400",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122530100",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122530200",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122530300",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1122530400",
+"tipo": "Taxas",
+"pct": 100,
+"lei": "CF (vinculada ao serviço)",
+"area": "Serviço da taxa"
+},
+{
+"cod": "1241500100",
+"tipo": "Contribuições",
+"pct": 100,
+"lei": "CF art. 149-A",
+"area": "Iluminação pública"
+},
+{
+"cod": "1241500300",
+"tipo": "Contribuições",
+"pct": 100,
+"lei": "CF art. 149-A",
+"area": "Iluminação pública"
+},
+{
+"cod": "1321010100",
+"tipo": "Receita Patrimonial",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1321011100",
+"tipo": "Receita Patrimonial",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1321012100",
+"tipo": "Receita Patrimonial",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1361013100",
+"tipo": "Receita Patrimonial",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1611020100",
+"tipo": "Receita de Serviços",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1621020100",
+"tipo": "Receita de Serviços",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1699990100",
+"tipo": "Receita de Serviços",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1711511100",
+"tipo": "Transferências Correntes",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1711512100",
+"tipo": "Transferências Correntes",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1711520100",
+"tipo": "Transferências Correntes",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1712510100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "Lei 7.990/1989",
+"area": "Mineração (restrita)"
+},
+{
+"cod": "1712524100",
+"tipo": "Transferências Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1713501100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "LC 141/2012",
+"area": "Saúde"
+},
+{
+"cod": "1713502100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "LC 141/2012",
+"area": "Saúde"
+},
+{
+"cod": "1713503100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "LC 141/2012",
+"area": "Saúde"
+},
+{
+"cod": "1713504100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "LC 141/2012",
+"area": "Saúde"
+},
+{
+"cod": "1713505100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "LC 141/2012",
+"area": "Saúde"
+},
+{
+"cod": "1714500100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "CF art. 212, §5º",
+"area": "Educação"
+},
+{
+"cod": "1714520100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "Leis do FNDE (PNAE/PNATE)",
+"area": "Educação"
+},
+{
+"cod": "1714530100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "Leis do FNDE (PNAE/PNATE)",
+"area": "Educação"
+},
+{
+"cod": "1714990100",
+"tipo": "Transferências Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1715520100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "Lei 14.113/2020",
+"area": "Educação"
+},
+{
+"cod": "1715530100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "Lei 14.113/2020",
+"area": "Educação"
+},
+{
+"cod": "1716500100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "Lei 8.742/1993",
+"area": "Assistência social"
+},
+{
+"cod": "1719580100",
+"tipo": "Transferências Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1719600100",
+"tipo": "Transferências Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1721500100",
+"tipo": "Transferências Correntes",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1721510100",
+"tipo": "Transferências Correntes",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1721520100",
+"tipo": "Transferências Correntes",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1721530100",
+"tipo": "Transferências Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1723500100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "LC 141/2012",
+"area": "Saúde"
+},
+{
+"cod": "1729510100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "Lei 8.742/1993",
+"area": "Assistência social"
+},
+{
+"cod": "1741990100",
+"tipo": "Transferências Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1751500100",
+"tipo": "Transferências Correntes",
+"pct": 100,
+"lei": "Lei 14.113/2020",
+"area": "Educação"
+},
+{
+"cod": "1791990100",
+"tipo": "Transferências Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1911010100",
+"tipo": "Outras Receitas Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1911061100",
+"tipo": "Outras Receitas Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1921010100",
+"tipo": "Outras Receitas Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1922990100",
+"tipo": "Outras Receitas Correntes",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1999122100",
+"tipo": "Outras Receitas Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1999992100",
+"tipo": "Outras Receitas Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1999992200",
+"tipo": "Outras Receitas Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "1999992300",
+"tipo": "Outras Receitas Correntes",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "2213010100",
+"tipo": "",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "2411514100",
+"tipo": "",
+"pct": 100,
+"lei": "LC 141/2012",
+"area": "Saúde"
+},
+{
+"cod": "2421500100",
+"tipo": "",
+"pct": 100,
+"lei": "LC 141/2012",
+"area": "Saúde"
+},
+{
+"cod": "2429990100",
+"tipo": "",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91112500102",
+"tipo": "",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91112530102",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91112530202",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91112530302",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91114511102",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91114511202",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91114511302",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91114511402",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91121010102",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91361013102",
+"tipo": "",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91621020102",
+"tipo": "",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91711511105",
+"tipo": "",
+"pct": 100,
+"lei": "Lei 14.113/2020",
+"area": "Educação"
+},
+{
+"cod": "91711520105",
+"tipo": "",
+"pct": 100,
+"lei": "Lei 14.113/2020",
+"area": "Educação"
+},
+{
+"cod": "91721500105",
+"tipo": "",
+"pct": 100,
+"lei": "Lei 14.113/2020",
+"area": "Educação"
+},
+{
+"cod": "91721510102",
+"tipo": "",
+"pct": null,
+"lei": "",
+"area": ""
+},
+{
+"cod": "91721510105",
+"tipo": "",
+"pct": 100,
+"lei": "Lei 14.113/2020",
+"area": "Educação"
+},
+{
+"cod": "91721520105",
+"tipo": "",
+"pct": 100,
+"lei": "Lei 14.113/2020",
+"area": "Educação"
+},
+{
+"cod": "91721520106",
+"tipo": "",
+"pct": 0,
+"lei": "",
+"area": ""
+}
+],
+"natureza": [
+{
+"nome": "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+"tipo": "Obrigatória",
+"grupo": "Outras obrigações",
+"lei": "Lei 11.107/2005"
+},
+{
+"nome": "APOSENTADORIAS DO RPPS, RESERVAS REMUNERADA E REFORMAS DOS MILITARES",
+"tipo": "Obrigatória",
+"grupo": "Pessoal e encargos",
+"lei": "CF art. 169 / LRF art. 18 (inativos)"
+},
+{
+"nome": "PENSÕES DO RPPS E DO MILITAR",
+"tipo": "Obrigatória",
+"grupo": "Pessoal e encargos",
+"lei": "CF art. 169 / LRF art. 18 (pensionistas)"
+},
+{
+"nome": "CONTRATAÇÃO POR TEMPO DETERMINADO",
+"tipo": "Obrigatória",
+"grupo": "Pessoal e encargos",
+"lei": "CF art. 169 / LRF art. 19"
+},
+{
+"nome": "VENCIMENTOS E VANTAGENS FIXAS-PESSOAL CIVIL",
+"tipo": "Obrigatória",
+"grupo": "Pessoal e encargos",
+"lei": "CF art. 169 / LRF art. 19"
+},
+{
+"nome": "OBRIGAÇÕES PATRONAIS",
+"tipo": "Obrigatória",
+"grupo": "Pessoal e encargos",
+"lei": "CF art. 169 / LRF art. 19"
+},
+{
+"nome": "OUTRAS DESPESAS VARIÁVEIS- PESSOAL CIVIL",
+"tipo": "Obrigatória",
+"grupo": "Pessoal e encargos",
+"lei": "CF art. 169 / LRF art. 19"
+},
+{
+"nome": "SENTENCAS JUDICIAIS",
+"tipo": "Obrigatória",
+"grupo": "Dívida e sentenças",
+"lei": "CF art. 100"
+},
+{
+"nome": "DESPESAS DE EXERCÍCIOS ANTERIORES",
+"tipo": "Obrigatória",
+"grupo": "Outras obrigações",
+"lei": "Lei 4.320/1964 art. 37"
+},
+{
+"nome": "INDENIZACOES E RESTITUICOES TRABALHISTAS",
+"tipo": "Obrigatória",
+"grupo": "Pessoal e encargos",
+"lei": "CF art. 169 · fora do limite: LRF art. 19, §1º, I"
+},
+{
+"nome": "JUROS SOBRE A DIVIDA POR CONTRATO",
+"tipo": "Obrigatória",
+"grupo": "Dívida e sentenças",
+"lei": "Contrato da dívida (LRF art. 29)"
+},
+{
+"nome": "OUTROS ENCARGOS SOBRE A DIVIDA POR CONTRATO",
+"tipo": "Obrigatória",
+"grupo": "Dívida e sentenças",
+"lei": "Contrato da dívida (LRF art. 29)"
+},
+{
+"nome": "CONTRIBUIÇÕES",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "CONTRIBUIÇÕES",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "AUXÍLIOS",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "SUBVENÇÕES SOCIAIS",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "CONTRIBUICOES",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "SUBVENCOES ECONOMICAS",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "DESPESAS DECORRENTES DE CONTRATO DE PARCERIA PÚBLICO-PRIVADA - PPP, EXCETO SUBVENÇÕES ECONÔMICAS, AP",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+"tipo": "Obrigatória",
+"grupo": "Outras obrigações",
+"lei": "Lei 11.107/2005"
+},
+{
+"nome": "DIÁRIAS – PESSOAL CIVIL",
+"tipo": "Discricionária",
+"grupo": "Custeio",
+"lei": ""
+},
+{
+"nome": "AUXÍLIO-FARDAMENTO",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "MATERIAL DE CONSUMO",
+"tipo": "Discricionária",
+"grupo": "Custeio",
+"lei": ""
+},
+{
+"nome": "PREMIACOES CULTURAIS, ARTISTICAS, CIENTIFICAS, DESPORTIVAS E OUTRAS",
+"tipo": "Discricionária",
+"grupo": "Custeio",
+"lei": ""
+},
+{
+"nome": "MATERIAL DE DISTRIBUICAO GRATUITA",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "PASSAGENS E DESPESAS COM LOCOMOCAO",
+"tipo": "Discricionária",
+"grupo": "Custeio",
+"lei": ""
+},
+{
+"nome": "OUTRAS DESPESAS DE PESSOAL DECORRENTES DE CONTRATOS DE TERCEIRIZACAO",
+"tipo": "Obrigatória",
+"grupo": "Pessoal e encargos",
+"lei": "LRF art. 18, §1º (terceirização)"
+},
+{
+"nome": "SERVICOS DE CONSULTORIA",
+"tipo": "Discricionária",
+"grupo": "Custeio",
+"lei": ""
+},
+{
+"nome": "OUTROS SERVIÇOS DE TERCEIROS-PESSOA FÍSICA",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "LOCACAO DE MAO-DE-OBRA",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "OUTROS SERVIÇOS DE TERCEIROS-PESSOA JURÍDICA",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "AUXILIO-ALIMENTACAO",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "OBRIGACOES TRIBUTARIAS E CONTRIBUTIVAS",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "OUTROS AUXILIOS FINANCEIROS A PESSOAS FISICAS",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "AUXILIO-TRANSPORTE",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "SENTENCAS JUDICIAIS",
+"tipo": "Obrigatória",
+"grupo": "Dívida e sentenças",
+"lei": "CF art. 100"
+},
+{
+"nome": "DESPESAS DE EXERCÍCIOS ANTERIORES",
+"tipo": "Obrigatória",
+"grupo": "Outras obrigações",
+"lei": "Lei 4.320/1964 art. 37"
+},
+{
+"nome": "INDENIZAÇÕES E RESTITUIÇÕES",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "CONTRIBUIÇÕES",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "AUXÍLIOS",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "RATEIO PELA PARTICIPAÇÃO EM CONSÓRCIO PÚBLICO",
+"tipo": "Obrigatória",
+"grupo": "Outras obrigações",
+"lei": "Lei 11.107/2005"
+},
+{
+"nome": "MATERIAL DE CONSUMO",
+"tipo": "Discricionária",
+"grupo": "Custeio",
+"lei": ""
+},
+{
+"nome": "SERVIÇOS DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO - PESSOA JURÍDICA",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "OBRAS E INSTALACOES",
+"tipo": "Discricionária",
+"grupo": "Investimentos",
+"lei": ""
+},
+{
+"nome": "EQUIPAMENTOS E MATERIAL PERMANENTE",
+"tipo": "Discricionária",
+"grupo": "Investimentos",
+"lei": ""
+},
+{
+"nome": "AQUISICAO DE IMOVEIS",
+"tipo": "Discricionária",
+"grupo": "Investimentos",
+"lei": ""
+},
+{
+"nome": "DESPESAS DE EXERCICIOS ANTERIORES",
+"tipo": "Obrigatória",
+"grupo": "Outras obrigações",
+"lei": "Lei 4.320/1964 art. 37"
+},
+{
+"nome": "INDENIZACOES E RESTITUICOES",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "APORTE DE RECURSOS PELO PARCEIRO PÚBLICO EM FAVOR DO PARCEIRO PRIVADO DECORRENTE DE CONTRATO DE PARC",
+"tipo": null,
+"grupo": "",
+"lei": ""
+},
+{
+"nome": "AQUISIÇÃO DE IMÓVEIS",
+"tipo": "Discricionária",
+"grupo": "Investimentos",
+"lei": ""
+},
+{
+"nome": "PRINCIPAL DA DIVIDA CONTRATUAL RESGATADO",
+"tipo": "Obrigatória",
+"grupo": "Dívida e sentenças",
+"lei": "Contrato da dívida (LRF art. 29)"
+},
+{
+"nome": "RESERVA DE CONTINGÊNCIA",
+"tipo": null,
+"grupo": "",
+"lei": ""
+}
+]
+}

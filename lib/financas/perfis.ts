@@ -34,6 +34,6 @@ export function normalizaPerfilGestao(perfil: unknown, orgaoCod: unknown): { ges
   const p = typeof perfil === 'string' && (PERFIS_GESTAO as readonly string[]).includes(perfil) ? perfil : null;
   const o = String(orgaoCod ?? '').trim();
   if (p !== 'secretaria') return { gestaoPerfil: p, gestaoOrgaoCod: '' };
-  if (!/^\d{1,6}$/.test(o)) return { erro: 'Perfil Secretaria na Gestão: informe o código da secretaria (só números, ex.: 09).' };
+  if (!/^\d{1,6}$/.test(o)) return { erro: 'Perfil Secretaria no Compliance: informe o código da secretaria (só números, ex.: 09).' };
   return { gestaoPerfil: p, gestaoOrgaoCod: o };
 }

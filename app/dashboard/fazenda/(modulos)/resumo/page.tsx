@@ -10,6 +10,10 @@ import Medidor, { COR_NIVEL } from '@/app/dashboard/fazenda/_componentes/Medidor
 import BlocoRREO from '@/app/dashboard/fazenda/_componentes/BlocoRREO';
 import { resumoPontos } from '@/lib/financas/auditoria/regras';
 import { coletasInterrompidas, frescorFontes, STATUS_TERMINADA, textoDadosDe } from '@/lib/financas/coleta/frescor';
+import { SELO_OFICIAL, selosDaExecucao } from '@/lib/financas/coleta/selos';
+import SeloDado from '@/app/dashboard/fazenda/_componentes/SeloDado';
+import { carregarPainel, resumirFolha } from '@/lib/financas/painel/compliance';
+import { BarrasH, EvolucaoAno, MES_LONGO, Numero, QuadroVinculantes, SeletorMes, TabelaExecucao, textoSaldo } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
 
 const NOMES_MES = ['ano', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const MES_EXTENSO = ['', 'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
@@ -20,8 +24,8 @@ function Bola({ n }: { n: Nivel }) {
   return <span aria-label={ROTULO_NIVEL[n]} className="inline-block w-2.5 h-2.5 rounded-full mt-1.5 shrink-0" style={{ background: COR_NIVEL[n].arco }} />;
 }
 
-export default async function Inicio() {
-  const { s, db } = await exigir(null, 'Início');
+export default async function Inicio({ searchParams }: { searchParams: { ate?: string } }) {
+  const { s, db } = await exigir(null, 'Painel');
   if (s.perfil === 'secretaria') redirect('/dashboard/fazenda/minha-secretaria'); // a secretaria só vê os próprios pontos
   const hoje = new Date();
   const verFiscal = pode(s.perfil, 'orcamento');
@@ -54,7 +58,7 @@ export default async function Inicio() {
   if (pes) {
     const alerta = pes.limites[0];
     frases.push({
-      nivel: nivelDoLRF(pes.nivel), href: '/orcamento',
+      nivel: nivelDoLRF(pes.nivel), href: '/dashboard/fazenda/limites',
       texto: pes.nivel === 'abaixo'
         ? `Folha de pessoal em ${pctBp(pes.pctBp)} da receita corrente líquida; o alerta da lei começa em ${pctBp(alerta.pctBp)}. Cabem cerca de ${brlCurto(pes.folgaMensalAteAlerta)} por mês antes do alerta.`
         : `Folha de pessoal em ${pctBp(pes.pctBp)} da receita corrente líquida: ${pes.nivel === 'alerta' ? 'passou do limite de alerta' : pes.nivel === 'prudencial' ? 'passou do limite prudencial' : 'passou do limite máximo'}. ${LRF_O_QUE_A_LEI_PREVE[pes.nivel]}`,
@@ -70,8 +74,15 @@ export default async function Inicio() {
   if (exe && rec && rec.ano === exe.ano) {
     const dif = exe.municipio.pago - rec.liquida.arrecadado;
     frases.push(dif > BigInt(0)
-      ? { nivel: 'observacao', href: '/orcamento', texto: `Em ${exe.ano} foi pago ${brlCurto(dif)} a mais do que se arrecadou (sem contar restos a pagar). Essa diferença precisa estar coberta por saldo de caixa de anos anteriores${rreo?.saldoExerciciosAnteriores ? ` (o RREO do ${rreo.bimestre}º bimestre informa ${brlCurto(rreo.saldoExerciciosAnteriores)} de saldos de anos anteriores usados)` : ''}: confirme com a contabilidade.` }
-      : { nivel: 'ok', href: '/orcamento', texto: `A receita arrecadada em ${exe.ano} cobre tudo o que foi pago no ano (sobra ${brlCurto(-dif)}).` });
+      ? { nivel: 'observacao', href: '/dashboard/fazenda/orcamento', texto: `Em ${exe.ano} foi pago ${brlCurto(dif)} a mais do que se arrecadou (sem contar restos a pagar). Essa diferença precisa estar coberta por saldo de caixa de anos anteriores${rreo?.saldoExerciciosAnteriores ? ` (o RREO do ${rreo.bimestre}º bimestre informa ${brlCurto(rreo.saldoExerciciosAnteriores)} de saldos de anos anteriores usados)` : ''}: confirme com a contabilidade.` }
+      : { nivel: 'ok', href: '/dashboard/fazenda/orcamento', texto: `A receita arrecadada em ${exe.ano} cobre tudo o que foi pago no ano (sobra ${brlCurto(-dif)}).` });
+  }
+  // trava de conferência: o que não bate com o RREO homologado aparece aqui, para quem decide
+  const selos = verFiscal ? await selosDaExecucao(db, exe?.ano ?? hoje.getFullYear()) : null;
+  if (selos?.divergencias.length) {
+    const principais = selos.divergencias.filter((d) => ['receita', 'empenhado', 'liquidado', 'pago'].includes(d.item));
+    const lista = (principais.length ? principais : selos.divergencias).map((d) => `${d.rotulo.toLowerCase()} (${brl(d.diferenca < BigInt(0) ? -d.diferenca : d.diferenca)})`).join('; ');
+    frases.push({ nivel: 'observacao', href: '/dashboard/fazenda/coleta', texto: `Diferença entre o portal e o RREO homologado do ${selos.ultimoBimestre}º bimestre: ${lista}. Confirme com a Contabilidade.` });
   }
   const problemasDados = confianca.filter((c) => c.nivel !== 'ok');
   if (problemasDados.length)
@@ -87,14 +98,25 @@ export default async function Inicio() {
     const vermelhos = paraAssinar.filter((d) => d.parecer === 'nao_assinar').length;
     const urgentes = paraAssinar.filter((d) => d.prazo && d.prazo.getTime() < hoje.getTime() + 86400000).length;
     frases.push({
-      nivel: vermelhos || urgentes ? 'observacao' : 'ok', href: '/documentos?aba=assinar',
+      nivel: vermelhos || urgentes ? 'observacao' : 'ok', href: '/dashboard/fazenda/documentos?aba=assinar',
       texto: `${paraAssinar.length} documento(s) prontos para a sua assinatura${urgentes ? `, ${urgentes} com prazo hoje ou vencido` : ''}${vermelhos ? `, ${vermelhos} com parecer "não assinar sem ajuste"` : ''}.`,
     });
   }
   if (aud?.atrasados)
-    frases.push({ nivel: 'observacao', href: '/auditoria', texto: `${aud.atrasados} cobrança(s) às secretarias com prazo vencido, sem resposta.` });
-  if (novos) frases.push({ nivel: 'observacao', href: '/apontamentos', texto: `${novos} apontamento(s) aguardando análise do controlador ou do jurídico.` });
+    frases.push({ nivel: 'observacao', href: '/dashboard/fazenda/auditoria', texto: `${aud.atrasados} cobrança(s) às secretarias com prazo vencido, sem resposta.` });
+  if (novos) frases.push({ nivel: 'observacao', href: '/dashboard/fazenda/apontamentos', texto: `${novos} apontamento(s) aguardando análise do controlador ou do jurídico.` });
   const selo = seloGeral(frases);
+
+  // visão do exercício: mesmos blocos do painel anterior, agora sobre a base única
+  const painel = verFiscal ? await carregarPainel(db, exe?.ano ?? hoje.getFullYear(), Number(searchParams.ate) || undefined, hoje) : null;
+  const ultimaFolha = painel ? await db.folhaMes.findFirst({ orderBy: { anoMes: 'desc' }, select: { anoMes: true } }) : null;
+  const folha = ultimaFolha
+    ? resumirFolha(await db.folhaLinha.findMany({ where: { anoMes: ultimaFolha.anoMes }, select: { matricula: true, lotacao: true, tipoVinculo: true, vencimentos: true, bruto: true, liquido: true } }))
+    : null;
+  const saldo = painel ? painel.acumulado.receita - painel.acumulado.pago : BigInt(0);
+  const pctCamara = painel?.camara.teto ? (Number(painel.camara.empenhado) / Number(painel.camara.teto)) * 100 : null;
+  const rpTotal = painel?.rreo?.rp ? { pagos: painel.rreo.rp.processados.pagos + painel.rreo.rp.naoProcessados.pagos, saldo: painel.rreo.rp.processados.saldo + painel.rreo.rp.naoProcessados.saldo } : null;
+  const totalFuncoes = painel ? painel.funcoes.reduce((t, f) => t + f.valor, BigInt(0)) : BigInt(0);
 
   return (
     <div className="space-y-4">
@@ -123,11 +145,32 @@ export default async function Inicio() {
         </p>
       </section>
 
+      {!verFiscal && (
+        <p className="cartao text-sm text-slate-600">Seu perfil no Compliance não inclui os números financeiros. Quem administra o sistema pode definir o perfil em Configurações › Usuários.</p>
+      )}
+
+      {painel && (
+        <>
+          <div className="flex flex-wrap items-end gap-3">
+            <h2 className="text-lg font-semibold mr-auto">Exercício de {painel.ano} · janeiro a {MES_LONGO[painel.ate]}</h2>
+            <SeletorMes meses={painel.mesesDisponiveis} atual={painel.ate} ano={painel.ano} />
+          </div>
+          <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <Numero titulo="Receita × despesa paga" valor={textoSaldo(saldo)} tom={saldo < BigInt(0) ? 'alerta' : 'bom'} href="/dashboard/fazenda/limites" detalhe={`Receita ${brlCurto(painel.acumulado.receita)} · pago ${brlCurto(painel.acumulado.pago)}`} />
+            <Numero titulo="Contratos vencendo em 30 dias" valor={String(painel.contratos.em30)} tom={painel.contratos.em30 ? 'alerta' : 'bom'} href="/dashboard/fazenda/contratos" detalhe={`${brlCurto(painel.contratos.valor30)} · ${painel.contratos.em90} em até 90 dias`} />
+            <Numero titulo="Repasse à Câmara" valor={pctCamara === null ? '—' : `${pctCamara.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`} href="/dashboard/fazenda/limites" detalhe={pctCamara === null ? `aguardando a receita de ${painel.camara.anoBase}` : 'do teto do art. 29-A (estimativa)'} />
+            <Numero titulo="Caixa disponível" valor={painel.rreo?.caixaLiquida != null ? brlCurto(painel.rreo.caixaLiquida) : '—'} selo={painel.rreo?.caixaLiquida != null ? <SeloDado selo={SELO_OFICIAL} /> : undefined} detalhe={painel.rreo ? `em ${painel.rreo.posicao}` : 'aguardando RREO'} />
+            <Numero titulo="Saldos de anos anteriores usados" valor={painel.rreo?.saldoAnteriores != null ? brlCurto(painel.rreo.saldoAnteriores) : '—'} selo={painel.rreo?.saldoAnteriores != null ? <SeloDado selo={SELO_OFICIAL} /> : undefined} detalhe="para abrir créditos no ano" />
+            <Numero titulo="Restos a pagar pagos" valor={rpTotal ? brlCurto(rpTotal.pagos) : '—'} selo={rpTotal ? <SeloDado selo={SELO_OFICIAL} /> : undefined} href="/dashboard/fazenda/limites" detalhe={rpTotal ? `ainda a pagar: ${brlCurto(rpTotal.saldo)}` : 'aguardando RREO'} />
+          </div>
+        </>
+      )}
+
       {verFiscal && (
         <div className="grid gap-4 md:grid-cols-3">
           {/* ---------- pessoal ---------- */}
           <section className="cartao flex flex-col">
-            <h2 className="font-semibold">Folha de pessoal × limite da LRF</h2>
+            <h2 className="font-semibold">Folha de pessoal × limite da LRF {pes && <SeloDado selo={SELO_OFICIAL} />}</h2>
             {!pes ? <p className="text-sm text-slate-500 mt-2">Sem RGF coletado.</p> : (
               <>
                 <p className="text-xs text-slate-500">Executivo · 12 meses até o {pes.quadrimestre}º quadrimestre de {pes.ano} · RGF (SICONFI)</p>
@@ -179,22 +222,22 @@ export default async function Inicio() {
                 <p className="text-xs text-slate-500 mt-1">O traço preto marca quanto do ano já passou ({pctBp(exe.tempoBp)}).</p>
                 <table className="w-full text-sm mt-3">
                   <tbody>
-                    {([['Orçamento atualizado', exe.executivo.dotAtual], ['Empenhado', exe.executivo.empenhado], ['Liquidado (entregue)', exe.executivo.liquidado], ['Pago', exe.executivo.pago]] as const).map(([r, v]) => (
-                      <tr key={r} className="border-t border-slate-100" title={brl(v)}><td className="py-1">{r}</td><td className="py-1 text-right tabular-nums">{brlCurto(v)}</td></tr>
+                    {([['Orçamento atualizado', exe.executivo.dotAtual, null], ['Empenhado', exe.executivo.empenhado, selos?.empenhado], ['Liquidado (entregue)', exe.executivo.liquidado, selos?.liquidado], ['Pago', exe.executivo.pago, selos?.pago]] as const).map(([r, v, selo]) => (
+                      <tr key={r} className="border-t border-slate-100" title={brl(v)}><td className="py-1">{r} {selo && <SeloDado selo={selo} />}</td><td className="py-1 text-right tabular-nums">{brlCurto(v)}</td></tr>
                     ))}
                   </tbody>
                 </table>
                 <p className="text-xs text-slate-600 mt-2">
                   O orçamento {exe.variacaoDotacao >= BigInt(0) ? 'cresceu' : 'diminuiu'} <b>{brlCurto(exe.variacaoDotacao >= BigInt(0) ? exe.variacaoDotacao : -exe.variacaoDotacao)}</b> ({pctBp(exe.variacaoDotacaoBp)}) em relação à LOA ({brlCurto(exe.executivo.dotInicial)}), somando créditos abertos e anulações.
                 </p>
-                <Link href="/dashboard/fazenda/orcamento" className="text-xs text-emerald-700 hover:underline mt-auto pt-2">ver por secretaria →</Link>
+                <Link href="/dashboard/fazenda/despesas" className="text-xs text-emerald-700 hover:underline mt-auto pt-2">ver por secretaria →</Link>
               </>
             )}
           </section>
 
           {/* ---------- receita ---------- */}
           <section className="cartao flex flex-col">
-            <h2 className="font-semibold">Receita do ano</h2>
+            <h2 className="font-semibold">Receita do ano {selos && rec && <SeloDado selo={selos.receita} />}</h2>
             {!rec ? <p className="text-sm text-slate-500 mt-2">Sem receita coletada.</p> : (
               <>
                 <p className="text-xs text-slate-500">{rec.ano} · até {MES_EXTENSO[rec.mes]} · receita líquida (correntes + capital − deduções)</p>
@@ -217,7 +260,7 @@ export default async function Inicio() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/dashboard/fazenda/orcamento" className="text-xs text-emerald-700 hover:underline mt-auto pt-2">ver previsto × arrecadado por origem →</Link>
+                <Link href="/dashboard/fazenda/receita" className="text-xs text-emerald-700 hover:underline mt-auto pt-2">ver previsto × arrecadado por origem →</Link>
               </>
             )}
           </section>
@@ -225,6 +268,34 @@ export default async function Inicio() {
       )}
 
       {verFiscal && <div id="minimos"><BlocoRREO r={rreo} divida={divida} /></div>}
+
+      {painel && (
+        <>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <section className="cartao"><h2 className="font-semibold mb-2">Evolução no ano</h2><EvolucaoAno meses={painel.meses} /></section>
+            <section className="cartao overflow-x-auto"><h2 className="font-semibold mb-2">Execução do orçamento</h2><TabelaExecucao p={painel} /></section>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <section className="cartao"><h2 className="font-semibold mb-2">Receitas vinculantes</h2><QuadroVinculantes v={painel.vinculantes} /></section>
+            <div className="space-y-4">
+              <section className="cartao">
+                <h2 className="font-semibold mb-2">Para onde vai o dinheiro</h2>
+                {painel.funcoes.length
+                  ? <BarrasH total={totalFuncoes} itens={painel.funcoes.slice(0, 9).map((f) => ({ nome: f.nome.charAt(0) + f.nome.slice(1).toLowerCase(), valor: f.valor, href: '/dashboard/fazenda/despesas' }))} />
+                  : <p className="text-sm text-slate-500">Aguardando a primeira coleta do relatório por função.</p>}
+                <p className="text-xs text-slate-500 mt-2">Empenhado por função de governo no período.</p>
+              </section>
+              {folha && (
+                <section className="cartao">
+                  <h2 className="font-semibold mb-2">Vínculo dos servidores · {ultimaFolha!.anoMes}</h2>
+                  <BarrasH formato={(v) => Number(v).toLocaleString('pt-BR')} itens={folha.porVinculo.slice(0, 6).map((v) => ({ nome: v.nome, valor: BigInt(v.servidores) }))} />
+                  <p className="text-xs text-slate-500 mt-2">{folha.servidores.toLocaleString('pt-BR')} matrículas na folha.</p>
+                </section>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         {/* ---------- confiança dos dados ---------- */}

@@ -2,7 +2,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import * as cheerio from 'cheerio';
 import { centavos } from '@/lib/financas/dinheiro';
-import type { ContratoC, DespesaOrgaoMesC, EmpenhoC, EventoC, ReceitaContaMesC, RestoPagarC, RetencaoC } from '../tipos';
+import type { ContratoC, DespesaFuncaoMesC, DespesaNaturezaMesC, DespesaOrgaoMesC, EmpenhoC, EventoC, ReceitaContaMesC, RestoPagarC, RetencaoC } from '../tipos';
 
 export const MESES = ['TODOS', 'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
@@ -48,6 +48,46 @@ export function lerDespesaOrgaoXml(conteudo: string, ano: number, mes: number): 
     empenhado: centavos(txt(d.DespesaOrcValorEmpenhadoTot)),
     liquidado: centavos(txt(d.DespesaOrcValorLiquidadoTot)),
     pago: centavos(txt(d.DespesaOrcValorPagoTot)),
+  }));
+}
+
+/** Relatório consolidado por natureza (wmdespesas?17,0). */
+export function lerDespesaNaturezaXml(conteudo: string, ano: number, mes: number): DespesaNaturezaMesC[] {
+  const r = xml.parse(conteudo);
+  conferirFiltros(r, ano, mes, 'despesa_natureza');
+  const itens = lista(r?.Export?.SDTDespesaNaturezaCollection?.SDTDespesaNatureza);
+  if (itens.length === 0) throw new Error('despesa_natureza: arquivo sem registros');
+  return itens.map((d: any) => ({
+    ano,
+    mes,
+    naturezaCod: txt(d.DespesaNaturezaCod),
+    naturezaNome: txt(d.DespesaNaturezaNome),
+    dotInicial: centavos(txt(d.DespesaNaturezaOrcValorInicial)),
+    dotAtual: centavos(txt(d.DespesaNaturezaOrcValorAtual)),
+    empenhado: centavos(txt(d.DespesaNaturezaEmpTot)),
+    liquidado: centavos(txt(d.DespesaNaturezaLiqTot)),
+    pago: centavos(txt(d.DespesaNaturezaPagTot)),
+  }));
+}
+
+/** Relatório consolidado por função e subfunção (wmdespesas?15,0). */
+export function lerDespesaFuncaoXml(conteudo: string, ano: number, mes: number): DespesaFuncaoMesC[] {
+  const r = xml.parse(conteudo);
+  conferirFiltros(r, ano, mes, 'despesa_funcao');
+  const itens = lista(r?.Export?.SDTDespesaFuncaoCollection?.SDTDespesaFuncao);
+  if (itens.length === 0) throw new Error('despesa_funcao: arquivo sem registros');
+  return itens.map((d: any) => ({
+    ano,
+    mes,
+    funcaoCod: txt(d.DespesaFuncaoCod),
+    funcaoNome: txt(d.DespesaFuncaoNome),
+    subfuncaoCod: txt(d.DespesaSubFuncaoCod),
+    subfuncaoNome: txt(d.DespesaSubFuncaoNome),
+    dotInicial: centavos(txt(d.DespesaFuncaoOrcValorInicial)),
+    dotAtual: centavos(txt(d.DespesaFuncaoOrcValorAtual)),
+    empenhado: centavos(txt(d.DespesaFuncaoEmpTot)),
+    liquidado: centavos(txt(d.DespesaFuncaoLiqTot)),
+    pago: centavos(txt(d.DespesaFuncaoPagTot)),
   }));
 }
 

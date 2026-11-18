@@ -487,6 +487,62 @@ model DespesaOrgaoMes {
   @@map("fin_despesa_orgao_mes")
 }
 
+// Relatórios consolidados do portal (visão Natureza): é daqui que sai o total por natureza, nunca da soma de empenhos
+model DespesaNaturezaMes {
+  prefeituraId String
+  ano          Int
+  mes          Int // 0 = ano inteiro (acumulado)
+  naturezaCod  String // 319011 (os 2 primeiros dígitos são o grupo: 31 = pessoal)
+  naturezaNome String
+  dotInicial   BigInt
+  dotAtual     BigInt
+  empenhado    BigInt
+  liquidado    BigInt
+  pago         BigInt
+  coletaId     Int
+
+  @@id([prefeituraId, ano, mes, naturezaCod])
+  @@map("fin_despesa_natureza_mes")
+}
+
+// Relatórios consolidados do portal (visão Função/Subfunção)
+model DespesaFuncaoMes {
+  prefeituraId  String
+  ano           Int
+  mes           Int // 0 = ano inteiro (acumulado)
+  funcaoCod     String
+  funcaoNome    String
+  subfuncaoCod  String
+  subfuncaoNome String
+  dotInicial    BigInt
+  dotAtual      BigInt
+  empenhado     BigInt
+  liquidado     BigInt
+  pago          BigInt
+  coletaId      Int
+
+  @@id([prefeituraId, ano, mes, funcaoCod, subfuncaoCod])
+  @@map("fin_despesa_funcao_mes")
+}
+
+// Trava de conferência: o que o portal mostra × o RREO homologado no SICONFI, bimestre a bimestre
+model ConferenciaOficial {
+  prefeituraId String
+  ano          Int
+  bimestre     Int
+  item         String // receita | empenhado | liquidado | pago | natureza | funcao | grupo:31 | funcao:SAUDE
+  rotulo       String
+  oficial      BigInt
+  portal       BigInt
+  diferenca    BigInt // portal − oficial
+  confere      Boolean
+  coletaId     Int
+  conferidoEm  DateTime @default(now())
+
+  @@id([prefeituraId, ano, bimestre, item])
+  @@map("fin_conferencia_oficial")
+}
+
 model Empenho {
   id             Int      @id @default(autoincrement())
   prefeituraId   String

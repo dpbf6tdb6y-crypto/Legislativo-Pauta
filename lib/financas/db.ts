@@ -9,7 +9,7 @@ export const prismaSistema = prisma;
 export const PREFEITURA_PADRAO = 'nova-lima';
 
 const MODELOS_FINANCEIROS = new Set([
-  'Coleta', 'ArquivoBruto', 'DespesaOrgaoMes', 'Empenho', 'Liquidacao', 'Pagamento', 'RetencaoLeitura',
+  'Coleta', 'ArquivoBruto', 'DespesaOrgaoMes', 'DespesaNaturezaMes', 'DespesaFuncaoMes', 'ConferenciaOficial', 'Empenho', 'Liquidacao', 'Pagamento', 'RetencaoLeitura',
   'Retencao', 'RestoPagar', 'Contrato', 'LigacaoContratoEmpenho', 'ReceitaContaMes',
   'RegistroAcesso', 'Chave', 'ChaveHistorico', 'FolhaMes', 'FolhaLinha', 'IndicadorFiscal', 'Regra', 'Apontamento',
   'ResponsavelSecretaria', 'PontoAuditoria', 'EventoAuditoria', 'ReuniaoSecretaria',

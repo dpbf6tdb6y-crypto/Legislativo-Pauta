@@ -26,9 +26,9 @@ const configItems = [
   { href: "/dashboard/configuracoes", label: "Configurações Gerais", icon: "M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" },
 ];
 
-const auditoriaItem = { href: "/dashboard/auditoria", label: "Auditoria", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" };
+const auditoriaItem = { href: "/dashboard/auditoria", label: "Log do sistema", icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" };
 const indicacoesItem = { href: "/dashboard/indicacoes", label: "Ind.", icon: "M12 15a3 3 0 100-6 3 3 0 000 6z M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" };
-const fazendaItem = { href: "/dashboard/fazenda", label: "Gestão - $$$", icon: "M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1c1.657 0 3 .672 3 1.5M12 15v1m0-1c-1.657 0-3-.672-3-1.5M3 12a9 9 0 1018 0 9 9 0 00-18 0z" };
+const fazendaItem = { href: "/dashboard/fazenda", label: "Compliance", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" };
 // Verde-esmeralda pra destacar Fazenda das outras seções — pedido do
 // usuário pra ficar "de outra cor", sempre (não só quando ativa).
 const FAZENDA_COLOR = "#10b981";
@@ -254,19 +254,6 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={fazendaItem.icon} />
                 </svg>
                 {sidebarOpen && <span>{fazendaItem.label}</span>}
-              </Link>
-            );
-          })()}
-          {/* Gestão $$$: módulos financeiros (contratos, documentos, auditoria...). Aparece com o menu Gestão aberto */}
-          {acessoDoMenu(usuarioSessao, "gestao").ver && sidebarOpen && pathname.startsWith(fazendaItem.href) && (() => {
-            const active = pathname !== fazendaItem.href;
-            return (
-              <Link href="/dashboard/fazenda/modulos"
-                className="flex items-center gap-2 ml-8 px-3 py-1.5 rounded-lg text-xs transition-all"
-                style={active ? { color: FAZENDA_COLOR, fontWeight: 600 } : { color: FAZENDA_COLOR, opacity: 0.85 }}
-                onMouseEnter={e => { e.currentTarget.style.background = NAV_HOVER_BG; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                Módulos da Gestão
               </Link>
             );
           })()}
