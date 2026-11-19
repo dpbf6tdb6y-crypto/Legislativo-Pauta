@@ -34,6 +34,18 @@ describe('relatórios consolidados do portal (ago/2026)', () => {
     expect(() => lerDespesaNaturezaXml(G('despesa_natureza_2026-08.xml'), 2026, 7)).toThrow(/filtro/);
     expect(() => lerDespesaFuncaoXml(G('despesa_funcao_2026-08.xml'), 2025, 8)).toThrow(/filtro/);
   });
+  it('mesma função/subfunção em duas linhas (2020): soma em uma só, sem perder valor', () => {
+    const linha = (sub: string, ini: string, emp: string, liq: string, pago: string) =>
+      `<SDTDespesaFuncao xmlns="x"><DespesaFuncaoCod>04</DespesaFuncaoCod><DespesaFuncaoNome>ADMINISTRAÇÃO</DespesaFuncaoNome><DespesaSubFuncaoCod>${sub}</DespesaSubFuncaoCod><DespesaSubFuncaoNome>ADMINISTRAÇÃO GERAL</DespesaSubFuncaoNome>` +
+      `<DespesaFuncaoOrcValorInicial>${ini}</DespesaFuncaoOrcValorInicial><DespesaFuncaoOrcValorAtual>${ini}</DespesaFuncaoOrcValorAtual><DespesaFuncaoEmpTot>${emp}</DespesaFuncaoEmpTot><DespesaFuncaoLiqTot>${liq}</DespesaFuncaoLiqTot><DespesaFuncaoPagTot>${pago}</DespesaFuncaoPagTot></SDTDespesaFuncao>`;
+    const arq = `<Export><Filtros><Ano>2020</Ano></Filtros><SDTDespesaFuncaoCollection xmlns="x">${linha('122', '66339953.00', '75304263.76', '73060676.96', '69677640.93')}${linha('122', '1318000.00', '0.00', '0.00', '0.00')}${linha('129', '13520990.00', '6716532.27', '6716532.27', '6716532.27')}</SDTDespesaFuncaoCollection></Export>`;
+    const r = lerDespesaFuncaoXml(arq, 2020, 0);
+    expect(r).toHaveLength(2);
+    const geral = r.find((x) => x.subfuncaoCod === '122')!;
+    expect(geral.dotInicial).toBe(6633995300n + 131800000n);
+    expect(geral.empenhado).toBe(7530426376n);
+    expect(soma(r.map((x) => x.empenhado))).toBe(7530426376n + 671653227n);
+  });
 });
 
 describe('anexos do RREO (mesmos números que o painel antigo lia)', () => {

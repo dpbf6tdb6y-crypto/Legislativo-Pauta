@@ -33,6 +33,23 @@ function conferirFiltros(raiz: any, ano: number, mes: number, tipo: string) {
   }
 }
 
+type ValoresDespesa = { dotInicial: bigint; dotAtual: bigint; empenhado: bigint; liquidado: bigint; pago: bigint };
+
+/**
+ * O portal às vezes traz a mesma chave em duas linhas (2020, função 04 / subfunção 122: uma com a execução e outra só
+ * com R$ 1.318.000,00 de dotação). A tabela aceita uma linha por chave, então as linhas se somam: o total do
+ * relatório não muda e nada é descartado. A primeira linha dá o nome.
+ */
+function somarMesmaChave<T extends ValoresDespesa>(linhas: T[], chave: (l: T) => string): T[] {
+  const mapa = new Map<string, T>();
+  for (const l of linhas) {
+    const k = chave(l);
+    const antes = mapa.get(k);
+    mapa.set(k, antes ? { ...antes, dotInicial: antes.dotInicial + l.dotInicial, dotAtual: antes.dotAtual + l.dotAtual, empenhado: antes.empenhado + l.empenhado, liquidado: antes.liquidado + l.liquidado, pago: antes.pago + l.pago } : l);
+  }
+  return [...mapa.values()];
+}
+
 export function lerDespesaOrgaoXml(conteudo: string, ano: number, mes: number): DespesaOrgaoMesC[] {
   const r = xml.parse(conteudo);
   conferirFiltros(r, ano, mes, 'despesa_orgao');
@@ -57,17 +74,20 @@ export function lerDespesaNaturezaXml(conteudo: string, ano: number, mes: number
   conferirFiltros(r, ano, mes, 'despesa_natureza');
   const itens = lista(r?.Export?.SDTDespesaNaturezaCollection?.SDTDespesaNatureza);
   if (itens.length === 0) throw new Error('despesa_natureza: arquivo sem registros');
-  return itens.map((d: any) => ({
-    ano,
-    mes,
-    naturezaCod: txt(d.DespesaNaturezaCod),
-    naturezaNome: txt(d.DespesaNaturezaNome),
-    dotInicial: centavos(txt(d.DespesaNaturezaOrcValorInicial)),
-    dotAtual: centavos(txt(d.DespesaNaturezaOrcValorAtual)),
-    empenhado: centavos(txt(d.DespesaNaturezaEmpTot)),
-    liquidado: centavos(txt(d.DespesaNaturezaLiqTot)),
-    pago: centavos(txt(d.DespesaNaturezaPagTot)),
-  }));
+  return somarMesmaChave(
+    itens.map((d: any) => ({
+      ano,
+      mes,
+      naturezaCod: txt(d.DespesaNaturezaCod),
+      naturezaNome: txt(d.DespesaNaturezaNome),
+      dotInicial: centavos(txt(d.DespesaNaturezaOrcValorInicial)),
+      dotAtual: centavos(txt(d.DespesaNaturezaOrcValorAtual)),
+      empenhado: centavos(txt(d.DespesaNaturezaEmpTot)),
+      liquidado: centavos(txt(d.DespesaNaturezaLiqTot)),
+      pago: centavos(txt(d.DespesaNaturezaPagTot)),
+    })),
+    (l) => l.naturezaCod,
+  );
 }
 
 /** Relatório consolidado por função e subfunção (wmdespesas?15,0). */
@@ -76,19 +96,22 @@ export function lerDespesaFuncaoXml(conteudo: string, ano: number, mes: number):
   conferirFiltros(r, ano, mes, 'despesa_funcao');
   const itens = lista(r?.Export?.SDTDespesaFuncaoCollection?.SDTDespesaFuncao);
   if (itens.length === 0) throw new Error('despesa_funcao: arquivo sem registros');
-  return itens.map((d: any) => ({
-    ano,
-    mes,
-    funcaoCod: txt(d.DespesaFuncaoCod),
-    funcaoNome: txt(d.DespesaFuncaoNome),
-    subfuncaoCod: txt(d.DespesaSubFuncaoCod),
-    subfuncaoNome: txt(d.DespesaSubFuncaoNome),
-    dotInicial: centavos(txt(d.DespesaFuncaoOrcValorInicial)),
-    dotAtual: centavos(txt(d.DespesaFuncaoOrcValorAtual)),
-    empenhado: centavos(txt(d.DespesaFuncaoEmpTot)),
-    liquidado: centavos(txt(d.DespesaFuncaoLiqTot)),
-    pago: centavos(txt(d.DespesaFuncaoPagTot)),
-  }));
+  return somarMesmaChave(
+    itens.map((d: any) => ({
+      ano,
+      mes,
+      funcaoCod: txt(d.DespesaFuncaoCod),
+      funcaoNome: txt(d.DespesaFuncaoNome),
+      subfuncaoCod: txt(d.DespesaSubFuncaoCod),
+      subfuncaoNome: txt(d.DespesaSubFuncaoNome),
+      dotInicial: centavos(txt(d.DespesaFuncaoOrcValorInicial)),
+      dotAtual: centavos(txt(d.DespesaFuncaoOrcValorAtual)),
+      empenhado: centavos(txt(d.DespesaFuncaoEmpTot)),
+      liquidado: centavos(txt(d.DespesaFuncaoLiqTot)),
+      pago: centavos(txt(d.DespesaFuncaoPagTot)),
+    })),
+    (l) => `${l.funcaoCod}|${l.subfuncaoCod}`,
+  );
 }
 
 export function lerReceitaXml(conteudo: string, ano: number, mes: number): ReceitaContaMesC[] {
