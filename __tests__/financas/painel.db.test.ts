@@ -180,16 +180,19 @@ describe('regras de execução: nascem propostas e exigem o percentual de quem a
     await aprova('E2', { percentual: 10 });
     // E3: receita líquida 65.000 × pago 69.000 (com a Câmara)
     await aprova('E3', { toleranciaPct: 0 });
+    // E4: receita líquida 65.000 × empenhado 93.000 (com a Câmara: 9.000 + 84.000)
+    await aprova('E4', { toleranciaPct: 0 });
     // R1: arrecadado 36,1% (65.000/180.000) × 49,9% do ano → 13,8 pontos abaixo
     await aprova('R1', { pontosAbaixo: 20 });
     await executarRegras(P);
     const ap = await db.apontamento.findMany({ orderBy: { regraCodigo: 'asc' } });
-    expect(ap.map((a) => a.regraCodigo)).toEqual(['E1', 'E2', 'E3']);
+    expect(ap.map((a) => a.regraCodigo)).toEqual(['E1', 'E2', 'E3', 'E4']);
     expect(ap.every((a) => a.status === 'para_analise')).toBe(true);
     expect(ap.find((a) => a.regraCodigo === 'E3')!.valorEncontrado).toBe('R$ 40,00');
+    expect(ap.find((a) => a.regraCodigo === 'E4')!.valorEncontrado).toBe('R$ 280,00');
     expect(ap.find((a) => a.regraCodigo === 'E2')!.valorEncontrado).toBe('20,0%');
     await executarRegras(P);
-    expect(await db.apontamento.count()).toBe(3);
+    expect(await db.apontamento.count()).toBe(4);
   });
 
   it('outra prefeitura, com o mesmo percentual aprovado e sem dados, não herda os apontamentos', async () => {

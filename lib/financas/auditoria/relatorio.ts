@@ -45,6 +45,8 @@ const RECOMENDACAO: Record<string, string> = {
   E1: 'Acompanhar o ritmo de empenho contra o calendário e a arrecadação, para não comprometer o fim do exercício.',
   E2: 'Conferir se os créditos adicionais têm lei ou decreto e fonte de recurso indicada.',
   E3: 'Verificar o fluxo de caixa e quanto da despesa foi coberto por saldo de exercícios anteriores; se persistir, avaliar a limitação de empenho (LRF art. 9º).',
+  E4: 'Pedir à Contabilidade a cobertura do empenhado (previsão de receita, superávit financeiro, créditos adicionais); se não houver, avaliar a limitação de empenho (LRF art. 9º).',
+  P2: 'Pedir a Recursos Humanos a causa da variação da folha (13º, férias, abonos, nomeações ou exonerações) e conferir o efeito sobre o limite de pessoal.',
   R1: 'Rever a previsão de receita e avaliar a limitação de empenho (LRF art. 9º).',
   T1: 'Avaliar a substituição gradual da contratação temporária por provimento efetivo, observados os limites de pessoal.',
   P1: 'Cobrar da Contabilidade a publicação do RREO no prazo legal.',

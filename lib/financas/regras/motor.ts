@@ -256,6 +256,29 @@ export const REGRAS: DefRegra[] = [
     },
   },
   {
+    codigo: 'E4',
+    titulo: 'Empenhado no ano acima da receita arrecadada no ano',
+    baseLegal: 'LRF art. 1º, §1º (equilíbrio das contas) e art. 9º (limitação de empenho)',
+    descricao:
+      'Receita líquida arrecadada no ano (correntes + capital − deduções) × despesa empenhada no ano (município, com a Câmara). Empenhar mais do que se arrecadou até a data é comum: contratos anuais são empenhados no início do ano e a receita entra ao longo dele. O apontamento pede que a contabilidade mostre a cobertura (previsão de receita, superávit financeiro, créditos adicionais). Informe a tolerância em % (0 = qualquer excesso).',
+    parametrosPadrao: { toleranciaPct: null },
+    exigeParametro: ['toleranciaPct'],
+    async avaliar(db, p) {
+      if (p.toleranciaPct === null || p.toleranciaPct === undefined) return [];
+      const hoje = new Date();
+      const [e, r] = [await carregarExecucao(db, hoje), await carregarReceita(db, hoje)];
+      if (!e || !r || r.ano !== e.ano) return [];
+      const rec = r.liquida.arrecadado, emp = e.municipio.empenhado;
+      const limite = rec + (rec * BigInt(Math.round(Number(p.toleranciaPct) * 100))) / BigInt(10000);
+      if (emp <= limite) return [];
+      return [{
+        chaveUnica: `E4:${e.ano}:${hoje.getMonth() + 1}`, entidade: 'indicador', entidadeId: String(e.ano),
+        resumo: `Em ${e.ano}, até ${fmtData(hoje)}: empenhado ${brl(emp)} × receita líquida arrecadada ${brl(rec)} (diferença ${brl(emp - rec)})`,
+        valorEncontrado: brl(emp - rec),
+      }];
+    },
+  },
+  {
     codigo: 'R1',
     titulo: 'Arrecadação abaixo do ritmo do previsto',
     baseLegal: 'LRF art. 13 (metas bimestrais de arrecadação) e art. 9º (limitação de empenho)',
@@ -300,6 +323,39 @@ export const REGRAS: DefRegra[] = [
         resumo: `Folha ${ult.anoMes}: ${temp.size} de ${todas.size} matrículas com vínculo temporário (${pct.toFixed(1).replace('.', ',')}%)`,
         valorEncontrado: `${pct.toFixed(1).replace('.', ',')}%`,
       }];
+    },
+  },
+  {
+    codigo: 'P2',
+    titulo: 'Oscilação da folha de pessoal entre meses',
+    baseLegal: 'LRF arts. 18 a 23 (despesa com pessoal). A lei não fixa limite para a variação mensal: é acompanhamento de gestão.',
+    descricao:
+      'Compara o total bruto da folha de cada mês coletado com o do mês anterior e aponta quando a variação passa de N% (para mais ou para menos). Só compara meses seguidos e com a coleta completa. A folha oscila por 13º salário, férias, abonos, nomeações e exonerações: o apontamento pede que Recursos Humanos explique a causa. N começa em 2%, a pedido do prefeito, e pode ser ajustado.',
+    parametrosPadrao: { pctMax: 2 },
+    async avaliar(db, p) {
+      const limiteBp = BigInt(Math.round(Number(p.pctMax ?? 2) * 100));
+      const meses = (await db.folhaMes.findMany({ orderBy: { anoMes: 'asc' } })).filter((m) => m.linhasColetadas > 0 && m.linhasColetadas === m.linhasPortal);
+      const total = new Map<string, bigint>();
+      for (const m of meses) total.set(m.anoMes, (await db.folhaLinha.aggregate({ where: { anoMes: m.anoMes }, _sum: { bruto: true } }))._sum.bruto ?? BigInt(0));
+      const anterior = (anoMes: string) => {
+        const [a, m] = anoMes.split('/').map(Number);
+        return m === 1 ? `${a - 1}/12` : `${a}/${String(m - 1).padStart(2, '0')}`;
+      };
+      const out: Achado[] = [];
+      for (const [anoMes, atual] of total) {
+        const ant = total.get(anterior(anoMes));
+        if (ant === undefined || ant <= BigInt(0)) continue;
+        const bp = ((atual - ant) * BigInt(10000)) / ant;
+        if ((bp < BigInt(0) ? -bp : bp) <= limiteBp) continue;
+        const sinal = bp < BigInt(0) ? '−' : '+';
+        const valor = `${sinal}${pctBp(bp < BigInt(0) ? -bp : bp)}`;
+        out.push({
+          chaveUnica: `P2:${anoMes}`, entidade: 'indicador', entidadeId: anoMes,
+          resumo: `Folha ${anoMes}: bruto ${brl(atual)} contra ${brl(ant)} em ${anterior(anoMes)} (${valor})`,
+          valorEncontrado: valor,
+        });
+      }
+      return out;
     },
   },
   {
