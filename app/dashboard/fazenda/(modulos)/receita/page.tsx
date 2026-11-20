@@ -6,10 +6,12 @@ import { classificaReceita, tipoDaConta } from '@/lib/financas/painel/vinculacao
 import { selosDaExecucao } from '@/lib/financas/coleta/selos';
 import SeloDado from '@/app/dashboard/fazenda/_componentes/SeloDado';
 import { GraficoColunas } from '@/app/dashboard/fazenda/_componentes/Graficos';
-import { BarrasH, MES_CURTO, MES_LONGO, Numero, reais } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
+import { MES_CURTO, MES_LONGO, Numero, reais } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
+import { COR_SERIE } from '@/lib/financas/painel/cores';
 
 const BLOCOS = [{ k: 'correntes', d: '1', nome: 'Receita corrente' }, { k: 'capital', d: '2', nome: 'Receita de capital' }, { k: 'deducoes', d: '9', nome: 'Deduções' }];
 const Z = BigInt(0);
+const COLUNAS = { gridTemplateColumns: 'minmax(0,1fr) 6.5rem 6.5rem 4.5rem 11rem 14rem' } as const;
 
 export default async function Receita({ searchParams }: { searchParams: { ano?: string; mes?: string; bloco?: string } }) {
   const { db } = await exigir('orcamento', 'Receita', { detalhe: JSON.stringify(searchParams), modulo: 'orcamento' });
@@ -34,7 +36,17 @@ export default async function Receita({ searchParams }: { searchParams: { ano?: 
   // arrecadado de cada ano (posição do último mês coletado) e de cada mês do ano escolhido
   const raizes = await db.receitaContaMes.findMany({ where: { contaCod: { in: ['1000000000', '2000000000', '90000000000', '91000000000'] } }, select: { ano: true, mes: true, contaCod: true, arrecAteMes: true, arrecMes: true } });
   const doBloco = raizes.filter((r) => r.contaCod.startsWith(bloco.d));
-  const porAno = anos.map((a) => { const x = doBloco.filter((r) => r.ano === a).sort((p, q) => q.mes - p.mes)[0]; return { rotulo: String(a), valor: reais(x?.arrecAteMes ?? Z) }; });
+  // clicar em um ano do gráfico abre a tela só com aquele ano (no último mês coletado dele); o ano em andamento leva *
+  const emAndamento = (a: number) => Math.max(0, ...periodos.filter((p) => p.ano === a).map((p) => p.mes)) < 12;
+  const porAno = anos.map((a) => {
+    const x = doBloco.filter((r) => r.ano === a).sort((p, q) => q.mes - p.mes)[0];
+    return { rotulo: `${a}${emAndamento(a) ? '*' : ''}`, valor: reais(x?.arrecAteMes ?? Z), href: `?${new URLSearchParams({ ano: String(a), bloco: bloco.k })}`, ativo: a === ano };
+  });
+  const provisorio = mes < 12;
+  // variação sobre o ano anterior: só entre anos fechados (ano em andamento não se compara com ano fechado); valores nominais
+  const doAno = (a: number) => doBloco.filter((r) => r.ano === a).sort((p, q) => q.mes - p.mes)[0];
+  const antes = doAno(ano - 1), agora = doAno(ano);
+  const variacao = !provisorio && antes && antes.mes === 12 && antes.arrecAteMes > Z && agora ? ((Number(agora.arrecAteMes) - Number(antes.arrecAteMes)) / Number(antes.arrecAteMes)) * 100 : null;
   const porMes = doBloco.filter((r) => r.ano === ano).sort((a, b) => a.mes - b.mes).map((r) => ({ rotulo: MES_CURTO[r.mes], valor: reais(r.arrecMes) }));
   const link = (mud: Record<string, string>) => `?${new URLSearchParams({ ano: String(ano), mes: String(mes), bloco: bloco.k, ...mud })}`;
 
@@ -42,8 +54,8 @@ export default async function Receita({ searchParams }: { searchParams: { ano?: 
     <div className="space-y-4">
       <div className="flex flex-wrap items-end gap-3">
         <div className="mr-auto">
-          <h1 className="text-lg font-semibold">Receita · {ano} <SeloDado selo={selos.receita} /></h1>
-          <p className="text-xs text-slate-500">Acumulado de janeiro a {MES_LONGO[mes]}. Fonte: Portal da Transparência.</p>
+          <h1 className="text-lg font-semibold">Receita · {ano} {provisorio && <span className="selo bg-slate-100 text-slate-700 align-middle">Provisório</span>} <SeloDado selo={selos.receita} /></h1>
+          <p className="text-xs text-slate-500">{provisorio ? `Acumulado de janeiro a ${MES_LONGO[mes]}` : 'Ano fechado (acumulado até dezembro)'}. Fonte: Portal da Transparência.</p>
         </div>
         <form className="flex items-end gap-2">
           <input type="hidden" name="bloco" value={bloco.k} />
@@ -56,14 +68,14 @@ export default async function Receita({ searchParams }: { searchParams: { ano?: 
       <div className="flex flex-wrap gap-2">{BLOCOS.map((b) => <Link key={b.k} href={link({ bloco: b.k })} aria-current={b.k === bloco.k ? 'page' : undefined} className={b.k === bloco.k ? 'btn' : 'btn-sec'}>{b.nome}</Link>)}</div>
 
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        <Numero titulo="Arrecadado" valor={brlCurto(total)} detalhe={brl(total)} />
+        <Numero titulo="Arrecadado" valor={brlCurto(total)} detalhe={<>{brl(total)}{variacao !== null && <><br />{variacao >= 0 ? '+' : '−'}{Math.abs(variacao).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% sobre {ano - 1} (nominal)</>}</>} />
         <Numero titulo="Previsto atualizado" valor={brlCurto(raiz?.previstoAtual ?? Z)} detalhe={`${pct(total, raiz?.previstoAtual ?? Z)} do previsto`} />
         <Numero titulo="Receita líquida do município" valor={brlCurto(resumo?.liquida.arrecadado ?? Z)} detalhe="corrente + capital − deduções" />
         <Numero titulo="Maior fonte" valor={maior ? brlCurto(maior.arrecAteMes) : '—'} detalhe={maior ? `${maior.nome} · ${pct(maior.arrecAteMes, total)}` : ''} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <section className="cartao"><h2 className="font-semibold mb-2">Arrecadado por ano</h2><GraficoColunas titulo="Arrecadado no ano" itens={porAno} />{anos.length < 2 && <p className="text-xs text-slate-500 mt-1">O histórico dos anos anteriores aparece depois da carga inicial.</p>}</section>
+        <section className="cartao"><h2 className="font-semibold">Arrecadado por ano · {bloco.nome.toLowerCase()}</h2><p className="text-xs text-slate-500 mb-1">Clique em um ano para ver só os números dele. * ano em andamento: não é comparável com ano fechado. Valores nominais.</p><GraficoColunas titulo="Arrecadado no ano" itens={porAno} />{anos.length < 2 && <p className="text-xs text-slate-500 mt-1">O histórico dos anos anteriores aparece depois da carga inicial.</p>}</section>
         <section className="cartao"><h2 className="font-semibold mb-2">Mês a mês em {ano}</h2><GraficoColunas titulo="Arrecadado no mês" itens={porMes} /></section>
       </div>
 
@@ -82,24 +94,34 @@ export default async function Receita({ searchParams }: { searchParams: { ano?: 
       )}
 
       <section className="cartao">
-        <h2 className="font-semibold mb-2">Principais fontes · {bloco.nome.toLowerCase()}</h2>
-        <BarrasH total={total} itens={folhas.slice(0, 8).map((f) => ({ nome: f.nome, valor: f.arrecAteMes }))} />
-      </section>
-
-      <section className="cartao overflow-x-auto">
-        <h2 className="font-semibold mb-1">Todas as contas · {folhas.length}</h2>
-        <table className="tabela">
-          <thead><tr><th>Conta</th><th className="n">Arrecadado</th><th className="n">% do total</th><th>Vinculação</th></tr></thead>
-          <tbody>
-            {folhas.map((f) => (
-              <tr key={f.contaCod}>
-                <td><span className="font-mono text-xs text-slate-500">{f.contaCod}</span> {f.nome}</td>
-                <td className="n">{brl(f.arrecAteMes)}</td><td className="n">{pct(f.arrecAteMes, total)}</td>
-                <td className="text-xs">{f.classe.pct === 100 ? <>{f.classe.area} · <span className="text-slate-500">{f.classe.lei}</span></> : f.classe.pct === 0 ? 'Livre' : <span className="text-amber-800">Sem regra definida</span>}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <h2 className="font-semibold">Todas as contas · {bloco.nome.toLowerCase()} ({folhas.length})</h2>
+        <p className="text-xs text-slate-500 mb-1">Da maior para a menor arrecadação. A barra mostra o peso da conta dentro de {bloco.nome.toLowerCase()}.</p>
+        <div className="overflow-x-auto">
+          <div className="min-w-[980px] text-xs">
+            <div className="grid items-end gap-x-3 border-b border-slate-200 pb-1 text-slate-500" style={COLUNAS}>
+              <span>Conta</span><span className="text-right">Previsto atual</span><span className="text-right">Arrecadado</span><span className="text-right">% previsto</span><span>Peso na categoria</span><span>Vinculação</span>
+            </div>
+            {folhas.map((f) => {
+              const larg = maior && maior.arrecAteMes > Z ? Math.min(100, Number((f.arrecAteMes * BigInt(10000)) / maior.arrecAteMes) / 100) : 0;
+              return (
+                <div key={f.contaCod} className="grid items-center gap-x-3 border-b border-slate-100 py-1 hover:bg-slate-50" style={COLUNAS} title={`${f.contaCod} · ${f.nome}`}>
+                  <span className="truncate whitespace-nowrap"><span className="font-mono text-slate-400">{f.contaCod}</span> {f.nome}</span>
+                  <span className="text-right tabular-nums whitespace-nowrap">{brlCurto(f.previstoAtual)}</span>
+                  <span className="text-right tabular-nums whitespace-nowrap font-semibold">{brlCurto(f.arrecAteMes)}</span>
+                  <span className="text-right tabular-nums whitespace-nowrap">{f.previstoAtual > Z ? pct(f.arrecAteMes, f.previstoAtual) : '—'}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="h-1.5 flex-1 rounded bg-slate-100"><span className="block h-1.5 rounded" style={{ width: `${larg}%`, background: COR_SERIE[0] }} /></span>
+                    <span className="w-12 text-right tabular-nums text-slate-500">{pct(f.arrecAteMes, total)}</span>
+                  </span>
+                  <span className="truncate whitespace-nowrap">{f.classe.pct === 100 ? <>{f.classe.area} · <span className="text-slate-500">{f.classe.lei}</span></> : f.classe.pct === 0 ? 'Livre' : <span className="text-amber-800">Sem regra definida</span>}</span>
+                </div>
+              );
+            })}
+            <div className="grid items-center gap-x-3 pt-1 font-semibold" style={COLUNAS}>
+              <span>Total de {bloco.nome.toLowerCase()}</span><span /><span className="text-right tabular-nums">{brlCurto(total)}</span><span /><span /><span />
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );

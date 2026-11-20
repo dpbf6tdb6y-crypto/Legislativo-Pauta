@@ -1,6 +1,7 @@
 'use client';
 // Gráficos do Compliance: SVG leve, com leitura por mouse, toque e teclado. Valores em reais.
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { COR_SERIE } from '@/lib/financas/painel/cores';
 
 const GRADE = '#e5e7eb', EIXO = '#cbd5e1', TEXTO = '#64748b';
@@ -102,7 +103,13 @@ export function GraficoLinhas({ rotulos, series, titulo, altura = 220 }: { rotul
 }
 
 /** Colunas de uma série. Com `sinal`, negativo fica em vermelho e abaixo da linha de base. */
-export function GraficoColunas({ itens, titulo, sinal = false, altura = 200 }: { itens: { rotulo: string; valor: number }[]; titulo: string; sinal?: boolean; altura?: number }) {
+/**
+ * Colunas. Com `href` em cada item, a coluna vira escolha: clicar (ou Enter na coluna lida pelas setas) abre o endereço,
+ * e `ativo` marca a escolhida (as demais ficam mais claras).
+ */
+export function GraficoColunas({ itens, titulo, sinal = false, altura = 200 }: { itens: { rotulo: string; valor: number; href?: string; ativo?: boolean }[]; titulo: string; sinal?: boolean; altura?: number }) {
+  const router = useRouter();
+  const temAtivo = itens.some((x) => x.ativo);
   const [ref, w] = useLargura();
   const [i, setI] = useState<number | null>(null);
   const m = { e: 58, d: 8, t: 12, b: 24 };
@@ -115,6 +122,7 @@ export function GraficoColunas({ itens, titulo, sinal = false, altura = 200 }: {
   const teclas = (e: KeyboardEvent) => {
     if (e.key === 'ArrowRight') setI((x) => Math.min(n - 1, (x ?? -1) + 1));
     if (e.key === 'ArrowLeft') setI((x) => Math.max(0, (x ?? n) - 1));
+    if (e.key === 'Enter' && i !== null && itens[i]?.href) router.push(itens[i].href!, { scroll: false });
   };
   if (!n) return <p className="text-sm text-slate-500">Sem dados coletados.</p>;
   const coluna = (v: number, cx: number) => {
@@ -137,10 +145,10 @@ export function GraficoColunas({ itens, titulo, sinal = false, altura = 200 }: {
         {itens.map((x, k) => {
           const cx = m.e + faixa * (k + 0.5);
           return (
-            <g key={x.rotulo} onPointerEnter={() => setI(k)} onPointerDown={() => setI(k)}>
+            <g key={x.rotulo} onPointerEnter={() => setI(k)} onPointerDown={() => setI(k)} onClick={x.href ? () => router.push(x.href!, { scroll: false }) : undefined} style={x.href ? { cursor: 'pointer' } : undefined}>
               <rect x={m.e + faixa * k} y={m.t} width={faixa} height={altura - m.t - m.b} fill="transparent" />
-              <path d={coluna(x.valor, cx)} fill={x.valor < 0 ? '#d03b3b' : COR_SERIE[0]} opacity={i === null || i === k ? 1 : 0.55} />
-              <text x={cx} y={altura - 7} textAnchor="middle" fontSize="11" fill={TEXTO}>{x.rotulo}</text>
+              <path d={coluna(x.valor, cx)} fill={x.valor < 0 ? '#d03b3b' : COR_SERIE[0]} opacity={temAtivo && !x.ativo ? 0.4 : i === null || i === k ? 1 : 0.55} />
+              <text x={cx} y={altura - 7} textAnchor="middle" fontSize="11" fontWeight={x.ativo ? 700 : 400} fill={x.ativo ? '#0f172a' : TEXTO}>{x.rotulo}</text>
             </g>
           );
         })}
