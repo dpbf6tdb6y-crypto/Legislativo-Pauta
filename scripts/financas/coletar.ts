@@ -7,7 +7,8 @@
 //   npx tsx scripts/financas/coletar.ts --ano 2025            outro exercício
 //   npx tsx scripts/financas/coletar.ts --historico 2020-2025 anos fechados: receita, despesa, natureza, função e SICONFI
 import { executarColeta, type OpcoesColeta } from '../../lib/financas/coleta/executar';
-import { PREFEITURA_PADRAO, prismaSistema } from '../../lib/financas/db';
+import { dbDa, PREFEITURA_PADRAO, prismaSistema } from '../../lib/financas/db';
+import { carregarMesesGuardados, mesesDeFolhaPendentes } from '../../lib/financas/coleta/folhaPendente';
 
 const anoMes = (a: number, m: number) => `${a}/${String(m).padStart(2, '0')}`;
 function mesesAtras(base: Date, n: number) {
@@ -47,13 +48,14 @@ async function main() {
   // (o portal altera meses passados com lançamentos de data retroativa)
   const meses = inicial || domingo ? [0, ...Array.from({ length: mesAtual }, (_, i) => i + 1)] : [0, Math.max(1, mesAtual - 1), mesAtual];
 
-  // folha: o portal publica o mês fechado; carga inicial = 12 meses, rotina = os 2 últimos
+  // folha: o portal publica o mês fechado; carga inicial = 12 meses; rotina = o mês corrente (sondado: se o portal ainda não
+  // publicou, nada é gravado), os 2 últimos fechados e qualquer mês incompleto, zerado ou faltando (a tabela de Pessoal fica completa e atual)
   const folhaArg = arg('folha');
   const folha = folhaArg !== undefined
     ? folhaArg.split(',').filter(Boolean)
     : inicial
       ? Array.from({ length: 12 }, (_, i) => { const x = mesesAtras(hoje, i + 1); return anoMes(x.ano, x.mes); })
-      : [1, 2].map((i) => { const x = mesesAtras(hoje, i); return anoMes(x.ano, x.mes); });
+      : mesesDeFolhaPendentes(await carregarMesesGuardados(dbDa(prefeitura)), hoje, true);
 
   // meses fechados da folha: aos domingos (e na carga inicial) confere se o portal mudou o número de registros
   const folhaVerificar = inicial || domingo

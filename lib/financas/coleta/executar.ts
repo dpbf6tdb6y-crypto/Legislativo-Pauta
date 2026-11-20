@@ -279,6 +279,58 @@ async function coletarComTrava(
         return { contratos: r.dados.length };
       });
 
+    // a folha vem antes das etapas longas (empenhos, restos, retenções): a do mês mais recente não pode ficar para o fim de uma coleta que pode estourar o limite de tempo
+    // o portal altera meses fechados da folha: relê só o mês cujo número de registros mudou
+    const folhas = [...op.folha];
+    if (op.folhaVerificar?.length && con.contagemFolha && (await chaveLigada(prefeituraId, 'folha')))
+      await passo('folha verificar meses fechados', async () => {
+        const mudaram: string[] = [];
+        for (const anoMes of op.folhaVerificar!) {
+          if (folhas.includes(anoMes)) continue;
+          const hoje = await con.contagemFolha!(anoMes);
+          const gravado = await db.folhaMes.findFirst({ where: { anoMes }, select: { linhasPortal: true } });
+          if (gravado?.linhasPortal !== hoje) mudaram.push(anoMes);
+        }
+        if (mudaram.length) log(`folha: ${mudaram.join(', ')} mudou no portal e será lida de novo`);
+        folhas.push(...mudaram);
+        return { verificados: op.folhaVerificar!.length, mudaram };
+      });
+
+    for (const anoMes of folhas) {
+      if (!(await chaveLigada(prefeituraId, 'folha'))) {
+        log('chave "folha" desligada: folha não coletada');
+        break;
+      }
+      await passo(`folha ${anoMes}`, async () => {
+        const r = await con.folhaMes(anoMes);
+        const f = r.dados;
+        // o portal ainda não publicou este mês (ou devolveu vazio): não apaga o que já está guardado nem cria mês zerado
+        if (f.linhasInformadasPelaFonte === 0 && f.linhas.length === 0) {
+          log(`folha ${anoMes}: o portal não tem linhas neste mês; nada gravado`);
+          return { linhas: 0, publicado: false };
+        }
+        // a tela da folha traz nomes: guardamos o HTML bruto como prova, no mesmo disco local
+        await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
+        if (f.linhas.length !== f.linhasInformadasPelaFonte)
+          throw new Error(`folha ${anoMes}: coletadas ${f.linhas.length} de ${f.linhasInformadasPelaFonte} linhas`);
+        conferirVolumeFolha(anoMes, f.linhas.length, await db.folhaLinha.count({ where: { anoMes } }));
+        await db.$transaction(async (tx) => {
+          await tx.folhaLinha.deleteMany({ where: { anoMes } });
+          for (let i = 0; i < f.linhas.length; i += 500) {
+            await tx.folhaLinha.createMany({
+              data: f.linhas.slice(i, i + 500).map(({ situacaoOriginal, ...l }) => ({ ...l, situacao: situacaoResumida(situacaoOriginal), prefeituraId })),
+            });
+          }
+        }, TROCA);
+        await db.folhaMes.upsert({
+          where: { prefeituraId_anoMes: { prefeituraId, anoMes } },
+          create: { prefeituraId, anoMes, linhasPortal: f.linhasInformadasPelaFonte, linhasColetadas: f.linhas.length, coletaId: coleta.id },
+          update: { linhasPortal: f.linhasInformadasPelaFonte, linhasColetadas: f.linhas.length, coletaId: coleta.id },
+        });
+        return { linhas: f.linhas.length };
+      });
+    }
+
     if (op.empenhos)
       await passo(`empenhos ${op.ano}`, async () => {
         const doAno = await db.empenho.findMany({ where: { ano: op.ano }, select: { idOrigem: true, aLiquidar: true, aPagar: true, inconsistencia: true } });
@@ -370,51 +422,6 @@ async function coletarComTrava(
         return { lidos: fila.length, retido: total.toString() };
       });
 
-    // o portal altera meses fechados da folha: relê só o mês cujo número de registros mudou
-    const folhas = [...op.folha];
-    if (op.folhaVerificar?.length && con.contagemFolha && (await chaveLigada(prefeituraId, 'folha')))
-      await passo('folha verificar meses fechados', async () => {
-        const mudaram: string[] = [];
-        for (const anoMes of op.folhaVerificar!) {
-          if (folhas.includes(anoMes)) continue;
-          const hoje = await con.contagemFolha!(anoMes);
-          const gravado = await db.folhaMes.findFirst({ where: { anoMes }, select: { linhasPortal: true } });
-          if (gravado?.linhasPortal !== hoje) mudaram.push(anoMes);
-        }
-        if (mudaram.length) log(`folha: ${mudaram.join(', ')} mudou no portal e será lida de novo`);
-        folhas.push(...mudaram);
-        return { verificados: op.folhaVerificar!.length, mudaram };
-      });
-
-    for (const anoMes of folhas) {
-      if (!(await chaveLigada(prefeituraId, 'folha'))) {
-        log('chave "folha" desligada: folha não coletada');
-        break;
-      }
-      await passo(`folha ${anoMes}`, async () => {
-        const r = await con.folhaMes(anoMes);
-        // a tela da folha traz nomes: guardamos o HTML bruto como prova, no mesmo disco local
-        await guardarBrutos(db, prefeituraId, coleta.id, con.nome, r.brutos);
-        const f = r.dados;
-        if (f.linhas.length !== f.linhasInformadasPelaFonte)
-          throw new Error(`folha ${anoMes}: coletadas ${f.linhas.length} de ${f.linhasInformadasPelaFonte} linhas`);
-        conferirVolumeFolha(anoMes, f.linhas.length, await db.folhaLinha.count({ where: { anoMes } }));
-        await db.$transaction(async (tx) => {
-          await tx.folhaLinha.deleteMany({ where: { anoMes } });
-          for (let i = 0; i < f.linhas.length; i += 500) {
-            await tx.folhaLinha.createMany({
-              data: f.linhas.slice(i, i + 500).map(({ situacaoOriginal, ...l }) => ({ ...l, situacao: situacaoResumida(situacaoOriginal), prefeituraId })),
-            });
-          }
-        }, TROCA);
-        await db.folhaMes.upsert({
-          where: { prefeituraId_anoMes: { prefeituraId, anoMes } },
-          create: { prefeituraId, anoMes, linhasPortal: f.linhasInformadasPelaFonte, linhasColetadas: f.linhas.length, coletaId: coleta.id },
-          update: { linhasPortal: f.linhasInformadasPelaFonte, linhasColetadas: f.linhas.length, coletaId: coleta.id },
-        });
-        return { linhas: f.linhas.length };
-      });
-    }
   } finally {
     await con.fechar();
   }
