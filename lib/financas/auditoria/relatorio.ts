@@ -51,6 +51,12 @@ const RECOMENDACAO: Record<string, string> = {
   T1: 'Avaliar a substituição gradual da contratação temporária por provimento efetivo, observados os limites de pessoal.',
   P1: 'Cobrar da Contabilidade a publicação do RREO no prazo legal.',
   A29: 'Controlar o duodécimo contra o teto do art. 29-A; repasse acima do teto é crime de responsabilidade.',
+  O1: 'Conferir com a Contabilidade se há crédito adicional em andamento para o órgão que empenhou acima da dotação atualizada; sem ele, evitar novos empenhos.',
+  E5: 'Pedir a relação dos decretos que suplementaram o órgão e a fonte de cobertura de cada um.',
+  E6: 'Pedir à Contabilidade a relação dos decretos de crédito adicional do ano, com o valor e a fonte de cobertura de cada um (superávit financeiro, excesso de arrecadação, anulação ou operação de crédito).',
+  F2: 'Perguntar à Contabilidade se é preciso limitar empenhos ou revisar a meta de resultado primário da LDO (LRF art. 9º).',
+  C5: 'Verificar se os empenhos do mesmo credor tratam de objetos diferentes ou de ata de registro de preços; se for o mesmo objeto, avaliar licitação ou contrato.',
+  RP1: 'Pedir a lista dos restos a pagar não processados cancelados e conferir o efeito sobre saúde e educação.',
 };
 
 // mesma régua do painel: o que é descumprimento/risco imediato é crítico; o resto é atenção

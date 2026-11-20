@@ -24,7 +24,7 @@ describe('regras que vieram da auditoria do painel', () => {
     const regs = await dbDa(P).regra.findMany({ where: { codigo: { in: ['T1', 'P1', 'A29'] } } });
     expect(regs.map((r) => r.codigo).sort()).toEqual(['A29', 'P1', 'T1']);
     expect(regs.every((r) => r.estado === 'proposta' && r.baseLegal.length > 10)).toBe(true);
-    expect(REGRAS.length).toBe(17);
+    expect(REGRAS.length).toBe(23);
   });
 
   it('T1 conta matrículas (não linhas) com vínculo temporário', async () => {
@@ -41,7 +41,7 @@ describe('regras que vieram da auditoria do painel', () => {
 describe('relatório de auditoria guardado', () => {
   it('avalia todos os pontos de controle, inclusive regras ainda propostas, e explica os que ficaram sem avaliação', async () => {
     const c = await montarRelatorio(dbDa(P), 'Controlador', new Date(Date.UTC(2026, 10, 16, 12)));
-    expect(c.itens).toHaveLength(17);
+    expect(c.itens).toHaveLength(23);
     const t1 = c.itens.find((i) => i.codigo === 'T1')!;
     expect(t1).toMatchObject({ situacao: 'atencao', estadoRegra: 'proposta', totalAchados: 1 });
     expect(t1.recomendacao).toMatch(/temporária/);
