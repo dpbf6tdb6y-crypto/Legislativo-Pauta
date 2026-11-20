@@ -235,6 +235,66 @@ export function projecaoReceita(p: { realizado: bigint; anteriorAteMes: bigint; 
   };
 }
 
+// ---------------------------------------------------------------- LOA × receita e caixa do ano
+// Perguntas do prefeito: "a LOA subiu e a receita não: de onde veio o dinheiro?" e "por que se pagou mais do que se arrecadou?".
+// Só descreve e mostra o que NÃO tem explicação nos dados publicados; quem explica é a contabilidade (decretos de crédito).
+
+export interface CoberturaCreditos {
+  ano: number;
+  despesaInicial: bigint;       // dotação inicial do município (com a Câmara)
+  despesaAtual: bigint;
+  aumentoDespesa: bigint;
+  aumentoDespesaBp: bigint | null;
+  receitaInicial: bigint;       // receita líquida prevista na LOA
+  receitaAtual: bigint;
+  aumentoReceita: bigint;
+  aumentoReceitaBp: bigint | null;
+  /** parte do aumento da despesa que NÃO veio de previsão de receita nova (superávit de anos anteriores, excesso de arrecadação ainda não previsto...) */
+  semReceitaNova: bigint;
+  saldoAnteriores: bigint | null; // "saldo de exercícios anteriores" usado para créditos adicionais, segundo o RREO
+  /** o que sobra sem explicação nos números publicados; null quando o RREO não traz o saldo */
+  semExplicacao: bigint | null;
+}
+
+/** Lei 4.320/1964, art. 43, §1º: crédito adicional se cobre com superávit financeiro, excesso de arrecadação, anulação de dotação ou operação de crédito. */
+export function coberturaCreditos(ano: number, eq: EquilibrioLOA, saldoAnteriores: bigint | null): CoberturaCreditos {
+  const z = BigInt(0);
+  const aumentoDespesa = eq.despAtual - eq.despIni;
+  const aumentoReceita = eq.recAtual - eq.recIni;
+  const semReceitaNova = aumentoDespesa - aumentoReceita;
+  return {
+    ano, despesaInicial: eq.despIni, despesaAtual: eq.despAtual,
+    aumentoDespesa, aumentoDespesaBp: razaoBp(aumentoDespesa, eq.despIni),
+    receitaInicial: eq.recIni, receitaAtual: eq.recAtual,
+    aumentoReceita, aumentoReceitaBp: razaoBp(aumentoReceita, eq.recIni),
+    semReceitaNova, saldoAnteriores,
+    semExplicacao: saldoAnteriores === null ? null : semReceitaNova > saldoAnteriores ? semReceitaNova - saldoAnteriores : z,
+  };
+}
+
+export interface CaixaDoAno {
+  ano: number;
+  receita: bigint;          // receita líquida arrecadada no ano
+  pagoOrcamento: bigint;    // pago do ano (município, sem restos a pagar)
+  rpPagos: bigint;          // restos a pagar de anos anteriores pagos no ano
+  saidas: bigint;           // pagoOrcamento + rpPagos
+  diferenca: bigint;        // saidas − receita (positivo = saiu mais do que entrou)
+  /** o mesmo, só com o pago do orçamento (a conta que o portal mostra) */
+  diferencaSemRP: bigint;
+  saldoAnteriores: bigint | null;
+  semCobertura: bigint | null; // diferenca − saldo de exercícios anteriores publicado (≥ 0)
+}
+
+export function caixaDoAno(ano: number, receita: bigint, pagoOrcamento: bigint, rpPagos: bigint, saldoAnteriores: bigint | null): CaixaDoAno {
+  const z = BigInt(0);
+  const saidas = pagoOrcamento + rpPagos;
+  const diferenca = saidas - receita;
+  return {
+    ano, receita, pagoOrcamento, rpPagos, saidas, diferenca, diferencaSemRP: pagoOrcamento - receita, saldoAnteriores,
+    semCobertura: saldoAnteriores === null ? null : diferenca > saldoAnteriores ? diferenca - saldoAnteriores : z,
+  };
+}
+
 // ---------------------------------------------------------------- confiança dos dados
 
 export interface ItemConfianca { nivel: Nivel; titulo: string; detalhe: string }

@@ -4,8 +4,8 @@ import { exigir } from '@/lib/financas/auth';
 import { brl, brlCurto, pctBp } from '@/lib/financas/dinheiro';
 import { pode } from '@/lib/financas/perfis';
 import type { ResultadoConciliacao } from '@/lib/financas/coleta/conciliacao';
-import { carregarDivida, carregarExecucao, carregarPessoal, carregarReceita, carregarRREO } from '@/lib/financas/painel/carregar';
-import { confiancaDados, confiancaRREO, LRF_O_QUE_A_LEI_PREVE, nivelDoLRF, seloGeral, type Frase, type Nivel } from '@/lib/financas/painel/fiscal';
+import { carregarDivida, carregarExecucao, carregarPessoal, carregarReceita, carregarRPPagos, carregarRREO } from '@/lib/financas/painel/carregar';
+import { caixaDoAno, coberturaCreditos, confiancaDados, confiancaRREO, equilibrioLOA, LRF_O_QUE_A_LEI_PREVE, nivelDoLRF, seloGeral, type Frase, type Nivel } from '@/lib/financas/painel/fiscal';
 import Medidor, { COR_NIVEL } from '@/app/dashboard/fazenda/_componentes/Medidor';
 import BlocoRREO from '@/app/dashboard/fazenda/_componentes/BlocoRREO';
 import { resumoPontos } from '@/lib/financas/auditoria/regras';
@@ -72,10 +72,18 @@ export default async function Inicio({ searchParams }: { searchParams: { ate?: s
   if (divida && divida.nivel !== 'ok')
     frases.push({ nivel: divida.nivel, href: '#minimos', texto: `Dívida consolidada líquida em ${pctBp(divida.pctBp)} da RCL; o limite é ${pctBp(divida.limiteBp, 0)}.` });
   if (exe && rec && rec.ano === exe.ano) {
-    const dif = exe.municipio.pago - rec.liquida.arrecadado;
-    frases.push(dif > BigInt(0)
-      ? { nivel: 'observacao', href: '/dashboard/fazenda/orcamento', texto: `Em ${exe.ano} foi pago ${brlCurto(dif)} a mais do que se arrecadou (sem contar restos a pagar). Essa diferença precisa estar coberta por saldo de caixa de anos anteriores${rreo?.saldoExerciciosAnteriores ? ` (o RREO do ${rreo.bimestre}º bimestre informa ${brlCurto(rreo.saldoExerciciosAnteriores)} de saldos de anos anteriores usados)` : ''}: confirme com a contabilidade.` }
-      : { nivel: 'ok', href: '/dashboard/fazenda/orcamento', texto: `A receita arrecadada em ${exe.ano} cobre tudo o que foi pago no ano (sobra ${brlCurto(-dif)}).` });
+    // caixa do ano: o "pago" do portal não inclui restos a pagar de anos anteriores; quem paga restos gasta caixa do ano
+    const rpPagos = await carregarRPPagos(db, exe.ano);
+    const saldoAnt = rreo && rreo.ano === exe.ano ? rreo.saldoExerciciosAnteriores : null;
+    const caixa = caixaDoAno(exe.ano, rec.liquida.arrecadado, exe.municipio.pago, rpPagos, saldoAnt);
+    frases.push(caixa.diferenca > BigInt(0)
+      ? { nivel: 'observacao', href: '/dashboard/fazenda/orcamento#caixa', texto: `Em ${exe.ano} saiu ${brlCurto(caixa.diferenca)} a mais do que entrou (receita líquida × despesa paga no ano, com ${brlCurto(caixa.rpPagos)} de restos a pagar de anos anteriores). Isso só é regular se houver caixa de anos anteriores para cobrir${saldoAnt ? ` (o RREO do ${rreo!.bimestre}º bimestre informa ${brlCurto(saldoAnt)} de saldos de anos anteriores usados)` : ''}: confirme o saldo em caixa e os recursos vinculados com a contabilidade.` }
+      : { nivel: 'ok', href: '/dashboard/fazenda/orcamento#caixa', texto: `A receita arrecadada em ${exe.ano} cobre tudo o que saiu no ano, restos a pagar incluídos (sobra ${brlCurto(-caixa.diferenca)}).` });
+    // LOA: a despesa autorizada subiu mais do que a receita prevista; de onde vem a cobertura
+    const eq = equilibrioLOA(rec, exe.municipio);
+    const cob = eq ? coberturaCreditos(exe.ano, eq, saldoAnt) : null;
+    if (cob && cob.semReceitaNova > BigInt(0))
+      frases.push({ nivel: 'observacao', href: '/dashboard/fazenda/orcamento#loa', texto: `A despesa autorizada de ${cob.ano} subiu ${brlCurto(cob.aumentoDespesa)} sobre a LOA e a receita prevista só ${brlCurto(cob.aumentoReceita)}: a diferença vem de saldo de anos anteriores e outras fontes de crédito adicional.${cob.semExplicacao && cob.semExplicacao > BigInt(0) ? ` ${brlCurto(cob.semExplicacao)} ainda sem cobertura identificada nos números publicados: peça os decretos à contabilidade.` : ''}` });
   }
   // trava de conferência: o que não bate com o RREO homologado aparece aqui, para quem decide
   const selos = verFiscal ? await selosDaExecucao(db, exe?.ano ?? hoje.getFullYear()) : null;

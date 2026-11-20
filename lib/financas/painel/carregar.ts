@@ -32,3 +32,9 @@ export async function carregarRREO(db: DbPrefeitura) {
 export async function carregarDivida(db: DbPrefeitura) {
   return dividaLRF(await db.indicadorFiscal.findMany({ where: { relatorio: 'RGF', chave: { in: ['dcl', 'dcl_pct', 'dcl_limite_pct'] } } }));
 }
+
+/** Restos a pagar de anos anteriores pagos no exercício (a aba Órgão do portal não os inclui no "pago"). */
+export async function carregarRPPagos(db: DbPrefeitura, ano: number): Promise<bigint> {
+  const rps = await db.restoPagar.findMany({ where: { exercicio: ano }, select: { pago: true } });
+  return rps.reduce((s, r) => s + r.pago, BigInt(0));
+}

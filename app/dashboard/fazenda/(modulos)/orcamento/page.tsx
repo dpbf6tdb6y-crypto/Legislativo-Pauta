@@ -1,6 +1,8 @@
 import { exigir } from '@/lib/financas/auth';
 import { brl, pct, pctBp } from '@/lib/financas/dinheiro';
-import { equilibrioLOA, projecaoReceita, resumoReceita, tempoDecorridoBp, type Totais } from '@/lib/financas/painel/fiscal';
+import { caixaDoAno, coberturaCreditos, equilibrioLOA, projecaoReceita, resumoReceita, tempoDecorridoBp, type Totais } from '@/lib/financas/painel/fiscal';
+import { carregarDivida, carregarRPPagos, carregarRREO } from '@/lib/financas/painel/carregar';
+import BlocoCaixaLOA from '@/app/dashboard/fazenda/_componentes/BlocoCaixaLOA';
 import { selosDaExecucao } from '@/lib/financas/coleta/selos';
 import SeloDado from '@/app/dashboard/fazenda/_componentes/SeloDado';
 
@@ -33,6 +35,12 @@ export default async function Orcamento({ searchParams }: { searchParams: { ano?
   const sinalBrl = (v: bigint) => `${v >= BigInt(0) ? '+' : '−'} ${brl(v < BigInt(0) ? -v : v)}`;
   const posicao = mesReceita ? (MESES[mesReceita] ?? '—').toLowerCase() : '—';
   const selos = await selosDaExecucao(db, ano);
+
+  // LOA × receita (de onde veio o dinheiro do aumento) e caixa do ano (entrou × saiu, com restos a pagar). O saldo de anos anteriores vem do RREO do mesmo ano.
+  const [rreo, divida, rpPagos] = await Promise.all([carregarRREO(db), carregarDivida(db), carregarRPPagos(db, ano)]);
+  const saldoAnteriores = rreo && rreo.ano === ano ? rreo.saldoExerciciosAnteriores : null;
+  const cobertura = equilibrio ? coberturaCreditos(ano, equilibrio, saldoAnteriores) : null;
+  const caixa = resumo && orgaosAno.length ? caixaDoAno(ano, resumo.liquida.arrecadado, tAno.pago, rpPagos, saldoAnteriores) : null;
 
   return (
     <div className="space-y-4">
@@ -95,6 +103,8 @@ export default async function Orcamento({ searchParams }: { searchParams: { ano?
           )}
         </div>
       </div>
+
+      <BlocoCaixaLOA cobertura={cobertura} caixa={caixa} rreo={rreo && rreo.ano === ano ? rreo : null} divida={divida} />
 
       {/* ---------- despesa: fixada × executada ---------- */}
       <div className="cartao overflow-x-auto">
