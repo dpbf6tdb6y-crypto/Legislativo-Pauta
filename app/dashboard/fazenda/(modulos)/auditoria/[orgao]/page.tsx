@@ -30,13 +30,16 @@ export default async function FichaSecretaria({ params, searchParams }: { params
             {' · '}última reunião: {f.ultimaReuniao ? f.ultimaReuniao.toLocaleDateString('pt-BR') : 'nenhuma registrada'}
           </p>
         </div>
+        <Link href={`/dashboard/fazenda/auditoria/${f.orgao.orgaoCod}/contratos`} className="btn-sec">📄 Contratos da secretaria</Link>
         <Link href={`/dashboard/fazenda/reuniao/${f.orgao.orgaoCod}`} className="btn">▶ Modo reunião</Link>
       </div>
 
       {/* números da secretaria */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
         {([
           ['Empenhado', pctBp(f.empenhadoBp), `${brlCurto(f.orgao.empenhado)} de ${brlCurto(f.orgao.dotAtual)} · ano: ${pctBp(f.tempoBp)}`, ''],
+          ['Liquidado', brlCurto(f.orgao.liquidado), `${pctBp(f.liquidadoBp)} da dotação · entregue e atestado`, ''],
+          ['Pago', brlCurto(f.orgao.pago), `${pctBp(f.pagoBp)} da dotação · saiu do caixa (ano)`, ''],
           ['Saldo da dotação', brlCurto(f.saldo), f.saldo < BigInt(0) ? 'empenhado acima da dotação' : 'disponível para empenhar', f.saldo < BigInt(0) ? 'text-red-700' : ''],
           ['Liquidado e não pago', brlCurto(f.liquidadoNaoPago), 'entregue, ainda sem pagamento (ano)', ''],
           ['Restos a pagar pendentes', brlCurto(f.rpPendente), `de anos anteriores, no exercício ${f.ano}`, ''],

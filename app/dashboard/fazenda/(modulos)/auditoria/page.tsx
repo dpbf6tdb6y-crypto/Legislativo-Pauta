@@ -37,7 +37,7 @@ export default async function Auditoria() {
       <div className="cartao overflow-x-auto">
         <table className="tabela">
           <thead>
-            <tr><th>Secretaria</th><th>Responsável</th><th className="n">Abertos</th><th className="n">Atrasados</th><th className="n">Para validar</th><th className="n">Empenhado</th><th className="n">Saldo da dotação</th><th>Última reunião</th></tr>
+            <tr><th>Secretaria</th><th>Responsável</th><th className="n">Abertos</th><th className="n">Atrasados</th><th className="n">Para validar</th><th className="n">Empenhado</th><th className="n">Liquidado</th><th className="n">Pago</th><th className="n">Saldo da dotação</th><th>Última reunião</th><th></th></tr>
           </thead>
           <tbody>
             {linhas.map((l) => (
@@ -47,15 +47,18 @@ export default async function Auditoria() {
                 <td className="n">{l.pontos.abertos || ''}</td>
                 <td className={`n ${l.pontos.atrasados ? 'text-red-700 font-bold' : ''}`}>{l.pontos.atrasados || ''}</td>
                 <td className="n">{l.pontos.respondidos || ''}</td>
-                <td className="n" title={`ano decorrido: ${pctBp(v.tempoBp)}`}>{pctBp(l.empenhadoBp)}</td>
+                <td className="n" title={`ano decorrido: ${pctBp(v.tempoBp)}`}>{brlCurto(l.empenhado)}<div className="text-xs text-slate-500">{pctBp(l.empenhadoBp)}</div></td>
+                <td className="n" title={`liquidado e ainda não pago: ${brlCurto(l.liquidadoNaoPago)}`}>{brlCurto(l.liquidado)}<div className="text-xs text-slate-500">{pctBp(l.liquidadoBp)}</div></td>
+                <td className="n">{brlCurto(l.pago)}<div className="text-xs text-slate-500">{pctBp(l.pagoBp)}</div></td>
                 <td className={`n ${l.saldo < BigInt(0) ? 'text-red-700 font-semibold' : ''}`}>{brlCurto(l.saldo)}</td>
                 <td>{fmt(l.ultimaReuniao)}</td>
+                <td className="whitespace-nowrap"><Link href={`/dashboard/fazenda/auditoria/${l.orgaoCod}/contratos`} className="btn-sec text-xs">Contratos</Link></td>
               </tr>
             ))}
           </tbody>
         </table>
         <p className="text-xs text-slate-500 mt-2">
-          {v.ano} · Executivo (a Câmara não entra: o prefeito não cobra o Legislativo). Empenhado = parte da dotação atualizada já comprometida; {pctBp(v.tempoBp)} do ano já passou.
+          {v.ano} · Executivo (a Câmara não entra: o prefeito não cobra o Legislativo). Empenhado = comprometido; liquidado = serviço/bem entregue e atestado; pago = dinheiro que saiu (o % é sobre a dotação atualizada; o pago não inclui restos a pagar de anos anteriores). {pctBp(v.tempoBp)} do ano já passou.
         </p>
       </div>
     </div>

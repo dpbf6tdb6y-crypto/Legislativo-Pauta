@@ -65,7 +65,11 @@ export default async function Reuniao({ params }: { params: { orgao: string } })
           ))}
         </div>
         <p className="text-base text-slate-600 -mt-3">
-          Saldo da dotação {brlCurto(f.saldo)} · liquidado e não pago {brlCurto(f.liquidadoNaoPago)} · {f.vencendo.length} contrato(s) vencendo em 90 dias · {pctBp(f.tempoBp)} do ano já passou
+          Empenhado {brlCurto(f.orgao.empenhado)} · liquidado {brlCurto(f.orgao.liquidado)} ({pctBp(f.liquidadoBp)}) · pago {brlCurto(f.orgao.pago)} ({pctBp(f.pagoBp)}) · saldo da dotação {brlCurto(f.saldo)} · liquidado e não pago {brlCurto(f.liquidadoNaoPago)} · {pctBp(f.tempoBp)} do ano já passou
+        </p>
+        <p className="text-base -mt-3">
+          <Link href={`/dashboard/fazenda/auditoria/${f.orgao.orgaoCod}/contratos`} className="text-emerald-700 hover:underline">📄 Contratos da secretaria</Link>
+          {f.vencendo.length > 0 && <span className="text-amber-800"> · {f.vencendo.length} vencendo em 90 dias</span>}
         </p>
 
         <section>
