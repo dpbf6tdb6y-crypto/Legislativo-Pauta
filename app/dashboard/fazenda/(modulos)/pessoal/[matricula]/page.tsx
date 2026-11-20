@@ -5,7 +5,7 @@ import { nomeExibido, podeVerNomes } from '@/lib/financas/folha';
 export default async function Ficha({ params }: { params: { matricula: string } }) {
   const matricula = decodeURIComponent(params.matricula);
   const { s, db } = await exigir('folha', 'Ficha do servidor', { detalhe: `matrícula=${matricula}`, modulo: 'folha' });
-  const meses = (await db.folhaMes.findMany({ orderBy: { anoMes: 'desc' }, take: 12 })).map((m) => m.anoMes);
+  const meses = (await db.folhaMes.findMany({ orderBy: { anoMes: 'desc' } })).map((m) => m.anoMes);
   const linhas = await db.folhaLinha.findMany({ where: { matricula, anoMes: { in: meses } }, orderBy: [{ anoMes: 'desc' }, { seq: 'asc' }] });
   const atual = linhas[0];
   const verNomes = await podeVerNomes(s);
