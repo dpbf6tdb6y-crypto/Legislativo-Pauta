@@ -35,13 +35,10 @@ describe('folha de mês sem linhas no portal', () => {
     expect(await db.folhaMes.count()).toBe(1);
   });
 
-  it('a rotina pede de novo o mês zerado, o incompleto e a lacuna', async () => {
+  it('a rotina pede só o corrente quando o último fechado já está completo', async () => {
     const db = dbDa(P);
-    await db.folhaMes.create({ data: { prefeituraId: P, anoMes: '2026/08', linhasPortal: 0, linhasColetadas: 0, coletaId: 0 } }); // zerado (como na tela antiga)
     const guardados = await carregarMesesGuardados(db);
-    const m = mesesDeFolhaPendentes(guardados, new Date(Date.UTC(2026, 10, 20, 12)), true);
-    expect(m).toContain('2026/08'); // zerado
-    expect(m).toContain('2026/09'); // lacuna entre 08 e o último fechado
-    expect(m).toContain('2026/11'); // mês corrente sondado
+    // 2026/10 está completo (primeiro teste); em 20/11/2026 o último fechado é 2026/10
+    expect(mesesDeFolhaPendentes(guardados, new Date(Date.UTC(2026, 10, 20, 12)))).toEqual(['2026/11']);
   });
 });
