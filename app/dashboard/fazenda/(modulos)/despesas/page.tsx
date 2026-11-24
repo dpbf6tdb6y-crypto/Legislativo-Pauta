@@ -63,12 +63,12 @@ export default async function Despesas({ searchParams }: { searchParams: { ano?:
       <section className="cartao overflow-x-auto">
         <h2 className="font-semibold mb-1">Por secretaria</h2>
         <p className="text-xs text-slate-500 mb-2">{mes === 0 ? 'Acumulado do ano.' : 'Movimento do mês. O empenhado do mês já desconta anulações e pode ficar negativo.'}</p>
-        <table className="tabela">
+        <table className="tabela text-xs [&_th]:whitespace-nowrap [&_th]:text-[10px] [&_th]:px-1.5 [&_td]:whitespace-nowrap [&_td]:px-1.5 [&_td]:py-1">
           <thead><tr><th>Secretaria</th><th className="n">Dotação inicial</th><th className="n">Dotação atual</th><th className="n">Empenhado</th><th className="n">Liquidado</th><th className="n">Pago</th>{mes === 0 && <th className="n">Variação sobre a LOA</th>}{mes === 0 && <th className="n">Saldo da dotação</th>}{mes === 0 && <th className="n">% empenhado</th>}</tr></thead>
           <tbody>
             {orgaos.map((o) => (
               <tr key={o.orgaoCod}>
-                <td>{o.orgaoCod} · {o.orgaoNome}</td><td className="n">{brl(o.dotInicial)}</td><td className="n">{brl(o.dotAtual)}</td>
+                <td className="max-w-[20rem] truncate" title={`${o.orgaoCod} · ${o.orgaoNome}`}>{o.orgaoCod} · {o.orgaoNome.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /i, '')}</td><td className="n">{brl(o.dotInicial)}</td><td className="n">{brl(o.dotAtual)}</td>
                 <td className={`n ${o.empenhado < Z ? 'text-amber-700' : ''}`}>{brl(o.empenhado)}</td><td className="n">{brl(o.liquidado)}</td><td className="n">{brl(o.pago)}</td>
                 {mes === 0 && <td className={`n ${o.dotAtual < o.dotInicial ? 'text-red-700' : ''}`}>{o.dotAtual === o.dotInicial ? '—' : sinalBrl(o.dotAtual - o.dotInicial)}</td>}
                 {mes === 0 && <td className={`n ${o.dotAtual - o.empenhado < Z ? 'text-red-700 font-semibold' : ''}`}>{brl(o.dotAtual - o.empenhado)}</td>}
