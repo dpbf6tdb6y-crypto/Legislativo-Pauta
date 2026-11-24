@@ -6,7 +6,7 @@ import { pode } from '@/lib/financas/perfis';
 import type { ResultadoConciliacao } from '@/lib/financas/coleta/conciliacao';
 import { carregarDivida, carregarExecucao, carregarPessoal, carregarReceita, carregarRPPagos, carregarRREO } from '@/lib/financas/painel/carregar';
 import { caixaDoAno, coberturaCreditos, confiancaDados, confiancaRREO, equilibrioLOA, LRF_O_QUE_A_LEI_PREVE, nivelDoLRF, seloGeral, type Frase, type Nivel } from '@/lib/financas/painel/fiscal';
-import Medidor, { COR_NIVEL } from '@/app/dashboard/fazenda/_componentes/Medidor';
+import { COR_NIVEL } from '@/app/dashboard/fazenda/_componentes/Medidor';
 import BlocoRREO from '@/app/dashboard/fazenda/_componentes/BlocoRREO';
 import MedidoresLimites from '@/app/dashboard/fazenda/_componentes/MedidoresLimites';
 import { resumoPontos } from '@/lib/financas/auditoria/regras';
@@ -14,7 +14,7 @@ import { coletasInterrompidas, frescorFontes, STATUS_TERMINADA, textoDadosDe } f
 import { SELO_OFICIAL, selosDaExecucao } from '@/lib/financas/coleta/selos';
 import SeloDado from '@/app/dashboard/fazenda/_componentes/SeloDado';
 import { carregarPainel, resumirFolha } from '@/lib/financas/painel/compliance';
-import { BarrasH, EvolucaoAno, MES_LONGO, Numero, QuadroVinculantes, SeletorMes, TabelaExecucao, textoSaldo } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
+import { BarrasLinha, EvolucaoAno, MES_LONGO, Numero, QuadroVinculantes, SeletorMes, TabelaExecucao, textoSaldo } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
 
 const NOMES_MES = ['ano', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const MES_EXTENSO = ['', 'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
@@ -22,7 +22,7 @@ const ROTULO_NIVEL: Record<Nivel, string> = { ok: 'em dia', observacao: 'acompan
 const pctNum = (bp: bigint) => Number(bp) / 100;
 
 function Bola({ n }: { n: Nivel }) {
-  return <span aria-label={ROTULO_NIVEL[n]} className="inline-block w-2.5 h-2.5 rounded-full mt-1.5 shrink-0" style={{ background: COR_NIVEL[n].arco }} />;
+  return <span aria-label={ROTULO_NIVEL[n]} className="inline-block w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: COR_NIVEL[n].arco }} />;
 }
 
 export default async function Inicio({ searchParams }: { searchParams: { ate?: string } }) {
@@ -130,26 +130,26 @@ export default async function Inicio({ searchParams }: { searchParams: { ate?: s
   return (
     <div className="space-y-4">
       {/* ---------- situação geral ---------- */}
-      <section className={`rounded-lg border-2 p-4 ${COR_NIVEL[selo.nivel].fundo} ${COR_NIVEL[selo.nivel].borda}`}>
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2">
-          <h1 className={`text-xl font-bold ${COR_NIVEL[selo.nivel].texto}`}>{selo.titulo}</h1>
-          <span className="text-xs text-slate-600">
+      <section className={`rounded-lg border-2 px-3.5 py-2.5 ${COR_NIVEL[selo.nivel].fundo} ${COR_NIVEL[selo.nivel].borda}`}>
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-1.5">
+          <h1 className={`text-base font-bold ${COR_NIVEL[selo.nivel].texto}`}>{selo.titulo}</h1>
+          <span className="text-[11px] text-slate-600">
             Situação em {hoje.toLocaleDateString('pt-BR')} · {textoDadosDe(fontes)}
           </span>
         </div>
         {frases.length ? (
-          <ul className="space-y-1.5">
+          <ul className="space-y-1">
             {frases.map((f, i) => (
-              <li key={i} className="flex gap-2 text-[15px] leading-snug">
+              <li key={i} className="flex gap-2 text-[13px] leading-snug">
                 <Bola n={f.nivel} />
                 {f.href ? <Link href={f.href} className="hover:underline">{f.texto}</Link> : <span>{f.texto}</span>}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-slate-600">Ainda não há dados suficientes para o resumo.</p>
+          <p className="text-[13px] text-slate-600">Ainda não há dados suficientes para o resumo.</p>
         )}
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="text-[11px] text-slate-500 mt-1.5">
           Indicadores para acompanhamento. O sistema não diz o que é irregular: os pontos de atenção vão para análise do controlador e do jurídico.
         </p>
       </section>
@@ -184,13 +184,6 @@ export default async function Inicio({ searchParams }: { searchParams: { ate?: s
             {!pes ? <p className="text-sm text-slate-500 mt-2">Sem RGF coletado.</p> : (
               <>
                 <p className="text-xs text-slate-500">Executivo · 12 meses até o {pes.quadrimestre}º quadrimestre de {pes.ano} · RGF (SICONFI)</p>
-                <div className="flex justify-center my-2">
-                  <Medidor
-                    valor={pctNum(pes.pctBp)} escala={Math.ceil(pctNum(pes.limites[2].pctBp) / 10) * 10 + 6}
-                    marcas={pes.limites.map((l) => ({ valor: pctNum(l.pctBp), rotulo: `Limite ${l.rotulo.toLowerCase()}` }))}
-                    nivel={nivelDoLRF(pes.nivel)} texto={pctBp(pes.pctBp)} rotulo="da receita corrente líquida"
-                  />
-                </div>
                 <table className="w-full text-sm">
                   <tbody>
                     {pes.limites.map((l) => (
@@ -291,14 +284,14 @@ export default async function Inicio({ searchParams }: { searchParams: { ate?: s
               <section className="cartao">
                 <h2 className="font-semibold mb-2">Para onde vai o dinheiro</h2>
                 {painel.funcoes.length
-                  ? <BarrasH total={totalFuncoes} itens={painel.funcoes.slice(0, 9).map((f) => ({ nome: f.nome.charAt(0) + f.nome.slice(1).toLowerCase(), valor: f.valor, href: '/dashboard/fazenda/despesas' }))} />
+                  ? <BarrasLinha itens={painel.funcoes.map((f) => ({ nome: f.nome.charAt(0) + f.nome.slice(1).toLowerCase(), valor: f.valor, href: '/dashboard/fazenda/despesas' }))} />
                   : <p className="text-sm text-slate-500">Aguardando a primeira coleta do relatório por função.</p>}
                 <p className="text-xs text-slate-500 mt-2">Empenhado por função de governo no período.</p>
               </section>
               {folha && (
                 <section className="cartao">
                   <h2 className="font-semibold mb-2">Vínculo dos servidores · {ultimaFolha!.anoMes}</h2>
-                  <BarrasH formato={(v) => Number(v).toLocaleString('pt-BR')} itens={folha.porVinculo.slice(0, 6).map((v) => ({ nome: v.nome, valor: BigInt(v.servidores) }))} />
+                  <BarrasLinha formato={(v) => Number(v).toLocaleString('pt-BR')} itens={folha.porVinculo.map((v) => ({ nome: v.nome, valor: BigInt(v.servidores) }))} />
                   <p className="text-xs text-slate-500 mt-2">{folha.servidores.toLocaleString('pt-BR')} matrículas na folha.</p>
                 </section>
               )}

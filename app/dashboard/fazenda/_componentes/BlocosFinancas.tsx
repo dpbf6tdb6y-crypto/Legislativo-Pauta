@@ -92,7 +92,7 @@ export function EvolucaoAno({ meses }: { meses: MesExecucao[] }) {
   const acum = meses.map((m) => { r += m.receita; e += m.empenhado; l += m.liquidado; p += m.pago; return { mes: m.mes, r, e, l, p }; });
   return (
     <>
-      <GraficoLinhas titulo="Acumulado no ano" rotulos={acum.map((a) => MES_CURTO[a.mes])} series={[
+      <GraficoLinhas altura={190} titulo="Acumulado no ano" rotulos={acum.map((a) => MES_CURTO[a.mes])} series={[
         { nome: 'Receita', valores: acum.map((a) => reais(a.r)) }, { nome: 'Empenhado', valores: acum.map((a) => reais(a.e)) },
         { nome: 'Liquidado', valores: acum.map((a) => reais(a.l)) }, { nome: 'Pago', valores: acum.map((a) => reais(a.p)) },
       ]} />
