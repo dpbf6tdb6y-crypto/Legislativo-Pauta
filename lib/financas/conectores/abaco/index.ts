@@ -15,6 +15,13 @@ export interface ConfigAbaco {
 
 const espera = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Uma leitura que não responde não pode segurar a coleta inteira: passou do limite, vira falha daquele item (volta na próxima coleta). */
+export function comLimite<T>(p: Promise<T>, ms: number, o_que: string): Promise<T> {
+  let t: NodeJS.Timeout;
+  const limite = new Promise<never>((_, rej) => { t = setTimeout(() => rej(new Error(`${o_que}: sem resposta em ${Math.round(ms / 1000)}s`)), ms); });
+  return Promise.race([p, limite]).finally(() => clearTimeout(t));
+}
+
 export class ConectorAbaco implements Conector {
   nome = 'portal-abaco';
   private browser?: Browser;
@@ -231,7 +238,7 @@ export class ConectorAbaco implements Conector {
     let ultimoErro: unknown;
     for (let tentativa = 0; tentativa < 3; tentativa++) {
       try {
-        const r = await fetch(`${this.cfg.base}/wppagamentodoc?${pagamentoIdOrigem}`, { headers: { 'User-Agent': AGENTE } });
+        const r = await fetch(`${this.cfg.base}/wppagamentodoc?${pagamentoIdOrigem}`, { headers: { 'User-Agent': AGENTE }, signal: AbortSignal.timeout(60_000) });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return lerRetencoesHtml(await r.text(), pagamentoIdOrigem);
       } catch (err) {
@@ -246,7 +253,7 @@ export class ConectorAbaco implements Conector {
     let ultimoErro: unknown;
     for (let tentativa = 0; tentativa < 3; tentativa++) {
       try {
-        const r = await fetch(`${this.cfg.base}/wmdespesas?13,${idOrigem}`, { headers: { 'User-Agent': AGENTE } });
+        const r = await fetch(`${this.cfg.base}/wmdespesas?13,${idOrigem}`, { headers: { 'User-Agent': AGENTE }, signal: AbortSignal.timeout(60_000) });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const e = lerEmpenhoHtml(await r.text(), idOrigem);
         if (e) {
@@ -315,24 +322,29 @@ export class ConectorAbaco implements Conector {
     const paralelo = this.cfg.paralelo ?? 3;
     const pausa = this.cfg.pausaMs ?? 150;
     let pos = 0;
+    let seguidas = 0; // falhas em sequência: o portal (ou o banco) parou de responder
     const trabalhador = async () => {
       while (pos < fila.length) {
+        if (seguidas >= 30) return; // a etapa para com erro claro abaixo, em vez de esperar o limite de 6 h da coleta
         const id = fila[pos++];
         try {
-          const e = await this.empenho(id);
+          const e = await comLimite(this.empenho(id), 150_000, `empenho ${id}`);
           if (e) {
-            await opts.aoReceber(e);
+            await comLimite(opts.aoReceber(e), 120_000, `gravar empenho ${id}`);
             entregues++;
           }
+          seguidas = 0;
         } catch {
+          seguidas++;
           falhas.push(id); // tenta de novo na próxima coleta (não está gravado, então volta como "novo")
         }
         verificados++;
-        if (verificados % 1000 === 0) opts.progresso?.(`empenhos: ${verificados}/${fila.length}`);
+        if (verificados % 250 === 0) opts.progresso?.(`empenhos: ${verificados}/${fila.length}`);
         await espera(pausa);
       }
     };
     await Promise.all(Array.from({ length: paralelo }, trabalhador));
+    if (seguidas >= 30) throw new Error(`empenhos: ${seguidas} leituras seguidas sem resposta depois de ${verificados} de ${fila.length}; etapa interrompida (o que já foi lido está gravado e o resto volta na próxima coleta)`);
     if (falhas.length) throw new Error(`${falhas.length} empenho(s) não puderam ser lidos (ficam para a próxima coleta): ${falhas.slice(0, 10).join(', ')}${falhas.length > 10 ? '…' : ''}`);
     return { verificados, entregues };
   }
@@ -363,7 +375,24 @@ export class ConectorAbaco implements Conector {
     );
     for (let pg = 1; pg <= paginas; pg++) {
       const tPg = Date.now();
-      if (pg > 1) await this.irParaPagina(pg, primeiraLinha);
+      if (pg > 1) {
+        // o portal às vezes não troca de página (visto em 2026/10: "página 20 não carregou"): refaz a busca e vai direto a ela
+        for (let tentativa = 1; ; tentativa++) {
+          try {
+            await this.irParaPagina(pg, primeiraLinha);
+            break;
+          } catch (err) {
+            if (tentativa >= 3) throw err;
+            console.log(`[folha ${anoMes}] página ${pg} não carregou (tentativa ${tentativa} de 3); refazendo a busca`);
+            await espera(5000 * tentativa);
+            await this.ir('wmservidores?0');
+            await this.mudar('vFILTROANO', String(ano));
+            await this.mudar('vFILTROMES', String(mes));
+            await this.buscar();
+            await this.porPagina(250);
+          }
+        }
+      }
       if (process.env.GAVIX_DEPURAR) console.log(`[folha ${anoMes}] página ${pg}/${paginas} carregada em ${Math.round((Date.now() - tPg) / 1000)}s; linhas até agora ${linhas.length}`);
       const html = await this.p.content();
       brutos.push({ tipo: 'folha_tela', referencia: `${anoMes} p${pg}`, nomeSugerido: `folha_${anoMes.replace('/', '-')}_p${String(pg).padStart(2, '0')}.html`, conteudo: Buffer.from(html, 'utf-8') });
