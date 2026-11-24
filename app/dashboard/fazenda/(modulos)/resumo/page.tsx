@@ -216,7 +216,7 @@ export default async function Inicio({ searchParams }: { searchParams: { ate?: s
             {!exe ? <p className="text-sm text-slate-500 mt-2">Sem despesa coletada.</p> : (
               <>
                 <p className="text-xs text-slate-500">{exe.ano} · Executivo (sem a Câmara) · portal da transparência</p>
-                <div className="text-3xl font-bold mt-3">{pctBp(exe.empenhadoBp)}</div>
+                <div className="text-2xl font-bold mt-1.5">{pctBp(exe.empenhadoBp)}</div>
                 <p className="text-sm text-slate-600">do orçamento atualizado já foi empenhado (comprometido).</p>
                 <div className="relative h-3 rounded bg-slate-200 mt-3" title={`Empenhado ${pctBp(exe.empenhadoBp)} · ano decorrido ${pctBp(exe.tempoBp)}`}>
                   <div className="absolute inset-y-0 left-0 rounded bg-emerald-600" style={{ width: `${Math.min(pctNum(exe.empenhadoBp ?? BigInt(0)), 100)}%` }} />
@@ -244,26 +244,18 @@ export default async function Inicio({ searchParams }: { searchParams: { ate?: s
             {!rec ? <p className="text-sm text-slate-500 mt-2">Sem receita coletada.</p> : (
               <>
                 <p className="text-xs text-slate-500">{rec.ano} · até {MES_EXTENSO[rec.mes]} · receita líquida (correntes + capital − deduções)</p>
-                <div className="text-3xl font-bold mt-3">{brlCurto(rec.liquida.arrecadado)}</div>
-                <p className="text-sm text-slate-600">arrecadados, {pctBp(rec.liquida.arrecadadoBp)} dos {brlCurto(rec.liquida.previstoAtual)} previstos.</p>
+                <p className="mt-1.5 leading-tight"><span className="text-2xl font-bold">{brlCurto(rec.liquida.arrecadado)}</span> <span className="text-[13px] text-slate-600">arrecadados, {pctBp(rec.liquida.arrecadadoBp)} dos {brlCurto(rec.liquida.previstoAtual)} previstos.</span></p>
                 {exe && exe.ano === rec.ano && (
-                  <p className="text-sm mt-2">
+                  <p className="text-[13px] mt-1">
                     Pago no ano: <b>{brlCurto(exe.municipio.pago)}</b>{' '}
                     <span className={exe.municipio.pago > rec.liquida.arrecadado ? 'text-amber-800' : 'text-emerald-800'}>
                       ({exe.municipio.pago > rec.liquida.arrecadado ? `${brlCurto(exe.municipio.pago - rec.liquida.arrecadado)} acima` : `${brlCurto(rec.liquida.arrecadado - exe.municipio.pago)} abaixo`} da receita)
                     </span>
                   </p>
                 )}
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mt-3 mb-1">De onde vem o dinheiro</h3>
-                <ul className="space-y-1">
-                  {rec.fontes.map((f) => (
-                    <li key={f.nome} className="text-sm" title={`${brl(f.arrecadado)} · ${f.contas} conta(s) de receita`}>
-                      <div className="flex justify-between gap-2"><span>{f.nome}</span><span className="tabular-nums">{brlCurto(f.arrecadado)}</span></div>
-                      <div className="h-1.5 rounded bg-slate-100"><div className="h-1.5 rounded bg-emerald-600" style={{ width: `${Math.min(pctNum(f.partBp ?? BigInt(0)) * (100 / pctNum(rec.fontes[0].partBp ?? BigInt(1))), 100)}%` }} /></div>
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/dashboard/fazenda/receita" className="text-xs text-emerald-700 hover:underline mt-auto pt-2">ver previsto × arrecadado por origem →</Link>
+                <h3 className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 mt-2 mb-0.5">De onde vem o dinheiro</h3>
+                <BarrasLinha linhasVisiveis={8} itens={rec.fontes.map((f) => ({ nome: f.nome, valor: f.arrecadado, pctTexto: f.partBp !== null && f.partBp !== undefined ? pctBp(f.partBp) : undefined }))} formato={brlCurto} />
+                <Link href="/dashboard/fazenda/receita" className="text-xs text-emerald-700 hover:underline mt-auto pt-1.5">ver previsto × arrecadado por origem →</Link>
               </>
             )}
           </section>

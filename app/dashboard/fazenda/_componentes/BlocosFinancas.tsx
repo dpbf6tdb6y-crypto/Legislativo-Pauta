@@ -43,7 +43,7 @@ export function BarrasH({ itens, formato = brlCurto, total }: { itens: { nome: s
 
 /** Uma linha por item, no modelo do painel anterior: nome, barra, % do total e valor. Rola quando a lista passa de `linhasVisiveis`. */
 export function BarrasLinha({ itens, formato = brlCurto, linhasVisiveis = 10 }: {
-  itens: { nome: string; valor: bigint; href?: string; ativo?: boolean }[]; formato?: (v: bigint) => string; linhasVisiveis?: number;
+  itens: { nome: string; valor: bigint; href?: string; ativo?: boolean; pctTexto?: string }[]; formato?: (v: bigint) => string; linhasVisiveis?: number;
 }) {
   const max = itens.reduce((m, i) => (i.valor > m ? i.valor : m), Z);
   const total = itens.reduce((s, i) => s + i.valor, Z);
@@ -55,7 +55,7 @@ export function BarrasLinha({ itens, formato = brlCurto, linhasVisiveis = 10 }: 
           <span className="grid items-center gap-x-3 text-[13px] py-1" style={{ gridTemplateColumns: GRADE }}>
             <span className={`truncate ${i.ativo ? 'font-semibold' : ''}`}>{i.nome}</span>
             <span className="block h-2 rounded bg-slate-100"><span className="block h-2 rounded" style={{ width: `${max > Z ? Number((i.valor * BigInt(1000)) / max) / 10 : 0}%`, background: COR_SERIE[0] }} /></span>
-            <span className="text-right tabular-nums text-slate-500">{total > Z ? pct(i.valor, total) : ''}</span>
+            <span className="text-right tabular-nums text-slate-500">{i.pctTexto ?? (total > Z ? pct(i.valor, total) : '')}</span>
             <span className="text-right tabular-nums whitespace-nowrap">{formato(i.valor)}</span>
           </span>
         );
