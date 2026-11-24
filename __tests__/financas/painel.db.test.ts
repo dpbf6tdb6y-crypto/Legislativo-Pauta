@@ -115,7 +115,7 @@ describe('confiança dos dados e selo', () => {
   });
   it('aponta mês de folha faltando, RGF atrasado, coleta velha e coleta travada', () => {
     const hoje = new Date(2026, 10, 16, 12);
-    const folha = ultimos12Meses(hoje).filter((m) => m !== '2026/03').map((anoMes) => ({ anoMes, linhasPortal: 10, linhasColetadas: anoMes === '2026/08' ? 9 : 10 }));
+    const folha = [{ anoMes: '2026/09', linhasPortal: 10, linhasColetadas: 10 }, { anoMes: '2026/10', linhasPortal: 10, linhasColetadas: 9 }]; // o último fechado está incompleto
     const it_ = confiancaDados({
       hoje, ultimaColeta: { status: 'ok', fim: new Date(2026, 10, 10) }, coletaRodando: { inicio: new Date(2026, 10, 15, 23) },
       rgf: { ano: 2026, quadrimestre: 1 }, folhaMeses: folha,
@@ -124,7 +124,10 @@ describe('confiança dos dados e selo', () => {
     expect(t).toMatch(/observacao:Dados com 6 dias/);
     expect(t).toMatch(/observacao:Coleta em andamento há muito tempo/);
     expect(t).toMatch(/observacao:RGF do 2º quadrimestre de 2026 não consta/);
-    expect(t).toMatch(/Faltam: 2026\/03\..*linhas a menos que o portal: 2026\/08/);
+    expect(t).toMatch(/observacao:Folha do mês mais recente incompleta.*Falta a folha de 2026\/10.*linhas a menos que o portal: 2026\/10/);
+    // com o último fechado completo (ou um mês mais novo), a folha está em dia
+    const ok_ = confiancaDados({ hoje, ultimaColeta: null, coletaRodando: null, rgf: { ano: 2026, quadrimestre: 1 }, folhaMeses: [{ anoMes: '2026/11', linhasPortal: 10, linhasColetadas: 10 }] });
+    expect(ok_.find((i) => /Folha/.test(i.titulo))).toMatchObject({ nivel: 'ok', titulo: 'Folha do mês mais recente completa' });
   });
   it('sem permissão de folha ou de orçamento, não fala da folha nem do RGF', () => {
     const it_ = confiancaDados({ hoje: new Date(2026, 10, 16), ultimaColeta: null, coletaRodando: null, rgf: undefined, folhaMeses: null });

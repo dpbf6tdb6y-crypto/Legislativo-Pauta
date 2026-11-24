@@ -400,16 +400,18 @@ export function confiancaDados(e: {
         },
   );
   if (e.folhaMeses) {
-    const esperados = ultimos12Meses(hoje);
-    const faltam = esperados.filter((m) => !e.folhaMeses!.some((f) => f.anoMes === m));
-    const incompletos = e.folhaMeses.filter((f) => esperados.includes(f.anoMes) && f.linhasColetadas !== f.linhasPortal).map((f) => f.anoMes);
+    // a folha por servidor é coletada só do mês mais recente: basta haver, completo, o último mês fechado ou um mais novo
+    const fechado = ultimos12Meses(hoje)[11];
+    const recentes = e.folhaMeses.filter((f) => f.anoMes >= fechado);
+    const completo = recentes.filter((f) => f.linhasPortal > 0 && f.linhasColetadas === f.linhasPortal).map((f) => f.anoMes).sort().pop();
+    const incompletos = recentes.filter((f) => f.linhasColetadas !== f.linhasPortal || f.linhasPortal === 0).map((f) => f.anoMes);
     it.push(
-      !faltam.length && !incompletos.length
-        ? { nivel: 'ok', titulo: 'Folha dos últimos 12 meses completa', detalhe: `${esperados[0]} a ${esperados[11]}, com todas as linhas do portal.` }
+      completo
+        ? { nivel: 'ok', titulo: 'Folha do mês mais recente completa', detalhe: `${completo}, com todas as linhas do portal.` }
         : {
             nivel: 'observacao',
-            titulo: 'Folha dos últimos 12 meses incompleta',
-            detalhe: [faltam.length ? `Faltam: ${faltam.join(', ')}.` : '', incompletos.length ? `Com linhas a menos que o portal: ${incompletos.join(', ')}.` : ''].join(' ').trim(),
+            titulo: 'Folha do mês mais recente incompleta',
+            detalhe: [`Falta a folha de ${fechado} (último mês fechado) ou de um mês mais novo.`, incompletos.length ? `Com linhas a menos que o portal: ${incompletos.join(', ')}.` : ''].join(' ').trim(),
           },
     );
   }

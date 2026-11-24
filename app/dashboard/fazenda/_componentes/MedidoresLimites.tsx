@@ -48,13 +48,13 @@ export default function MedidoresLimites({ pes, rreo, camaraPct, camaraAte, cama
   }
   if (!itens.length) return null;
   return (
-    <section aria-label="Limites da lei" className="cartao">
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <section aria-label="Limites da lei" className="cartao" style={{ padding: '6px 10px' }}>
+      <div className="grid gap-2 grid-cols-2 lg:grid-cols-4">
         {itens.map((i) => (
-          <Link key={i.chave} href="/dashboard/fazenda/limites" className="flex flex-col items-center text-center rounded-lg p-2 hover:bg-slate-50">
-            <Medidor valor={i.valor} escala={i.escala} marcas={i.marcas} nivel={i.nivel} texto={pct1(i.valor)} />
-            <div className="text-[13px] font-semibold text-slate-700 leading-tight mt-0.5">{i.titulo}</div>
-            <div className="text-[11px] text-slate-500 leading-tight mt-0.5 max-w-[200px]">{i.periodo}</div>
+          <Link key={i.chave} href="/dashboard/fazenda/limites" className="flex flex-col items-center text-center rounded-lg px-1 py-0.5 hover:bg-slate-50">
+            <Medidor valor={i.valor} escala={i.escala} marcas={i.marcas} nivel={i.nivel} texto={pct1(i.valor)} largura="max-w-[118px]" />
+            <div className="text-xs font-semibold text-slate-700 leading-tight">{i.titulo}</div>
+            <div className="text-[10.5px] text-slate-500 leading-tight max-w-[190px]">{i.periodo}</div>
           </Link>
         ))}
       </div>

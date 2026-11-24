@@ -26,12 +26,13 @@ export default function Medidor(props: {
   nivel: Nivel;
   texto: string;              // número grande no centro
   rotulo?: string;            // legenda abaixo do arco
+  largura?: string;           // largura máxima (classe do Tailwind)
 }) {
-  const { valor, escala, marcas, nivel, texto, rotulo } = props;
+  const { valor, escala, marcas, nivel, texto, rotulo, largura = 'max-w-[220px]' } = props;
   const f = valor / escala;
   const ultima = marcas.reduce((m, x) => (x.valor > m ? x.valor : m), -Infinity);
   return (
-    <div className="w-full max-w-[220px] text-center">
+    <div className={`w-full ${largura} text-center`}>
       <svg viewBox="0 -10 120 88" className="w-full overflow-visible" role="img" aria-label={`${rotulo ?? 'Medidor'}: ${texto}`}>
         <g transform="translate(0,62) scale(1,1.2) translate(0,-62)">
           <path d={arco(60, 62, 41, 0, 1)} fill="none" stroke="#EFF1F5" strokeWidth="11" />
