@@ -59,7 +59,7 @@ export class ConectorAbaco implements Conector {
     // nem toda mudança dispara requisição (ex.: valor já selecionado): espera curta + rede ociosa
     const r = this.p.waitForResponse((x) => x.url().includes('gx-no-cache'), { timeout: 20_000 }).catch(() => null);
     const t0 = Date.now();
-    const ok = await this.p.evaluate(
+    const ok = await comLimite(this.p.evaluate(
       ({ sufixoId, valor, criarOpcao }) => {
         const s = document.querySelector<HTMLSelectElement>(`select[id$="${sufixoId}"]`);
         if (!s) return false;
@@ -74,7 +74,7 @@ export class ConectorAbaco implements Conector {
         return true;
       },
       { sufixoId, valor, criarOpcao },
-    );
+    ), 60_000, `mudar ${sufixoId}`);
     if (!ok) throw new Error(`campo ${sufixoId} não encontrado`);
     const t1 = Date.now();
     await r;
@@ -90,7 +90,7 @@ export class ConectorAbaco implements Conector {
     await this.mudar('vNPAGINAATUAL', String(pg), true);
     const limite = Date.now() + 180_000;
     while (Date.now() < limite) {
-      const atual = await this.p.evaluate(() => (document.querySelector('select[id$="vNPAGINAATUAL"]') as HTMLSelectElement | null)?.value ?? '').catch((e) => `erro ${e}`);
+      const atual = await comLimite(this.p.evaluate(() => (document.querySelector('select[id$="vNPAGINAATUAL"]') as HTMLSelectElement | null)?.value ?? ''), 30_000, 'ler página').catch((e) => `erro ${e}`);
       const agora = await assinatura().catch((e) => `erro ${e}`);
       if (process.env.GAVIX_DEPURAR_PAG) console.log(`[pagina ${pg}] select=${atual} antes=${antes} agora=${agora}`);
       if (agora !== antes && atual === String(pg)) return;
@@ -137,10 +137,10 @@ export class ConectorAbaco implements Conector {
 
   private async buscar() {
     const r = this.p.waitForResponse((x) => x.url().includes('gx-no-cache'), { timeout: 60_000 }).catch(() => null);
-    await this.p.evaluate(() => {
+    await comLimite(this.p.evaluate(() => {
       const b = [...document.querySelectorAll<HTMLInputElement>('input[type=image]')].find((e) => /buscar/i.test(e.title || e.alt));
       b?.click();
-    });
+    }), 60_000, 'buscar');
     await r;
     await this.p.waitForLoadState('networkidle');
     await espera(300);
@@ -361,7 +361,20 @@ export class ConectorAbaco implements Conector {
     return n;
   }
 
+  /** Um mês inteiro leva ~30 min; passou de 90 min a página travou: o mês falha e a próxima coleta o refaz, numa página nova. */
   async folhaMes(anoMes: string): Promise<ComBruto<FolhaMesC>> {
+    try {
+      return await comLimite(this.lerFolhaMes(anoMes), 90 * 60_000, `folha ${anoMes}`);
+    } catch (err) {
+      if (this.ctx && /sem resposta/.test(String((err as Error)?.message))) {
+        this.page = await this.ctx.newPage();
+        this.page.setDefaultTimeout(120_000);
+      }
+      throw err;
+    }
+  }
+
+  private async lerFolhaMes(anoMes: string): Promise<ComBruto<FolhaMesC>> {
     const [ano, mes] = anoMes.split('/').map(Number);
     await this.ir('wmservidores?0');
     await this.mudar('vFILTROANO', String(ano));
@@ -370,9 +383,9 @@ export class ConectorAbaco implements Conector {
     const { total: informado, paginas } = await this.porPagina(250);
     const linhas: FolhaLinhaC[] = [];
     const brutos = [];
-    const primeiraLinha = () => this.p.evaluate(() =>
+    const primeiraLinha = () => comLimite(this.p.evaluate(() =>
       ['PESSOAID', 'PESSOAMATRICULA', 'REMUNERACAOBRUTA'].map((c) => document.querySelector(`span[id$="vGRID${c}_0001"]`)?.textContent?.trim() ?? '').join('|'),
-    );
+    ), 30_000, 'primeira linha');
     for (let pg = 1; pg <= paginas; pg++) {
       const tPg = Date.now();
       if (pg > 1) {
@@ -393,11 +406,12 @@ export class ConectorAbaco implements Conector {
           }
         }
       }
+      if (pg % 5 === 0 || pg === paginas) console.log(`[folha ${anoMes}] página ${pg}/${paginas}; linhas até agora ${linhas.length}`);
       if (process.env.GAVIX_DEPURAR) console.log(`[folha ${anoMes}] página ${pg}/${paginas} carregada em ${Math.round((Date.now() - tPg) / 1000)}s; linhas até agora ${linhas.length}`);
-      const html = await this.p.content();
+      const html = await comLimite(this.p.content(), 60_000, `folha ${anoMes} p${pg}: ler a página`);
       brutos.push({ tipo: 'folha_tela', referencia: `${anoMes} p${pg}`, nomeSugerido: `folha_${anoMes.replace('/', '-')}_p${String(pg).padStart(2, '0')}.html`, conteudo: Buffer.from(html, 'utf-8') });
       // lê cada campo pelo id do GeneXus (W0044vGRID<CAMPO>_<linha>), não pela posição: há colunas vazias (ex.: ocupação)
-      const registros: Record<string, string>[] = await this.p.evaluate(() => {
+      const registros: Record<string, string>[] = await comLimite(this.p.evaluate(() => {
         const porLinha = new Map<string, Record<string, string>>();
         for (const s of document.querySelectorAll('span[id*="vGRID"]')) {
           const m = s.id.match(/vGRID([A-Z]+)_(\d{4,})$/);
@@ -407,7 +421,7 @@ export class ConectorAbaco implements Conector {
           porLinha.set(m[2], r);
         }
         return [...porLinha.entries()].sort((a, b) => Number(a[0]) - Number(b[0])).map((e) => e[1]);
-      });
+      }), 60_000, `folha ${anoMes} p${pg}: ler as linhas`);
       for (const r of registros) {
         if (!r.PESSOAMATRICULA) continue;
         // o portal escreve "2026/9" (sem zero à esquerda): compara ano e mês como números
