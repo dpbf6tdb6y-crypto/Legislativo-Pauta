@@ -44,7 +44,7 @@ export default async function Pessoal({ searchParams }: { searchParams: Params }
   const verNomes = await podeVerNomes(s);
 
   // quadro do mês: totais, secretarias e vínculos (o vínculo escolhido filtra tudo, menos a própria lista de vínculos)
-  const campos = { matricula: true, nome: true, lotacao: true, tipoVinculo: true, vencimentos: true, bruto: true, liquido: true } as const;
+  const campos = { matricula: true, nome: true, cargo: true, lotacao: true, tipoVinculo: true, vencimentos: true, bruto: true, liquido: true } as const;
   const doMes = mes ? await db.folhaLinha.findMany({ where: { anoMes: mes }, select: campos }) : [];
   const geral = resumirFolha(doMes);
   const doVinculo = vinculo ? doMes.filter((l) => l.tipoVinculo === vinculo) : doMes;
@@ -152,12 +152,16 @@ export default async function Pessoal({ searchParams }: { searchParams: Params }
               <thead>
                 <tr>
                   <th><Link href={ordenarPor('nome')} scroll={false}>{verNomes ? 'Nome' : 'Servidor'}{seta('nome')}</Link></th>
+                  <th><Link href={ordenarPor('cargo')} scroll={false}>Cargo{seta('cargo')}</Link></th>
                   <th><Link href={ordenarPor('secretaria')} scroll={false}>Secretaria{seta('secretaria')}</Link></th>
                   <th><Link href={ordenarPor('vinculo')} scroll={false}>Tipo de vínculo{seta('vinculo')}</Link></th>
+                  <th className="n"><Link href={ordenarPor('vencimentos')} scroll={false}>Vencimentos{seta('vencimentos')}</Link></th>
                   <th className="n"><Link href={ordenarPor('bruto')} scroll={false}>Total bruto{seta('bruto')}</Link></th>
+                  <th className="n"><Link href={ordenarPor('liquido')} scroll={false}>Líquido{seta('liquido')}</Link></th>
                 </tr>
                 <tr>
                   <th className="bg-white normal-case"><input name="nome" defaultValue={nome} placeholder={verNomes ? 'filtrar nome ou matrícula' : 'filtrar por matrícula'} className="campo w-full font-normal" aria-label="Filtrar por nome ou matrícula" /></th>
+                  <th className="bg-white normal-case" />
                   <th className="bg-white normal-case">
                     <select name="secretaria" defaultValue={secretaria} className="campo w-full font-normal" aria-label="Filtrar por secretaria">
                       <option value="">Todas as secretarias</option>
@@ -170,6 +174,7 @@ export default async function Pessoal({ searchParams }: { searchParams: Params }
                       {vinculos.map((v) => <option key={v} value={v}>{v}</option>)}
                     </select>
                   </th>
+                  <th className="bg-white normal-case" />
                   <th className="bg-white normal-case">
                     <div className="flex items-center justify-end gap-1">
                       <input name="min" defaultValue={min} placeholder="de R$" inputMode="decimal" className="campo w-24 text-right font-normal" aria-label="Bruto mínimo" />
@@ -177,19 +182,23 @@ export default async function Pessoal({ searchParams }: { searchParams: Params }
                       <button className="btn-sec">Filtrar</button>
                     </div>
                   </th>
+                  <th className="bg-white normal-case" />
                 </tr>
               </thead>
               <tbody>
-                {visiveis.length === 0 && <tr><td colSpan={4} className="text-center text-slate-500 py-4">{todos.length ? 'Nenhum servidor com esses filtros.' : 'Sem folha neste mês.'}</td></tr>}
+                {visiveis.length === 0 && <tr><td colSpan={7} className="text-center text-slate-500 py-4">{todos.length ? 'Nenhum servidor com esses filtros.' : 'Sem folha neste mês.'}</td></tr>}
                 {visiveis.map((x) => (
                   <tr key={x.matricula} className="hover:bg-slate-50">
                     <td className="whitespace-nowrap">
                       <Link className="text-emerald-700 hover:underline" href={`/dashboard/fazenda/pessoal/${encodeURIComponent(x.matricula)}`}>{nomeExibido(x, verNomes)}</Link>
                       {verNomes && <span className="text-xs text-slate-400"> · {x.matricula}</span>}
                     </td>
+                    <td className="text-xs">{x.cargo || '—'}</td>
                     <td className="text-xs" title={x.lotacao}>{x.secretaria}</td>
                     <td className="text-xs">{x.tipoVinculo}</td>
+                    <td className="n">{brl(x.vencimentos)}</td>
                     <td className="n font-semibold">{brl(x.bruto)}</td>
+                    <td className="n">{brl(x.liquido)}</td>
                   </tr>
                 ))}
               </tbody>

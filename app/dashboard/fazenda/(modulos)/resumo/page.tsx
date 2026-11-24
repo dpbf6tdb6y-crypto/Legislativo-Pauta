@@ -8,6 +8,7 @@ import { carregarDivida, carregarExecucao, carregarPessoal, carregarReceita, car
 import { caixaDoAno, coberturaCreditos, confiancaDados, confiancaRREO, equilibrioLOA, LRF_O_QUE_A_LEI_PREVE, nivelDoLRF, seloGeral, type Frase, type Nivel } from '@/lib/financas/painel/fiscal';
 import Medidor, { COR_NIVEL } from '@/app/dashboard/fazenda/_componentes/Medidor';
 import BlocoRREO from '@/app/dashboard/fazenda/_componentes/BlocoRREO';
+import MedidoresLimites from '@/app/dashboard/fazenda/_componentes/MedidoresLimites';
 import { resumoPontos } from '@/lib/financas/auditoria/regras';
 import { coletasInterrompidas, frescorFontes, STATUS_TERMINADA, textoDadosDe } from '@/lib/financas/coleta/frescor';
 import { SELO_OFICIAL, selosDaExecucao } from '@/lib/financas/coleta/selos';
@@ -163,6 +164,7 @@ export default async function Inicio({ searchParams }: { searchParams: { ate?: s
             <h2 className="text-lg font-semibold mr-auto">Exercício de {painel.ano} · janeiro a {MES_LONGO[painel.ate]}</h2>
             <SeletorMes meses={painel.mesesDisponiveis} atual={painel.ate} ano={painel.ano} />
           </div>
+          <MedidoresLimites pes={pes} rreo={rreo} camaraPct={pctCamara} camaraAte={painel.ate} camaraAno={painel.ano} />
           <div className="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <Numero titulo="Receita × despesa paga" valor={textoSaldo(saldo)} tom={saldo < BigInt(0) ? 'alerta' : 'bom'} href="/dashboard/fazenda/limites" detalhe={`Receita ${brlCurto(painel.acumulado.receita)} · pago ${brlCurto(painel.acumulado.pago)}`} />
             <Numero titulo="Contratos vencendo em 30 dias" valor={String(painel.contratos.em30)} tom={painel.contratos.em30 ? 'alerta' : 'bom'} href="/dashboard/fazenda/contratos" detalhe={`${brlCurto(painel.contratos.valor30)} · ${painel.contratos.em90} em até 90 dias`} />

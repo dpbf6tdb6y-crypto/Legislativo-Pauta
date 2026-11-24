@@ -3,6 +3,8 @@ import { brl, brlCurto, pct } from '@/lib/financas/dinheiro';
 import { anoMaisRecente, carregarPainel, partesObrigatorias } from '@/lib/financas/painel/compliance';
 import { SELO_OFICIAL, selosDaExecucao } from '@/lib/financas/coleta/selos';
 import SeloDado from '@/app/dashboard/fazenda/_componentes/SeloDado';
+import MedidoresLimites from '@/app/dashboard/fazenda/_componentes/MedidoresLimites';
+import { carregarPessoal, carregarRREO } from '@/lib/financas/painel/carregar';
 import { GraficoColunas } from '@/app/dashboard/fazenda/_componentes/Graficos';
 import { BarraPartes, EvolucaoAno, MES_CURTO, MES_LONGO, Numero, QuadroRestos, reais, SeletorMes, textoSaldo } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
 
@@ -15,6 +17,7 @@ export default async function Limites({ searchParams }: { searchParams: { ano?: 
   const hoje = new Date();
   const { db } = await exigir('orcamento', 'Limites legais', { detalhe: JSON.stringify(searchParams), modulo: 'orcamento' });
   const ano = Number(searchParams.ano) || await anoMaisRecente(db, hoje);
+  const [pes, rreoResumo] = await Promise.all([carregarPessoal(db), carregarRREO(db)]);
   const [p, selos, ind] = await Promise.all([
     carregarPainel(db, ano, Number(searchParams.ate) || undefined, hoje),
     selosDaExecucao(db, ano),
@@ -48,6 +51,8 @@ export default async function Limites({ searchParams }: { searchParams: { ano?: 
         </div>
         <SeletorMes meses={p.mesesDisponiveis} atual={p.ate} ano={ano} />
       </div>
+
+      <MedidoresLimites pes={pes} rreo={rreoResumo} camaraPct={camaraPct} camaraAte={p.ate} camaraAno={p.ano} />
 
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <Numero titulo="Receita líquida" valor={brlCurto(p.acumulado.receita)} detalhe="corrente + capital − deduções" selo={<SeloDado selo={selos.receita} />} />

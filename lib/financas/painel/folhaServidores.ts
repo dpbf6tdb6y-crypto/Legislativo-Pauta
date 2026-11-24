@@ -1,8 +1,10 @@
 // Pessoal: um servidor por linha (a matrícula pode ter 2 linhas no mês), com filtros e ordem das colunas.
 import { centavos } from '@/lib/financas/dinheiro';
 
-export interface LinhaFolha { matricula: string; nome: string; lotacao: string; tipoVinculo: string; bruto: bigint }
-export interface Servidor { matricula: string; nome: string; secretaria: string; lotacao: string; tipoVinculo: string; bruto: bigint; linhas: number }
+const Z = BigInt(0);
+
+export interface LinhaFolha { matricula: string; nome: string; lotacao: string; tipoVinculo: string; bruto: bigint; cargo?: string; vencimentos?: bigint; liquido?: bigint }
+export interface Servidor { matricula: string; nome: string; cargo: string; secretaria: string; lotacao: string; tipoVinculo: string; vencimentos: bigint; bruto: bigint; liquido: bigint; linhas: number }
 
 /** "SECRETARIA MUNICIPAL DE SAÚDE - GERÊNCIA I ..." -> "SECRETARIA MUNICIPAL DE SAÚDE" (o setor fica na dica da célula) */
 export function secretariaDaLotacao(lotacao: string): string {
@@ -10,18 +12,20 @@ export function secretariaDaLotacao(lotacao: string): string {
   return s || 'Sem lotação';
 }
 
-/** Soma o bruto das linhas da mesma matrícula; secretaria e vínculo vêm da linha de maior bruto. */
+/** Soma vencimentos, bruto e líquido das linhas da mesma matrícula; cargo, secretaria e vínculo vêm da linha de maior bruto. */
 export function agruparServidores(linhas: LinhaFolha[]): Servidor[] {
   const por = new Map<string, Servidor & { maior: bigint }>();
   for (const l of linhas) {
     const x = por.get(l.matricula);
     if (!x) {
-      por.set(l.matricula, { matricula: l.matricula, nome: l.nome, secretaria: secretariaDaLotacao(l.lotacao), lotacao: l.lotacao, tipoVinculo: l.tipoVinculo, bruto: l.bruto, linhas: 1, maior: l.bruto });
+      por.set(l.matricula, { matricula: l.matricula, nome: l.nome, cargo: l.cargo ?? '', secretaria: secretariaDaLotacao(l.lotacao), lotacao: l.lotacao, tipoVinculo: l.tipoVinculo, vencimentos: l.vencimentos ?? Z, bruto: l.bruto, liquido: l.liquido ?? Z, linhas: 1, maior: l.bruto });
       continue;
     }
     x.bruto += l.bruto;
+    x.vencimentos += l.vencimentos ?? Z;
+    x.liquido += l.liquido ?? Z;
     x.linhas++;
-    if (l.bruto > x.maior) { x.maior = l.bruto; x.secretaria = secretariaDaLotacao(l.lotacao); x.lotacao = l.lotacao; x.tipoVinculo = l.tipoVinculo; }
+    if (l.bruto > x.maior) { x.maior = l.bruto; x.cargo = l.cargo ?? x.cargo; x.secretaria = secretariaDaLotacao(l.lotacao); x.lotacao = l.lotacao; x.tipoVinculo = l.tipoVinculo; }
   }
   return [...por.values()].map(({ maior: _m, ...s }) => s);
 }
@@ -44,17 +48,17 @@ export function filtrarServidores(lista: Servidor[], f: FiltroServidores): Servi
     (f.brutoMax == null || s.bruto <= f.brutoMax));
 }
 
-export type OrdemServidores = 'nome' | '-nome' | 'secretaria' | '-secretaria' | 'vinculo' | '-vinculo' | 'bruto' | '-bruto';
-export const ORDENS: OrdemServidores[] = ['nome', '-nome', 'secretaria', '-secretaria', 'vinculo', '-vinculo', 'bruto', '-bruto'];
+export type OrdemServidores = 'nome' | '-nome' | 'cargo' | '-cargo' | 'secretaria' | '-secretaria' | 'vinculo' | '-vinculo' | 'vencimentos' | '-vencimentos' | 'bruto' | '-bruto' | 'liquido' | '-liquido';
+export const ORDENS: OrdemServidores[] = ['nome', '-nome', 'cargo', '-cargo', 'secretaria', '-secretaria', 'vinculo', '-vinculo', 'vencimentos', '-vencimentos', 'bruto', '-bruto', 'liquido', '-liquido'];
 
 /** `semNomes`: a ordem "por nome" vira ordem de matrícula, para não revelar a ordem alfabética dos nomes ocultos. */
 export function ordenarServidores(lista: Servidor[], ord: OrdemServidores, semNomes = false): Servidor[] {
   const desc = ord.startsWith('-') ? -1 : 1;
-  const campo = ord.replace('-', '') as 'nome' | 'secretaria' | 'vinculo' | 'bruto';
+  const campo = ord.replace('-', '') as 'nome' | 'cargo' | 'secretaria' | 'vinculo' | 'vencimentos' | 'bruto' | 'liquido';
   const chave = (x: Servidor) => (semNomes ? x.matricula : x.nome);
   const cmp = (a: Servidor, b: Servidor) => {
     if (campo === 'nome' && semNomes) return a.matricula.localeCompare(b.matricula, 'pt-BR', { numeric: true });
-    if (campo === 'bruto') return a.bruto === b.bruto ? 0 : a.bruto > b.bruto ? 1 : -1;
+    if (campo === 'bruto' || campo === 'vencimentos' || campo === 'liquido') return a[campo] === b[campo] ? 0 : a[campo] > b[campo] ? 1 : -1;
     const x = campo === 'vinculo' ? a.tipoVinculo : a[campo], y = campo === 'vinculo' ? b.tipoVinculo : b[campo];
     return x.localeCompare(y, 'pt-BR');
   };
