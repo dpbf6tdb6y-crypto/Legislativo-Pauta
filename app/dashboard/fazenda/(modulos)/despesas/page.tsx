@@ -4,7 +4,7 @@ import { agruparNaturezas, anoMaisRecente, execucaoMensal, partesObrigatorias } 
 import { selosDaExecucao } from '@/lib/financas/coleta/selos';
 import SeloDado from '@/app/dashboard/fazenda/_componentes/SeloDado';
 import { GraficoColunas } from '@/app/dashboard/fazenda/_componentes/Graficos';
-import { BarraPartes, BarrasH, MES_CURTO, MES_LONGO, Numero, reais } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
+import { BarraPartes, BarrasLinha, MES_CURTO, MES_LONGO, Numero, reais } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
 
 const Z = BigInt(0);
 const sinalBrl = (v: bigint) => `${v >= Z ? '+' : '−'} ${brl(v < Z ? -v : v)}`;
@@ -55,7 +55,7 @@ export default async function Despesas({ searchParams }: { searchParams: { ano?:
         <section className="cartao"><h2 className="font-semibold mb-2">Pagamento mês a mês</h2><GraficoColunas titulo="Pago no mês" itens={todos.map((m) => ({ rotulo: MES_CURTO[m.mes], valor: reais(m.pago) }))} /></section>
         <section className="cartao">
           <h2 className="font-semibold mb-2">Para onde vai o dinheiro</h2>
-          {listaFuncoes.length ? <BarrasH total={totalFuncoes} itens={listaFuncoes.slice(0, 9)} /> : <p className="text-sm text-slate-500">Aguardando a primeira coleta do relatório por função.</p>}
+          {listaFuncoes.length ? <BarrasLinha itens={listaFuncoes.map((f) => ({ ...f, pctTexto: pct(f.valor, totalFuncoes) }))} linhasVisiveis={9} /> : <p className="text-sm text-slate-500">Aguardando a primeira coleta do relatório por função.</p>}
           <p className="text-xs text-slate-500 mt-2">Empenhado por função de governo. Uma secretaria pode gastar em mais de uma função.</p>
         </section>
       </div>
