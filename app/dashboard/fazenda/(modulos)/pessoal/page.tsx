@@ -4,7 +4,7 @@ import { brl } from '@/lib/financas/dinheiro';
 import { nomeExibido, podeVerNomes } from '@/lib/financas/folha';
 import { resumirFolha } from '@/lib/financas/painel/compliance';
 import { agruparServidores, filtrarServidores, lerReais, ordenarServidores, ORDENS, type OrdemServidores } from '@/lib/financas/painel/folhaServidores';
-import { BarrasH, Numero } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
+import { BarrasLinha, Numero } from '@/app/dashboard/fazenda/_componentes/BlocosFinancas';
 import FormFiltros from '@/app/dashboard/fazenda/_componentes/FormFiltros';
 
 const nomeSecretaria = (n: string) => n.replace(/^SECRETARIA MUNICIPAL D[AEO]S? /, '');
@@ -97,12 +97,12 @@ export default async function Pessoal({ searchParams }: { searchParams: Params }
       <div className="grid gap-4 md:grid-cols-2">
         <section className="cartao">
           <h2 className="font-semibold mb-2">Folha por secretaria</h2>
-          <BarrasH total={r.vencimentos} formato={brl} itens={r.porLotacao.map((l) => ({ nome: nomeSecretaria(l.nome), valor: l.valor }))} />
-          <p className="text-xs text-slate-500 mt-2">As 8 maiores, pelos vencimentos.</p>
+          <BarrasLinha formato={brl} itens={r.porLotacao.map((l) => ({ nome: nomeSecretaria(l.nome), valor: l.valor }))} />
+          <p className="text-xs text-slate-500 mt-2">Todas as secretarias ({r.porLotacao.length}), pelos vencimentos. Role a lista para ver as demais.</p>
         </section>
         <section className="cartao">
           <h2 className="font-semibold mb-2">Vínculo dos servidores</h2>
-          <BarrasH formato={(v) => Number(v).toLocaleString('pt-BR')} itens={geral.porVinculo.map((v) => ({ nome: v.nome, valor: BigInt(v.servidores), href: linkVinculo(v.nome), ativo: v.nome === vinculo }))} />
+          <BarrasLinha formato={(v) => Number(v).toLocaleString('pt-BR')} itens={geral.porVinculo.map((v) => ({ nome: v.nome, valor: BigInt(v.servidores), href: linkVinculo(v.nome), ativo: v.nome === vinculo }))} />
           <p className="text-xs text-slate-500 mt-2">Clique em um vínculo para filtrar a tela. Clique de novo para limpar.</p>
         </section>
       </div>

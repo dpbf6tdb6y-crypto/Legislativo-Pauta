@@ -53,6 +53,12 @@ describe('contas do painel', () => {
     expect([r.servidores, r.comVencimento, r.vencimentos, r.bruto, r.mediaVencimento]).toEqual([3, 2, 4000n, 4750n, 2000n]);
     expect(r.porVinculo).toEqual([{ nome: 'EFETIVO', servidores: 2 }, { nome: 'TEMPORÁRIO', servidores: 1 }]);
   });
+  it('folha por secretaria: soma os setores da mesma secretaria e mostra todas', () => {
+    const l = (matricula: string, lotacao: string, v: bigint) => ({ matricula, lotacao, tipoVinculo: 'EFETIVO', vencimentos: v, bruto: v, liquido: v });
+    const r = resumirFolha([l('1', 'SAÚDE - GERÊNCIA I', 100n), l('2', 'SAÚDE - UPA', 50n), l('3', 'EDUCACAO - E. M. A', 80n), ...Array.from({ length: 12 }, (_, i) => l(`x${i}`, `SEC ${i} - SETOR`, 1n))]);
+    expect(r.porLotacao.slice(0, 2)).toEqual([{ nome: 'SAÚDE', valor: 150n }, { nome: 'EDUCACAO', valor: 80n }]);
+    expect(r.porLotacao).toHaveLength(14);
+  });
 });
 
 describe('menu do Compliance', () => {

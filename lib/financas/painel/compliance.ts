@@ -1,5 +1,6 @@
 // Dados das telas do Compliance (Painel, Receita, Despesas, Limites legais e Pessoal).
 // Tudo sai das tabelas do robô único. Dinheiro em centavos; as contas ficam aqui, as telas só mostram.
+import { secretariaDaLotacao } from '@/lib/financas/painel/folhaServidores';
 import type { DbPrefeitura } from '@/lib/financas/db';
 import { centavos, somar } from '@/lib/financas/dinheiro';
 import { resumoReceita, type ContaReceita, type ResumoReceita } from './fiscal';
@@ -79,7 +80,7 @@ export function partesObrigatorias(linhas: LinhaNatureza[]): PartesObrigatorias[
 
 export interface ResumoFolha {
   servidores: number; comVencimento: number; vencimentos: bigint; bruto: bigint; liquido: bigint; mediaVencimento: bigint;
-  porLotacao: { nome: string; valor: bigint }[];
+  porLotacao: { nome: string; valor: bigint }[]; // por secretaria (o setor depois do " - " é descartado), todas, da maior para a menor
   porVinculo: { nome: string; servidores: number }[];
 }
 
@@ -89,7 +90,8 @@ export function resumirFolha(linhas: { matricula: string; lotacao: string; tipoV
   let bruto = Z, liquido = Z, vencimentos = Z;
   for (const l of linhas) {
     venc.set(l.matricula, (venc.get(l.matricula) ?? Z) + l.vencimentos);
-    lot.set(l.lotacao, (lot.get(l.lotacao) ?? Z) + l.vencimentos);
+    const secretaria = secretariaDaLotacao(l.lotacao);
+    lot.set(secretaria, (lot.get(secretaria) ?? Z) + l.vencimentos);
     const nomeVinculo = l.tipoVinculo || 'Não informado';
     vin.set(nomeVinculo, (vin.get(nomeVinculo) ?? new Set()).add(l.matricula));
     bruto += l.bruto; liquido += l.liquido; vencimentos += l.vencimentos;
@@ -98,7 +100,7 @@ export function resumirFolha(linhas: { matricula: string; lotacao: string; tipoV
   return {
     servidores: venc.size, comVencimento, vencimentos, bruto, liquido,
     mediaVencimento: comVencimento ? vencimentos / BigInt(comVencimento) : Z,
-    porLotacao: [...lot].map(([nome, valor]) => ({ nome: nome || '(sem lotação)', valor })).sort((a, b) => (b.valor > a.valor ? 1 : b.valor < a.valor ? -1 : 0)).slice(0, 8),
+    porLotacao: [...lot].map(([nome, valor]) => ({ nome, valor })).sort((a, b) => (b.valor > a.valor ? 1 : b.valor < a.valor ? -1 : 0)),
     porVinculo: [...vin].map(([nome, s]) => ({ nome, servidores: s.size })).sort((a, b) => b.servidores - a.servidores),
   };
 }

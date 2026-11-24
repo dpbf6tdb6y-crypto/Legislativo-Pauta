@@ -41,6 +41,34 @@ export function BarrasH({ itens, formato = brlCurto, total }: { itens: { nome: s
   );
 }
 
+/** Uma linha por item, no modelo do painel anterior: nome, barra, % do total e valor. Rola quando a lista passa de `linhasVisiveis`. */
+export function BarrasLinha({ itens, formato = brlCurto, linhasVisiveis = 10 }: {
+  itens: { nome: string; valor: bigint; href?: string; ativo?: boolean }[]; formato?: (v: bigint) => string; linhasVisiveis?: number;
+}) {
+  const max = itens.reduce((m, i) => (i.valor > m ? i.valor : m), Z);
+  const total = itens.reduce((s, i) => s + i.valor, Z);
+  const GRADE = 'minmax(0,2fr) minmax(3rem,1fr) 3.2rem 7rem';
+  return (
+    <ul className="overflow-y-auto pr-1" style={{ maxHeight: `${linhasVisiveis * 2.1}rem` }}>
+      {itens.map((i) => {
+        const linha = (
+          <span className="grid items-center gap-x-3 text-[13px] py-1" style={{ gridTemplateColumns: GRADE }}>
+            <span className={`truncate ${i.ativo ? 'font-semibold' : ''}`}>{i.nome}</span>
+            <span className="block h-2 rounded bg-slate-100"><span className="block h-2 rounded" style={{ width: `${max > Z ? Number((i.valor * BigInt(1000)) / max) / 10 : 0}%`, background: COR_SERIE[0] }} /></span>
+            <span className="text-right tabular-nums text-slate-500">{total > Z ? pct(i.valor, total) : ''}</span>
+            <span className="text-right tabular-nums whitespace-nowrap">{formato(i.valor)}</span>
+          </span>
+        );
+        return (
+          <li key={i.nome} title={`${i.nome}: ${formato(i.valor)}`} className="border-b border-slate-100 last:border-0">
+            {i.href ? <Link href={i.href} className="block hover:bg-slate-50" scroll={false}>{linha}</Link> : linha}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 /** Um todo dividido em partes, com a legenda dizendo nome, valor e percentual de cada uma. */
 export function BarraPartes({ partes, rotulo }: { partes: { nome: string; valor: bigint; cor?: string }[]; rotulo: string }) {
   const visiveis = partes.filter((p) => p.valor > Z);
