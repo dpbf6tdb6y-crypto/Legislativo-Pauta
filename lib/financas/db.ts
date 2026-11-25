@@ -14,6 +14,7 @@ const MODELOS_FINANCEIROS = new Set([
   'RegistroAcesso', 'Chave', 'ChaveHistorico', 'FolhaMes', 'FolhaLinha', 'IndicadorFiscal', 'Regra', 'Apontamento',
   'ResponsavelSecretaria', 'PontoAuditoria', 'EventoAuditoria', 'ReuniaoSecretaria',
   'DocumentoAssinatura', 'EventoDocumento', 'AnexoDocumento', 'RelatorioAuditoria',
+  'Projeto', 'ProjetoSecretaria', 'EtapaProjeto', 'EventoProjeto', 'VinculoProjeto', 'RiscoProjeto', 'IndicadorProjeto', 'LeituraIndicador',
 ]);
 const LEITURA_ESCRITA_EM_MASSA = new Set([
   'findMany', 'findFirst', 'findFirstOrThrow', 'count', 'aggregate', 'groupBy', 'updateMany', 'deleteMany',

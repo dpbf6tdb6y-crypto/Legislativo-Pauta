@@ -63,14 +63,16 @@ describe('contas do painel', () => {
 
 describe('menu do Compliance', () => {
   const rotulos = (p: string) => gruposDoPerfil(p).map((g) => g.rotulo);
-  it('seis áreas e a Administração', () => {
-    expect(GRUPOS.map((g) => g.rotulo)).toEqual(['Painel', 'Finanças', 'Contratos', 'Pessoal', 'Documentos', 'Auditoria', 'Administração']);
+  it('as áreas e a Administração', () => {
+    expect(GRUPOS.map((g) => g.rotulo)).toEqual(['Painel', 'Finanças', 'Contratos', 'Pessoal', 'Documentos', 'Projetos', 'Auditoria', 'Administração']);
     expect(GRUPOS.find((g) => g.rotulo === 'Auditoria')!.itens.slice(0, 3).map((i) => i.rotulo)).toEqual(['Auditoria interna', 'Auditoria por secretaria', 'Relatório de auditoria']);
   });
   it('cada perfil vê só o que pode abrir', () => {
-    expect(rotulos('prefeito')).toEqual(['Painel', 'Finanças', 'Contratos', 'Pessoal', 'Documentos', 'Auditoria', 'Administração']);
+    expect(rotulos('prefeito')).toEqual(['Painel', 'Finanças', 'Contratos', 'Pessoal', 'Documentos', 'Projetos', 'Auditoria', 'Administração']);
     expect(rotulos('financeiro')).not.toContain('Pessoal');
-    expect(rotulos('secretaria')).toEqual(['Documentos', 'Auditoria']);
+    expect(rotulos('secretaria')).toEqual(['Documentos', 'Projetos', 'Auditoria']);
+    expect(rotulos('rh')).not.toContain('Projetos');
+    expect(rotulos('auditor')).toContain('Projetos');
     expect(gruposDoPerfil('secretaria').find((g) => g.rotulo === 'Auditoria')!.itens.map((i) => i.rotulo)).toEqual(['Minha secretaria']);
     expect(rotulos('rh')).not.toContain('Finanças');
   });

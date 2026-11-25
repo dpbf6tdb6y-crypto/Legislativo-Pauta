@@ -1,4 +1,4 @@
-// Menu do Compliance: seis áreas e a Administração. Cada perfil vê só o que pode abrir.
+// Menu do Compliance: as áreas e a Administração (Projetos fica depois de Documentos para não mudar a tela inicial da Secretaria). Cada perfil vê só o que pode abrir.
 import { pode, type Permissao } from './perfis';
 
 const B = '/dashboard/fazenda';
@@ -27,6 +27,7 @@ export const GRUPOS: GrupoMenu[] = [
       { href: `${B}/conferir`, rotulo: 'Conferir antes de assinar', p: 'conferir' },
     ],
   },
+  { rotulo: 'Projetos', itens: [{ href: `${B}/projetos`, rotulo: 'Projetos', p: ['projetos', 'projetos_secretaria'] }] },
   {
     rotulo: 'Auditoria',
     itens: [

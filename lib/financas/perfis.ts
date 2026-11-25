@@ -6,17 +6,21 @@ export type Permissao =
   | 'acessos' | 'usuarios' | 'chaves'
   | 'auditoria' | 'auditoria_gerir' // auditoria por secretaria: ver / registrar cobrança, resposta, prazo, reunião
   | 'secretaria_responder' // perfil secretaria: vê e responde só os pontos da própria secretaria
-  | 'documentos' | 'documentos_enviar' | 'documentos_parecer' | 'documentos_decidir'; // fila de documentos para assinar
+  | 'documentos' | 'documentos_enviar' | 'documentos_parecer' | 'documentos_decidir' // fila de documentos para assinar
+  | 'projetos' // carteira de projetos: ver todos
+  | 'projetos_gerir' // cadastrar para qualquer secretaria, editar, mudar a fase (menos aprovar)
+  | 'projetos_aprovar' // aprovar, concluir e cancelar projeto
+  | 'projetos_secretaria'; // perfil secretaria: propõe e atualiza só os projetos em que a sua secretaria participa
 
 export const PERFIS: Record<string, { nome: string; pode: Permissao[] }> = {
-  prefeito: { nome: 'Prefeito', pode: ['orcamento', 'contratos', 'conferir', 'folha', 'folha_nomes', 'apontamentos', 'auditoria', 'auditoria_gerir', 'documentos', 'documentos_enviar', 'documentos_decidir'] },
-  controlador: { nome: 'Controlador', pode: ['orcamento', 'contratos', 'conferir', 'folha', 'folha_nomes', 'apontamentos', 'apontamentos_classificar', 'regras_aprovar', 'auditoria', 'auditoria_gerir', 'documentos', 'documentos_enviar', 'documentos_parecer'] },
-  financeiro: { nome: 'Financeiro', pode: ['orcamento', 'contratos', 'conferir', 'apontamentos', 'auditoria', 'documentos', 'documentos_enviar'] },
+  prefeito: { nome: 'Prefeito', pode: ['orcamento', 'contratos', 'conferir', 'folha', 'folha_nomes', 'apontamentos', 'auditoria', 'auditoria_gerir', 'documentos', 'documentos_enviar', 'documentos_decidir', 'projetos', 'projetos_gerir', 'projetos_aprovar'] },
+  controlador: { nome: 'Controlador', pode: ['orcamento', 'contratos', 'conferir', 'folha', 'folha_nomes', 'apontamentos', 'apontamentos_classificar', 'regras_aprovar', 'auditoria', 'auditoria_gerir', 'documentos', 'documentos_enviar', 'documentos_parecer', 'projetos', 'projetos_gerir', 'projetos_aprovar'] },
+  financeiro: { nome: 'Financeiro', pode: ['orcamento', 'contratos', 'conferir', 'apontamentos', 'auditoria', 'documentos', 'documentos_enviar', 'projetos'] },
   rh: { nome: 'Recursos Humanos', pode: ['folha', 'folha_nomes', 'documentos_enviar'] }, // envia nomeações; vê só o que enviou
-  juridico: { nome: 'Jurídico', pode: ['contratos', 'conferir', 'apontamentos', 'apontamentos_classificar', 'auditoria', 'documentos', 'documentos_parecer'] },
-  auditor: { nome: 'Auditor', pode: ['orcamento', 'contratos', 'folha', 'folha_nomes', 'apontamentos', 'acessos', 'auditoria', 'documentos'] },
+  juridico: { nome: 'Jurídico', pode: ['contratos', 'conferir', 'apontamentos', 'apontamentos_classificar', 'auditoria', 'documentos', 'documentos_parecer', 'projetos'] },
+  auditor: { nome: 'Auditor', pode: ['orcamento', 'contratos', 'folha', 'folha_nomes', 'apontamentos', 'acessos', 'auditoria', 'documentos', 'projetos'] },
   administrador: { nome: 'Administrador', pode: ['usuarios', 'chaves', 'acessos'] }, // NÃO vê folha individual
-  secretaria: { nome: 'Secretaria', pode: ['secretaria_responder', 'documentos_enviar'] }, // presa a uma secretaria (Usuario.orgaoCod): envia e vê só os documentos dela
+  secretaria: { nome: 'Secretaria', pode: ['secretaria_responder', 'documentos_enviar', 'projetos_secretaria'] }, // presa a uma secretaria (Usuario.orgaoCod): envia e vê só os documentos dela
 };
 
 export function pode(perfil: string | undefined, p: Permissao) {

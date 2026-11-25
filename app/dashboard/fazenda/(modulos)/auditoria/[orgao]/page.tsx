@@ -6,13 +6,18 @@ import { pode } from '@/lib/financas/perfis';
 import { fichaSecretaria } from '@/lib/financas/auditoria/dados';
 import { ordenarPontos } from '@/lib/financas/auditoria/regras';
 import CartaoPonto from '@/app/dashboard/fazenda/_componentes/CartaoPonto';
+import { projetosParaAuditoria, QuadroProjetos } from '@/app/dashboard/fazenda/_componentes/ProjetosAuditoria';
 import { acaoCriarPonto, acaoReuniao, acaoResponsavel } from '../acoes';
 
 export default async function FichaSecretaria({ params, searchParams }: { params: { orgao: string }; searchParams: { ver?: string } }) {
   const { s, db } = await exigir('auditoria', 'Auditoria por secretaria', { detalhe: `secretaria ${params.orgao}` });
   const hoje = new Date();
-  const f = await fichaSecretaria(db, params.orgao, hoje);
-  if (!f) notFound();
+  const f0 = await fichaSecretaria(db, params.orgao, hoje);
+  if (!f0) notFound();
+  // projetos da secretaria: o que está atrasado ou com alerta grave vira assunto para cobrar, igual aos contratos vencendo
+  const proj = await projetosParaAuditoria(s, db, params.orgao, hoje);
+  const usados = new Set(f0.pontos.map((p) => p.origemRef).filter(Boolean));
+  const f = { ...f0, sugestoes: [...f0.sugestoes, ...(proj?.sugestoes ?? []).filter((x) => !usados.has(x.ref))] };
   const gerir = pode(s.perfil, 'auditoria_gerir');
   const verEncerrados = searchParams.ver === 'todos';
   const pontos = ordenarPontos(f.pontos.filter((p) => verEncerrados || p.status === 'aberto' || p.status === 'respondido'), hoje);
@@ -57,6 +62,7 @@ export default async function FichaSecretaria({ params, searchParams }: { params
           </div>
           {pontos.length === 0 && <div className="cartao text-sm text-slate-500">Nenhum ponto em aberto com esta secretaria.</div>}
           {pontos.map((p) => <CartaoPonto key={p.id} p={p} hoje={hoje} podeGerir={gerir} desde={f.ultimaReuniao} />)}
+          {proj && <QuadroProjetos projetos={proj.projetos} />}
         </div>
 
         <div className="space-y-4">

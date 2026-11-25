@@ -9,6 +9,7 @@ export const CHAVES_PADRAO: Record<string, { padrao: boolean; descricao: string 
   folha: { padrao: true, descricao: 'Módulo Pessoal (folha por servidor, sem nomes)' },
   folha_nomes: { padrao: false, descricao: 'Mostrar o nome do servidor na folha (só prefeito, controlador, RH e auditor)' },
   conferir_antes_de_assinar: { padrao: true, descricao: 'Tela Conferir antes de assinar' },
+  projetos: { padrao: true, descricao: 'Módulo Projetos (carteira, cronograma e acompanhamento)' },
   exportar_folha: { padrao: false, descricao: 'Permitir exportar a folha' },
 };
 

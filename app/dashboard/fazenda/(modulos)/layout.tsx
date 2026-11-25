@@ -30,7 +30,7 @@ export default async function LayoutModulos({ children }: { children: ReactNode 
 
   return (
     <div className="max-w-[1800px] mx-auto">
-      <div className="bg-white border border-slate-200 rounded-xl mb-4 overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-xl mb-4 overflow-hidden print:hidden">
         <div className={`text-xs px-4 py-1.5 ${cor}`}>
           <span className="float-right opacity-80 ml-3">{s.nome} · {PERFIS[s.perfil]?.nome}</span>
           {desp

@@ -25,6 +25,13 @@ async function mapaOrgaoEmpenho(db: DbPrefeitura, orgaos: { orgaoCod: string; or
   return new Map(nomes.map((n) => [n.orgao, sugerirOrgao(n.orgao, orgaos)]));
 }
 
+/** Nomes com que o órgão aparece nos empenhos (usado para achar a despesa e as ações orçamentárias da secretaria). */
+export async function nomesEmpenhoDoOrgao(db: DbPrefeitura, orgaoCod: string, hoje: Date) {
+  const { orgaos } = await orgaosExecutivo(db, hoje);
+  const mapa = await mapaOrgaoEmpenho(db, orgaos);
+  return [...mapa].filter(([, cod]) => cod === orgaoCod).map(([nome]) => nome);
+}
+
 export interface LinhaSecretaria {
   orgaoCod: string; orgaoNome: string; responsavel: string;
   dotAtual: bigint; empenhado: bigint; empenhadoBp: bigint | null; saldo: bigint;

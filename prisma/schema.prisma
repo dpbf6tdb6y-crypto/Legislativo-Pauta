@@ -1015,3 +1015,172 @@ model RelatorioAuditoria {
   @@index([prefeituraId, geradoEm])
   @@map("fin_relatorio_auditoria")
 }
+
+// ---------- Gestão $$$: carteira de projetos (prefeito acompanha o que as secretarias executam ou planejam) ----------
+// O sistema não julga o projeto: mostra prazo, avanço e histórico. Quem muda a fase fica registrado.
+// O histórico (EventoProjeto) não se apaga nem se edita; etapa não se exclui, só se cancela.
+
+model Projeto {
+  id                   Int       @id @default(autoincrement())
+  prefeituraId         String
+  titulo               String
+  objetivo             String    @default("")
+  tipo                 String // obra | programa | servico | aquisicao | tecnologia | outro
+  prioridade           String    @default("media") // alta | media | baixa
+  fase                 String    @default("ideia") // ideia | estudo | aprovado | execucao | paralisado | concluido | cancelado
+  eixo                 String    @default("") // eixo do plano de governo / programa do PPA (texto livre)
+  bairro               String    @default("")
+  fonteRecurso         String    @default("") // propria | convenio_estadual | convenio_federal | emenda | financiamento | outra
+  orcamento            BigInt? // centavos; obrigatório para aprovar
+  inicioPrevisto       DateTime?
+  fimPrevisto          DateTime?
+  fimPrevistoOriginal  DateTime? // fim previsto no momento da aprovação (para mostrar o replanejamento)
+  inicioReal           DateTime?
+  fimReal              DateTime?
+  criadoPor            String
+  criadoPorPerfil      String
+  criadoEm             DateTime  @default(now())
+  atualizadoEm         DateTime  @default(now()) // última atualização de andamento (nota, etapa ou fase)
+  aprovadoPor          String?
+  aprovadoEm           DateTime?
+  motivoFase           String    @default("") // por que está paralisado / cancelado
+
+  secretarias ProjetoSecretaria[]
+  etapas      EtapaProjeto[]
+  eventos     EventoProjeto[]
+  vinculos    VinculoProjeto[]
+  riscos      RiscoProjeto[]
+  indicadores IndicadorProjeto[]
+
+  @@index([prefeituraId, fase])
+  @@map("fin_projeto")
+}
+
+// Risco do projeto: probabilidade × impacto (1 a 3 cada). Não se apaga: encerra-se com o motivo. Cada mudança vira EventoProjeto.
+model RiscoProjeto {
+  id             Int       @id @default(autoincrement())
+  prefeituraId   String
+  projetoId      Int
+  titulo         String
+  descricao      String    @default("")
+  probabilidade  Int // 1 baixa | 2 média | 3 alta
+  impacto        Int // 1 baixo | 2 médio | 3 alto
+  status         String    @default("aberto") // aberto | mitigando | ocorreu | encerrado
+  mitigacao      String    @default("") // o que será feito para reduzir ou responder
+  responsavel    String    @default("")
+  prazoMitigacao DateTime?
+  motivoEncerra  String    @default("")
+  criadoPor      String
+  criadoEm       DateTime  @default(now())
+  atualizadoEm   DateTime  @default(now())
+  projeto        Projeto   @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+
+  @@index([prefeituraId, projetoId])
+  @@map("fin_risco_projeto")
+}
+
+// Indicador de resultado: o que o projeto deve mudar na vida da cidade (não o andamento da obra). As leituras não se editam.
+model IndicadorProjeto {
+  id           Int       @id @default(autoincrement())
+  prefeituraId String
+  projetoId    Int
+  nome         String
+  unidade      String    @default("")
+  sentido      String    @default("maior") // maior | menor: qual direção é melhora
+  linhaBase    Float
+  meta         Float
+  prazoMeta    DateTime?
+  criadoPor    String
+  criadoEm     DateTime  @default(now())
+  projeto      Projeto   @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+  leituras     LeituraIndicador[]
+
+  @@index([prefeituraId, projetoId])
+  @@map("fin_indicador_projeto")
+}
+
+model LeituraIndicador {
+  id           Int              @id @default(autoincrement())
+  prefeituraId String
+  indicadorId  Int
+  valor        Float
+  data         DateTime
+  nota         String           @default("")
+  por          String
+  criadoEm     DateTime         @default(now())
+  indicador    IndicadorProjeto @relation(fields: [indicadorId], references: [id], onDelete: Cascade)
+
+  @@index([prefeituraId, indicadorId])
+  @@map("fin_leitura_indicador")
+}
+
+// Ligação do projeto com o dinheiro do portal: um contrato (pelos empenhos ligados a ele) ou uma ação orçamentária
+// (programa + projeto da despesa, a partir de uma data). O mesmo empenho nunca é somado duas vezes dentro do projeto.
+// Desligar apaga a linha, mas o EventoProjeto guarda quem ligou, quem desligou e por quê.
+model VinculoProjeto {
+  id           Int      @id @default(autoincrement())
+  prefeituraId String
+  projetoId    Int
+  tipo         String // contrato | acao
+  contratoId   Int?
+  programa     String   @default("")
+  acao         String   @default("") // "projeto/atividade" do empenho
+  orgaoCod     String   @default("") // secretaria participante de onde veio a sugestão
+  orgaoEmpenho String   @default("") // ação: nome do órgão exatamente como vem no empenho (o mesmo programa/projeto pode existir em outro órgão)
+  desde        DateTime? // ação: só entram empenhos desta data em diante
+  criadoPor    String
+  criadoEm     DateTime @default(now())
+  projeto      Projeto  @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+
+  @@index([prefeituraId, projetoId])
+  @@index([prefeituraId, contratoId])
+  @@map("fin_vinculo_projeto")
+}
+
+// Uma linha por secretaria envolvida: uma líder e quantas parceiras forem preciso.
+model ProjetoSecretaria {
+  id           Int     @id @default(autoincrement())
+  prefeituraId String
+  projetoId    Int
+  orgaoCod     String
+  orgaoNome    String
+  papel        String // lider | parceira
+  responsavel  String  @default("") // quem responde pelo projeto naquela secretaria
+  projeto      Projeto @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+
+  @@unique([projetoId, orgaoCod])
+  @@index([prefeituraId, orgaoCod])
+  @@map("fin_projeto_secretaria")
+}
+
+model EtapaProjeto {
+  id             Int       @id @default(autoincrement())
+  prefeituraId   String
+  projetoId      Int
+  ordem          Int
+  titulo         String
+  marco          Boolean   @default(false) // marco = entrega pontual (sem duração)
+  peso           Int       @default(1) // peso no cálculo do avanço
+  inicioPrevisto DateTime?
+  fimPrevisto    DateTime?
+  status         String    @default("pendente") // pendente | andamento | concluida | cancelada
+  concluidaEm    DateTime?
+  projeto        Projeto   @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+
+  @@index([prefeituraId, projetoId])
+  @@map("fin_etapa_projeto")
+}
+
+model EventoProjeto {
+  id           Int      @id @default(autoincrement())
+  prefeituraId String
+  projetoId    Int
+  tipo         String // criado | fase | etapa | prazo | atualizacao | parceria | dados
+  texto        String   @default("")
+  por          String
+  quando       DateTime @default(now())
+  projeto      Projeto  @relation(fields: [projetoId], references: [id], onDelete: Cascade)
+
+  @@index([prefeituraId, projetoId])
+  @@map("fin_evento_projeto")
+}

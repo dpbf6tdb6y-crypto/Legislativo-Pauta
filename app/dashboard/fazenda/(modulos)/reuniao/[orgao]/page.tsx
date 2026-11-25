@@ -7,6 +7,7 @@ import { pode } from '@/lib/financas/perfis';
 import { fichaSecretaria, visaoGeral } from '@/lib/financas/auditoria/dados';
 import { mudancasDesde, ordenarPontos } from '@/lib/financas/auditoria/regras';
 import CartaoPonto from '@/app/dashboard/fazenda/_componentes/CartaoPonto';
+import { projetosParaAuditoria, QuadroProjetos } from '@/app/dashboard/fazenda/_componentes/ProjetosAuditoria';
 import { acaoCriarPonto, acaoReuniao } from '@/app/dashboard/fazenda/(modulos)/auditoria/acoes';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,7 @@ export default async function Reuniao({ params }: { params: { orgao: string } })
   const hoje = new Date();
   const [f, v] = await Promise.all([fichaSecretaria(db, params.orgao, hoje), visaoGeral(db, hoje)]);
   if (!f) notFound();
+  const proj = await projetosParaAuditoria(s, db, params.orgao, hoje);
   const gerir = pode(s.perfil, 'auditoria_gerir');
 
   // mesma ordem da lista: quem tem atraso e mais pendências primeiro
@@ -88,6 +90,8 @@ export default async function Reuniao({ params }: { params: { orgao: string } })
           {ativos.length === 0 && <p className="text-lg text-slate-500">Nenhum ponto em aberto com esta secretaria.</p>}
           {ativos.map((p) => <CartaoPonto key={p.id} p={p} hoje={hoje} podeGerir={gerir} grande desde={f.ultimaReuniao} />)}
         </section>
+
+        {proj && <QuadroProjetos projetos={proj.projetos} grande />}
 
         {gerir && (
           <section className="rounded-lg bg-white border border-slate-200 p-4">
