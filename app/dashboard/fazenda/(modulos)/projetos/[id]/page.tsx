@@ -15,7 +15,8 @@ import { alertasRisco } from '@/lib/financas/projetos/riscos';
 import { alertasResultado } from '@/lib/financas/projetos/indicadores';
 import Riscos from '../Riscos';
 import Resultados from '../Resultados';
-import { BarraAvanco, fmtData, QuadroAlertas, SeloFase, SeloSaude } from '../Selos';
+import { fmtData, QuadroAlertas, SeloFase, SeloSaude } from '../Selos';
+import { LinhaDoTempo, Termometro } from '../Termometro';
 
 const ROT_EVENTO: Record<string, string> = { criado: 'Cadastro', fase: 'Fase', etapa: 'Etapa', prazo: 'Prazo', dados: 'Dados', atualizacao: 'Andamento', parceria: 'Secretarias', vinculo: 'Despesa', risco: 'Risco', resultado: 'Resultado' };
 const ROT_PASSO: Record<string, [string, boolean]> = {
@@ -54,9 +55,10 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
         <div className="flex flex-wrap items-center gap-2 mt-1">
           <h1 className="text-xl font-semibold mr-2">{p.titulo}</h1>
           <SeloFase fase={p.fase} /><SeloSaude saude={p.saude} diasAtraso={p.diasAtraso} />
-          <span className="text-xs text-slate-500 ml-auto">#{p.id} · cadastrado por {p.criadoPor} em {fmtData(p.criadoEm)} · <Link href={`/dashboard/fazenda/projetos/${p.id}/imprimir`} className="text-[#0f4c81] hover:underline">🖨 imprimir / PDF</Link></span>
+          <Link href={`/dashboard/fazenda/projetos/${p.id}/imprimir`} className="btn-sec ml-auto">🖨 Imprimir / PDF</Link>
         </div>
         <p className="text-sm text-slate-600">{TIPOS[p.tipo] ?? p.tipo} · prioridade {PRIORIDADES[p.prioridade]?.toLowerCase()}{p.bairro ? ` · ${p.bairro}` : ''}{p.eixo ? ` · ${p.eixo}` : ''}</p>
+        <p className="text-xs text-slate-500">Projeto nº {p.id} · cadastrado por {p.criadoPor} em {fmtData(p.criadoEm)}</p>
       </div>
 
       {(p.motivos.length > 0 || (p.fase === 'paralisado' && p.motivoFase) || (p.fase === 'cancelado' && p.motivoFase)) && (
@@ -71,9 +73,10 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
 
       <QuadroAlertas alertas={alertas} />
 
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
-        <div className="cartao"><div className="text-xs text-slate-500">Avanço</div><div className="mt-1"><BarraAvanco pct={p.avanco} saude={p.saude} /></div><div className="text-xs text-slate-500 mt-1">{p.etapas.filter((e) => e.status === 'concluida').length} de {p.etapas.filter((e) => e.status !== 'cancelada').length} etapas</div></div>
-        <div className="cartao"><div className="text-xs text-slate-500">Previsto</div><div className="font-semibold">{fmtData(p.inicioPrevisto)} → {fmtData(p.fimPrevisto)}</div>
+      <Termometro inicio={p.inicioPrevisto} fim={p.fimPrevisto} hoje={hoje} avanco={p.avanco} saude={p.saude} fase={p.fase} diasAtraso={p.diasAtraso} fimReal={p.fimReal} />
+
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+                <div className="cartao"><div className="text-xs text-slate-500">Previsto</div><div className="font-semibold">{fmtData(p.inicioPrevisto)} → {fmtData(p.fimPrevisto)}</div>
           <div className="text-xs text-slate-500">{replanejado ? <span className="text-amber-700">replanejado: {replanejado > 0 ? '+' : ''}{replanejado} dia(s) sobre o prazo aprovado ({fmtData(p.fimPrevistoOriginal)})</span> : p.inicioReal || p.fimReal ? '' : 'ainda não começou'}</div>
           {(p.inicioReal || p.fimReal) && <div className="text-xs text-slate-500">real: {fmtData(p.inicioReal)} → {fmtData(p.fimReal)}</div>}</div>
         <div className="cartao"><div className="text-xs text-slate-500">Orçamento estimado</div><div className="text-xl font-bold">{p.orcamento !== null ? brl(p.orcamento) : '—'}</div><div className="text-xs text-slate-500">{p.fonteRecurso ? FONTES[p.fonteRecurso] ?? p.fonteRecurso : 'fonte não informada'}</div></div>
@@ -81,32 +84,18 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
       </div>
       {p.objetivo && <div className="cartao text-sm whitespace-pre-wrap"><div className="text-xs text-slate-500 mb-1">Objetivo</div>{p.objetivo}</div>}
 
-      {/* fase */}
-      {mexe && (
-        <section className="cartao">
-          <h2 className="font-semibold mb-1">Fase do projeto</h2>
-          {passos.length > 0 ? (
-            <FormAcao acao={acaoMudarFase} className="space-y-2 text-sm">
-              {cod(p.id)}
-              <textarea name="motivo" rows={2} placeholder="Motivo ou observação (obrigatório para paralisar e cancelar)" className="campo w-full max-w-xl" />
-              <div className="flex flex-wrap gap-2">
-                {passos.map((f) => <Enviar key={f} name="para" value={f} className={ROT_PASSO[f][1] ? 'btn' : 'btn-sec'}>{p.fase === 'paralisado' && f === 'execucao' ? 'Retomar execução' : ROT_PASSO[f][0]}</Enviar>)}
-              </div>
-            </FormAcao>
-          ) : <p className="text-sm text-slate-500">Nenhum passo disponível para a sua função nesta fase.</p>}
-          <p className="text-xs text-slate-500 mt-2">
-            {p.fase === 'ideia' || p.fase === 'estudo' ? 'Aprovar exige orçamento, início e fim previstos. A aprovação é do prefeito ou do controlador.' : ''}
-            {p.fase === 'execucao' ? `Concluir exige as etapas fechadas${abertas ? ` (faltam ${abertas})` : ''}; concluir e cancelar são do prefeito ou do controlador.` : ''}
-            {p.fase === 'aprovado' ? 'A secretaria inicia a execução; cancelar é do prefeito ou do controlador.' : ''}
-          </p>
-        </section>
-      )}
+      <nav className="flex flex-wrap gap-2 text-sm" aria-label="Partes do projeto">
+        {[['etapas', 'Etapas e prazos'], ['dinheiro', 'Dinheiro'], ['riscos', 'Riscos'], ['resultados', 'Resultados'], ['historico', 'Andamento e histórico']].map(([id, rot]) => (
+          <a key={id} href={`#${id}`} className="rounded-full border border-slate-300 bg-white px-3 py-1 text-slate-700 hover:border-[#0f4c81] hover:text-[#0f4c81]">{rot}</a>
+        ))}
+      </nav>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
           {/* etapas */}
-          <section className="cartao overflow-x-auto">
+          <section id="etapas" className="cartao overflow-x-auto scroll-mt-4">
             <h2 className="font-semibold mb-2">Etapas e marcos</h2>
+            <LinhaDoTempo etapas={p.etapas} inicio={p.inicioPrevisto} fim={p.fimPrevisto} hoje={hoje} />
             {p.etapas.length === 0 && <p className="text-sm text-slate-500">Nenhuma etapa ainda. Sem etapas o sistema não consegue medir o avanço.</p>}
             {p.etapas.length > 0 && (
               <table className="tabela">
@@ -180,12 +169,12 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
             )}
           </section>
 
-          <Dinheiro p={p} fin={fin} cand={cand} mexe={mexe} verContratos={verContratos} />
-          <Riscos projetoId={p.id} riscos={riscos} mexe={mexe} hoje={hoje} />
-          <Resultados projetoId={p.id} indicadores={indicadores} mexe={mexeResultado} />
+          <div id="dinheiro" className="scroll-mt-4"><Dinheiro p={p} fin={fin} cand={cand} mexe={mexe} verContratos={verContratos} /></div>
+          <div id="riscos" className="scroll-mt-4"><Riscos projetoId={p.id} riscos={riscos} mexe={mexe} hoje={hoje} /></div>
+          <div id="resultados" className="scroll-mt-4"><Resultados projetoId={p.id} indicadores={indicadores} mexe={mexeResultado} /></div>
 
           {/* andamento + histórico */}
-          <section className="cartao">
+          <section id="historico" className="cartao scroll-mt-4">
             <h2 className="font-semibold mb-2">Andamento e histórico</h2>
             {mexe && (
               <FormAcao acao={acaoAtualizacao} className="space-y-2 text-sm mb-3">
@@ -206,6 +195,27 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
         </div>
 
         <div className="space-y-4">
+          {/* fase */}
+      {mexe && (
+        <section className="cartao">
+          <h2 className="font-semibold mb-1">Fase do projeto</h2>
+          {passos.length > 0 ? (
+            <FormAcao acao={acaoMudarFase} className="space-y-2 text-sm">
+              {cod(p.id)}
+              <textarea name="motivo" rows={2} placeholder="Motivo ou observação (obrigatório para paralisar e cancelar)" className="campo w-full max-w-xl" />
+              <div className="flex flex-wrap gap-2">
+                {passos.map((f) => <Enviar key={f} name="para" value={f} className={ROT_PASSO[f][1] ? 'btn' : 'btn-sec'}>{p.fase === 'paralisado' && f === 'execucao' ? 'Retomar execução' : ROT_PASSO[f][0]}</Enviar>)}
+              </div>
+            </FormAcao>
+          ) : <p className="text-sm text-slate-500">Nenhum passo disponível para a sua função nesta fase.</p>}
+          <p className="text-xs text-slate-500 mt-2">
+            {p.fase === 'ideia' || p.fase === 'estudo' ? 'Aprovar exige orçamento, início e fim previstos. A aprovação é do prefeito ou do controlador.' : ''}
+            {p.fase === 'execucao' ? `Concluir exige as etapas fechadas${abertas ? ` (faltam ${abertas})` : ''}; concluir e cancelar são do prefeito ou do controlador.` : ''}
+            {p.fase === 'aprovado' ? 'A secretaria inicia a execução; cancelar é do prefeito ou do controlador.' : ''}
+          </p>
+        </section>
+      )}
+
           {/* secretarias */}
           <section className="cartao">
             <h2 className="font-semibold mb-2">Secretarias envolvidas</h2>
