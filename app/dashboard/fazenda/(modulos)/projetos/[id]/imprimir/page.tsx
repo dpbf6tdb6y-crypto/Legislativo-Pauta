@@ -9,6 +9,7 @@ import { carregarFinanceiro } from '@/lib/financas/projetos/vinculos';
 import { acessoProjetos } from '../../acesso';
 import BotaoImprimir from '../../BotaoImprimir';
 import { fmtData } from '../../Selos';
+import { LinhaDoTempo, Termometro } from '../../Termometro';
 
 export default async function ImprimirProjeto({ params }: { params: { id: string } }) {
   const { db, ator, s } = await acessoProjetos('Projeto (impressão)', { detalhe: `impressão projeto id=${params.id}`, acao: 'exportar' });
@@ -26,6 +27,7 @@ export default async function ImprimirProjeto({ params }: { params: { id: string
   return (
     <div className="text-sm space-y-3">
       <style>{'@page { size: A4; margin: 12mm; } @media print { aside, header, nav { display: none !important; } html, body, div, main { height: auto !important; overflow: visible !important; position: static !important; } body { background: white; } }'}</style>
+      <style>{'.grafico-impressao, .grafico-impressao * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }'}</style>
       <BotaoImprimir voltar={`/dashboard/fazenda/projetos/${p.id}`} />
       <div>
         <h1 className="text-xl font-semibold">{p.titulo}</h1>
@@ -36,6 +38,9 @@ export default async function ImprimirProjeto({ params }: { params: { id: string
         </p>
       </div>
       {p.objetivo && <p className="whitespace-pre-wrap"><b>Objetivo:</b> {p.objetivo}</p>}
+      <div className="grafico-impressao" style={{ breakInside: 'avoid' }}>
+        <Termometro inicio={p.inicioPrevisto} fim={p.fimPrevisto} hoje={hoje} avanco={p.avanco} saude={p.saude} fase={p.fase} diasAtraso={p.diasAtraso} fimReal={p.fimReal} />
+      </div>
       <div className="grid grid-cols-4 gap-2 text-xs">
         <div className="border border-slate-300 rounded px-2 py-1"><div className="text-slate-500">Avanço</div><b className="text-base">{p.avanco === null ? 'sem etapas' : `${p.avanco}%`}</b></div>
         <div className="border border-slate-300 rounded px-2 py-1"><div className="text-slate-500">Previsto</div><b>{fmtData(p.inicioPrevisto)} → {fmtData(p.fimPrevisto)}</b></div>
@@ -49,8 +54,9 @@ export default async function ImprimirProjeto({ params }: { params: { id: string
         </div>
       )}
 
-      <section style={{ breakInside: 'avoid' }}>
+      <section style={{ breakInside: 'avoid' }} className="grafico-impressao">
         <h2 className="font-semibold">Etapas e marcos</h2>
+        <LinhaDoTempo etapas={p.etapas} inicio={p.inicioPrevisto} fim={p.fimPrevisto} hoje={hoje} />
         {p.etapas.length === 0 ? <p className="text-xs text-slate-500">Nenhuma etapa registrada.</p> : (
           <table className="tabela w-full text-xs"><thead><tr><th>#</th><th>Etapa</th><th>Prazo</th><th>Situação</th></tr></thead>
             <tbody>{p.etapas.map((e) => <tr key={e.id}><td>{e.ordem}</td><td>{e.marco ? '◆ ' : ''}{e.titulo}{!e.marco ? ` (peso ${e.peso})` : ''}</td><td>{e.marco ? fmtData(e.fimPrevisto) : `${fmtData(e.inicioPrevisto)} → ${fmtData(e.fimPrevisto)}`}</td><td>{ROTULO_ETAPA[e.status as StatusEtapa]}{e.concluidaEm ? ` em ${fmtData(e.concluidaEm)}` : ''}</td></tr>)}</tbody></table>
