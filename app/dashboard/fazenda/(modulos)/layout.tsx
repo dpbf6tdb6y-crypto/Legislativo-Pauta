@@ -37,7 +37,7 @@ export default async function LayoutModulos({ children }: { children: ReactNode 
             ? <>Despesa e receita baixadas em <b>{dataCurta(desp)}</b>{velha && <b> · dados do portal desatualizados</b>}{resumoFontes && <> · {resumoFontes}</>}{ultima && <> · última coleta: <b>{ultima.status === 'ok' ? 'ok' : ultima.status === 'divergencia' ? 'com divergência na conferência' : 'falhou'}</b></>}</>
             : <>Ainda não há dados do portal coletados.</>}
         </div>
-        <MenuCompliance grupos={gruposDoPerfil(s.perfil)} />
+        <MenuCompliance grupos={gruposDoPerfil(s.perfil, s.master)} />
       </div>
       {children}
     </div>

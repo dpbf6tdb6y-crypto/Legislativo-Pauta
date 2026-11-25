@@ -1,5 +1,5 @@
 // Menu do Compliance: as áreas e a Administração (Projetos fica depois de Documentos para não mudar a tela inicial da Secretaria). Cada perfil vê só o que pode abrir.
-import { pode, type Permissao } from './perfis';
+import { pode, PODE_DO_MASTER, type Permissao } from './perfis';
 
 const B = '/dashboard/fazenda';
 type Regra = Permissao | Permissao[] | null;
@@ -57,8 +57,9 @@ export function menuDoPerfil(perfil: string) {
 }
 
 /** Áreas que o perfil enxerga, só com os itens que ele pode abrir. */
-export function gruposDoPerfil(perfil: string): GrupoMenu[] {
-  return GRUPOS.map((g) => ({ ...g, itens: g.itens.filter((i) => permite(perfil, i.p)) })).filter((g) => g.itens.length > 0);
+export function gruposDoPerfil(perfil: string, master = false): GrupoMenu[] {
+  const doMaster = (p: Regra) => master && p !== null && (Array.isArray(p) ? p : [p]).some((x) => PODE_DO_MASTER.includes(x));
+  return GRUPOS.map((g) => ({ ...g, itens: g.itens.filter((i) => permite(perfil, i.p) || doMaster(i.p)) })).filter((g) => g.itens.length > 0);
 }
 
 /** Primeira tela que o perfil pode abrir. */

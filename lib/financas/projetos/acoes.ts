@@ -18,11 +18,12 @@ export interface Ator {
   secretaria: boolean; // só mexe nos projetos em que a sua secretaria participa
 }
 
-export function atorDe(u: { nome: string; perfil: string; orgaoCod: string }): Ator {
+export function atorDe(u: { nome: string; perfil: string; orgaoCod: string; master?: boolean }): Ator {
   return {
     nome: u.nome, orgaoCod: u.orgaoCod,
-    verTodos: pode(u.perfil, 'projetos'), gerir: pode(u.perfil, 'projetos_gerir'),
-    aprovar: pode(u.perfil, 'projetos_aprovar'), secretaria: pode(u.perfil, 'projetos_secretaria'),
+    // o Master do SEGOV tem o acesso total a Projetos, qualquer que seja o perfil dele na Gestão
+    verTodos: !!u.master || pode(u.perfil, 'projetos'), gerir: !!u.master || pode(u.perfil, 'projetos_gerir'),
+    aprovar: !!u.master || pode(u.perfil, 'projetos_aprovar'), secretaria: pode(u.perfil, 'projetos_secretaria'),
   };
 }
 

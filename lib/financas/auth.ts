@@ -10,13 +10,14 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { acessoDoMenu } from '@/lib/acessos';
 import { dbDa, PREFEITURA_PADRAO } from './db';
-import { PERFIS, pode, type Permissao } from './perfis';
+import { PERFIS, pode, PODE_DO_MASTER, type Permissao } from './perfis';
 import { chaveLigada } from './chaves';
 
 export interface Sessao {
   usuarioId: string;
   prefeituraId: string;
   perfil: string; // perfil da Gestão (prefeito, controlador, ...)
+  master?: boolean; // usuário Master do SEGOV: tem o acesso total a Projetos, qualquer que seja o perfil da Gestão
   nome: string;
 }
 
@@ -26,6 +27,10 @@ const CAMPOS = {
 } as const;
 
 type UsuarioSegov = { perfil: string; gestaoPerfil: string | null };
+
+export function podeNaGestao(s: { perfil: string; master?: boolean }, p: Permissao): boolean {
+  return pode(s.perfil, p) || (!!s.master && PODE_DO_MASTER.includes(p));
+}
 
 /** Perfil da Gestão do usuário do SEGOV (null = sem acesso aos módulos financeiros). */
 export function perfilGestao(u: UsuarioSegov): string | null {
@@ -48,7 +53,7 @@ export async function sessaoAtual(): Promise<Sessao | null> {
   if (!id) return null;
   const u = await usuarioSegov(id);
   if (!u) return null;
-  return { usuarioId: u.id, prefeituraId: PREFEITURA_PADRAO, perfil: u.perfilGestao, nome: u.nome };
+  return { usuarioId: u.id, prefeituraId: PREFEITURA_PADRAO, perfil: u.perfilGestao, nome: u.nome, master: u.perfil === 'master' };
 }
 
 /**
@@ -71,7 +76,7 @@ export async function exigir(permissao: Permissao | null, tela: string, opts: { 
   if (!(logado?.user as any)?.id) redirect('/login');
   const s = await sessaoAtual();
   if (!s) redirect('/dashboard/fazenda/sem-permissao?motivo=perfil');
-  if (permissao && !pode(s.perfil, permissao)) redirect('/dashboard/fazenda/sem-permissao');
+  if (permissao && !podeNaGestao(s, permissao)) redirect('/dashboard/fazenda/sem-permissao');
   if (opts.modulo && !(await chaveLigada(s.prefeituraId, opts.modulo))) redirect(`/dashboard/fazenda/desligado?modulo=${opts.modulo}`);
   await registrar(s, opts.acao ?? 'ver', tela, opts.detalhe ?? '');
   return { s, db: dbDa(s.prefeituraId) };
@@ -82,7 +87,7 @@ export async function exigirAcaoUsuario(p: Permissao) {
   const s = await sessaoAtual();
   if (!s) throw new Error('Sem permissão');
   const u = await usuarioDaSessao(s);
-  if (!u || !pode(s.perfil, p)) throw new Error('Sem permissão');
+  if (!u || !podeNaGestao(s, p)) throw new Error('Sem permissão');
   return { s, u, db: dbDa(s.prefeituraId) };
 }
 

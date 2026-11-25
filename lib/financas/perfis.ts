@@ -23,6 +23,9 @@ export const PERFIS: Record<string, { nome: string; pode: Permissao[] }> = {
   secretaria: { nome: 'Secretaria', pode: ['secretaria_responder', 'documentos_enviar', 'projetos_secretaria'] }, // presa a uma secretaria (Usuario.orgaoCod): envia e vê só os documentos dela
 };
 
+/** Permissões que o Master do SEGOV tem sempre, além das do perfil dele na Gestão (por ora, só Projetos). */
+export const PODE_DO_MASTER: Permissao[] = ['projetos', 'projetos_gerir', 'projetos_aprovar'];
+
 export function pode(perfil: string | undefined, p: Permissao) {
   return !!perfil && !!PERFIS[perfil]?.pode.includes(p);
 }

@@ -14,7 +14,7 @@ const txt = (f: FormData, k: string) => String(f.get(k) ?? '');
 async function contexto() {
   const ctx = await exigirAcaoUsuario('projetos_gerir').catch(() => exigirAcaoUsuario('projetos_secretaria'));
   if (!(await chaveLigada(ctx.s.prefeituraId, 'projetos'))) throw new Error('O módulo Projetos está desligado');
-  return { ...ctx, ator: A.atorDe({ nome: ctx.u.nome, perfil: ctx.s.perfil, orgaoCod: ctx.u.orgaoCod }) };
+  return { ...ctx, ator: A.atorDe({ nome: ctx.u.nome, perfil: ctx.s.perfil, orgaoCod: ctx.u.orgaoCod, master: ctx.s.master }) };
 }
 function atualizar(id?: number) {
   revalidatePath('/dashboard/fazenda/projetos');
