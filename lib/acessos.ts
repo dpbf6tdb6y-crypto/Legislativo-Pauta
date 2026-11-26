@@ -61,6 +61,8 @@ export function menuDaRota(pathname: string): ChaveMenu | null {
   if (pathname === "/dashboard") return "dashboard"
   // a aba Governança mostra os projetos do Compliance: vale o mesmo acesso
   if (pathname === "/dashboard/governanca" || pathname.startsWith("/dashboard/governanca/")) return "gestao"
+  // aba Projetos (demonstração do painel de governança): mesmo acesso
+  if (pathname === "/dashboard/projetos" || pathname.startsWith("/dashboard/projetos/")) return "gestao"
   let melhor: ChaveMenu | null = null
   let tam = 0
   for (const m of MENUS) {
