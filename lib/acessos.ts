@@ -59,6 +59,8 @@ export function acessoDoMenu(usuario: UsuarioAcessos | null | undefined, chave: 
 // menu a que uma rota pertence (null = rota fora do menu principal, como Configurações)
 export function menuDaRota(pathname: string): ChaveMenu | null {
   if (pathname === "/dashboard") return "dashboard"
+  // a aba Governança mostra os projetos do Compliance: vale o mesmo acesso
+  if (pathname === "/dashboard/governanca" || pathname.startsWith("/dashboard/governanca/")) return "gestao"
   let melhor: ChaveMenu | null = null
   let tam = 0
   for (const m of MENUS) {

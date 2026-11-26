@@ -88,10 +88,12 @@ describe('cadastro com várias secretarias', () => {
 
   it('a secretaria não aprova; o prefeito só aprova com orçamento e datas', async () => {
     const db = dbDa(P);
-    await mudarFase(db, sec09, id, 'estudo');
+    await expect(mudarFase(db, sec09, id, 'estudo')).rejects.toThrow(/Só o prefeito ou o controlador/); // mudar a fase é só da gestão
+    await mudarFase(db, gestor, id, 'estudo');
     await expect(mudarFase(db, sec09, id, 'aprovado')).rejects.toThrow(/Só o prefeito ou o controlador/);
     await expect(mudarFase(db, gestor, id, 'aprovado')).rejects.toThrow(/orçamento/);
-    await editarProjeto(db, sec09, id, { ...dados, orcamento: '4.500.000,00', fonteRecurso: 'convenio_estadual', inicioPrevisto: '2026-12-01', fimPrevisto: '2027-12-01' });
+    await expect(editarProjeto(db, sec09, id, { ...dados })).rejects.toThrow(/altera os dados do projeto/);
+    await editarProjeto(db, gestor, id, { ...dados, orcamento: '4.500.000,00', fonteRecurso: 'convenio_estadual', inicioPrevisto: '2026-12-01', fimPrevisto: '2027-12-01' });
     await mudarFase(db, gestor, id, 'aprovado');
     const f = (await fichaProjeto(db, gestor, id, HOJE))!;
     expect(f).toMatchObject({ fase: 'aprovado', aprovadoPor: 'Prefeito', orcamento: 450000000n });
@@ -102,23 +104,26 @@ describe('cadastro com várias secretarias', () => {
   it('depois de aprovado: orçamento só do aprovador; mudar data exige motivo e fica no histórico', async () => {
     const db = dbDa(P);
     const base = { ...dados, orcamento: '4.500.000,00', fonteRecurso: 'convenio_estadual', inicioPrevisto: '2026-12-01', fimPrevisto: '2027-12-01' };
-    await expect(editarProjeto(db, sec09, id, { ...base, orcamento: '5.000.000,00' })).rejects.toThrow(/só o prefeito ou o controlador altera o orçamento/);
-    await expect(editarProjeto(db, sec09, id, { ...base, fimPrevisto: '2028-03-01' })).rejects.toThrow(/motivo da mudança de data/);
-    await expect(editarProjeto(db, sec09, id, { ...base, orcamento: '' })).rejects.toThrow(/orçamento/);
-    await editarProjeto(db, sec09, id, { ...base, fimPrevisto: '2028-03-01' }, 'Chuvas atrasaram a fundação');
+    await expect(editarProjeto(db, sec09, id, { ...base, orcamento: '5.000.000,00' })).rejects.toThrow(/altera os dados do projeto/);
+    await expect(editarProjeto(db, gestor, id, { ...base, fimPrevisto: '2028-03-01' })).rejects.toThrow(/motivo da mudança de data/);
+    await expect(editarProjeto(db, gestor, id, { ...base, orcamento: '' })).rejects.toThrow(/orçamento/);
+    await editarProjeto(db, gestor, id, { ...base, fimPrevisto: '2028-03-01' }, 'Chuvas atrasaram a fundação');
     const f = (await fichaProjeto(db, gestor, id, HOJE))!;
     expect(f.fimPrevisto).toEqual(d('2028-03-01'));
     expect(f.fimPrevistoOriginal).toEqual(d('2027-12-01')); // o original não muda
-    expect(f.eventos[0]).toMatchObject({ tipo: 'prazo', por: 'Ana (Educação)' });
+    expect(f.eventos[0]).toMatchObject({ tipo: 'prazo', por: 'Prefeito' });
     expect(f.eventos[0].texto).toMatch(/01\/12\/2027 → 01\/03\/2028.*Chuvas/);
   });
 
   it('etapas: marco sem início, prazo obrigatório depois de aprovado, concluir, reabrir e cancelar com motivo', async () => {
     const db = dbDa(P);
-    await expect(adicionarEtapa(db, sec09, id, { titulo: 'Licitação' })).rejects.toThrow(/prazo da etapa/);
-    await expect(adicionarEtapa(db, sec09, id, { titulo: 'X', peso: 0, fimPrevisto: '2027-01-10' })).rejects.toThrow(/peso/);
-    const e1 = await adicionarEtapa(db, sec09, id, { titulo: 'Licitação', peso: 2, inicioPrevisto: '2026-12-01', fimPrevisto: '2027-03-01' });
-    const e2 = await adicionarEtapa(db, sec12, id, { titulo: 'Equipar a sala de vacina', peso: 1, fimPrevisto: '2027-10-01' }); // parceira também mexe
+    await expect(adicionarEtapa(db, gestor, id, { titulo: 'Licitação' })).rejects.toThrow(/prazo da etapa/);
+    await expect(adicionarEtapa(db, gestor, id, { titulo: 'X', peso: 0, fimPrevisto: '2027-01-10' })).rejects.toThrow(/peso/);
+    const e1 = await adicionarEtapa(db, gestor, id, { titulo: 'Licitação', peso: 2, inicioPrevisto: '2026-12-01', fimPrevisto: '2027-03-01' });
+    // nem a coordenadora nem a parceira montam o plano do projeto
+    for (const s of [sec09, sec12]) await expect(adicionarEtapa(db, s, id, { titulo: 'Equipar a sala de vacina', fimPrevisto: '2027-10-01' })).rejects.toThrow(/inclui etapas/);
+    const e2 = await adicionarEtapa(db, gestor, id, { titulo: 'Equipar a sala de vacina', peso: 1, fimPrevisto: '2027-10-01' });
+    await expect(atualizarEtapa(db, sec12, e2.id, 'iniciar')).rejects.toThrow(/sem responsável/);
     const marco = await adicionarEtapa(db, gestor, id, { titulo: 'Inauguração', marco: true, inicioPrevisto: '2026-01-01', fimPrevisto: '2027-12-20' });
     expect(marco).toMatchObject({ marco: true, inicioPrevisto: null, ordem: 3 });
 
@@ -136,18 +141,19 @@ describe('cadastro com várias secretarias', () => {
     expect(f.eventos.some((e) => e.tipo === 'prazo' && /Equipar.*01\/10\/2027 → 01\/11\/2027.*Entrega/.test(e.texto))).toBe(true);
     // etapa de outro projeto não é alcançada por quem não o enxerga
     const alheio = await criarProjeto(db, sec15, { ...dados, titulo: 'Praça nova' });
-    const eAlheia = await adicionarEtapa(db, sec15, alheio.id, { titulo: 'Projeto executivo' });
+    const eAlheia = await adicionarEtapa(db, gestor, alheio.id, { titulo: 'Projeto executivo' });
     await expect(atualizarEtapa(db, sec12, eAlheia.id, 'concluir')).rejects.toThrow(/não encontrado/);
   });
 
   it('execução: início real, pausa com motivo, e só encerra com as etapas fechadas', async () => {
     const db = dbDa(P);
-    await mudarFase(db, sec09, id, 'execucao');
+    await expect(mudarFase(db, sec09, id, 'execucao')).rejects.toThrow(/Só o prefeito ou o controlador/);
+    await mudarFase(db, gestor, id, 'execucao');
     expect((await fichaProjeto(db, gestor, id, HOJE))!.inicioReal).not.toBeNull();
-    await expect(mudarFase(db, sec09, id, 'paralisado')).rejects.toThrow(/por que o projeto foi paralisado/);
-    await mudarFase(db, sec09, id, 'paralisado', 'Aguardando liberação do convênio');
+    await expect(mudarFase(db, gestor, id, 'paralisado')).rejects.toThrow(/por que o projeto foi paralisado/);
+    await mudarFase(db, gestor, id, 'paralisado', 'Aguardando liberação do convênio');
     expect(await fichaProjeto(db, sec09, id, HOJE)).toMatchObject({ fase: 'paralisado', saude: 'paralisado', motivoFase: 'Aguardando liberação do convênio' });
-    await mudarFase(db, sec09, id, 'execucao');
+    await mudarFase(db, gestor, id, 'execucao');
     await expect(mudarFase(db, sec09, id, 'concluido')).rejects.toThrow(/Só o prefeito ou o controlador/);
     await expect(mudarFase(db, gestor, id, 'concluido')).rejects.toThrow(/etapa\(s\) em aberto/);
     const f0 = (await fichaProjeto(db, gestor, id, HOJE))!;
@@ -178,9 +184,10 @@ describe('cadastro com várias secretarias', () => {
   it('parceiras entram e saem com registro; a líder fica', async () => {
     const db = dbDa(P);
     const p = await criarProjeto(db, sec09, { ...dados, titulo: 'Merenda regional' });
-    await expect(adicionarParceira(db, sec09, p.id, '09')).rejects.toThrow(/já participa/);
-    await expect(adicionarParceira(db, sec09, p.id, '77')).rejects.toThrow(/não encontrada/);
-    await adicionarParceira(db, sec09, p.id, '12', 'Beto');
+    await expect(adicionarParceira(db, sec09, p.id, '12')).rejects.toThrow(/inclui secretarias/);
+    await expect(adicionarParceira(db, gestor, p.id, '09')).rejects.toThrow(/já participa/);
+    await expect(adicionarParceira(db, gestor, p.id, '77')).rejects.toThrow(/não encontrada/);
+    await adicionarParceira(db, gestor, p.id, '12', 'Beto');
     expect((await carteira(db, sec12, HOJE)).some((x) => x.id === p.id)).toBe(true);
     await expect(removerParceira(db, sec09, p.id, '09', 'x')).rejects.toThrow(/líder/);
     await expect(removerParceira(db, sec12, p.id, '12', 'x')).rejects.toThrow(/não pode se retirar sozinha/);

@@ -23,7 +23,7 @@ export default async function Projetos({ searchParams }: { searchParams: ParamsC
           <h1 className="text-lg font-semibold">Projetos</h1>
           <p className="text-sm text-slate-600">
             {ator.verTodos ? 'Tudo o que as secretarias estão executando, planejando ou já entregaram.' : 'Os projetos em que a sua secretaria participa.'}
-            {' '}O prazo e o avanço vêm das etapas que cada secretaria registra.
+            {' '}O prazo e o avanço vêm das etapas; cada secretaria atualiza as próprias.
           </p>
         </div>
         <Link href="/dashboard/fazenda/projetos/cronograma" className="btn-sec">📅 Cronograma</Link>

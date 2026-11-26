@@ -1146,6 +1146,9 @@ model ProjetoSecretaria {
   orgaoNome    String
   papel        String // lider | parceira
   responsavel  String  @default("") // quem responde pelo projeto naquela secretaria
+  atuacao      String  @default("") // executora | parecer | apoio ("" = não informado). A coordenadora é a de papel "lider"
+  atribuicao   String  @default("") // o que esta secretaria deve fazer no projeto
+  aporte       BigInt? // centavos; informa o rateio, não soma ao orçamento do projeto
   projeto      Projeto @relation(fields: [projetoId], references: [id], onDelete: Cascade)
 
   @@unique([projetoId, orgaoCod])
@@ -1165,6 +1168,8 @@ model EtapaProjeto {
   fimPrevisto    DateTime?
   status         String    @default("pendente") // pendente | andamento | concluida | cancelada
   concluidaEm    DateTime?
+  orgaoCod       String    @default("") // secretaria responsável pela etapa ("" = não definida)
+  dependeDe      Int[]     @default([]) // ids das etapas do mesmo projeto que precisam terminar antes
   projeto        Projeto   @relation(fields: [projetoId], references: [id], onDelete: Cascade)
 
   @@index([prefeituraId, projetoId])

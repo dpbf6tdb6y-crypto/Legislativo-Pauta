@@ -4,7 +4,7 @@ import type { DbPrefeitura } from '@/lib/financas/db';
 import { brlCurto } from '@/lib/financas/dinheiro';
 import { contratosSecretaria, nomesEmpenhoDoOrgao } from '@/lib/financas/auditoria/dados';
 import { lerData } from '@/lib/financas/auditoria/acoes';
-import { filtroVisivel, projetoVisivel, type Ator } from './acoes';
+import { ehParteDe, filtroVisivel, projetoVisivel, type Ator } from './acoes';
 import {
   alertasFinanceiros, somarExecucao, type AcaoLigada, type Alerta, type ContratoLigado, type EmpenhoFin, type FinanceiroProjeto,
 } from './financeiro';
@@ -39,6 +39,9 @@ export async function candidatosVinculo(db: DbPrefeitura, orgaoCods: string[], h
 
 // ------------------------------------------------------------------ ligar e desligar
 
+/** De quais secretarias participantes o ator pode ligar contrato e despesa: a gestão, de todas; a secretaria, só da própria. */
+export const secretariasQuePodeLigar = (a: Ator, p: { secretarias: { orgaoCod: string }[] }) => p.secretarias.map((s) => s.orgaoCod).filter((c) => ehParteDe(a, c));
+
 function conferirEncerrado(fase: string) {
   if (fase === 'concluido' || fase === 'cancelado') throw new Error('Projeto encerrado não pode ser alterado');
 }
@@ -54,9 +57,9 @@ export async function vincularContrato(db: DbPrefeitura, a: Ator, projetoId: num
   const p = await projetoVisivel(db, a, projetoId);
   conferirEncerrado(p.fase);
   if (await db.vinculoProjeto.findFirst({ where: { projetoId, tipo: 'contrato', contratoId } })) throw new Error('Este contrato já está ligado ao projeto');
-  const cands = await candidatosVinculo(db, p.secretarias.map((s) => s.orgaoCod), hoje);
+  const cands = await candidatosVinculo(db, secretariasQuePodeLigar(a, p), hoje);
   const c = cands.contratos.find((x) => x.id === contratoId);
-  if (!c) throw new Error('Este contrato não tem despesa das secretarias do projeto. Inclua a secretaria parceira antes de ligá-lo');
+  if (!c) throw new Error(a.gerir ? 'Este contrato não tem despesa das secretarias do projeto. Inclua a secretaria parceira antes de ligá-lo' : 'Este contrato não tem despesa da sua secretaria: cada secretaria liga os próprios contratos');
   await db.vinculoProjeto.create({ data: { prefeituraId: '', projetoId, tipo: 'contrato', contratoId, orgaoCod: c.orgaoCod, criadoPor: a.nome } });
   await evento(db, projetoId, a.nome, `Contrato ${c.numero}/${c.ano} (${c.fornecedorNome}, ${brlCurto(c.valorAtual)}) ligado ao projeto${c.certeza === 'media' ? ' · ligação aos empenhos de certeza média' : ''}`);
 }
@@ -69,9 +72,9 @@ export async function vincularAcao(db: DbPrefeitura, a: Ator, projetoId: number,
   if (!desde) throw new Error('Informe a partir de que data os empenhos desta ação contam para o projeto');
   const orgaoEmpenho = curto(d.orgaoEmpenho, 300), programa = curto(d.programa, 300), acao = curto(d.acao, 300);
   if (await db.vinculoProjeto.findFirst({ where: { projetoId, tipo: 'acao', orgaoEmpenho, programa, acao } })) throw new Error('Esta ação já está ligada ao projeto');
-  const cands = await candidatosVinculo(db, p.secretarias.map((s) => s.orgaoCod), hoje);
+  const cands = await candidatosVinculo(db, secretariasQuePodeLigar(a, p), hoje);
   const c = cands.acoes.find((x) => x.orgaoEmpenho === orgaoEmpenho && x.programa === programa && x.acao === acao);
-  if (!c) throw new Error('Esta ação não pertence às secretarias do projeto');
+  if (!c) throw new Error(a.gerir ? 'Esta ação não pertence às secretarias do projeto' : 'Esta ação não é da sua secretaria: cada secretaria liga a própria despesa');
   await db.vinculoProjeto.create({ data: { prefeituraId: '', projetoId, tipo: 'acao', orgaoEmpenho, programa, acao, orgaoCod: c.orgaoCod, desde, criadoPor: a.nome } });
   await evento(db, projetoId, a.nome, `Ação orçamentária “${acao}” (programa ${programa}) ligada ao projeto, empenhos a partir de ${desde.toLocaleDateString('pt-BR')}`);
 }
@@ -82,6 +85,7 @@ export async function desvincular(db: DbPrefeitura, a: Ator, projetoId: number, 
   conferirEncerrado(p.fase);
   const v = await db.vinculoProjeto.findFirst({ where: { id: vinculoId, projetoId } });
   if (!v) throw new Error('Ligação não encontrada');
+  if (!ehParteDe(a, v.orgaoCod)) throw new Error('Só a secretaria que fez parte desta ligação, o prefeito ou o controlador pode desfazê-la');
   const m = curto(motivo, 1000);
   if (!m) throw new Error('Diga por que a ligação foi desfeita');
   let rot = `ação “${v.acao}”`;

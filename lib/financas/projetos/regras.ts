@@ -86,7 +86,7 @@ export const ROTULO_SAUDE: Record<Saude, string> = {
 };
 export interface Avaliacao { saude: Saude; motivos: string[]; diasAtraso: number }
 
-const DIAS_SEM_ATUALIZAR = 30;
+export const DIAS_SEM_ATUALIZAR = 30;
 const FOLGA_DE_RITMO = 25; // pontos percentuais abaixo do esperado pelo calendário
 const DIAS_PARA_ETAPA_NAO_INICIADA = 7;
 const DIAS_INICIO_ATRASADO = 30;

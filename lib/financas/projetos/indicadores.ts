@@ -2,7 +2,7 @@
 // A obra pode estar 100% e o resultado não ter vindo: por isso o resultado é medido à parte, com leituras que não se editam.
 import type { DbPrefeitura } from '@/lib/financas/db';
 import { lerData } from '@/lib/financas/auditoria/acoes';
-import { curto, evento, fmt, lerDataOpcional, podeMexer, projetoVisivel, type Ator } from './acoes';
+import { curto, evento, fmt, lerDataOpcional, exigirGestao, podeMexer, projetoVisivel, type Ator } from './acoes';
 import type { Alerta } from './financeiro';
 import { diasEntre } from './regras';
 
@@ -64,6 +64,7 @@ function conferirNaoCancelado(fase: string) {
 export async function criarIndicador(db: DbPrefeitura, a: Ator, projetoId: number, d: { nome: string; unidade?: string; linhaBase: unknown; meta: unknown; prazoMeta?: string }) {
   podeMexer(a);
   const p = await projetoVisivel(db, a, projetoId);
+  exigirGestao(a, 'registra metas e medições');
   conferirNaoCancelado(p.fase);
   const nome = curto(d.nome, 200);
   if (!nome) throw new Error('Dê um nome ao indicador (ex.: alunos atendidos)');
@@ -80,6 +81,7 @@ export async function criarIndicador(db: DbPrefeitura, a: Ator, projetoId: numbe
 export async function registrarLeitura(db: DbPrefeitura, a: Ator, projetoId: number, indicadorId: number, d: { valor: unknown; data?: string; nota?: string }, hoje = new Date()) {
   podeMexer(a);
   const p = await projetoVisivel(db, a, projetoId);
+  exigirGestao(a, 'registra metas e medições');
   conferirNaoCancelado(p.fase);
   const i = await db.indicadorProjeto.findFirst({ where: { id: indicadorId, projetoId } });
   if (!i) throw new Error('Indicador não encontrado');

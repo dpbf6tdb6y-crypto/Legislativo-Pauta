@@ -35,23 +35,24 @@ describe('riscos', () => {
   it('quem pode mexer registra; auditor não; a gravidade e o histórico saem do cadastro', async () => {
     const db = dbDa(P);
     await expect(criarRisco(db, auditor, id, { titulo: 'x', probabilidade: 2, impacto: 2 })).rejects.toThrow(/Sem permissão/);
-    await expect(criarRisco(db, sec09, id, { titulo: '  ', probabilidade: 2, impacto: 2 })).rejects.toThrow(/uma frase/);
-    await expect(criarRisco(db, sec09, id, { titulo: 'x', probabilidade: 5, impacto: 2 })).rejects.toThrow(/Probabilidade/);
+    await expect(criarRisco(db, sec09, id, { titulo: 'x', probabilidade: 2, impacto: 2 })).rejects.toThrow(/Só o prefeito ou o controlador/); // nem a coordenadora
+    await expect(criarRisco(db, gestor, id, { titulo: '  ', probabilidade: 2, impacto: 2 })).rejects.toThrow(/uma frase/);
+    await expect(criarRisco(db, gestor, id, { titulo: 'x', probabilidade: 5, impacto: 2 })).rejects.toThrow(/Probabilidade/);
     await expect(criarRisco(db, sec12, id, { titulo: 'x', probabilidade: 2, impacto: 2 })).rejects.toThrow(/Projeto não encontrado/); // a Saúde não participa
     await expect(criarRisco(db, gestor, concluido, { titulo: 'x', probabilidade: 2, impacto: 2 })).rejects.toThrow(/encerrado/);
-    const r = await criarRisco(db, sec09, id, { titulo: 'Licitação deserta', probabilidade: 3, impacto: 3 });
+    const r = await criarRisco(db, gestor, id, { titulo: 'Licitação deserta', probabilidade: 3, impacto: 3 });
     riscoId = r.id;
     const ev = await db.eventoProjeto.findFirst({ where: { projetoId: id, tipo: 'risco' } });
     expect(ev!.texto).toMatch(/gravidade alta/);
-    expect(ev!.por).toBe('Ana (Educação)');
+    expect(ev!.por).toBe('Prefeito');
   });
 
   it('risco alto sem plano alerta; o plano resolve e passa o risco a "em mitigação"', async () => {
     const db = dbDa(P);
     const ac = await acompanhamento(db, [id]);
     expect(alertasRisco(ac.riscosDe(id), HOJE).map((a) => a.codigo)).toEqual([`risco_sem_plano:${riscoId}`]);
-    await expect(atualizarRisco(db, sec09, id, riscoId, 'plano', { mitigacao: ' ' })).rejects.toThrow(/o que será feito/);
-    await atualizarRisco(db, sec09, id, riscoId, 'plano', { mitigacao: 'Republicar o edital com preço revisto', responsavel: 'Ana', prazoMitigacao: '2026-12-15' });
+    await expect(atualizarRisco(db, gestor, id, riscoId, 'plano', { mitigacao: ' ' })).rejects.toThrow(/o que será feito/);
+    await atualizarRisco(db, gestor, id, riscoId, 'plano', { mitigacao: 'Republicar o edital com preço revisto', responsavel: 'Ana', prazoMitigacao: '2026-12-15' });
     const r = (await acompanhamento(db, [id])).riscosDe(id)[0];
     expect(r).toMatchObject({ status: 'mitigando', responsavel: 'Ana' });
     expect(alertasRisco([r], HOJE)).toEqual([]);
@@ -89,17 +90,18 @@ describe('indicadores no banco', () => {
   let indId = 0;
   it('cria o indicador com sentido automático e registra medições que não se editam', async () => {
     const db = dbDa(P);
-    await expect(criarIndicador(db, sec09, id, { nome: '', linhaBase: 1, meta: 2 })).rejects.toThrow(/nome ao indicador/);
-    await expect(criarIndicador(db, sec09, id, { nome: 'X', linhaBase: 5, meta: '5' })).rejects.toThrow(/diferente/);
+    await expect(criarIndicador(db, gestor, id, { nome: '', linhaBase: 1, meta: 2 })).rejects.toThrow(/nome ao indicador/);
+    await expect(criarIndicador(db, gestor, id, { nome: 'X', linhaBase: 5, meta: '5' })).rejects.toThrow(/diferente/);
     await expect(criarIndicador(db, auditor, id, { nome: 'X', linhaBase: 1, meta: 2 })).rejects.toThrow(/Sem permissão/);
-    const i = await criarIndicador(db, sec09, id, { nome: 'Alunos atendidos', unidade: 'alunos', linhaBase: '200', meta: '600', prazoMeta: '2027-07-01' });
+    await expect(criarIndicador(db, sec09, id, { nome: 'X', linhaBase: 1, meta: 2 })).rejects.toThrow(/Só o prefeito ou o controlador/);
+    const i = await criarIndicador(db, gestor, id, { nome: 'Alunos atendidos', unidade: 'alunos', linhaBase: '200', meta: '600', prazoMeta: '2027-07-01' });
     indId = i.id;
     expect(i.sentido).toBe('maior');
-    expect((await criarIndicador(db, sec09, id, { nome: 'Tempo de espera', unidade: 'dias', linhaBase: '45', meta: '15' })).sentido).toBe('menor');
-    await expect(registrarLeitura(db, sec09, id, indId, { valor: 'abc' })).rejects.toThrow(/números/);
-    await expect(registrarLeitura(db, sec09, id, indId, { valor: '300', data: '2027-12-31' }, HOJE)).rejects.toThrow(/futuro/);
-    await expect(registrarLeitura(db, sec09, id, indId + 999, { valor: '300' })).rejects.toThrow(/não encontrado/);
-    await registrarLeitura(db, sec09, id, indId, { valor: '300', data: '2026-10-01', nota: 'Censo escolar' }, HOJE);
+    expect((await criarIndicador(db, gestor, id, { nome: 'Tempo de espera', unidade: 'dias', linhaBase: '45', meta: '15' })).sentido).toBe('menor');
+    await expect(registrarLeitura(db, gestor, id, indId, { valor: 'abc' })).rejects.toThrow(/números/);
+    await expect(registrarLeitura(db, gestor, id, indId, { valor: '300', data: '2027-12-31' }, HOJE)).rejects.toThrow(/futuro/);
+    await expect(registrarLeitura(db, gestor, id, indId + 999, { valor: '300' })).rejects.toThrow(/não encontrado/);
+    await registrarLeitura(db, gestor, id, indId, { valor: '300', data: '2026-10-01', nota: 'Censo escolar' }, HOJE);
     await registrarLeitura(db, gestor, id, indId, { valor: '1.000', data: '2026-11-01' }, HOJE);
     const ind0 = (await acompanhamento(db, [id])).indicadoresDe(id).find((x) => x.id === indId)!;
     expect(ind0.leituras.map((l) => l.valor)).toEqual([300, 1000]);
