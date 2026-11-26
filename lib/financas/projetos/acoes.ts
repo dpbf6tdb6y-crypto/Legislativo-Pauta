@@ -8,6 +8,7 @@ import { lerData } from '@/lib/financas/auditoria/acoes';
 import {
   FONTES, impedimentoDeFase, PRIORIDADES, ROTULO_FASE, TIPOS, transicoesPermitidas, type Fase,
 } from './regras';
+import { ATUACOES, criaCiclo, dependentesDe, impedimentoPorDependencia } from './etapas';
 
 export interface Ator {
   nome: string;
@@ -99,6 +100,31 @@ export function podeMexer(a: Ator) {
   if (!a.gerir && !a.secretaria) throw new Error('Sem permissão para alterar projetos');
 }
 
+// ------------------------------------------------------------------ cada secretaria altera só a própria parte
+// Gestão (prefeito, controlador, Master) altera tudo. Para o perfil Secretaria:
+//  - o PLANO do projeto é só da gestão: dados, fase, etapas, dependências, secretarias, responsabilidades, riscos e resultados
+//    (a secretaria ainda pode PROPOR um projeto novo, como ideia);
+//  - CADA secretaria executa as próprias etapas, informa o próprio contato e liga os próprios contratos e despesas;
+//  - etapa sem responsável definido (ou de quem já saiu do projeto) é executada pela coordenadora (papel "lider");
+//  - registrar andamento continua aberto a toda secretaria participante.
+
+type Participantes = { secretarias: { orgaoCod: string; papel: string }[] };
+
+/** A própria parte: a secretaria do usuário (ou qualquer uma, para a gestão). */
+export const ehParteDe = (a: Ator, orgaoCod: string) => a.gerir || (a.secretaria && !!a.orgaoCod && a.orgaoCod === orgaoCod);
+
+export const coordena = (a: Ator, p: Participantes) => p.secretarias.some((s) => s.papel === 'lider' && ehParteDe(a, s.orgaoCod)) || a.gerir;
+
+export function executaEtapa(a: Ator, p: Participantes, e: { orgaoCod?: string | null }): boolean {
+  if (a.gerir) return true;
+  const temDona = !!e.orgaoCod && p.secretarias.some((s) => s.orgaoCod === e.orgaoCod);
+  return temDona ? ehParteDe(a, e.orgaoCod!) && p.secretarias.some((s) => s.orgaoCod === a.orgaoCod) : coordena(a, p);
+}
+
+export function exigirGestao(a: Ator, oQue: string) {
+  if (!a.gerir) throw new Error(`Só o prefeito ou o controlador ${oQue}`);
+}
+
 export async function criarProjeto(db: DbPrefeitura, a: Ator, d: DadosProjeto & { secretariaLider?: string; responsavel?: string; parceiras?: string[] }) {
   podeMexer(a);
   const dados = validarDados(d);
@@ -125,6 +151,7 @@ const ROT_CAMPO: Record<string, string> = {
 export async function editarProjeto(db: DbPrefeitura, a: Ator, id: number, d: DadosProjeto, motivo = '') {
   podeMexer(a);
   const p = await projetoVisivel(db, a, id);
+  exigirGestao(a, 'altera os dados do projeto');
   if (p.fase === 'concluido' || p.fase === 'cancelado') throw new Error('Projeto encerrado não pode ser alterado');
   const novo = validarDados(d);
   const aprovado = !['ideia', 'estudo'].includes(p.fase);
@@ -153,6 +180,7 @@ export async function editarProjeto(db: DbPrefeitura, a: Ator, id: number, d: Da
 export async function mudarFase(db: DbPrefeitura, a: Ator, id: number, para: string, motivo = '') {
   podeMexer(a);
   const p = await projetoVisivel(db, a, id);
+  exigirGestao(a, 'muda a fase do projeto');
   // 1) o passo existe, 2) quem pede pode dar o passo, 3) os dados do projeto permitem o passo
   if (!transicoesPermitidas(p.fase, true).includes(para as Fase)) throw new Error(impedimentoDeFase(p, p.etapas, para) ?? 'Passo inválido');
   if (!transicoesPermitidas(p.fase, a.aprovar).includes(para as Fase))
@@ -176,6 +204,7 @@ export async function mudarFase(db: DbPrefeitura, a: Ator, id: number, para: str
 export async function adicionarEtapa(db: DbPrefeitura, a: Ator, id: number, d: { titulo: string; marco?: boolean; peso?: number; inicioPrevisto?: string; fimPrevisto?: string }) {
   podeMexer(a);
   const p = await projetoVisivel(db, a, id);
+  exigirGestao(a, 'inclui etapas');
   if (p.fase === 'concluido' || p.fase === 'cancelado') throw new Error('Projeto encerrado não aceita novas etapas');
   const titulo = curto(d.titulo, 200);
   if (!titulo) throw new Error('Informe o nome da etapa');
@@ -201,6 +230,10 @@ export async function atualizarEtapa(db: DbPrefeitura, a: Ator, etapaId: number,
   const et = await db.etapaProjeto.findFirst({ where: { id: etapaId } });
   if (!et) throw new Error('Etapa não encontrada');
   const p = await projetoVisivel(db, a, et.projetoId);
+  if (!executaEtapa(a, p, et)) throw new Error(
+    p.secretarias.some((s) => s.orgaoCod === et.orgaoCod)
+      ? 'Só a secretaria responsável por esta etapa, o prefeito ou o controlador pode alterá-la'
+      : 'Etapa sem responsável: só a secretaria coordenadora, o prefeito ou o controlador pode alterá-la');
   if (p.fase === 'concluido' || p.fase === 'cancelado') throw new Error('Projeto encerrado não pode ser alterado');
   const rot = `${et.marco ? 'Marco' : 'Etapa'} "${et.titulo}"`;
   const motivo = curto(d.motivo, 1000);
@@ -208,15 +241,21 @@ export async function atualizarEtapa(db: DbPrefeitura, a: Ator, etapaId: number,
 
   if (acao === 'iniciar') {
     if (et.status !== 'pendente') throw new Error('Só uma etapa a fazer pode ser iniciada');
+    const presa = impedimentoPorDependencia(p.etapas, et);
+    if (presa) throw new Error(presa);
     await db.etapaProjeto.updateMany({ where: { id: etapaId }, data: { status: 'andamento' } });
     await evento(db, p.id, 'etapa', a.nome, `${rot} iniciada`);
   } else if (acao === 'concluir') {
     if (et.status === 'concluida' || et.status === 'cancelada') throw new Error('Esta etapa já foi encerrada');
+    const presa = impedimentoPorDependencia(p.etapas, et);
+    if (presa) throw new Error(presa);
     await db.etapaProjeto.updateMany({ where: { id: etapaId }, data: { status: 'concluida', concluidaEm: agora } });
     await evento(db, p.id, 'etapa', a.nome, `${rot} concluída${et.fimPrevisto && agora > et.fimPrevisto ? ` (prazo era ${fmt(et.fimPrevisto)})` : ''}`);
   } else if (acao === 'reabrir') {
     if (et.status !== 'concluida' && et.status !== 'cancelada') throw new Error('Só etapa concluída ou cancelada pode ser reaberta');
     if (!motivo) throw new Error('Diga por que a etapa foi reaberta');
+    const feitas = dependentesDe(p.etapas, etapaId).filter((x) => x.status === 'concluida');
+    if (feitas.length) throw new Error(`Reabra antes as etapas concluídas que dependem desta: ${feitas.map((x) => `${x.ordem}. ${x.titulo}`).join('; ')}`);
     await db.etapaProjeto.updateMany({ where: { id: etapaId }, data: { status: 'pendente', concluidaEm: null } });
     await evento(db, p.id, 'etapa', a.nome, `${rot} reaberta: ${motivo}`);
   } else if (acao === 'cancelar') {
@@ -252,6 +291,7 @@ export async function registrarAtualizacao(db: DbPrefeitura, a: Ator, id: number
 export async function adicionarParceira(db: DbPrefeitura, a: Ator, id: number, orgaoCod: string, responsavel = '') {
   podeMexer(a);
   const p = await projetoVisivel(db, a, id);
+  exigirGestao(a, 'inclui secretarias no projeto');
   if (p.fase === 'concluido' || p.fase === 'cancelado') throw new Error('Projeto encerrado não pode ser alterado');
   const orgaos = await orgaosValidos(db);
   if (!orgaos.has(orgaoCod)) throw new Error('Secretaria não encontrada');
@@ -265,6 +305,7 @@ export async function definirResponsavelProjeto(db: DbPrefeitura, a: Ator, id: n
   const p = await projetoVisivel(db, a, id);
   const s = p.secretarias.find((x) => x.orgaoCod === orgaoCod);
   if (!s) throw new Error('Esta secretaria não participa do projeto');
+  if (!ehParteDe(a, orgaoCod)) throw new Error('Cada secretaria informa o próprio contato');
   const nome = curto(responsavel, 120);
   await db.projetoSecretaria.updateMany({ where: { id: s.id }, data: { responsavel: nome } });
   await evento(db, id, 'parceria', a.nome, `Responsável de ${s.orgaoNome}: ${s.responsavel || '(ninguém)'} → ${nome || '(ninguém)'}`);
@@ -277,7 +318,85 @@ export async function removerParceira(db: DbPrefeitura, a: Ator, id: number, org
   if (!s) throw new Error('Esta secretaria não participa do projeto');
   if (s.papel === 'lider') throw new Error('A secretaria líder não pode ser retirada');
   if (!a.gerir && a.orgaoCod === orgaoCod) throw new Error('A própria secretaria não pode se retirar sozinha: peça ao prefeito ou ao controlador');
+  exigirGestao(a, 'retira secretarias do projeto');
   if (!curto(motivo, 1000)) throw new Error('Diga por que a secretaria deixa o projeto');
+  const comEtapa = p.etapas.filter((e) => e.orgaoCod === orgaoCod && (e.status === 'pendente' || e.status === 'andamento'));
+  if (comEtapa.length) throw new Error(`Passe antes a outra secretaria as etapas em aberto desta: ${comEtapa.map((e) => `${e.ordem}. ${e.titulo}`).join('; ')}`);
   await db.projetoSecretaria.deleteMany({ where: { id: s.id } });
   await evento(db, id, 'parceria', a.nome, `${s.orgaoNome} deixou o projeto: ${curto(motivo, 1000)}`);
+}
+
+// ------------------------------------------------------------------ responsabilidades e dependências
+
+/** Secretaria responsável pela etapa e etapas de que ela depende. */
+export async function definirEtapaCooperacao(db: DbPrefeitura, a: Ator, projetoId: number, etapaId: number, d: { orgaoCod?: string; dependeDe?: (string | number)[] }) {
+  podeMexer(a);
+  const p = await projetoVisivel(db, a, projetoId);
+  exigirGestao(a, 'define responsáveis e dependências');
+  if (p.fase === 'concluido' || p.fase === 'cancelado') throw new Error('Projeto encerrado não pode ser alterado');
+  const et = p.etapas.find((e) => e.id === etapaId);
+  if (!et) throw new Error('Etapa não encontrada');
+
+  const orgaoCod = curto(d.orgaoCod, 20);
+  const responsavel = p.secretarias.find((s) => s.orgaoCod === orgaoCod);
+  if (orgaoCod && !responsavel) throw new Error('A secretaria responsável precisa participar do projeto');
+  if (responsavel && responsavel.papel !== 'lider' && responsavel.atuacao === 'apoio') throw new Error('Secretaria em papel de apoio não fica responsável por etapa');
+
+  const dependeDe = [...new Set((d.dependeDe ?? []).map(Number))].sort((x, y) => x - y);
+  const outras = new Map(p.etapas.map((e) => [e.id, e]));
+  for (const id of dependeDe) {
+    const x = outras.get(id);
+    if (!x) throw new Error('A dependência precisa ser uma etapa deste projeto');
+    if (x.status === 'cancelada') throw new Error(`A etapa "${x.titulo}" está cancelada e não pode ser dependência`);
+    if (et.status === 'concluida' && x.status !== 'concluida') throw new Error('Etapa concluída não pode passar a depender de uma etapa em aberto: reabra-a antes');
+  }
+  if (criaCiclo(p.etapas, etapaId, dependeDe)) throw new Error('Essa escolha cria um ciclo: a etapa passaria a depender dela mesma');
+
+  const antes = [...(et.dependeDe ?? [])].sort((x, y) => x - y);
+  const mudouResp = orgaoCod !== et.orgaoCod;
+  const mudouDep = antes.join(',') !== dependeDe.join(',');
+  if (!mudouResp && !mudouDep) return;
+  await db.etapaProjeto.updateMany({ where: { id: etapaId }, data: { orgaoCod, dependeDe } });
+
+  const nomeSec = (c: string) => (c ? p.secretarias.find((s) => s.orgaoCod === c)?.orgaoNome ?? c : '(não definida)');
+  const nomeDeps = (ids: number[]) => (ids.length ? ids.map((i) => `"${outras.get(i)?.titulo ?? i}"`).join(', ') : 'nenhuma');
+  const partes: string[] = [];
+  if (mudouResp) partes.push(`responsável: ${nomeSec(et.orgaoCod)} → ${nomeSec(orgaoCod)}`);
+  if (mudouDep) partes.push(`depende de: ${nomeDeps(antes)} → ${nomeDeps(dependeDe)}`);
+  await evento(db, p.id, 'etapa', a.nome, `${et.marco ? 'Marco' : 'Etapa'} "${et.titulo}": ${partes.join('; ')}`);
+  await tocar(db, p.id);
+}
+
+/** Papel, atribuição e aporte de uma secretaria no projeto. O aporte só é informado por quem faz a gestão da carteira. */
+export async function definirParticipacao(db: DbPrefeitura, a: Ator, id: number, orgaoCod: string, d: { atuacao?: string; atribuicao?: string; aporte?: string }) {
+  podeMexer(a);
+  const p = await projetoVisivel(db, a, id);
+  exigirGestao(a, 'define o papel e o que cada secretaria deve fazer');
+  if (p.fase === 'concluido' || p.fase === 'cancelado') throw new Error('Projeto encerrado não pode ser alterado');
+  const s = p.secretarias.find((x) => x.orgaoCod === orgaoCod);
+  if (!s) throw new Error('Esta secretaria não participa do projeto');
+  const lider = s.papel === 'lider';
+
+  const atuacao = lider ? '' : curto(d.atuacao, 20);
+  if (atuacao && !ATUACOES[atuacao]) throw new Error('Papel inválido');
+  if (atuacao === 'apoio' && p.etapas.some((e) => e.orgaoCod === orgaoCod && (e.status === 'pendente' || e.status === 'andamento')))
+    throw new Error('Esta secretaria responde por etapas em aberto: passe-as a outra antes de mudar o papel para apoio');
+  const atribuicao = curto(d.atribuicao, 500);
+
+  // aporte ausente (formulário de quem não faz a gestão) = mantém o que está gravado
+  let aporte = s.aporte;
+  if (!lider && d.aporte !== undefined && a.gerir) {
+    aporte = lerOrcamento(d.aporte);
+    const outros = p.secretarias.filter((x) => x.id !== s.id).reduce((total, x) => total + (x.aporte ?? 0n), 0n);
+    if (aporte !== null && p.orcamento !== null && outros + aporte > p.orcamento) throw new Error(`A soma dos aportes passa do orçamento do projeto (${brl(p.orcamento)})`);
+  }
+
+  const mudancas: string[] = [];
+  if (atuacao !== s.atuacao) mudancas.push(`papel: ${ATUACOES[s.atuacao] ?? '(não informado)'} → ${ATUACOES[atuacao] ?? '(não informado)'}`);
+  if (atribuicao !== s.atribuicao) mudancas.push(`o que deve fazer: ${atribuicao || '(vazio)'}`);
+  if (aporte !== s.aporte) mudancas.push(`aporte: ${brl(s.aporte)} → ${brl(aporte)}`);
+  if (!mudancas.length) return;
+  await db.projetoSecretaria.updateMany({ where: { id: s.id }, data: { atuacao, atribuicao, aporte } });
+  await evento(db, id, 'parceria', a.nome, `${s.orgaoNome}: ${mudancas.join('; ')}`);
+  await tocar(db, id);
 }

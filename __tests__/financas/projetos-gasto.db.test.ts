@@ -113,7 +113,9 @@ describe('ligar e desligar', () => {
     await expect(vincularAcao(db, gestor, projetoId, { ...acao, desde: '' }, HOJE)).rejects.toThrow(/a partir de que data/);
     await expect(vincularAcao(db, gestor, projetoId, { ...acao, acao: 'INVENTADA', desde: '2026-01-01' }, HOJE)).rejects.toThrow(/não pertence/);
     await expect(vincularAcao(db, gestor, projetoId, { ...acao, orgaoEmpenho: OBR, desde: '2026-01-01' }, HOJE)).rejects.toThrow(/não pertence/);
-    await vincularAcao(db, sec12, projetoId, { ...acao, desde: '2026-01-01' }, HOJE); // a Saúde participa (parceira) e a ação é da Educação, também participante
+    // a Saúde participa, mas a despesa é da Educação: cada secretaria liga só a própria
+    await expect(vincularAcao(db, sec12, projetoId, { ...acao, desde: '2026-01-01' }, HOJE)).rejects.toThrow(/não é da sua secretaria/);
+    await vincularAcao(db, sec09, projetoId, { ...acao, desde: '2026-01-01' }, HOJE);
     await expect(vincularAcao(db, gestor, projetoId, { ...acao, desde: '2026-01-01' }, HOJE)).rejects.toThrow(/já está ligada/);
 
     // ligar despesa não é notícia de andamento: não pode esconder o aviso de "sem atualização"

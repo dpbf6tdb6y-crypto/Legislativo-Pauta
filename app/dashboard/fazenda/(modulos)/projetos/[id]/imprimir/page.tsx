@@ -6,6 +6,7 @@ import { fmtNum, progresso, ultimaLeitura, alertasResultado } from '@/lib/financ
 import { gravidade, ROT_GRAVIDADE, riscoAtivo, alertasRisco, STATUS_RISCO, type StatusRisco } from '@/lib/financas/projetos/riscos';
 import { FONTES, PRIORIDADES, ROTULO_ETAPA, ROTULO_FASE, TIPOS, type Fase, type StatusEtapa } from '@/lib/financas/projetos/regras';
 import { carregarFinanceiro } from '@/lib/financas/projetos/vinculos';
+import { ATUACOES, bloqueios, estadoEtapa, projecaoPrazo, ROTULO_ESTADO } from '@/lib/financas/projetos/etapas';
 import { acessoProjetos } from '../../acesso';
 import BotaoImprimir from '../../BotaoImprimir';
 import { fmtData } from '../../Selos';
@@ -23,10 +24,14 @@ export default async function ImprimirProjeto({ params }: { params: { id: string
   const alertas = juntarAlertas(fin.alertas, alertasRisco(ac.riscosDe(p.id), hoje), alertasResultado(p.fase, indicadores, hoje)).filter((a) => a.nivel !== 'info');
   const ex = fin.execucao;
   const tem = fin.contratos.length + fin.acoes.length > 0;
+  const esperas = bloqueios([p], hoje);
+  const projecao = p.fase === 'concluido' || p.fase === 'cancelado' ? null : projecaoPrazo(p.etapas, p.fimPrevisto, hoje);
+  const nomeDe = (cod: string) => (cod ? p.secretarias.find((x) => x.orgaoCod === cod)?.orgaoNome ?? cod : 'não definida');
+  const numeros = (ids: number[] | null) => p.etapas.filter((e) => (ids ?? []).includes(e.id)).map((e) => e.ordem).sort((a, b) => a - b).join(', ');
 
   return (
     <div className="text-sm space-y-3">
-      <style>{'@page { size: A4; margin: 12mm; } @media print { aside, header, nav { display: none !important; } html, body, div, main { height: auto !important; overflow: visible !important; position: static !important; } body { background: white; } }'}</style>
+      <style>{'@page { size: A4; margin: 12mm; } @media print { aside, header, nav { display: none !important; } html, body, main, div:has(main) { height: auto !important; overflow: visible !important; position: static !important; } div:has(> aside) { display: none !important; } main { padding: 0 2px !important; } body, .bg-gray-100 { background: white !important; } }'}</style>
       <style>{'.grafico-impressao, .grafico-impressao * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }'}</style>
       <BotaoImprimir voltar={`/dashboard/fazenda/projetos/${p.id}`} />
       <div>
@@ -54,14 +59,28 @@ export default async function ImprimirProjeto({ params }: { params: { id: string
         </div>
       )}
 
+      <section style={{ breakInside: 'avoid' }}>
+        <h2 className="font-semibold">Secretarias e responsabilidades</h2>
+        <table className="tabela w-full text-xs"><thead><tr><th>Secretaria</th><th>Papel</th><th>O que deve fazer</th><th>Contato</th></tr></thead>
+          <tbody>{p.secretarias.map((x) => <tr key={x.id}><td>{x.orgaoNome}</td><td>{x.papel === 'lider' ? <b>Coordenadora</b> : ATUACOES[x.atuacao] ?? 'não informado'}</td><td>{x.atribuicao || (x.papel === 'lider' ? 'Responde pelo resultado do projeto.' : 'não informado')}{x.aporte !== null ? ` · aporte ${brl(x.aporte)}` : ''}</td><td>{x.responsavel || 'não definido'}</td></tr>)}</tbody></table>
+      </section>
+
       <section style={{ breakInside: 'avoid' }} className="grafico-impressao">
         <h2 className="font-semibold">Etapas e marcos</h2>
         <LinhaDoTempo etapas={p.etapas} inicio={p.inicioPrevisto} fim={p.fimPrevisto} hoje={hoje} />
         {p.etapas.length === 0 ? <p className="text-xs text-slate-500">Nenhuma etapa registrada.</p> : (
-          <table className="tabela w-full text-xs"><thead><tr><th>#</th><th>Etapa</th><th>Prazo</th><th>Situação</th></tr></thead>
-            <tbody>{p.etapas.map((e) => <tr key={e.id}><td>{e.ordem}</td><td>{e.marco ? '◆ ' : ''}{e.titulo}{!e.marco ? ` (peso ${e.peso})` : ''}</td><td>{e.marco ? fmtData(e.fimPrevisto) : `${fmtData(e.inicioPrevisto)} → ${fmtData(e.fimPrevisto)}`}</td><td>{ROTULO_ETAPA[e.status as StatusEtapa]}{e.concluidaEm ? ` em ${fmtData(e.concluidaEm)}` : ''}</td></tr>)}</tbody></table>
+          <table className="tabela w-full text-xs"><thead><tr><th>#</th><th>Etapa</th><th>Responsável</th><th>Depende de</th><th>Prazo</th><th>Situação</th></tr></thead>
+            <tbody>{p.etapas.map((e) => <tr key={e.id}><td>{e.ordem}</td><td>{e.marco ? '◆ ' : ''}{e.titulo}{!e.marco ? ` (peso ${e.peso})` : ''}</td><td>{nomeDe(e.orgaoCod)}</td><td>{numeros(e.dependeDe) || 'nenhuma'}</td><td>{e.marco ? fmtData(e.fimPrevisto) : `${fmtData(e.inicioPrevisto)} → ${fmtData(e.fimPrevisto)}`}</td><td>{ROTULO_ESTADO[estadoEtapa(p.etapas, e, hoje)]}{e.concluidaEm ? ` em ${fmtData(e.concluidaEm)}` : ''}</td></tr>)}</tbody></table>
         )}
       </section>
+
+      {(esperas.length > 0 || (projecao && projecao.diasAlem > 0)) && (
+        <div className="border border-slate-400 rounded p-2 text-xs" style={{ breakInside: 'avoid' }}>
+          <b>Quem está esperando por quem</b>
+          <ul className="list-disc pl-5">{esperas.map((b) => <li key={`${b.etapa.id}-${b.causa.id}`}>{nomeDe(b.etapa.orgaoCod)} aguarda {nomeDe(b.causa.orgaoCod)}: “{b.causa.titulo}” ({b.diasVencida ? `vencida há ${b.diasVencida} dia(s)` : `prazo em ${fmtData(b.causa.fimPrevisto)}`}).</li>)}</ul>
+          {projecao && projecao.diasAlem > 0 && <p>Término mais cedo possível pelas etapas: {fmtData(projecao.termino)}, {projecao.diasAlem} dia(s) depois do prazo (estimativa: o que está vencido termina hoje e as durações se mantêm).</p>}
+        </div>
+      )}
 
       <section style={{ breakInside: 'avoid' }}>
         <h2 className="font-semibold">Dinheiro</h2>

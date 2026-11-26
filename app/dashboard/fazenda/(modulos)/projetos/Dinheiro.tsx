@@ -22,11 +22,12 @@ function Desligar({ id, vinculoId }: { id: number; vinculoId: number }) {
   );
 }
 
-export default function Dinheiro({ p, fin, cand, mexe, verContratos }: {
+export default function Dinheiro({ p, fin, cand, mexe, verContratos, desligaveis }: {
   p: { id: number; orcamento: bigint | null; avanco: number | null; fase: string; inicioPrevisto: Date | null };
   fin: FinanceiroCompleto;
   cand: { contratos: CandidatoContrato[]; acoes: CandidatoAcao[] } | null; // null = quem vê não liga
   mexe: boolean; verContratos: boolean;
+  desligaveis: number[]; // ligações que este usuário pode desfazer
 }) {
   const ex = fin.execucao;
   const tem = fin.contratos.length + fin.acoes.length > 0;
@@ -82,7 +83,7 @@ export default function Dinheiro({ p, fin, cand, mexe, verContratos }: {
                   <td className="whitespace-nowrap text-xs">{fmtData(c.fim)}<div className="text-slate-500">{c.situacao}</div></td>
                   <td className="n">{brlCurto(c.valorAtual)}</td><td className="n">{brlCurto(c.execucao.empenhado)}</td><td className="n">{brlCurto(c.execucao.pago)}</td>
                   <td><span className={`selo ${c.certeza === 'alta' ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'}`}>{c.certeza}</span></td>
-                  {mexe && <td><Desligar id={p.id} vinculoId={c.vinculoId} /></td>}
+                  {mexe && <td>{desligaveis.includes(c.vinculoId) && <Desligar id={p.id} vinculoId={c.vinculoId} />}</td>}
                 </tr>
               ))}
             </tbody>
@@ -101,7 +102,7 @@ export default function Dinheiro({ p, fin, cand, mexe, verContratos }: {
                   <td>{a.acao}<div className="text-xs text-slate-500">{a.programa}</div></td>
                   <td className="whitespace-nowrap text-xs">{fmtData(a.desde)}</td>
                   <td className="n">{brlCurto(a.execucao.empenhado)}</td><td className="n">{brlCurto(a.execucao.liquidado)}</td><td className="n">{brlCurto(a.execucao.pago)}</td>
-                  {mexe && <td><Desligar id={p.id} vinculoId={a.vinculoId} /></td>}
+                  {mexe && <td>{desligaveis.includes(a.vinculoId) && <Desligar id={p.id} vinculoId={a.vinculoId} />}</td>}
                 </tr>
               ))}
             </tbody>
@@ -114,7 +115,7 @@ export default function Dinheiro({ p, fin, cand, mexe, verContratos }: {
         <div className="grid gap-3 md:grid-cols-2 border-t border-slate-100 pt-3">
           <details>
             <summary className="text-xs text-[#0f4c81] cursor-pointer">+ ligar um contrato</summary>
-            {livresC.length === 0 ? <p className="text-xs text-slate-500 mt-2">Nenhum contrato disponível: só aparecem os das secretarias do projeto.</p> : (
+            {livresC.length === 0 ? <p className="text-xs text-slate-500 mt-2">Nenhum contrato disponível: cada secretaria vê só os próprios; a gestão vê os de todas as do projeto.</p> : (
               <FormAcao acao={acaoVinculo} className="space-y-2 mt-2 text-sm">
                 <input type="hidden" name="id" value={p.id} /><input type="hidden" name="acao" value="contrato" />
                 <select name="contratoId" required defaultValue="" className="campo w-full">

@@ -9,7 +9,8 @@ import { acessoProjetos } from '../acesso';
 import { acaoAdicionarEtapa, acaoAtualizacao, acaoEditarProjeto, acaoEtapa, acaoMudarFase, acaoParceira } from '../acoes';
 import CamposProjeto from '../CamposProjeto';
 import Dinheiro from '../Dinheiro';
-import { candidatosVinculo, carregarFinanceiro } from '@/lib/financas/projetos/vinculos';
+import { candidatosVinculo, carregarFinanceiro, secretariasQuePodeLigar } from '@/lib/financas/projetos/vinculos';
+import { ehParteDe, executaEtapa } from '@/lib/financas/projetos/acoes';
 import { acompanhamento, juntarAlertas } from '@/lib/financas/projetos/dados';
 import { alertasRisco } from '@/lib/financas/projetos/riscos';
 import { alertasResultado } from '@/lib/financas/projetos/indicadores';
@@ -34,15 +35,18 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
   const lider = p.secretarias.find((s) => s.papel === 'lider');
   const encerrado = p.fase === 'concluido' || p.fase === 'cancelado';
   const mexe = (ator.gerir || ator.secretaria) && !encerrado;
+  const gestao = mexe && ator.gerir; // o plano do projeto é só do prefeito, do controlador e do Master
   const { porProjeto } = await carregarFinanceiro(db, ator, [{ id: p.id, fase: p.fase, orcamento: p.orcamento, inicioPrevisto: p.inicioPrevisto, fimPrevisto: p.fimPrevisto, inicioReal: p.inicioReal, avanco: p.avanco }], hoje);
   const fin = porProjeto.get(p.id)!;
   // a lista do que se pode ligar é pesada: só busca para quem vai ligar
-  const cand = mexe ? await candidatosVinculo(db, p.secretarias.map((s) => s.orgaoCod), hoje) : null;
+  const minhas = secretariasQuePodeLigar(ator, p);
+  const cand = mexe && minhas.length ? await candidatosVinculo(db, minhas, hoje) : null;
+  const desligaveis = (await db.vinculoProjeto.findMany({ where: { projetoId: p.id } })).filter((v) => ehParteDe(ator, v.orgaoCod)).map((v) => v.id);
   const ac = await acompanhamento(db, [p.id]);
   const riscos = ac.riscosDe(p.id), indicadores = ac.indicadoresDe(p.id);
   const alertas = juntarAlertas(fin.alertas, alertasRisco(riscos, hoje), alertasResultado(p.fase, indicadores, hoje));
-  const mexeResultado = (ator.gerir || ator.secretaria) && p.fase !== 'cancelado'; // o resultado se mede também depois de concluído
-  const passos = mexe ? transicoesPermitidas(p.fase, ator.aprovar) : [];
+  const mexeResultado = ator.gerir && p.fase !== 'cancelado'; // o resultado se mede também depois de concluído
+  const passos = gestao ? transicoesPermitidas(p.fase, ator.aprovar) : [];
   const aprovado = !['ideia', 'estudo'].includes(p.fase);
   const livres = orgaos.filter((o) => !p.secretarias.some((s) => s.orgaoCod === o.orgaoCod));
   const replanejado = p.fimPrevistoOriginal && p.fimPrevisto && p.fimPrevistoOriginal.getTime() !== p.fimPrevisto.getTime() ? diasEntre(p.fimPrevistoOriginal, p.fimPrevisto) : 0;
@@ -113,7 +117,8 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
                           <span className={vencida ? 'text-red-700 font-semibold' : ''}>{vencida ? 'vencida' : ROTULO_ETAPA[e.status as StatusEtapa]}</span>
                           {e.concluidaEm && <div className="text-slate-500">em {fmtData(e.concluidaEm)}</div>}
                         </td>
-                        {mexe && (
+                        {mexe && !executaEtapa(ator, p, e) && <td className="text-xs text-slate-400">só a responsável</td>}
+                        {mexe && executaEtapa(ator, p, e) && (
                           <td>
                             <div className="flex flex-wrap gap-1 items-start">
                               {e.status === 'pendente' && (
@@ -153,7 +158,7 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
                 </tbody>
               </table>
             )}
-            {mexe && (
+            {gestao && (
               <details className="mt-3" open={p.etapas.length === 0}>
                 <summary className="text-xs text-[#0f4c81] cursor-pointer">+ incluir etapa ou marco</summary>
                 <FormAcao acao={acaoAdicionarEtapa} className="grid gap-2 sm:grid-cols-2 mt-2 text-sm">
@@ -169,8 +174,8 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
             )}
           </section>
 
-          <div id="dinheiro" className="scroll-mt-4"><Dinheiro p={p} fin={fin} cand={cand} mexe={mexe} verContratos={verContratos} /></div>
-          <div id="riscos" className="scroll-mt-4"><Riscos projetoId={p.id} riscos={riscos} mexe={mexe} hoje={hoje} /></div>
+          <div id="dinheiro" className="scroll-mt-4"><Dinheiro p={p} fin={fin} cand={cand} mexe={mexe} verContratos={verContratos} desligaveis={desligaveis} /></div>
+          <div id="riscos" className="scroll-mt-4"><Riscos projetoId={p.id} riscos={riscos} mexe={gestao} hoje={hoje} /></div>
           <div id="resultados" className="scroll-mt-4"><Resultados projetoId={p.id} indicadores={indicadores} mexe={mexeResultado} /></div>
 
           {/* andamento + histórico */}
@@ -196,7 +201,7 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
 
         <div className="space-y-4">
           {/* fase */}
-      {mexe && (
+      {gestao && (
         <section className="cartao">
           <h2 className="font-semibold mb-1">Fase do projeto</h2>
           {passos.length > 0 ? (
@@ -211,7 +216,7 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
           <p className="text-xs text-slate-500 mt-2">
             {p.fase === 'ideia' || p.fase === 'estudo' ? 'Aprovar exige orçamento, início e fim previstos. A aprovação é do prefeito ou do controlador.' : ''}
             {p.fase === 'execucao' ? `Concluir exige as etapas fechadas${abertas ? ` (faltam ${abertas})` : ''}; concluir e cancelar são do prefeito ou do controlador.` : ''}
-            {p.fase === 'aprovado' ? 'A secretaria inicia a execução; cancelar é do prefeito ou do controlador.' : ''}
+            {p.fase === 'aprovado' ? 'Iniciar a execução e cancelar são do prefeito ou do controlador.' : ''}
           </p>
         </section>
       )}
@@ -223,7 +228,7 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
               {p.secretarias.map((s) => (
                 <li key={s.id} className="border-t border-slate-100 pt-2 first:border-0 first:pt-0">
                   <div><b>{s.orgaoNome}</b> <span className={`selo ${s.papel === 'lider' ? 'bg-sky-100 text-sky-900' : 'bg-slate-100 text-slate-700'}`}>{s.papel === 'lider' ? 'líder' : 'parceira'}</span></div>
-                  {mexe ? (
+                  {mexe && ehParteDe(ator, s.orgaoCod) ? (
                     <FormAcao acao={acaoParceira} className="flex gap-1 mt-1">
                       {cod(p.id)}<input type="hidden" name="orgaoCod" value={s.orgaoCod} /><input type="hidden" name="acao" value="responsavel" />
                       <input name="responsavel" defaultValue={s.responsavel} maxLength={120} placeholder="Responsável (nome e cargo)" className="campo text-xs flex-1 min-w-0" />
@@ -243,7 +248,7 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
                 </li>
               ))}
             </ul>
-            {mexe && livres.length > 0 && (
+            {gestao && livres.length > 0 && (
               <details className="mt-3">
                 <summary className="text-xs text-[#0f4c81] cursor-pointer">+ incluir secretaria parceira</summary>
                 <FormAcao acao={acaoParceira} className="space-y-2 mt-2 text-sm">
@@ -260,7 +265,7 @@ export default async function FichaProjeto({ params }: { params: { id: string } 
             {!lider && <p className="text-xs text-red-700 mt-2">Projeto sem secretaria líder.</p>}
           </section>
 
-          {mexe && (
+          {gestao && (
             <section className="cartao">
               <details>
                 <summary className="font-semibold cursor-pointer">Editar dados do projeto</summary>

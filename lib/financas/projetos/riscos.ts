@@ -1,7 +1,7 @@
 // Riscos do projeto: regras puras e operações com histórico. O sistema não adivinha risco: registra o que as pessoas apontam,
 // calcula a gravidade (probabilidade × impacto) e avisa o que está sem resposta.
 import type { DbPrefeitura } from '@/lib/financas/db';
-import { curto, evento, fmt, lerDataOpcional, podeMexer, projetoVisivel, type Ator } from './acoes';
+import { curto, evento, fmt, lerDataOpcional, exigirGestao, podeMexer, projetoVisivel, type Ator } from './acoes';
 import type { Alerta } from './financeiro';
 import { diasEntre } from './regras';
 
@@ -48,6 +48,7 @@ export interface DadosRisco { titulo: string; descricao?: string; probabilidade:
 export async function criarRisco(db: DbPrefeitura, a: Ator, projetoId: number, d: DadosRisco) {
   podeMexer(a);
   const p = await projetoVisivel(db, a, projetoId);
+  exigirGestao(a, 'registra e altera riscos');
   conferirAberto(p.fase);
   const titulo = curto(d.titulo, 200);
   if (!titulo) throw new Error('Descreva o risco em uma frase');
@@ -66,6 +67,7 @@ export type AcaoRisco = 'reavaliar' | 'plano' | 'status';
 export async function atualizarRisco(db: DbPrefeitura, a: Ator, projetoId: number, riscoId: number, acao: AcaoRisco, d: Partial<DadosRisco> & { status?: string; motivo?: string }) {
   podeMexer(a);
   const p = await projetoVisivel(db, a, projetoId);
+  exigirGestao(a, 'registra e altera riscos');
   conferirAberto(p.fase);
   const r = await db.riscoProjeto.findFirst({ where: { id: riscoId, projetoId } });
   if (!r) throw new Error('Risco não encontrado');
