@@ -1,5 +1,5 @@
 // Aba Projetos: abre o protótipo completo do painel de governança, como foi desenhado.
-// É uma demonstração com dados fictícios; os projetos reais ficam em Compliance > Projetos e em Governança.
+// É uma demonstração com dados fictícios; os projetos reais ficam em Compliance > Projetos.
 export default function PaginaProjetos() {
   return (
     <div className="-mx-3 sm:-mx-5 -mt-3 flex flex-col h-[calc(100dvh-3.5rem)] md:h-[calc(100dvh-2.875rem)] min-h-[480px]">
