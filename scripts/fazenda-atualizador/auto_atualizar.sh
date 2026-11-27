@@ -1,12 +1,17 @@
 #!/bin/bash
-# Atualização automática do painel Fazenda (Receita, Contratos e Pessoal) —
-# roda por cron no VPS. Despesas continua manual por enquanto (ver
-# LEIA-ME.txt).
+# Atualização automática dos DADOS do painel Fazenda (Compliance > Painel
+# anterior) — roda por cron no VPS.
 #
-# Sequência: puxa o código mais novo → coleta Receita/Contratos/Pessoal →
-# gera o painel → builda e reinicia o container → devolve os arquivos
-# gerados ao estado do último commit, pra não conflitar com o próximo "git
-# pull" de quem for fazer deploy manual de outra coisa depois.
+# NÃO baixa código, NÃO compila e NÃO reinicia o sistema: publicar versão nova
+# é sempre manual. O código usado aqui é o que já está no servidor.
+#
+# Sequência: coleta os dados → gera o painel → troca o arquivo
+# private/fazenda/painel.html → confere se o sistema enxerga o painel novo →
+# devolve os arquivos de dados ao estado do último commit, pra não conflitar
+# com o "git pull" da próxima publicação manual.
+#
+# O sistema lê esse arquivo do disco a cada acesso: o docker-compose monta
+# ./private do servidor dentro do container (somente leitura).
 #
 # A coleta de Pessoal usa navegador automático (Playwright) e pode falhar
 # se o portal estiver instável — nesse caso o painel é gerado com os dados
@@ -17,12 +22,19 @@ cd /app-segov
 LOG=/app-segov/scripts/fazenda-atualizador/auto_atualizar.log
 echo "===== $(date '+%Y-%m-%d %H:%M:%S') =====" >> "$LOG"
 
-git checkout -- . >> "$LOG" 2>&1
-git pull >> "$LOG" 2>&1
+# Devolve só os arquivos de dados ao estado do commit (um por um: um arquivo que
+# ainda não esteja no git não impede os outros). Outras mudanças no disco ficam.
+devolver_dados() {
+  for nome in receita contratos pessoal natureza funcao despesas rreo siconfi; do
+    git -C /app-segov checkout -- "scripts/fazenda-atualizador/dados_$nome.json" >> "$LOG" 2>&1 || true
+  done
+}
+devolver_dados          # sobra de uma execução interrompida
+trap devolver_dados EXIT
 
 cd scripts/fazenda-atualizador
-# Falha de coleta (portal lento/fora do ar) nunca pode impedir a publicação do código:
-# o painel segue com os dados que já existiam e o aviso fica no log.
+# Falha de coleta (portal lento/fora do ar) não impede a geração do painel:
+# ele segue com os dados que já existiam e o aviso fica no log.
 # Receita e despesas por órgão: arquivos XML do portal (filtro conferido, soma conferida, SHA-256 guardado).
 # Se a coleta por XML falhar, cai nos coletores antigos (PDF de receita / Excel de despesas) como reserva.
 .venv/bin/python3 coletor_xml.py receita >> "$LOG" 2>&1 || {
@@ -42,28 +54,22 @@ cd scripts/fazenda-atualizador
 .venv/bin/python3 coletor_natureza.py funcao >> "$LOG" 2>&1 || echo "AVISO: coleta de Função falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_rreo.py >> "$LOG" 2>&1 || echo "AVISO: coleta do RREO falhou — mantendo os dados anteriores" >> "$LOG"
 .venv/bin/python3 coletor_siconfi.py >> "$LOG" 2>&1 || echo "AVISO: coleta do SICONFI falhou — mantendo os dados anteriores" >> "$LOG"
-# testes dos cálculos e dos leitores: só avisam no log (não impedem a publicação)
+# testes dos cálculos e dos leitores: só avisam no log (não impedem a geração do painel)
 .venv/bin/python3 -m unittest discover -s tests >> "$LOG" 2>&1 || echo "AVISO: testes dos calculos do painel falharam — conferir o log acima" >> "$LOG"
 .venv/bin/python3 gerar_painel.py >> "$LOG" 2>&1
 mkdir -p ../../private/fazenda
-cp ../Painel_Receita_Despesas.html ../../private/fazenda/painel.html
+# troca de uma vez só, para ninguém abrir um painel pela metade; 644 = o usuário do container consegue ler
+cp ../Painel_Receita_Despesas.html ../../private/fazenda/painel.html.novo
+chmod 644 ../../private/fazenda/painel.html.novo
+mv -f ../../private/fazenda/painel.html.novo ../../private/fazenda/painel.html
 
 cd /app-segov
-docker compose build app >> "$LOG" 2>&1
-docker compose up -d app >> "$LOG" 2>&1
-sleep 15
-docker compose ps app >> "$LOG" 2>&1
-curl -s -o /dev/null -w 'health check: HTTP %{http_code}\n' http://localhost:3002/api/health >> "$LOG" 2>&1
-
-# Devolve os arquivos regenerados ao estado do commit — o container já foi
-# construído com a versão nova, isso é só pra manter o "git status" limpo.
-git checkout -- scripts/fazenda-atualizador/dados_receita.json \
-                scripts/fazenda-atualizador/dados_contratos.json \
-                scripts/fazenda-atualizador/dados_pessoal.json \
-                scripts/fazenda-atualizador/dados_natureza.json \
-                scripts/fazenda-atualizador/dados_funcao.json \
-                scripts/fazenda-atualizador/dados_despesas.json \
-                scripts/fazenda-atualizador/dados_rreo.json \
-                scripts/fazenda-atualizador/dados_siconfi.json >> "$LOG" 2>&1 || true   # só existe no git depois do 1º commit
-
-echo "concluído" >> "$LOG"
+no_disco=$(sha256sum private/fazenda/painel.html | cut -d' ' -f1)
+no_sistema=$(docker compose exec -T app sha256sum /app/private/fazenda/painel.html 2>> "$LOG" | cut -d' ' -f1) || true
+if [ "$no_disco" = "$no_sistema" ]; then
+  echo "conferido: o sistema já lê o painel novo" >> "$LOG"
+  echo "concluído" >> "$LOG"
+else
+  echo "AVISO: o painel foi gerado, mas não deu para confirmar que o sistema o lê — conferir o container app" >> "$LOG"
+  exit 1
+fi

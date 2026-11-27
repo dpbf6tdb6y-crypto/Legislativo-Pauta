@@ -46,6 +46,8 @@ O QUE AINDA NAO E AUTOMATICO
    de contrato, nao de execucao.
 
 ATUALIZACAO AUTOMATICA NO SERVIDOR (todo dia 05:30, via auto_atualizar.sh)
+   Atualiza so os DADOS do painel. Nao baixa codigo, nao compila e nao reinicia o sistema:
+   publicar versao nova e sempre manual. O sistema le private/fazenda/painel.html a cada acesso.
    coletor.py, coletor_contratos.py, coletor_pessoal.py   Receita, Contratos, Pessoal
    coletor_pessoal.py tambem le a TELA COMPLETA de Servidores (grade_pessoal.py): a exportacao
       em Excel do portal traz 1 linha por servidor, mas a tela lista tambem lancamentos sem
