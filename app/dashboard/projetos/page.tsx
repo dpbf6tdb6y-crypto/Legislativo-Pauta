@@ -1,10 +1,10 @@
-// Aba Projetos: abre o protótipo completo do painel de governança, como foi desenhado.
+// Aba Governança (endereço /dashboard/projetos): abre o protótipo completo do painel, com a marca da Prefeitura.
 // É uma demonstração com dados fictícios; os projetos reais ficam em Compliance > Projetos.
 export default function PaginaProjetos() {
   return (
     <div className="-mx-3 sm:-mx-5 -mt-3 flex flex-col h-[calc(100dvh-3.5rem)] md:h-[calc(100dvh-2.875rem)] min-h-[480px]">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-3 sm:px-5 py-1.5 bg-amber-50 border-b border-amber-200 text-xs text-amber-900">
-        <p><strong>Demonstração:</strong> município, pessoas, projetos e valores são fictícios. O que for digitado aqui não é salvo.</p>
+        <p><strong>Demonstração:</strong> pessoas, projetos e valores são fictícios. O que for digitado aqui não é salvo.</p>
         <a href="/api/projetos-prototipo" target="_blank" rel="noopener" className="font-semibold underline whitespace-nowrap">
           Abrir em tela inteira
         </a>
@@ -15,7 +15,7 @@ export default function PaginaProjetos() {
       <iframe
         data-prototipo
         src="/api/projetos-prototipo"
-        title="Projetos: painel de governança (demonstração)"
+        title="Governança: painel de projetos (demonstração)"
         sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
         allow="clipboard-write"
         className="flex-1 w-full border-0 bg-white"

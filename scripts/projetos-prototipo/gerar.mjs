@@ -21,7 +21,11 @@ const comTailwind = achar(/<style type="text\/tailwindcss">([\s\S]*?)<\/style>/,
 const estilos = [...fonte.matchAll(/<style>[\s\S]*?<\/style>/g)].map((m) => m[0]);
 const inicioApp = fonte.indexOf('<div id="app">');
 if (inicioApp < 0) throw new Error('não achei o corpo da página');
-const corpo = fonte.slice(inicioApp);
+// a logomarca oficial entra dentro da própria página, uma única vez
+const REF_LOGO = "'../../public/fazenda/nova-lima.png'";
+if (fonte.split(REF_LOGO).length !== 2) throw new Error('não achei o endereço da logomarca');
+const logo = readFileSync(path.join(raiz, 'public/fazenda/nova-lima.png')).toString('base64');
+const corpo = fonte.slice(inicioApp).replace(REF_LOGO, () => `'data:image/png;base64,${logo}'`);
 
 const tmp = mkdtempSync(path.join(tmpdir(), 'prototipo-'));
 const cfg = vm.runInNewContext('(' + config + ')');
@@ -40,7 +44,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SEGOV Painel de Governança</title>
+<title>Prefeitura de Nova Lima · Governança de Projetos</title>
 ${fontes}
 ${estilos.join('\n')}
 <style>${css}</style>
@@ -52,7 +56,7 @@ ${corpo}</body>
 if (/<script[^>]+src=/i.test(html)) throw new Error('a página ainda carrega programa externo');
 writeFileSync(path.join(pasta, 'html.ts'),
   '// ARQUIVO GERADO por scripts/projetos-prototipo/gerar.mjs a partir de fonte.html. Não edite à mão.\n'
-  + '// Protótipo de demonstração: município, pessoas, projetos e valores são FICTÍCIOS.\n'
+  + '// Protótipo de demonstração: pessoas, projetos e valores são FICTÍCIOS.\n'
   + `export const HTML_PROTOTIPO: string = ${JSON.stringify(html)};\n`);
 if (process.argv[2]) writeFileSync(process.argv[2], html);
 console.log(`gerado: ${Math.round(html.length / 1024)} KB, estilos compilados: ${Math.round(css.length / 1024)} KB`);
