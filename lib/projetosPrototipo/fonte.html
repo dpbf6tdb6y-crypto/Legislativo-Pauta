@@ -1,14 +1,14 @@
-<title>SEGOV Painel de Governança</title>
+<title>Prefeitura de Nova Lima · Governança de Projetos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
 <script src="https://cdn.tailwindcss.com/3.4.17"></script>
 <script>
-  /* Tokens do Design System SEGOV expostos ao Tailwind */
+  /* Cores do painel expostas ao Tailwind (a escala "navy" guarda os tons de azul claro da logomarca de Nova Lima) */
   tailwind.config = {
     theme: {
       extend: {
         colors: {
-          navy: { 950: '#061A33', 900: '#0B2A4F', 800: '#12396A', 700: '#17487F', 600: '#1F5C9E', 100: '#DCE6F2', 50: '#EEF3F9' },
+          navy: { 950: '#0B3A4C', 900: '#0F4C64', 800: '#146484', 700: '#187598', 600: '#2391BA', 100: '#D3EFFA', 50: '#ECF8FD' },
           ink: { DEFAULT: '#1C2530', 2: '#414D5C', 3: '#586373' },
           line: { DEFAULT: '#DDE2E9', strong: '#C3CBD6', control: '#7C8796' },
           canvas: '#F3F5F8',
@@ -88,9 +88,9 @@
     .kpi-note { @apply mt-1.5 text-[12px] text-ink-3; }
 
     /* Navegação */
-    .nav-group { @apply px-5 pt-5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#9FB4D0]; }
-    .nav-link { @apply flex items-center gap-3 px-5 py-2 text-[13.5px] text-[#D5DFEC] border-l-[3px] border-transparent hover:bg-white/10 hover:text-white; }
-    .nav-link[aria-current="page"] { @apply bg-white/10 text-white font-semibold border-[#D8B45A]; }
+    .nav-group { @apply px-5 pt-5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-3; }
+    .nav-link { @apply flex items-center gap-3 px-5 py-2 text-[13.5px] text-ink-2 border-l-[4px] border-transparent hover:bg-navy-100/70 hover:text-navy-900; }
+    .nav-link[aria-current="page"] { @apply bg-navy-100 text-navy-950 font-semibold border-[#4BC0E7]; }
     .tab { @apply px-4 py-3 text-[13px] font-medium text-ink-2 border-b-[3px] border-transparent whitespace-nowrap hover:text-navy-900 hover:bg-navy-50; }
     .tab[aria-selected="true"] { @apply text-navy-900 font-semibold border-navy-800; }
     .chip { @apply inline-flex items-center gap-2 h-8 px-3 rounded-[3px] border border-line-strong bg-white text-[12.5px] font-medium text-ink-2 cursor-pointer hover:bg-navy-50; }
@@ -101,14 +101,16 @@
   }
 </style>
 <style>
-  .skip { position: absolute; left: 8px; top: -60px; z-index: 60; background: #fff; color: #0B2A4F; padding: 8px 14px; border: 2px solid #0B2A4F; font-weight: 600; }
+  .skip { position: absolute; left: 8px; top: -60px; z-index: 60; background: #fff; color: #0F4C64; padding: 8px 14px; border: 2px solid #0F4C64; font-weight: 600; }
   .skip:focus { top: 8px; }
+  /* faixa com as cores da logomarca da Prefeitura */
+  .faixa-marca { height: 5px; background: linear-gradient(90deg, #64BC9C, #5CBCB4, #5C7CBC, #B43C8C, #E45424); }
   #titulo:focus, #titulo:focus-visible, #conteudo:focus-visible { outline: none; }
   .viz { position: relative; width: 100%; min-width: 0; }
   .viz svg { display: block; width: 100%; overflow: visible; }
   .viz text { font-family: "IBM Plex Sans", "Segoe UI", sans-serif; font-size: 11.5px; fill: #586373; }
   .viz .strong { fill: #1C2530; font-weight: 600; }
-  #tooltip { position: fixed; z-index: 70; pointer-events: none; background: #061A33; color: #fff; font-size: 12px; line-height: 1.45; padding: 8px 10px; border-radius: 3px; max-width: 260px; box-shadow: 0 4px 14px rgba(6,26,51,.25); }
+  #tooltip { position: fixed; z-index: 70; pointer-events: none; background: #0B3A4C; color: #fff; font-size: 12px; line-height: 1.45; padding: 8px 10px; border-radius: 3px; max-width: 260px; box-shadow: 0 4px 14px rgba(11,58,76,.25); }
   .apresentacao #lateral, .apresentacao [data-oculta-apresentacao] { display: none !important; }
   .apresentacao #area { padding-left: 0 !important; }
   .apresentacao #conteudo { zoom: 1.12; }
@@ -129,14 +131,15 @@
   @media screen and (min-width: 1280px) { .doc-layout { grid-template-columns: 280px minmax(0, 1fr); } }
   .doc { box-sizing: border-box; width: 100%; max-width: 210mm; min-width: 0; padding: 13mm; background: #fff; border: 1px solid #C3CBD6; font-size: 9.5pt; line-height: 1.4; color: #1C2530; }
   .doc p { margin: 0 0 6px; }
-  .doc-topo { border-bottom: 2.5px solid #0B2A4F; padding-bottom: 8px; }
+  .doc-topo { border-bottom: 2.5px solid #0F4C64; padding-bottom: 8px; }
   .doc-orgao { display: flex; align-items: center; gap: 10px; }
   .doc-orgao > div { flex: 1; min-width: 0; }
-  .doc-orgao strong { display: block; color: #0B2A4F; font-size: 10pt; }
+  .doc-logo { flex: none; width: 118px; height: auto; }
+  .doc-orgao strong { display: block; color: #0F4C64; font-size: 10pt; }
   .doc-orgao > div > span { display: block; color: #586373; font-size: 8.5pt; }
   .doc-selo { border: 1px solid #704A00; color: #704A00; padding: 2px 8px; font-size: 8pt; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
-  .doc h2 { margin: 10px 0 8px; font-size: 15pt; line-height: 1.25; font-weight: 600; color: #061A33; }
-  .doc h3 { margin: 0 0 6px; padding-bottom: 3px; border-bottom: 1px solid #C3CBD6; font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #0B2A4F; break-after: avoid; }
+  .doc h2 { margin: 10px 0 8px; font-size: 15pt; line-height: 1.25; font-weight: 600; color: #0B3A4C; }
+  .doc h3 { margin: 0 0 6px; padding-bottom: 3px; border-bottom: 1px solid #C3CBD6; font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #0F4C64; break-after: avoid; }
   .doc-meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 12px; margin: 0; }
   .doc-meta dt, .doc-kpis dt { font-size: 7.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #586373; }
   .doc-meta dd { margin: 0; font-weight: 500; }
@@ -145,7 +148,7 @@
   .doc-kpis > div { padding: 5px 8px; border-left: 1px solid #C3CBD6; }
   .doc-kpis > div:first-child { border-left: 0; }
   .doc-kpis dd { margin: 0; }
-  .doc-kpis b { display: block; font-family: "IBM Plex Sans Condensed", "IBM Plex Sans", "Arial Narrow", sans-serif; font-size: 15pt; font-weight: 600; color: #061A33; line-height: 1.2; }
+  .doc-kpis b { display: block; font-family: "IBM Plex Sans Condensed", "IBM Plex Sans", "Arial Narrow", sans-serif; font-size: 15pt; font-weight: 600; color: #0B3A4C; line-height: 1.2; }
   .doc-kpis dd span { display: block; font-size: 8pt; color: #586373; }
   .doc-tbl { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
   .doc-tbl thead { display: table-header-group; }
@@ -159,9 +162,9 @@
   .doc .doc-criterios { margin-top: 12px; padding-top: 6px; border-top: 1px solid #C3CBD6; font-size: 7.5pt; color: #586373; break-inside: avoid; }
   .doc-projeto { margin-top: 10px; }
   .doc .doc-codigo { margin: 0; font-size: 8pt; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #586373; }
-  .doc h4 { margin: 2px 0 8px; font-weight: 600; font-size: 13pt; line-height: 1.25; color: #061A33; }
-  .doc-destaque { padding: 7px 10px; border: 1px solid #12396A; border-left-width: 4px; background: #EEF3F9; font-weight: 500; }
-  .doc-destaque > strong { display: block; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .05em; color: #0B2A4F; }
+  .doc h4 { margin: 2px 0 8px; font-weight: 600; font-size: 13pt; line-height: 1.25; color: #0B3A4C; }
+  .doc-destaque { padding: 7px 10px; border: 1px solid #146484; border-left-width: 4px; background: #ECF8FD; font-weight: 500; }
+  .doc-destaque > strong { display: block; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .05em; color: #0F4C64; }
   .doc-bloqueios { margin: 6px 0; font-size: 8.5pt; font-weight: 400; }
   .doc-curvas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
   .doc-curvas figure { margin: 0; min-width: 0; }
@@ -180,7 +183,7 @@
   }
   @page {
     size: A4 portrait; margin: 12mm 12mm 15mm;
-    @bottom-left { content: "SEGOV · Protótipo com dados fictícios"; font: 7.5pt "IBM Plex Sans", sans-serif; color: #586373; }
+    @bottom-left { content: "Demonstração · Protótipo com dados fictícios"; font: 7.5pt "IBM Plex Sans", sans-serif; color: #586373; }
     @bottom-right { content: "Página " counter(page) " de " counter(pages); font: 7.5pt "IBM Plex Sans", sans-serif; color: #586373; }
   }
   @media print {
@@ -195,14 +198,15 @@
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
-<div id="app"><p style="padding:24px">Carregando o SEGOV…</p></div>
+<div id="app"><p style="padding:24px">Carregando o painel…</p></div>
 <script>
 /* ============================================================
    DADOS DEMONSTRATIVOS (fictícios) e REGRAS DE GOVERNANÇA
    Em produção, substituir por chamadas à API do SEGOV.
    ============================================================ */
 const HOJE = new Date(2026, 10, 25);
-const CONFIG = { municipio: 'Município Modelo', limiteAtraso: 15, limiteAtencao: 7, diasSemAtualizacao: 30, metaIDS: 85 };
+const LOGO_PREFEITURA = '../../public/fazenda/nova-lima.png';
+const CONFIG = { municipio: 'Nova Lima', limiteAtraso: 15, limiteAtencao: 7, diasSemAtualizacao: 30, metaIDS: 85 };
 
 const SECRETARIAS = [
   { id: 'sms', sigla: 'SEMSA', nome: 'Saúde', titular: 'Helena Vasconcelos' },
@@ -510,7 +514,7 @@ function risco(nivel) {
 function barra(valor, { planejado, rotulo = 'Execução', cor = 'bg-navy-700', w = 'w-[72px]', mostra = true } = {}) {
   const v = Math.round(valor);
   return `<span class="inline-flex items-center gap-2 ${w === 'w-full' ? 'w-full' : ''}">
-    <span class="relative block h-[7px] ${w === 'w-full' ? 'flex-1' : w} bg-[#E4E9F0]" role="meter" aria-label="${rotulo}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${v}">
+    <span class="relative block h-[7px] ${w === 'w-full' ? 'flex-1' : w} bg-[#E2EEF3]" role="meter" aria-label="${rotulo}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${v}">
       <span class="absolute inset-y-0 left-0 ${cor}" style="width:${v}%"></span>
       ${planejado != null ? `<span class="absolute -top-[3px] -bottom-[3px] w-[2px] bg-ink" style="left:calc(${Math.min(99.5, planejado)}% - 1px)" title="Planejado: ${fNum(planejado)}%"></span>` : ''}
     </span>${mostra ? `<span class="tabular-nums font-medium w-[38px] text-right">${v}%</span>` : ''}</span>`;
@@ -581,7 +585,7 @@ function graficoLinhas({ rotulos, series, max = 100, formato = v => fNum(v) + '%
     const x = i => e + (n === 1 ? iw / 2 : iw * i / (n - 1)), y = v => t + ih - ih * v / max;
     const passo = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 62))));
     let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}">`;
-    [0, .25, .5, .75, 1].forEach(f => { s += `<line x1="${e}" x2="${W - d}" y1="${y(max * f)}" y2="${y(max * f)}" stroke="#E4E9F0"/><text x="${e - 8}" y="${y(max * f) + 4}" text-anchor="end">${formato(max * f, true)}</text>`; });
+    [0, .25, .5, .75, 1].forEach(f => { s += `<line x1="${e}" x2="${W - d}" y1="${y(max * f)}" y2="${y(max * f)}" stroke="#E2EEF3"/><text x="${e - 8}" y="${y(max * f) + 4}" text-anchor="end">${formato(max * f, true)}</text>`; });
     rotulos.forEach((r, i) => { if (i % passo === 0) s += `<text x="${x(i)}" y="${H - 6}" text-anchor="middle">${r}</text>`; });
     if (hojeIdx != null) s += `<line x1="${x(hojeIdx)}" x2="${x(hojeIdx)}" y1="${t}" y2="${t + ih}" stroke="#7C8796" stroke-dasharray="2 3"/><text class="strong" x="${x(hojeIdx)}" y="${t - 3}" text-anchor="middle">Hoje</text>`;
     series.forEach(se => {
@@ -607,7 +611,7 @@ function graficoBarras({ itens, max, formato, descricao }) {
     itens.forEach((it, i) => {
       const yy = i * lh + (estreito ? 20 : 8), w = Math.max(2, (W - rot - val) * it.valor / max);
       s += `<text x="0" y="${estreito ? i * lh + 13 : yy + 14}">${esc(it.nome)}</text>`;
-      s += `<path d="M${rot} ${yy}h${w - Math.min(4, w)}q${Math.min(4, w)} 0 ${Math.min(4, w)} 4v12q0 4 -${Math.min(4, w)} 4h-${w - Math.min(4, w)}z" fill="${it.cor || '#2F619E'}"/>`;
+      s += `<path d="M${rot} ${yy}h${w - Math.min(4, w)}q${Math.min(4, w)} 0 ${Math.min(4, w)} 4v12q0 4 -${Math.min(4, w)} 4h-${w - Math.min(4, w)}z" fill="${it.cor || '#187598'}"/>`;
       s += `<text class="strong" x="${rot + w + 8}" y="${yy + 14}">${formato(it.valor)}</text>`;
       s += `<rect x="0" y="${i * lh}" width="${W}" height="${lh}" fill="transparent" ${dica(it.nome + '\n' + formato(it.valor) + (it.extra ? '\n' + it.extra : ''))}/>`;
     });
@@ -626,7 +630,7 @@ function minigrafico(valores, rotulo) {
   const W = 110, H = 30, mi = Math.min(...valores), ma = Math.max(...valores), a = ma - mi || 1;
   const pts = valores.map((v, i) => [3 + (W - 6) * i / (valores.length - 1), H - 4 - (H - 8) * (v - mi) / a]);
   const u = pts[pts.length - 1];
-  return `<svg width="${W}" height="${H}" role="img" aria-label="${esc(rotulo)}"><polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="#2F619E" stroke-width="2"/><circle cx="${u[0]}" cy="${u[1]}" r="4" fill="#12396A" stroke="#fff" stroke-width="2"/></svg>`;
+  return `<svg width="${W}" height="${H}" role="img" aria-label="${esc(rotulo)}"><polyline points="${pts.map(p => p.join(',')).join(' ')}" fill="none" stroke="#187598" stroke-width="2"/><circle cx="${u[0]}" cy="${u[1]}" r="4" fill="#146484" stroke="#fff" stroke-width="2"/></svg>`;
 }
 
 /* Copiar texto para a área de transferência com retorno ao usuário */
@@ -653,12 +657,12 @@ function sinteseExecutiva() {
   const pior = ranking().slice(-1)[0];
   const orcAtr = soma(atr, p => p.orc);
   const p1 = filaPrioridades().filter(p => nivelPrioridade(prioridade(p)) === 'P1').length;
-  return `<section aria-label="Síntese executiva" class="bg-navy-900 text-white rounded-[3px] px-6 py-5 mb-4 flex flex-wrap items-center gap-x-10 gap-y-4">
+  return `<section aria-label="Síntese executiva" class="bg-navy-50 border border-navy-100 text-ink rounded-[3px] px-6 py-5 mb-4 flex flex-wrap items-center gap-x-10 gap-y-4">
     <p class="m-0 flex-1 min-w-[260px] text-[16.5px] leading-relaxed">
       <strong class="font-semibold">${atr.length} dos ${r.total} projetos estão atrasados</strong> e concentram ${fMoeda(orcAtr)}, ou ${fNum(100 * orcAtr / r.orc)}% do investimento da carteira.
       ${pior ? `O menor índice de desempenho é da Secretaria de ${pior.s.nome} (${pior.d.ids} pontos).` : ''}
     </p>
-    <a href="#sala" class="btn bg-white border-white text-navy-900 hover:bg-navy-50">${p1} prioridades P1 para decisão ${icone('seta', 'w-4 h-4')}</a>
+    <a href="#sala" class="btn-primary">${p1} prioridades P1 para decisão ${icone('seta', 'w-4 h-4')}</a>
   </section>`;
 }
 
@@ -728,7 +732,7 @@ VIEWS.portfolio = () => {
     const H = Math.min(420, Math.max(280, W * .55)), e = 46, d = 16, t = 14, b = 40, iw = W - e - d, ih = H - t - b;
     const x = v => e + iw * v / 100, y = v => t + ih - ih * v / 100;
     let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}">`;
-    [0, 25, 50, 75, 100].forEach(v => { s += `<line x1="${e}" x2="${W - d}" y1="${y(v)}" y2="${y(v)}" stroke="#E4E9F0"/><text x="${e - 8}" y="${y(v) + 4}" text-anchor="end">${v}%</text><text x="${x(v)}" y="${H - 22}" text-anchor="middle">${v}%</text>`; });
+    [0, 25, 50, 75, 100].forEach(v => { s += `<line x1="${e}" x2="${W - d}" y1="${y(v)}" y2="${y(v)}" stroke="#E2EEF3"/><text x="${e - 8}" y="${y(v) + 4}" text-anchor="end">${v}%</text><text x="${x(v)}" y="${H - 22}" text-anchor="middle">${v}%</text>`; });
     let curva = ''; for (let i = 0; i <= 100; i += 4) curva += `${x(i)},${y(100 * curvaS(i / 100))} `;
     s += `<polyline points="${curva}" fill="none" stroke="#586373" stroke-width="1.5" stroke-dasharray="6 4"/><text x="${e + iw / 2}" y="${H - 4}" text-anchor="middle">Prazo decorrido</text>`;
     s += `<text class="strong" x="${e + 8}" y="${t + 14}">Execução física</text><text x="${W - d - 4}" y="${y(44)}" text-anchor="end">Abaixo da curva: execução atrasada</text>`;
@@ -790,7 +794,7 @@ const COLUNAS = [
   { k: 'sec', t: 'Secretaria', v: p => secDe(p.sec).sigla, f: p => `<abbr class="no-underline" title="${secDe(p.sec).nome}">${secDe(p.sec).sigla}</abbr>` },
   { k: 'gestor', t: 'Gestor responsável', v: p => nomeGestor(p.gestor), f: p => esc(nomeGestor(p.gestor)) },
   { k: 'orc', t: 'Orçamento', num: true, v: p => p.orc, f: p => fMoeda(p.orc) },
-  { k: 'pagP', t: 'Exec. financeira', v: p => p.pagP, f: p => barra(p.pagP, { rotulo: 'Execução financeira', cor: 'bg-[#5584BF]', w: 'w-[52px]' }) },
+  { k: 'pagP', t: 'Exec. financeira', v: p => p.pagP, f: p => barra(p.pagP, { rotulo: 'Execução financeira', cor: 'bg-[#3FA9CF]', w: 'w-[52px]' }) },
   { k: 'fisico', t: 'Exec. física', v: p => p.fisico, f: p => barra(p.fisico, { rotulo: 'Execução física', planejado: p.status === 'con' ? null : planejadoEm(p, HOJE), w: 'w-[52px]' }) },
   { k: 'status', t: 'Status', v: p => ORDEM_STATUS.indexOf(p.status), f: p => badge(p.status) },
   { k: 'risco', t: 'Grau de risco', v: p => ['Baixo', 'Médio', 'Alto'].indexOf(p.risco), f: p => risco(p.risco) },
@@ -1043,7 +1047,7 @@ const abaVisao = p => {
 const grauRisco = n => n >= 15 ? 'Alto' : n >= 8 ? 'Médio' : 'Baixo';
 
 const abaFinanceiro = p => {
-  const vals = [['Valor Previsto', 100, '#86A9D6'], ['Valor Empenhado', p.empP, '#5584BF'], ['Valor Liquidado', p.liqP, '#2F619E'], ['Valor Pago', p.pagP, '#12396A']];
+  const vals = [['Valor Previsto', 100, '#8FD6EF'], ['Valor Empenhado', p.empP, '#3FA9CF'], ['Valor Liquidado', p.liqP, '#187598'], ['Valor Pago', p.pagP, '#093140']];
   const f = curvas(p, p.pagP);
   const fontes = [['Tesouro Municipal', .55], ['Convênio / transferência estadual', .30], ['Operação de crédito', .15]];
   return `<div class="grid gap-4">
@@ -1066,9 +1070,9 @@ const abaCronograma = p => {
   const gantt = `<div class="overflow-x-auto" role="region" aria-label="Linha do tempo por fase" tabindex="0"><div class="min-w-[620px] p-5">
     <div class="grid grid-cols-[230px_minmax(0,1fr)] gap-x-3 text-[11.5px] text-ink-3 tabular-nums mb-1"><span></span><span class="flex justify-between"><span>${fMes(p.inicio)}</span><span>${fMes(new Date((+p.inicio + +p.prazo) / 2))}</span><span>${fMes(p.prazo)}</span></span></div>
     ${fases.map(m => `<div class="grid grid-cols-[230px_minmax(0,1fr)] gap-x-3 items-center h-8 border-t border-line"><span class="truncate text-[12.5px]" title="${m.nome}">${m.nome}</span><span class="relative block h-full">
-      <span class="absolute top-[9px] h-[14px] rounded-r-[4px] ${m.estado === 'feito' ? 'bg-navy-800' : m.estado === 'atrasado' ? 'bg-st-atr' : 'bg-[#C5D5EA]'}" style="left:${m.ini * 100}%;width:${(m.frac - m.ini) * 100}%" ${dica(`${m.nome}\n${fData(m.data)} · ${ESTADO_MARCO[m.estado][0]}`)}></span>
+      <span class="absolute top-[9px] h-[14px] rounded-r-[4px] ${m.estado === 'feito' ? 'bg-navy-800' : m.estado === 'atrasado' ? 'bg-st-atr' : 'bg-[#C3E9F7]'}" style="left:${m.ini * 100}%;width:${(m.frac - m.ini) * 100}%" ${dica(`${m.nome}\n${fData(m.data)} · ${ESTADO_MARCO[m.estado][0]}`)}></span>
       ${hoje >= 0 && hoje <= 100 ? `<span aria-hidden="true" class="absolute inset-y-0 w-[2px] bg-ink" style="left:${hoje}%"></span>` : ''}</span></div>`).join('')}
-    <ul class="flex flex-wrap gap-4 list-none m-0 mt-3 p-0 text-[12px] text-ink-2"><li><i class="inline-block w-3 h-3 bg-navy-800 mr-1.5"></i>Concluída</li><li><i class="inline-block w-3 h-3 bg-st-atr mr-1.5"></i>Atrasada</li><li><i class="inline-block w-3 h-3 bg-[#C5D5EA] mr-1.5"></i>Prevista</li><li><i class="inline-block w-[2px] h-3 bg-ink mr-1.5"></i>${hoje > 100 ? 'Hoje está além do prazo final' : 'Hoje'}</li></ul></div></div>`;
+    <ul class="flex flex-wrap gap-4 list-none m-0 mt-3 p-0 text-[12px] text-ink-2"><li><i class="inline-block w-3 h-3 bg-navy-800 mr-1.5"></i>Concluída</li><li><i class="inline-block w-3 h-3 bg-st-atr mr-1.5"></i>Atrasada</li><li><i class="inline-block w-3 h-3 bg-[#C3E9F7] mr-1.5"></i>Prevista</li><li><i class="inline-block w-[2px] h-3 bg-ink mr-1.5"></i>${hoje > 100 ? 'Hoje está além do prazo final' : 'Hoje'}</li></ul></div></div>`;
   const entregas = p.id === 'p01'
     ? [['36 leitos adicionais de urgência', 'Leitos', '2027-05-30'], ['Sala vermelha equipada', 'Ambiente', '2027-03-15'], ['Centro de diagnóstico por imagem', 'Ambiente', '2027-04-30'], ['Recepção com classificação de risco', 'Ambiente', '2026-12-20']]
     : [[p.tipo === 'obra' ? 'Projeto executivo e orçamento detalhado' : 'Documento de requisitos e plano de trabalho', 'Documento', isoDe(ms[0].data)], [p.tipo === 'obra' ? 'Obra física concluída' : p.tipo === 'tecnologia' ? 'Solução implantada em toda a rede' : 'Metas de cobertura implantadas', 'Entrega principal', isoDe(ms[ms.length - 2].data)], ['Relatório de encerramento e transferência para operação', 'Documento', isoDe(p.prazo)]];
@@ -1149,8 +1153,8 @@ function historico(p) {
   marcos(p).filter(m => m.estado === 'feito').forEach(m => add(new Date(Math.min(m.data, p.atualizado)), 'Marco', `Marco concluído: ${m.nome}.`, g));
   documentos(p).filter(d => !['Pendente', 'Vencido'].includes(d.sit)).forEach(d => add(d.data, 'Documento', `Documento anexado: ${d.doc} (${d.ref}).`, g));
   add(p.atualizado, 'Atualização', esc(textoAtualizacao(p)), g);
-  if (p.status === 'atr') add(HOJE, 'Alerta', 'Situação classificada automaticamente como Atrasado.', 'SEGOV (regra automática)');
-  if (semAtualizacao(p)) add(somaDias(p.atualizado, CONFIG.diasSemAtualizacao + 1), 'Alerta', `Alerta de ausência de atualização enviado ao gestor.`, 'SEGOV (regra automática)');
+  if (p.status === 'atr') add(HOJE, 'Alerta', 'Situação classificada automaticamente como Atrasado.', 'Sistema (regra automática)');
+  if (semAtualizacao(p)) add(somaDias(p.atualizado, CONFIG.diasSemAtualizacao + 1), 'Alerta', `Alerta de ausência de atualização enviado ao gestor.`, 'Sistema (regra automática)');
   h.unshift(...[...(p.registros || [])].reverse());
   return h.sort((a, b) => b.data - a.data);
 }
@@ -1397,7 +1401,7 @@ function formEtapa(p) {
     ${campo('et-ini', 'Início previsto', `<input id="et-ini" type="date" class="input" value="${e.inicio ? isoDe(e.inicio) : ''}">`, { obrig: true })}
     ${campo('et-fim', 'Fim previsto', `<input id="et-fim" type="date" class="input" value="${e.fim ? isoDe(e.fim) : ''}">`, { obrig: true })}
     <fieldset class="sm:col-span-2 m-0 p-0 border-0"><legend class="field-label">Depende de (a etapa só começa depois destas)</legend>
-      ${candidatas.length ? `<div class="grid gap-1.5">${candidatas.map(x => `<label class="flex gap-2 items-start cursor-pointer"><input type="checkbox" name="et-dep" value="${x.id}" class="mt-1 accent-[#12396A]" ${e.depende.includes(x.id) ? 'checked' : ''}><span>Etapa ${numeroEtapa(p, x)}: ${esc(x.nome)} <span class="text-ink-3">(${siglaSec(x.sec)})</span></span></label>`).join('')}</div>` : '<p class="m-0 text-ink-3">Não há outra etapa que possa ser escolhida.</p>'}
+      ${candidatas.length ? `<div class="grid gap-1.5">${candidatas.map(x => `<label class="flex gap-2 items-start cursor-pointer"><input type="checkbox" name="et-dep" value="${x.id}" class="mt-1 accent-[#146484]" ${e.depende.includes(x.id) ? 'checked' : ''}><span>Etapa ${numeroEtapa(p, x)}: ${esc(x.nome)} <span class="text-ink-3">(${siglaSec(x.sec)})</span></span></label>`).join('')}</div>` : '<p class="m-0 text-ink-3">Não há outra etapa que possa ser escolhida.</p>'}
       ${atual && dependentesDe(p, atual.id).length ? `<p class="field-help m-0">Não aparecem as etapas ${numerosDe(p, dependentesDe(p, atual.id))}: elas já dependem desta, e escolhê-las criaria um ciclo.</p>` : ''}
       <p class="field-error m-0" id="et-dep-erro" role="alert" hidden></p></fieldset>
     ${rodapeForm(atual ? 'Salvar etapa' : 'Adicionar etapa')}
@@ -1623,12 +1627,13 @@ VIEWS.sala = () => {
   const al = alertas();
   const quadro = [['Projetos atrasados', atrasados.length, fMoeda(soma(atrasados, p => p.orc)), 'sec-atrasados'], ['Risco alto', altos.length, fMoeda(soma(altos, p => p.orc)), 'sec-risco'], ['Sem atualização', parados.length, `há mais de ${CONFIG.diasSemAtualizacao} dias`, 'sec-parados'], ['Documentos vencidos', vencidas.length, `${PENDENCIAS.length} pendências abertas`, 'sec-docs'], ['Secretarias abaixo da meta', abaixo.length, `IDS inferior a ${CONFIG.metaIDS}`, 'sec-secretarias']];
 
-  return `<header class="bg-navy-950 text-white rounded-[3px] overflow-hidden mb-4">
+  return `<header class="bg-navy-50 border border-navy-100 text-ink rounded-[3px] overflow-hidden mb-4">
+    <div class="faixa-marca" aria-hidden="true"></div>
     <div class="px-5 py-4 flex flex-wrap items-end justify-between gap-3">
-      <div><p class="m-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#D8B45A]">Monitoramento Estratégico</p><h1 id="titulo" tabindex="-1" class="m-0 mt-1 text-[24px] font-semibold">Sala de Situação</h1></div>
-      <p class="m-0 text-[12.5px] text-[#B9C9DF]">Posição em ${fData(HOJE)} · regras aplicadas automaticamente</p>
+      <div><p class="m-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-navy-800">Monitoramento Estratégico</p><h1 id="titulo" tabindex="-1" class="m-0 mt-1 text-[24px] font-semibold">Sala de Situação</h1></div>
+      <p class="m-0 text-[12.5px] text-ink-2">Posição em ${fData(HOJE)} · regras aplicadas automaticamente</p>
     </div>
-    <ul class="grid grid-cols-2 md:grid-cols-5 gap-px bg-white/15 border-t border-white/15 list-none m-0 p-0">${quadro.map(([t, n, nota, alvo], i) => `<li class="bg-navy-900 ${i === 4 ? 'col-span-2 md:col-span-1' : ''}"><button type="button" class="block w-full h-full text-left bg-transparent border-0 text-white px-5 py-3.5 cursor-pointer hover:bg-white/10" data-ir="${alvo}"><span class="block text-[11px] font-semibold uppercase tracking-[0.06em] text-[#B9C9DF]">${t}</span><span class="block font-cond font-semibold text-[34px] leading-tight tabular-nums">${n}</span><span class="block text-[12px] text-[#B9C9DF]">${nota}</span></button></li>`).join('')}</ul>
+    <ul class="grid grid-cols-2 md:grid-cols-5 gap-px bg-navy-100 border-t border-navy-100 list-none m-0 p-0">${quadro.map(([t, n, nota, alvo], i) => `<li class="bg-white ${i === 4 ? 'col-span-2 md:col-span-1' : ''}"><button type="button" class="block w-full h-full text-left bg-transparent border-0 text-ink px-5 py-3.5 cursor-pointer hover:bg-navy-50" data-ir="${alvo}"><span class="block text-[11px] font-semibold uppercase tracking-[0.06em] text-ink-3">${t}</span><span class="block font-cond font-semibold text-[34px] leading-tight tabular-nums">${n}</span><span class="block text-[12px] text-ink-3">${nota}</span></button></li>`).join('')}</ul>
   </header>
   ${painel('Painel de Prioridades', tabela([
     { t: 'Prioridade e projeto', f: p => `<span class="flex gap-3 items-start"><span class="badge-${nivelPrioridade(prioridade(p)) === 'P1' ? 'atr' : nivelPrioridade(prioridade(p)) === 'P2' ? 'ate' : 'neutro'} !h-6 tabular-nums">${nivelPrioridade(prioridade(p))}</span><span class="min-w-0 block md:min-w-[200px]">${linkProjeto(p)}<span class="block text-[12px] text-ink-3">${secDe(p.sec).sigla} · ${fMoeda(p.orc)}</span></span></span>` },
@@ -1726,7 +1731,7 @@ VIEWS.indicadores = () => {
       { t: 'Valor', num: true, f: x => `<span class="font-cond text-[20px] font-semibold text-navy-950">${x[2]}</span>` }, { t: 'Meta', f: x => x[3] },
       { t: 'Avaliação', f: x => x[4] === null ? '<span class="badge-neutro">Informativo</span>' : x[4] ? '<span class="badge-con">✓ Na meta</span>' : '<span class="badge-ate">▲ Fora da meta</span>' }
     ], k, { legenda: 'Indicadores estratégicos' }), { pad: false })
-    + '<div class="mt-4">' + painel('Índice de Desempenho por Secretaria', graficoBarras({ itens: ranking().map(x => ({ nome: x.s.sigla, valor: x.d.ids, cor: x.d.ids >= CONFIG.metaIDS ? '#2F619E' : '#B42318', extra: x.s.nome + (x.d.ids >= CONFIG.metaIDS ? ' · na meta' : ' · abaixo da meta') })), max: 100, formato: v => v + (v >= CONFIG.metaIDS ? ' pontos' : ' ▼ meta'), descricao: 'IDS por secretaria. ' + ranking().map(x => `${x.s.sigla} ${x.d.ids}`).join(', ') }), { sub: `Meta: ${CONFIG.metaIDS} pontos. Barras vermelhas marcadas com ▼ estão abaixo da meta.` }) + '</div>';
+    + '<div class="mt-4">' + painel('Índice de Desempenho por Secretaria', graficoBarras({ itens: ranking().map(x => ({ nome: x.s.sigla, valor: x.d.ids, cor: x.d.ids >= CONFIG.metaIDS ? '#187598' : '#B42318', extra: x.s.nome + (x.d.ids >= CONFIG.metaIDS ? ' · na meta' : ' · abaixo da meta') })), max: 100, formato: v => v + (v >= CONFIG.metaIDS ? ' pontos' : ' ▼ meta'), descricao: 'IDS por secretaria. ' + ranking().map(x => `${x.s.sigla} ${x.d.ids}`).join(', ') }), { sub: `Meta: ${CONFIG.metaIDS} pontos. Barras vermelhas marcadas com ▼ estão abaixo da meta.` }) + '</div>';
 };
 
 function ligarMonitor(raiz) {
@@ -1790,7 +1795,7 @@ VIEWS.gestor = id => {
       + txt('ng-tel2', 'Telefone secundário', g.tel2, 'type="tel" inputmode="tel" placeholder="(00) 0000-0000"')
       + txt('ng-email', 'E-mail institucional', g.email, 'type="email" required', { obrig: true, cls: 'sm:col-span-2', ajuda: 'Use o endereço do domínio oficial do município.' }))}
     ${grupo('Status', 'Gestores inativos permanecem no histórico, mas não recebem novos projetos.',
-      `<div class="sm:col-span-2 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Status do gestor">${[['Ativo', 'Pode ser designado para projetos.'], ['Inativo', 'Não aparece em novas designações.']].map(([v, d]) => `<label class="flex gap-3 items-start p-3 border border-line-control rounded-[3px] cursor-pointer has-[:checked]:border-navy-800 has-[:checked]:bg-navy-50"><input type="radio" name="ng-status" value="${v}" class="mt-1 accent-[#12396A]" ${g.status === v ? 'checked' : ''}><span><strong class="font-semibold">${v}</strong><span class="block text-[12px] text-ink-3">${d}</span></span></label>`).join('')}</div>`)}
+      `<div class="sm:col-span-2 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Status do gestor">${[['Ativo', 'Pode ser designado para projetos.'], ['Inativo', 'Não aparece em novas designações.']].map(([v, d]) => `<label class="flex gap-3 items-start p-3 border border-line-control rounded-[3px] cursor-pointer has-[:checked]:border-navy-800 has-[:checked]:bg-navy-50"><input type="radio" name="ng-status" value="${v}" class="mt-1 accent-[#146484]" ${g.status === v ? 'checked' : ''}><span><strong class="font-semibold">${v}</strong><span class="block text-[12px] text-ink-3">${d}</span></span></label>`).join('')}</div>`)}
     <div class="flex flex-wrap justify-end gap-2 px-5 py-4 bg-subtle"><a class="btn-secondary" href="#gestores">Cancelar</a><button class="btn-primary" type="submit">${id === 'novo' ? 'Cadastrar gestor' : 'Salvar alterações'}</button></div>
   </form>`;
 };
@@ -1853,8 +1858,8 @@ function contraste(a, b) {
   const [x, y] = [L(a), L(b)].sort((m, n) => n - m); return (x + .05) / (y + .05);
 }
 VIEWS['design-system'] = () => {
-  const cores = [['navy-950', '#061A33', 'Topo da Sala de Situação, dicas'], ['navy-900', '#0B2A4F', 'Menu lateral, títulos de painel'], ['navy-800', '#12396A', 'Ação primária'], ['navy-700', '#17487F', 'Links, barras de progresso'], ['ink', '#1C2530', 'Texto principal (grafite)'], ['ink-2', '#414D5C', 'Texto secundário'], ['ink-3', '#586373', 'Legendas e apoio'], ['line', '#DDE2E9', 'Separadores'], ['line-control', '#7C8796', 'Bordas de campos e botões'], ['canvas', '#F3F5F8', 'Fundo da aplicação']];
-  const pares = [['Texto principal sobre branco', '#1C2530', '#FFFFFF', 4.5], ['Texto de apoio sobre branco', '#586373', '#FFFFFF', 4.5], ['Texto de apoio sobre o fundo', '#586373', '#F3F5F8', 4.5], ['Branco sobre botão primário', '#FFFFFF', '#12396A', 4.5], ['Selo Concluído', '#155C34', '#E7F2EC', 4.5], ['Selo Em andamento', '#164A85', '#E8F0FA', 4.5], ['Selo Atenção', '#704A00', '#FCF3DA', 4.5], ['Selo Atrasado', '#8F1C13', '#FBEAE8', 4.5], ['Item do menu lateral', '#D5DFEC', '#0B2A4F', 4.5], ['Grupo do menu lateral', '#9FB4D0', '#0B2A4F', 4.5], ['Borda de controle sobre branco', '#7C8796', '#FFFFFF', 3]];
+  const cores = [['azul-950', '#0B3A4C', 'Avisos e dicas'], ['azul-900', '#0F4C64', 'Títulos de painel'], ['azul-800', '#146484', 'Ação primária'], ['azul-700', '#187598', 'Links, barras de progresso'], ['logomarca', '#4BC0E7', 'Destaque do menu (cor da logomarca)'], ['ink', '#1C2530', 'Texto principal (grafite)'], ['ink-2', '#414D5C', 'Texto secundário'], ['ink-3', '#586373', 'Legendas e apoio'], ['line', '#DDE2E9', 'Separadores'], ['line-control', '#7C8796', 'Bordas de campos e botões'], ['canvas', '#F3F5F8', 'Fundo da aplicação']];
+  const pares = [['Texto principal sobre branco', '#1C2530', '#FFFFFF', 4.5], ['Texto de apoio sobre branco', '#586373', '#FFFFFF', 4.5], ['Texto de apoio sobre o fundo', '#586373', '#F3F5F8', 4.5], ['Branco sobre botão primário', '#FFFFFF', '#146484', 4.5], ['Selo Concluído', '#155C34', '#E7F2EC', 4.5], ['Selo Em andamento', '#164A85', '#E8F0FA', 4.5], ['Selo Atenção', '#704A00', '#FCF3DA', 4.5], ['Selo Atrasado', '#8F1C13', '#FBEAE8', 4.5], ['Item do menu lateral', '#414D5C', '#ECF8FD', 4.5], ['Grupo do menu lateral', '#586373', '#ECF8FD', 4.5], ['Item ativo do menu', '#0B3A4C', '#D3EFFA', 4.5], ['Borda de controle sobre branco', '#7C8796', '#FFFFFF', 3]];
   const tipos = [['Título de página', 'text-[23px] font-semibold', '23 / 600'], ['Indicador', 'font-cond text-[30px] font-semibold tabular-nums', 'Plex Condensed 30 / 600'], ['Título de painel', 'text-[12.5px] font-semibold uppercase tracking-[0.07em]', '12,5 / 600 caixa alta'], ['Texto corrente', 'text-[14px]', '14 / 400'], ['Tabela', 'text-[13px]', '13 / 400'], ['Apoio', 'text-[12px] text-ink-3', '12 / 400']];
   const amostra = PROJETOS[0];
   return cabecalho('Design System Institucional', 'Tokens, componentes e regras de acessibilidade usados em todas as telas.')
@@ -1893,8 +1898,8 @@ const situacaoTexto = k => `${STATUS[k].simbolo} ${STATUS[k].rotulo}`;
 function docCabecalho(titulo, escopo) {
   const meta = [['Posição dos dados', fData(HOJE)], ['Emitido em', `<span data-emissao>${fDataHora(new Date())}</span>`], ['Emitido por (perfil)', `<span data-perfil>${esc(EMISSAO.perfil)}</span>`], ['Escopo e filtros', escopo]];
   return `<header class="doc-topo">
-    <div class="doc-orgao"><svg width="30" height="33" viewBox="0 0 38 42" aria-hidden="true"><path d="M2 2h34v22c0 8-8 13-17 16C10 37 2 32 2 24z" fill="none" stroke="#0B2A4F" stroke-width="2"/><path d="M9 29V17l10-7 10 7v12M15 31V20M19 32V20M23 31V20" fill="none" stroke="#0B2A4F" stroke-width="1.8"/></svg>
-      <div><strong>Prefeitura Municipal · <span data-municipio>${esc(CONFIG.municipio)}</span></strong><span>Secretaria de Planejamento e Gestão · SEGOV</span></div>
+    <div class="doc-orgao"><img class="doc-logo" src="${LOGO_PREFEITURA}" alt="">
+      <div><strong>Prefeitura Municipal de <span data-municipio>${esc(CONFIG.municipio)}</span></strong><span>Secretaria de Planejamento e Gestão · Governança de Projetos</span></div>
       <b class="doc-selo">Dados fictícios</b></div>
     <h2>${titulo}</h2>
     <dl class="doc-meta">${meta.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl>
@@ -1958,7 +1963,7 @@ function docCurva(titulo, c, nomePlan, nomeReal) {
   [0, 25, 50, 75, 100].forEach(v => { s += `<line x1="${e}" x2="${W - d}" y1="${y(v)}" y2="${y(v)}" stroke="#DDE2E9"/><text x="${e - 5}" y="${y(v) + 3}" text-anchor="end">${v}%</text>`; });
   [[0, 'start'], [Math.round((n - 1) / 2), 'middle'], [n - 1, 'end']].forEach(([i, a]) => { s += `<text x="${x(i)}" y="${H - 4}" text-anchor="${a}">${c.rotulos[i]}</text>`; });
   if (c.hojeIdx != null) s += `<line x1="${xHoje}" x2="${xHoje}" y1="${t}" y2="${t + ih}" stroke="#7C8796" stroke-dasharray="2 3"/><text x="${xHoje}" y="${t - 4}" text-anchor="middle">Hoje</text>`;
-  s += `<polyline points="${linha(c.plan, x)}" fill="none" stroke="#586373" stroke-width="1.6" stroke-dasharray="5 3"/><polyline points="${linha(c.real, xReal)}" fill="none" stroke="#12396A" stroke-width="2.6"/><circle cx="${xReal(ult)}" cy="${y(c.real[ult])}" r="3.5" fill="#12396A" stroke="#fff" stroke-width="1.5"/></svg>`;
+  s += `<polyline points="${linha(c.plan, x)}" fill="none" stroke="#586373" stroke-width="1.6" stroke-dasharray="5 3"/><polyline points="${linha(c.real, xReal)}" fill="none" stroke="#146484" stroke-width="2.6"/><circle cx="${xReal(ult)}" cy="${y(c.real[ult])}" r="3.5" fill="#146484" stroke="#fff" stroke-width="1.5"/></svg>`;
   return `<figure><figcaption><strong>${titulo}</strong><span>- - - ${nomePlan} &nbsp; ━ ${nomeReal}</span></figcaption>${s}</figure>`;
 }
 
@@ -2007,7 +2012,7 @@ const MODELOS_FUTUROS = [['Por Secretaria', 'Carteira, execução e pendências 
 
 function telaRelatorio(modelo, p) {
   const ficha = modelo === 'ficha';
-  document.title = ficha ? `SEGOV - Ficha ${p.codigo} - ${isoDe(HOJE)}` : `SEGOV - Relatorio de reuniao - ${isoDe(HOJE)}`;
+  document.title = ficha ? `Demonstracao - Ficha ${p.codigo} - ${isoDe(HOJE)}` : `Demonstracao - Relatorio de reuniao - ${isoDe(HOJE)}`;
   const item = (href, t, d, atual) => `<li><a class="block px-4 py-3 hover:bg-navy-50 ${atual ? 'bg-navy-50' : ''}" href="#${href}" ${atual ? 'aria-current="true"' : ''}><span class="block font-semibold text-navy-900">${t}</span><span class="block text-[12px] text-ink-3">${d}</span></a></li>`;
   const perfis = PERFIS.filter(x => x[4] === 'Sim').map(x => x[0]);
   const ordenados = [...PROJETOS].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
@@ -2043,7 +2048,7 @@ function gerarPdf() {
   try { window.print(); } catch (e) { /* tratado abaixo */ }
   setTimeout(() => {
     removeEventListener('beforeprint', marcar);
-    if (!abriu) aviso('Este visualizador bloqueou a impressão. Abra o arquivo segov-prototipo.html no navegador e gere o PDF por lá.');
+    if (!abriu) aviso('Este visualizador bloqueou a impressão. Use "Abrir em tela inteira" e gere o PDF por lá.');
   }, 800);
 }
 
@@ -2071,14 +2076,14 @@ function montarEstrutura() {
   document.getElementById('app').innerHTML = `
   <a class="skip" href="#conteudo" id="pular">Pular para o conteúdo</a>
   <div id="veu" class="fixed inset-0 z-30 bg-navy-950/60 lg:hidden" hidden></div>
-  <aside id="lateral" class="fixed inset-y-0 left-0 z-40 w-[256px] flex-col bg-navy-900 text-white overflow-y-auto hidden lg:flex" aria-label="Menu principal">
-    <div class="flex items-center gap-3 px-5 py-4 border-b border-white/15">
-      <svg width="38" height="42" viewBox="0 0 38 42" aria-hidden="true" class="flex-none"><path d="M2 2h34v22c0 8-8 13-17 16C10 37 2 32 2 24z" fill="none" stroke="#D8B45A" stroke-width="1.8"/><path d="M9 29V17l10-7 10 7v12M15 31V20M19 32V20M23 31V20" fill="none" stroke="#fff" stroke-width="1.6"/></svg>
-      <div class="min-w-0 flex-1"><div class="text-[19px] font-bold tracking-[0.08em] leading-none">SEGOV</div><div class="mt-1 text-[10.5px] leading-tight text-[#B9C9DF]">Governança e Gestão de Projetos</div></div>
-      <button type="button" id="fechar-menu" class="lg:hidden bg-transparent border-0 text-white p-1 cursor-pointer" aria-label="Fechar menu">${icone('fechar')}</button>
+  <aside id="lateral" class="fixed inset-y-0 left-0 z-40 w-[256px] flex-col bg-navy-50 text-ink border-r border-line-strong overflow-y-auto hidden lg:flex" aria-label="Menu principal">
+    <div class="faixa-marca flex-none" aria-hidden="true"></div>
+    <div class="flex items-start gap-3 px-5 py-4 border-b border-line">
+      <div class="min-w-0 flex-1"><img src="${LOGO_PREFEITURA}" alt="Prefeitura de Nova Lima: o futuro mora aqui" width="200" height="78" class="block w-full max-w-[200px] h-auto"><div class="mt-2.5 text-[11.5px] font-semibold leading-tight text-navy-900">Governança e Gestão de Projetos</div></div>
+      <button type="button" id="fechar-menu" class="lg:hidden bg-transparent border-0 text-ink-2 p-1 cursor-pointer" aria-label="Fechar menu">${icone('fechar')}</button>
     </div>
     <nav class="flex-1 pb-4 pt-2">${MENU.map(([g, itens]) => `${g ? `<p class="nav-group m-0">${g}</p>` : '<div class="h-2"></div>'}<ul class="list-none m-0 p-0">${itens.map(([r, t, i]) => `<li><a class="nav-link" href="#${r}" data-rota="${r}">${icone(i)}${t}</a></li>`).join('')}</ul>`).join('')}</nav>
-    <div class="px-5 py-3 border-t border-white/15 text-[11.5px] text-[#B9C9DF]">Protótipo com dados fictícios</div>
+    <div class="px-5 py-3 border-t border-line text-[11.5px] text-ink-3">Protótipo com dados fictícios</div>
   </aside>
   <div id="area" class="lg:pl-[256px] min-h-screen flex flex-col">
     <header id="topo" class="sticky top-0 z-20 bg-white border-b border-line-strong">
@@ -2098,7 +2103,7 @@ function montarEstrutura() {
       </div>
     </header>
     <main id="conteudo" tabindex="-1" class="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 py-6 min-w-0"></main>
-    <footer class="px-4 sm:px-6 py-4 border-t border-line text-[12px] text-ink-3">SEGOV · Protótipo de alta fidelidade. Município, pessoas, projetos e valores são fictícios.</footer>
+    <footer class="px-4 sm:px-6 py-4 border-t border-line text-[12px] text-ink-3">Prefeitura de Nova Lima · Demonstração. Pessoas, projetos e valores são fictícios.</footer>
   </div>
   <div id="aviso" role="status" aria-live="polite" class="fixed z-50 bottom-4 right-4 left-4 sm:left-auto max-w-[420px] bg-navy-950 text-white px-4 py-3 rounded-[3px] shadow-lg" hidden></div>
   <div id="copia-manual" class="fixed z-50 bottom-4 right-4 left-4 sm:left-auto sm:w-[460px] panel p-4 shadow-xl" hidden><label class="field-label" for="copia-texto">A cópia automática foi bloqueada. Copie o texto selecionado com Ctrl+C.</label><textarea id="copia-texto" class="input" rows="6" readonly></textarea><button type="button" class="btn-secondary mt-2" id="fechar-copia">Fechar</button></div>
