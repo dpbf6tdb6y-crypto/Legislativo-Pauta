@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { normalizaAcessos } from "@/lib/acessos-servidor";
 import { normalizaPerfilGestao } from "@/lib/financas/perfis";
+import { normalizaCargo } from "@/lib/cargos";
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -48,6 +49,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     podeGerenciarVereadores: !!body.podeGerenciarVereadores,
     podeVerAuditoria: !!body.podeVerAuditoria,
   };
+
+  // cargo só muda quando o formulário o envia
+  if ("cargo" in body) data.cargo = normalizaCargo(body.cargo);
 
   // Gestão $$$: o perfil nos módulos financeiros (prefeito, controlador...) só o Master define
   if (meuPerfil === "master" && "gestaoPerfil" in body) {

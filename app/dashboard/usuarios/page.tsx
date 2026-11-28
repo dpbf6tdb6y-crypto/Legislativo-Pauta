@@ -5,6 +5,7 @@ import PasswordInput from "../../components/PasswordInput";
 import { useToast } from "@/contexts/toast";
 import { PERMISSOES } from "@/lib/permissoes";
 import { MENUS, acessoDoMenu } from "@/lib/acessos";
+import { CARGOS } from "@/lib/cargos";
 
 type Usuario = {
   id: string;
@@ -27,6 +28,7 @@ type Usuario = {
   podeVerConfiguracoes?: boolean;
   gestaoPerfil?: string | null;
   gestaoOrgaoCod?: string;
+  cargo?: string | null;
   createdAt: string;
 };
 
@@ -111,6 +113,7 @@ export default function UsuariosPage() {
             nome: fd.get("nome"),
             email: fd.get("email"),
             perfil: fd.get("perfil"),
+            cargo: fd.get("cargo"),
             senha: fd.get("senha"),
             podeVerIndicacoes: !!(acc.indicacoes?.ver || acc.indicacoes?.cad),
             acessos: acc,
@@ -131,6 +134,7 @@ export default function UsuariosPage() {
           body: JSON.stringify({
             nome: fd.get("nome"),
             perfil: fd.get("perfil"),
+            cargo: fd.get("cargo"),
             ativo: fd.get("ativo") === "true",
             novaSenha: fd.get("novaSenha") || undefined,
             podeVerIndicacoes: !!(acc.indicacoes?.ver || acc.indicacoes?.cad),
@@ -278,6 +282,14 @@ export default function UsuariosPage() {
                     <option value="admin">Administrador</option>
                     <option value="operador">Operador</option>
                     <option value="leitor">Leitor (somente leitura)</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="usuario-cargo" className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-0.5">Cargo no gabinete</label>
+                  <select id="usuario-cargo" name="cargo" defaultValue={u?.cargo ?? ""} title="Usado na aba Governança. Não muda permissões."
+                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/40 bg-white text-gray-800">
+                    <option value="">Sem cargo</option>
+                    {CARGOS.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 {!isNovo && (

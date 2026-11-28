@@ -29,6 +29,9 @@ model User {
   podeVerAuditoria         Boolean  @default(true)
   createdAt                DateTime @default(now())
 
+  // Cargo no gabinete (ver lib/cargos.ts). Não altera permissões; vazio = sem cargo.
+  cargo String?
+
   // Gestão $$$: perfil do usuário nos módulos financeiros (vazio = sem acesso aos módulos;
   // Master/Admin sem perfil entram como "administrador"). Secretaria: só a própria (gestaoOrgaoCod).
   gestaoPerfil   String?
