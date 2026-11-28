@@ -10,11 +10,12 @@ vi.mock('@/lib/prisma', () => ({ prisma: { user: { findUnique: () => findUnique(
 import { GET } from '@/app/api/projetos-prototipo/route';
 import { menuDaRota } from '@/lib/acessos';
 import { HTML_PROTOTIPO } from '@/lib/projetosPrototipo/html';
+import { injetarUsuario } from '@/lib/projetosPrototipo/usuario';
 
 describe('aba Projetos (protótipo)', () => {
   beforeEach(() => {
     getServerSession.mockResolvedValue({ user: { id: 'u1' } });
-    findUnique.mockResolvedValue({ perfil: 'master', ativo: true });
+    findUnique.mockResolvedValue({ nome: 'Maria Souza', cargo: 'Prefeito', perfil: 'master', ativo: true });
   });
 
   it('usa o mesmo acesso do menu Compliance', () => {
@@ -38,12 +39,18 @@ describe('aba Projetos (protótipo)', () => {
   it('entrega a página isolada do sistema', async () => {
     const r = await GET();
     expect(r.status).toBe(200);
-    expect(await r.text()).toBe(HTML_PROTOTIPO);
+    expect(await r.text()).toBe(injetarUsuario(HTML_PROTOTIPO, { nome: 'Maria Souza', cargo: 'Prefeito' }));
     const politica = r.headers.get('content-security-policy') ?? '';
     expect(politica).toMatch(/^sandbox /);
     expect(politica).not.toContain('allow-same-origin');
+    expect(politica).toContain('allow-popups-to-escape-sandbox');
     expect(politica).toContain("connect-src 'none'");
     expect(r.headers.get('cache-control')).toContain('no-store');
+  });
+
+  it('ignora cargo que não está na lista', async () => {
+    findUnique.mockResolvedValue({ nome: 'João', cargo: 'master', perfil: 'master', ativo: true });
+    expect(await (await GET()).text()).toContain('window.__USUARIO__ = {"nome":"João","cargo":""};');
   });
 
   it('não carrega programa de nenhum site externo', () => {

@@ -130,6 +130,12 @@
   /* células com botões: em telas estreitas o rótulo fica em cima e o conteúdo usa a largura toda */
   @media (max-width: 767px) { table.tbl-stack tbody td.celula-bloco { display: block; text-align: left; } }
   .tarefa-destaque { outline: 3px solid #E0A100; outline-offset: 3px; }
+  /* tela Hoje: alvos de toque de pelo menos 44 px */
+  .hoje .hj-btn { min-height: 44px; height: auto; white-space: normal; text-align: center; }
+  .hoje .hj-link { display: inline-flex; align-items: center; min-height: 44px; }
+  .hoje h2[tabindex], .hoje [id^="hj-"] { scroll-margin-top: 76px; }
+  @media (max-width: 1023px) { #topo #abrir-menu { min-width: 44px; height: 44px; } }
+  #topo #apresentar { height: 44px; }
   /* formulários de decisão e de conclusão */
   .dialogo { box-sizing: border-box; width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow-y: auto; padding: 0; color: #1C2530; }
   .dialogo::backdrop { background: rgba(11, 58, 76, .6); }
@@ -215,7 +221,7 @@
    ============================================================ */
 const HOJE = new Date(2026, 10, 25);
 const LOGO_PREFEITURA = '../../public/fazenda/nova-lima.png';
-const CONFIG = { municipio: 'Nova Lima', limiteAtraso: 15, limiteAtencao: 7, diasSemAtualizacao: 30, metaIDS: 85 };
+const CONFIG = { municipio: 'Nova Lima', limiteAtraso: 15, limiteAtencao: 7, diasSemAtualizacao: 30, metaIDS: 85, limiteCriticoIDS: 70, metaIDP: 95, diasPrazoAprovacao: 7, horasCobranca: 48, diasAgenda: 30 };
 
 const SECRETARIAS = [
   { id: 'sms', sigla: 'SEMSA', nome: 'Saúde', titular: 'Helena Vasconcelos' },
@@ -431,6 +437,12 @@ function resumoCarteira(lista = PROJETOS) {
   };
 }
 
+/* IDP da carteira: o que foi feito ÷ o que deveria estar feito hoje, com peso pelo valor de cada projeto */
+function idpCarteira() {
+  const r = resumoCarteira();
+  return r.execFisica / (soma(PROJETOS, p => p.orc * (p.status === 'con' ? 100 : planejadoEm(p, HOJE))) / r.orc);
+}
+
 /* Índice de Desempenho da Secretaria (IDS), 0 a 100 */
 function desempenho(secId) {
   const l = PROJETOS.filter(p => p.sec === secId);
@@ -520,12 +532,12 @@ function risco(nivel) {
 }
 
 /* Barra de progresso com marcador opcional do planejado */
-function barra(valor, { planejado, rotulo = 'Execução', cor = 'bg-navy-700', w = 'w-[72px]', mostra = true } = {}) {
+function barra(valor, { planejado, rotulo = 'Execução', cor = 'bg-navy-700', w = 'w-[72px]', mostra = true, marca = 'Planejado:' } = {}) {
   const v = Math.round(valor);
   return `<span class="inline-flex items-center gap-2 ${w === 'w-full' ? 'w-full' : ''}">
     <span class="relative block h-[7px] ${w === 'w-full' ? 'flex-1' : w} bg-[#E2EEF3]" role="meter" aria-label="${rotulo}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${v}">
       <span class="absolute inset-y-0 left-0 ${cor}" style="width:${v}%"></span>
-      ${planejado != null ? `<span class="absolute -top-[3px] -bottom-[3px] w-[2px] bg-ink" style="left:calc(${Math.min(99.5, planejado)}% - 1px)" title="Planejado: ${fNum(planejado)}%"></span>` : ''}
+      ${planejado != null ? `<span class="absolute -top-[3px] -bottom-[3px] w-[2px] bg-ink" style="left:calc(${Math.min(99.5, planejado)}% - 1px)" title="${marca} ${fNum(planejado)}%"></span>` : ''}
     </span>${mostra ? `<span class="tabular-nums font-medium w-[38px] text-right">${v}%</span>` : ''}</span>`;
 }
 
@@ -1056,12 +1068,13 @@ const abaVisao = p => {
     ${painel('Últimas Atualizações', `<ol class="rows list-none m-0 p-0">${historico(p).slice(0, 4).map(h => `<li class="px-5 py-2.5"><div class="text-[12px] text-ink-3 tabular-nums">${fData(h.data)} · ${esc(h.autor)}</div><div>${h.acao}</div></li>`).join('')}</ol>`, { pad: false, acao: `<a class="link text-[12.5px]" href="#projeto-${p.id}-historico">Histórico completo</a>` })}
   </div></div>`;
 };
+/* divisão por fonte usada na demonstração, a mesma para todos os projetos */
+const FONTES = [['Tesouro Municipal', .55], ['Convênio / transferência estadual', .30], ['Operação de crédito', .15]];
 const grauRisco = n => n >= 15 ? 'Alto' : n >= 8 ? 'Médio' : 'Baixo';
 
 const abaFinanceiro = p => {
   const vals = [['Valor Previsto', 100, '#8FD6EF'], ['Valor Empenhado', p.empP, '#3FA9CF'], ['Valor Liquidado', p.liqP, '#187598'], ['Valor Pago', p.pagP, '#093140']];
   const f = curvas(p, p.pagP);
-  const fontes = [['Tesouro Municipal', .55], ['Convênio / transferência estadual', .30], ['Operação de crédito', .15]];
   return `<div class="grid gap-4">
   ${kpis(vals.map(([t, pct, cor]) => ({ rotulo: t, valor: `<span class="text-[25px]">${fMoeda(valorDe(p, pct))}</span>`, nota: t === 'Valor Previsto' ? 'Linha de base aprovada' : `${pct}% do previsto`, marca: cor })), 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4')}
   <div class="grid gap-4 xl:grid-cols-2">
@@ -1071,7 +1084,7 @@ const abaFinanceiro = p => {
   ${painel('Composição por Fonte de Recurso', tabela([
     { t: 'Fonte', f: x => x[0] }, { t: 'Previsto', num: true, f: x => fMoeda(p.orc * x[1]) }, { t: 'Empenhado', num: true, f: x => fMoeda(valorDe(p, p.empP) * x[1]) },
     { t: 'Pago', num: true, f: x => fMoeda(valorDe(p, p.pagP) * x[1]) }, { t: 'Participação', num: true, f: x => fNum(x[1] * 100) + '%' }
-  ], fontes, { legenda: 'Fontes de recurso do projeto' }), { pad: false })}
+  ], FONTES, { legenda: 'Fontes de recurso do projeto' }), { pad: false })}
   </div>`;
 };
 
@@ -1628,14 +1641,19 @@ const lerEnvolvidasNovas = form => [...form.querySelectorAll('[data-linha-env]')
    ============================================================ */
 const TAREFAS = [];
 let seqTarefa = 0;
-const anotarHistorico = (p, data, acao, autor, categoria = 'Decisão') => (p.registros || (p.registros = [])).push({ data, categoria, acao: `<span class="quebra">${acao}</span>`, autor });
+const anotarHistorico = (p, data, acao, autor, categoria = 'Decisão') => {
+  const linha = { data, categoria, acao: `<span class="quebra">${acao}</span>`, autor };
+  (p.registros || (p.registros = [])).push(linha);
+  return linha;
+};
+const autorAtual = () => (typeof window !== 'undefined' && window.__USUARIO__?.nome) || 'Usuário da demonstração';
 /* a tarefa nasce de uma reunião ou de uma conversa; "reuniao" guarda a data de uma ou de outra */
 const nomeOrigem = t => t.origem === 'conversa' ? 'conversa' : 'reunião';
 
-function registrarDecisao(p, { texto, resp, reuniao, prazo, origem = 'reuniao' }, { data = HOJE, autor = 'Usuário da demonstração' } = {}) {
+function registrarDecisao(p, { texto, resp, reuniao, prazo, origem = 'reuniao' }, { data = HOJE, autor = autorAtual() } = {}) {
   const t = { id: 't' + String(++seqTarefa).padStart(2, '0'), proj: p.id, texto, resp, reuniao, prazo, origem, concluida: null, feito: '' };
   TAREFAS.push(t);
-  anotarHistorico(p, data, `Decisão registrada: “${esc(texto)}” Responsável: ${esc(resp)}. Prazo: ${fData(prazo)}. ${origem === 'conversa' ? 'Conversa' : 'Reunião'} de ${fData(reuniao)}.`, autor);
+  t.registro = anotarHistorico(p, data, `Decisão registrada: “${esc(texto)}” Responsável: ${esc(resp)}. Prazo: ${fData(prazo)}. ${origem === 'conversa' ? 'Conversa' : 'Reunião'} de ${fData(reuniao)}.`, autor);
   return t;
 }
 
@@ -1711,17 +1729,17 @@ const molduraDialogo = (id, titulo, contexto, campos, confirmar) => `<form id="$
   <div class="flex flex-wrap justify-end gap-2 px-5 py-3 border-t border-line bg-subtle"><button type="button" class="btn-secondary" data-fechar-dialogo>Cancelar</button><button type="submit" class="btn-primary">${confirmar}</button></div>
 </form>`;
 
-function seletorResponsavel(id) {
+function seletorResponsavel(id, escolhido = '') {
   const r = responsaveisPossiveis();
-  const grupoOpcoes = (rotulo, l) => `<optgroup label="${rotulo}">${l.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`;
+  const grupoOpcoes = (rotulo, l) => `<optgroup label="${rotulo}">${l.map(n => `<option value="${esc(n)}"${n === escolhido ? ' selected' : ''}>${esc(n)}</option>`).join('')}</optgroup>`;
   return `<select id="${id}" class="input"><option value="">Selecione o responsável</option>${grupoOpcoes('Gestores ativos', r.gestores)}${grupoOpcoes('Órgãos', r.orgaos)}</select>`;
 }
-function formDecisao(p) {
+function formDecisao(p, { resp = '', prazo = null } = {}) {
   return molduraDialogo('form-decisao', 'Registrar decisão', `${secDe(p.sec).sigla} · <strong>${esc(p.nome)}</strong>`,
     campo('dc-texto', 'Decisão', `<textarea id="dc-texto" rows="3" class="input" maxlength="300">${p.status === 'con' ? '' : esc(encaminhamento(p))}</textarea>`, { obrig: true, cls: 'sm:col-span-2', ajuda: p.status === 'con' ? 'Projeto concluído, sem encaminhamento recomendado.' : 'Começa com o encaminhamento recomendado. Pode ser editada.' })
-    + campo('dc-resp', 'Responsável', seletorResponsavel('dc-resp'), { obrig: true, cls: 'sm:col-span-2' })
+    + campo('dc-resp', 'Responsável', seletorResponsavel('dc-resp', resp), { obrig: true, cls: 'sm:col-span-2' })
     + campo('dc-reuniao', 'Data da reunião', `<input id="dc-reuniao" type="date" class="input" value="${isoDe(HOJE)}">`, { obrig: true })
-    + campo('dc-prazo', 'Prazo', '<input id="dc-prazo" type="date" class="input">', { obrig: true, ajuda: 'Igual ou posterior à data da reunião.' }),
+    + campo('dc-prazo', 'Prazo', `<input id="dc-prazo" type="date" class="input" value="${prazo ? isoDe(prazo) : ''}">`, { obrig: true, ajuda: 'Igual ou posterior à data da reunião.' }),
     'Salvar decisão');
 }
 const formConclusao = t => molduraDialogo('form-conclusao', 'Concluir tarefa', `<strong>${esc(projDe(t.proj).nome)}</strong><br>${esc(t.texto)}`,
@@ -1742,8 +1760,8 @@ function redesenharTela(foco) {
   renderizar(); scrollTo(0, y);
   (foco && document.querySelector(foco) || document.getElementById('titulo'))?.focus();
 }
-function abrirDecisao(p) {
-  abrirDialogo(formDecisao(p), (f, d) => {
+function abrirDecisao(p, preenchido) {
+  abrirDialogo(formDecisao(p, preenchido), (f, d) => {
     const v = i => f.querySelector('#' + i).value.trim();
     if (!validar(f, regrasDecisao(v('dc-reuniao')))) return;
     const t = registrarDecisao(p, { texto: v('dc-texto'), resp: v('dc-resp'), reuniao: dISO(v('dc-reuniao')), prazo: dISO(v('dc-prazo')) });
@@ -1989,7 +2007,7 @@ VIEWS.alertas = () => cabecalho('Alertas', 'Gerados por regra a partir dos dados
 const ABAS_PENDENCIAS = [['documentos', 'Documentos', 'Documentos obrigatórios vencidos ou a vencer, com responsável identificado.'], ['tarefas', 'Tarefas das reuniões', 'Decisões tomadas em reunião, com responsável e prazo.']];
 VIEWS.pendencias = (modo = '', id = '') => {
   aplicarRotaPendencias(modo, id);
-  const topo = cabecalho('Pendências', ABAS_PENDENCIAS.find(a => a[0] === PEND.aba)[2], '', trilhaMon('Pendências'))
+  const topo = cabecalho('Pendências', ABAS_PENDENCIAS.find(a => a[0] === PEND.aba)[2], PEND.aba === 'tarefas' ? '<a class="btn-secondary" href="#relatorios">Relatório da reunião</a>' : '', trilhaMon('Pendências'))
     + `<div class="mb-4 bg-white border border-line rounded-[3px]"><div role="tablist" aria-label="Tipos de pendência" class="flex flex-wrap">${ABAS_PENDENCIAS.map(([k, t]) => `<button type="button" role="tab" id="aba-pend-${k}" aria-controls="painel-pendencias" aria-selected="${k === PEND.aba}" tabindex="${k === PEND.aba ? 0 : -1}" class="tab !px-3 sm:!px-4 bg-transparent border-x-0 border-t-0 cursor-pointer" data-aba-pend="${k}">${t}</button>`).join('')}</div></div>`;
   const corpo = PEND.aba === 'tarefas' ? conteudoTarefas() : abaPendenciasDocumentos();
   return `${topo}<div id="painel-pendencias" role="tabpanel" aria-labelledby="aba-pend-${PEND.aba}">${corpo}</div>`;
@@ -2032,9 +2050,9 @@ VIEWS.riscos = () => {
 
 VIEWS.indicadores = () => {
   const r = resumoCarteira(), ativos = PROJETOS.filter(p => p.status !== 'con');
-  const planPond = soma(PROJETOS, p => p.orc * (p.status === 'con' ? 100 : planejadoEm(p, HOJE))) / r.orc;
+  const idp = idpCarteira(), metaIdp = CONFIG.metaIDP / 100;
   const k = [
-    ['IDP da carteira', 'Físico ponderado ÷ planejado ponderado', fNum(r.execFisica / planPond, 2), '≥ 0,95', r.execFisica / planPond >= .95],
+    ['IDP da carteira', 'Físico ponderado ÷ planejado ponderado', fNum(idp, 2), '≥ ' + fNum(metaIdp, 2), idp >= metaIdp],
     ['Projetos no prazo', 'Parcela da carteira sem atraso', fNum(100 * (1 - r.por.atr.length / r.total)) + '%', '≥ 90%', 1 - r.por.atr.length / r.total >= .9],
     ['Atualização tempestiva', `Projetos ativos atualizados em até ${CONFIG.diasSemAtualizacao} dias`, fNum(100 * (1 - ativos.filter(semAtualizacao).length / ativos.length)) + '%', '≥ 95%', 1 - ativos.filter(semAtualizacao).length / ativos.length >= .95],
     ['Execução financeira', 'Valor pago ÷ investimento previsto', fNum(100 * r.pago / r.orc) + '%', 'Informativo', null],
@@ -2268,6 +2286,7 @@ function docReuniao() {
     + docSecao('5. Documentos vencidos', docTabela([
       ['Documento', d => d.doc, '36%'], ['Projeto', d => esc(projDe(d.proj).nome), '32%'], ['Venceu em', d => fData(d.venc), '13%', true], ['Responsável', d => esc(d.resp)]
     ], vencidos, 'Documentos vencidos', 'Nenhum documento vencido.'))
+    + (PAUTA.montada ? docSecao('6. Pauta da semana: reuniões recomendadas', docTabela([['Reunião', r => esc(r.titulo), '40%'], ['Motivo', r => esc(r.motivo)]], reunioesRecomendadas(), 'Reuniões recomendadas', 'Nenhuma reunião recomendada.'), true) : '')
     + `<p class="doc-criterios"><strong>Critérios (proposta em validação).</strong> Atrasado: prazo vencido ou execução física ${CONFIG.limiteAtraso} pontos ou mais abaixo do planejado. Atenção: desvio de ${CONFIG.limiteAtencao} pontos ou mais, ou mais de ${CONFIG.diasSemAtualizacao} dias sem atualização. IDS: 50% aderência ao cronograma, 30% pontualidade e 20% atualização em dia. A prioridade considera situação, risco, atualização, documentos vencidos e valor.</p>`;
 }
 
@@ -2383,15 +2402,429 @@ function ligarRelatorio(raiz) {
 }
 
 /* ============================================================
+   TELA "HOJE": o que precisa da atenção do Prefeito
+   Nenhum número é escrito aqui: tudo vem dos dados e das regras acima.
+   "Hoje", nas contas, é a data de posição (HOJE).
+   ============================================================ */
+/* Nome e cargo escritos pelo servidor. Aberta fora do SEGOV, a página fica sem usuário. */
+const USUARIO = (typeof window !== 'undefined' && window.__USUARIO__) || { nome: '', cargo: '' };
+const CARGOS_GABINETE = ['Prefeito', 'Vice-Prefeito', 'Assessor de Governança'];
+const menuCurto = () => CARGOS_GABINETE.includes(USUARIO.cargo);
+
+/* Órgãos de fora da Prefeitura que aparecem nas dependências dos projetos */
+const ORGAOS_EXTERNOS = ['Concessionária de energia', 'Concessionária de saneamento', 'Câmara Municipal'];
+
+/* ---------- Linguagem simples ---------- */
+const maiuscula = s => s.charAt(0).toUpperCase() + s.slice(1);
+/* só baixa a primeira letra de palavra comum: siglas ficam como estão */
+const minuscula = s => /^[A-ZÀ-Ú][a-zà-ú\s]/.test(s) ? s.charAt(0).toLowerCase() + s.slice(1) : s;
+const semPonto = s => s.replace(/[.\s]+$/, '');
+const nomeSecretaria = id => secDe(id).nome;
+/* troca sigla de secretaria pelo nome por extenso */
+const porExtenso = s => SECRETARIAS.reduce((t, x) => t.replace(new RegExp('\\b' + x.sigla + '\\b', 'g'), 'Secretaria de ' + x.nome), String(s));
+const plural = (n, um, varios) => n === 1 ? um : varios;
+const NUMEROS = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'];
+const numeroEscrito = (n, feminino = false) => feminino && n === 1 ? 'uma' : feminino && n === 2 ? 'duas' : NUMEROS[n] || String(n);
+const fMilhoes = v => { const n = Math.round(v / 1e6); return n < 1 ? fMoeda(v) : `R$ ${fNum(n)} ${plural(n, 'milhão', 'milhões')}`; };
+const grauSimples = n => n >= 20 ? 'muito alto' : n >= 15 ? 'alto' : n >= 8 ? 'médio' : 'baixo';
+const saudacao = hora => hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+const dataPorExtenso = d => maiuscula(d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
+
+/* ---------- Regras da tela ---------- */
+const filaP1 = () => filaPrioridades().filter(p => nivelPrioridade(prioridade(p)) === 'P1');
+/* conta como decidida a decisão registrada na data de posição; as antigas viram aviso no cartão */
+const decisaoDeHoje = p => tarefasDoProjeto(p.id).filter(t => +t.reuniao === +HOJE).pop() || null;
+const p1Pendentes = () => filaP1().filter(p => !decisaoDeHoje(p));
+const ordensVencidas = () => ordenarTarefas(TAREFAS.filter(tarefaVencida));
+/* só travas entre secretarias diferentes */
+const travas = () => bloqueios().filter(b => b.causa.sec !== b.etapa.sec);
+const parados = () => PROJETOS.filter(semAtualizacao).sort((a, b) => diasSemAtu(b) - diasSemAtu(a));
+/* só o que está cadastrado para o projeto: os riscos e as dependências padrão da demonstração ficam de fora */
+const riscosCadastrados = p => p.status === 'con' ? [] : [...(RISCOS_ESPECIFICOS[p.id] || [])].sort((a, b) => b[1] * b[2] - a[1] * a[2]);
+const dependenciasCadastradas = p => p.status === 'con' ? [] : (DEPENDENCIAS[p.id] || []).filter(d => d[2] !== 'Concluída')
+  .map(([nome, orgao, situacaoDep, data]) => ({ nome, orgao, situacao: situacaoDep, data: dISO(data) }))
+  .sort((a, b) => a.data - b.data);
+const documentosVencidos = p => PENDENCIAS.filter(d => d.proj === p.id && d.venc < HOJE).sort((a, b) => a.venc - b.venc);
+const diasTexto = n => `${n} ${plural(n, 'dia', 'dias')}`;
+
+/* "Por que está assim". Vale o texto do gabinete (p.porque); sem ele, o primeiro item que existir:
+   dependência vencida, maior risco aberto, documento vencido, dias sem atualização. */
+function porqueDe(p) {
+  if (p.porque) return { tipo: 'manual', texto: p.porque };
+  const trava = bloqueiosDoProjeto(p).filter(b => etapaVencida(b.causa)).sort((a, b) => a.causa.fim - b.causa.fim)[0];
+  if (trava) return { tipo: 'trava', texto: `A etapa “${trava.etapa.nome}” está parada: ${nomeSecretaria(trava.causa.sec)} ainda não entregou “${trava.causa.nome}”, atrasada há ${diasTexto(diasEntre(trava.causa.fim, HOJE))}.` };
+  const externa = dependenciasCadastradas(p).find(d => d.data < HOJE);
+  if (externa) return { tipo: 'dependencia', nome: externa.nome, texto: `“${externa.nome}”, que depende de ${porExtenso(externa.orgao)}, passou do prazo há ${diasTexto(diasEntre(externa.data, HOJE))}.` };
+  const r = riscosCadastrados(p)[0];
+  if (r) return { tipo: 'risco', texto: `Há um risco ${grauSimples(r[1] * r[2])} em aberto: ${minuscula(semPonto(r[0]))}.` };
+  const doc = documentosVencidos(p)[0];
+  if (doc) return { tipo: 'documento', texto: `O documento “${doc.doc}” está vencido há ${diasTexto(diasEntre(doc.venc, HOJE))}.` };
+  if (semAtualizacao(p)) return { tipo: 'silencio', texto: `O gestor não registra informações há ${diasTexto(diasSemAtu(p))}.` };
+  return { tipo: 'andamento', texto: `O projeto está ${fNum(desvio(p))}% abaixo do previsto para hoje.` };
+}
+
+/* faixa laranja: ordem anterior vencida; senão, trava ainda não citada ou dependência que vence nos próximos dias */
+function avisosDoCartao(p) {
+  const vencidas = ordenarTarefas(tarefasDoProjeto(p.id)).filter(tarefaVencida)
+    .map(t => `A ordem anterior (“${semPonto(t.texto)}”) está vencida há ${diasTexto(diasEntre(t.prazo, HOJE))}. Responsável: ${porExtenso(t.resp)}.`);
+  if (vencidas.length) return vencidas;
+  const porque = porqueDe(p);
+  const trava = porque.tipo !== 'trava' && bloqueiosDoProjeto(p)[0];
+  if (trava) return [`${nomeSecretaria(trava.etapa.sec)} espera por ${nomeSecretaria(trava.causa.sec)}: “${trava.causa.nome}”.`];
+  const dep = dependenciasCadastradas(p).find(d => d.nome !== porque.nome && diasEntre(HOJE, d.data) <= CONFIG.diasAgenda);
+  return dep ? [`Dependência importante: “${dep.nome}”, com ${porExtenso(dep.orgao)}. Data-limite: ${fData(dep.data)}.`] : [];
+}
+
+function agendaPreventiva() {
+  const noPeriodo = d => d >= HOJE && diasEntre(HOJE, d) <= CONFIG.diasAgenda;
+  const abertos = PROJETOS.filter(p => p.status !== 'con');
+  return [
+    ...PENDENCIAS.filter(d => noPeriodo(d.venc)).map(d => ({ data: d.venc, tipo: 'Documento a vencer', titulo: d.doc, p: projDe(d.proj) })),
+    ...abertos.filter(p => noPeriodo(p.prazo)).map(p => ({ data: p.prazo, tipo: 'Prazo final do projeto', titulo: `${p.fisico}% pronto`, p })),
+    /* o último marco é a própria entrega, já contada no prazo final */
+    ...abertos.flatMap(p => marcos(p).filter(m => m.frac < 1 && m.estado === 'previsto' && noPeriodo(m.data)).map(m => ({ data: m.data, tipo: 'Marco previsto', titulo: m.nome, p }))),
+    ...abertos.flatMap(p => dependenciasCadastradas(p).filter(d => noPeriodo(d.data)).map(d => ({ data: d.data, tipo: 'Depende de ' + porExtenso(d.orgao), titulo: d.nome, p })))
+  ].sort((a, b) => a.data - b.data || a.p.nome.localeCompare(b.p.nome, 'pt-BR'));
+}
+
+const faixaSecretaria = nota => nota >= CONFIG.metaIDS ? { k: 'con', simbolo: '●', rotulo: 'Bom', fundo: 'bg-st-con-bg' }
+  : nota >= CONFIG.limiteCriticoIDS ? { k: 'ate', simbolo: '▲', rotulo: 'Atenção', fundo: 'bg-st-ate-bg' }
+    : { k: 'atr', simbolo: '■', rotulo: 'Crítico', fundo: 'bg-st-atr-bg' };
+
+function reunioesRecomendadas() {
+  const l = [], p1 = filaP1();
+  /* (a) P1 que depende de órgão de fora: um encontro por órgão e projeto */
+  p1.forEach(p => {
+    const vistos = new Set();
+    dependenciasCadastradas(p).filter(d => ORGAOS_EXTERNOS.includes(d.orgao)).forEach(d => {
+      if (vistos.has(d.orgao)) return;
+      vistos.add(d.orgao);
+      l.push({ titulo: `Prefeito com ${d.orgao}`, motivo: `${p.nome}: ${minuscula(d.nome)}, data-limite ${fData(d.data)}.` });
+    });
+  });
+  /* (b) P1 travado por outra secretaria */
+  p1.forEach(p => {
+    const minhas = travas().filter(b => b.p.id === p.id);
+    if (!minhas.length) return;
+    const nomes = [...new Set(minhas.flatMap(b => [nomeSecretaria(b.causa.sec), nomeSecretaria(b.etapa.sec)]))];
+    l.push({ titulo: `Reunião das secretarias: ${nomes.join(' · ')}`, motivo: `${p.nome}: falta ${minuscula(minhas.map(b => b.causa.nome).join('; '))}.` });
+  });
+  /* (c) secretaria com a pior nota, se estiver em situação crítica */
+  const pior = ranking().slice(-1)[0];
+  if (pior && pior.d.ids < CONFIG.limiteCriticoIDS) l.push({ titulo: `Acompanhamento da Secretaria de ${pior.s.nome}`, motivo: `Tem a menor nota entre as secretarias: ${pior.d.ids} de 100.` });
+  return l;
+}
+const PAUTA = { montada: false };
+const textoPauta = () => [`PAUTA DA SEMANA · posição em ${fData(HOJE)} · dados demonstrativos`, ...reunioesRecomendadas().map((r, i) => `${i + 1}. ${r.titulo}. ${r.motivo}`)].join('\n');
+
+function resumoDoDia() {
+  const r = resumoCarteira(), atrasados = r.por.atr, valor = soma(atrasados, p => p.orc);
+  const decisoes = p1Pendentes().length, ordens = ordensVencidas().length;
+  return [
+    decisoes ? `Hoje há ${decisoes} ${plural(decisoes, 'decisão do Prefeito pendente', 'decisões do Prefeito pendentes')}.` : 'Hoje não há decisão urgente do Prefeito pendente.',
+    atrasados.length
+      ? `${maiuscula(numeroEscrito(atrasados.length))} ${plural(atrasados.length, 'projeto está atrasado e soma', 'projetos estão atrasados e somam')} ${fMilhoes(valor)}, ou ${fNum(100 * valor / r.orc)}% de tudo o que está investido nos projetos estratégicos.`
+      : 'Nenhum projeto está atrasado.',
+    ordens ? `${maiuscula(numeroEscrito(ordens, true))} ${plural(ordens, 'ordem dada em reunião já passou', 'ordens dadas em reunião já passaram')} do prazo.` : 'Nenhuma ordem dada em reunião está com o prazo vencido.'
+  ].join(' ');
+}
+
+/* ---------- Ações ---------- */
+const HOJE_UI = { detalhes: new Set(), secretaria: '' };
+const PEDIDOS_REUNIAO = new Set();
+const COBRANCAS = new Map();
+
+function aprovarDecisao(p) {
+  if (decisaoDeHoje(p)) return null;
+  const t = registrarDecisao(p, { texto: encaminhamento(p), resp: nomeGestor(p.gestor), reuniao: HOJE, prazo: somaDias(HOJE, CONFIG.diasPrazoAprovacao) });
+  t.aprovada = true;
+  return t;
+}
+/* desfaz uma decisão registrada hoje: sai a tarefa e a linha do histórico */
+function desfazerDecisao(t) {
+  const i = TAREFAS.indexOf(t);
+  if (i < 0 || t.concluida || t.origem !== 'reuniao' || +t.reuniao !== +HOJE) return false;
+  TAREFAS.splice(i, 1);
+  const p = projDe(t.proj);
+  p.registros = (p.registros || []).filter(r => r !== t.registro);
+  COBRANCAS.delete(t.id);
+  return true;
+}
+function pedirReuniao(p) {
+  if (PEDIDOS_REUNIAO.has(p.id)) return;
+  PEDIDOS_REUNIAO.add(p.id);
+  anotarHistorico(p, HOJE, 'Pedido de reunião ao Gabinete registrado.', autorAtual(), 'Reunião');
+}
+
+/* Telefone no formato do WhatsApp. Os da demonstração usam o DDD 00, que não existe: contam como não cadastrados. */
+function telefoneWhatsApp(nome) {
+  let n = ((GESTORES.find(g => g.nome === nome) || {}).tel1 || '').replace(/\D/g, '');
+  if (n.length === 10 || n.length === 11) n = '55' + n;
+  return /^55[1-9][1-9]\d{8,9}$/.test(n) ? n : '';
+}
+const horasTexto = () => `${CONFIG.horasCobranca} horas`;
+const mensagemCobranca = t => `[Demonstração: dados fictícios] Olá, ${porExtenso(t.resp)}. A tarefa “${semPonto(t.texto)}”, do projeto ${projDe(t.proj).nome}, venceu em ${fData(t.prazo)}. Pode enviar a situação em até ${horasTexto()}?`;
+const linkWhatsApp = t => `https://wa.me/${telefoneWhatsApp(t.resp)}?text=${encodeURIComponent(mensagemCobranca(t))}`;
+/* o prazo original continua vencido; a cobrança guarda o novo prazo de resposta */
+function registrarCobranca(t) {
+  if (COBRANCAS.has(t.id)) return;
+  const novoPrazo = new Date(HOJE.getTime() + CONFIG.horasCobranca * 36e5);
+  COBRANCAS.set(t.id, { novoPrazo });
+  anotarHistorico(projDe(t.proj), HOJE, `Cobrança preparada no WhatsApp para ${esc(t.resp)}: “${esc(t.texto)}” Novo prazo de resposta: ${horasTexto()} (${fData(novoPrazo)}).`, autorAtual(), 'Cobrança');
+}
+
+/* ---------- Blocos ---------- */
+const seloSimples = (k, simbolo, texto) => `<span class="badge-${k} !h-auto min-h-[22px] !whitespace-normal"><span aria-hidden="true" class="text-[10px]">${simbolo}</span>${texto}</span>`;
+const linkFicha = (p, texto = esc(p.nome), classe = '') => `<a class="link hj-link ${classe}" href="#projeto-${p.id}">${texto}</a>`;
+const tituloSecao = (id, titulo, sub = '') => `<div class="mb-3"><h2 id="${id}" tabindex="-1" class="m-0 text-[18px] font-semibold text-navy-950">${titulo}</h2>${sub ? `<p class="m-0 text-[13px] text-ink-3">${sub}</p>` : ''}</div>`;
+
+function seloCartao(p) {
+  if (p.prazo < HOJE) return seloSimples('atr', '■', `Prazo vencido há ${diasTexto(diasEntre(p.prazo, HOJE))}`);
+  const abaixo = desvio(p) >= 1 ? ` · ${fNum(desvio(p))}% abaixo do previsto` : '';
+  const simbolo = { atr: '■', ate: '▲' }[p.status] || '●';
+  return seloSimples(p.status, simbolo, `${p.status === 'and' ? 'Em dia' : STATUS[p.status].rotulo}${abaixo}`);
+}
+
+const barraAndamento = p => `${barra(p.fisico, { planejado: planejadoEm(p, HOJE), w: 'w-full', mostra: false, rotulo: 'Quanto está pronto', cor: p.status === 'atr' ? 'bg-st-atr' : 'bg-navy-700', marca: 'Deveria estar em' })}
+  <p class="m-0 mt-1.5 text-[13px]"><strong class="font-semibold">${p.fisico}% pronto</strong> · deveria estar em ${fNum(planejadoEm(p, HOJE))}%</p>`;
+
+function quadrosDetalhe(p) {
+  const dr = diasRestantes(p), r = riscosCadastrados(p)[0], dep = dependenciasCadastradas(p)[0], doc = documentosVencidos(p)[0];
+  const quadro = (titulo, corpo) => `<div class="border border-line rounded-[3px] bg-white p-3 min-w-0"><h4 class="m-0 mb-1.5 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-3">${titulo}</h4>${corpo}</div>`;
+  const linha = s => `<p class="m-0 mt-1 text-[13px]">${s}</p>`;
+  const reservado = p.empP - p.liqP;
+  const trava = r
+    ? quadro('Maior risco', linha(`<strong class="font-semibold">Risco ${grauSimples(r[1] * r[2])}:</strong> ${esc(r[0])}.`) + linha(`O que fazer: ${esc(porExtenso(r[3]))}. Quem cuida: ${esc(porExtenso(r[4]))}.`))
+    : dep ? quadro('Dependência', linha(`${esc(dep.nome)}.`) + linha(`Depende de ${esc(porExtenso(dep.orgao))} até ${fData(dep.data)}.`))
+      : doc ? quadro('Documento travado', linha(`${esc(doc.doc)}.`) + linha(`Vencido há ${diasTexto(diasEntre(doc.venc, HOJE))}. Responsável: ${esc(porExtenso(doc.resp))}.`))
+        : quadro('Risco', linha('Nenhum risco, dependência ou documento travado cadastrado.'));
+  return `<div class="grid gap-3 xl:grid-cols-3">
+    ${quadro(p.tipo === 'obra' ? 'Obra' : 'Andamento', linha(`${p.fisico}% pronto; deveria estar em ${fNum(planejadoEm(p, HOJE))}%.`) + linha(`Prazo: ${fData(p.prazo)} (${dr < 0 ? `vencido há ${diasTexto(-dr)}` : `faltam ${diasTexto(dr)}`}).`))}
+    ${quadro('Origem do dinheiro', linha(`${fMoeda(valorDe(p, p.pagP))} pagos de ${fMoeda(p.orc)} previstos.`) + linha(`Falta reservar (saldo a empenhar): ${fMoeda(valorDe(p, 100 - p.empP))}.`)
+      + (reservado >= 20 ? linha(`${fMoeda(valorDe(p, reservado))} em dinheiro reservado que ainda não virou serviço entregue.`) : '')
+      + `<ul class="list-none m-0 mt-1.5 p-0 text-[12.5px] text-ink-2">${FONTES.map(([nome, parte]) => `<li>${nome}: ${fMoeda(p.orc * parte)}</li>`).join('')}</ul><p class="m-0 mt-1 text-[11.5px] text-ink-3">Na demonstração, a divisão por fonte é a mesma em todos os projetos.</p>`)}
+    ${trava}
+  </div>
+  <p class="m-0 mt-2">${linkFicha(p, 'Abrir a ficha completa', 'text-[13px]')}</p>`;
+}
+
+function confirmacaoDecisao(p, t) {
+  const texto = t.aprovada
+    ? `✓ Decisão aprovada. ${esc(t.resp)} tem ${diasTexto(diasEntre(t.reuniao, t.prazo))} de prazo.`
+    : `✓ Decisão registrada. Responsável: ${esc(porExtenso(t.resp))}. Prazo: ${fData(t.prazo)}.`;
+  return `<div class="border border-st-con bg-st-con-bg text-st-con-tx rounded-[3px] p-3 quebra" data-confirmacao="${p.id}">
+    <p class="m-0 font-semibold">${texto}</p>
+    <p class="m-0 text-[12.5px]">Nesta demonstração, ninguém é avisado automaticamente.</p>
+    <p class="m-0 mt-1 flex flex-wrap gap-x-4"><a class="link hj-link" href="#tarefa-${t.id}" data-link-tarefa="${t.id}">Ver tarefa</a>
+    ${t.origem === 'reuniao' && !t.concluida ? `<button type="button" class="hj-link link bg-transparent border-0 p-0 cursor-pointer underline" data-desfazer="${t.id}">Desfazer<span class="sr-only"> a decisão de ${esc(p.nome)}</span></button>` : ''}</p>
+  </div>`;
+}
+
+function cartaoDecisao(p, posicao) {
+  const t = decisaoDeHoje(p), aberto = HOJE_UI.detalhes.has(p.id);
+  const botao = (acao, classe, texto) => `<button type="button" class="${classe} hj-btn" data-${acao}="${p.id}">${texto}<span class="sr-only">: ${esc(p.nome)}</span></button>`;
+  return `<li><article class="panel p-4 sm:p-5 grid gap-3" aria-labelledby="cartao-${p.id}">
+    <div class="flex flex-wrap items-center gap-2"><span class="font-cond text-[20px] font-semibold text-navy-950">${posicao}º</span>${seloCartao(p)}</div>
+    <div><h3 id="cartao-${p.id}" class="m-0 text-[17px] leading-snug font-semibold text-navy-950">${esc(p.nome)}</h3>
+      <p class="m-0 text-[13px] text-ink-3">${nomeSecretaria(p.sec)} · ${esc(nomeGestor(p.gestor))} · ${fMoeda(p.orc)}</p></div>
+    <div>${barraAndamento(p)}</div>
+    <p class="m-0 quebra"><strong class="font-semibold">Por que está assim:</strong> ${esc(porqueDe(p).texto)}</p>
+    ${avisosDoCartao(p).map(a => `<p class="m-0 border border-[#E8A33D] border-l-[5px] bg-[#FFF1E0] text-[#7A3E00] rounded-[3px] px-3 py-2 text-[13px] quebra"><span aria-hidden="true">▲ </span>${esc(a)}</p>`).join('')}
+    <div class="border-t-[3px] border-navy-800 bg-navy-50 rounded-[3px] p-3 grid gap-2">
+      <p class="m-0 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-navy-900">Decisão necessária</p>
+      <p class="m-0 text-[15px] font-medium text-navy-950">${esc(porExtenso(encaminhamento(p)))}</p>
+      ${t ? confirmacaoDecisao(p, t) : `<div class="flex flex-wrap gap-2">${botao('aprovar', 'btn-primary', 'Aprovar')}${botao('ajustar', 'btn-secondary', 'Aprovar com ajuste')}${PEDIDOS_REUNIAO.has(p.id) ? '' : botao('reuniao', 'btn-secondary', 'Chamar para reunião')}</div>`}
+      ${PEDIDOS_REUNIAO.has(p.id) ? `<p class="m-0 font-semibold text-navy-900" data-pedido="${p.id}" tabindex="-1">✓ Reunião pedida ao Gabinete.</p>` : ''}
+    </div>
+    <div><button type="button" class="btn-ghost hj-btn !px-2" data-detalhe="${p.id}" aria-expanded="${aberto}" aria-controls="detalhe-${p.id}">${aberto ? 'Ocultar detalhes' : 'Ver detalhes do projeto'}<span class="sr-only">: ${esc(p.nome)}</span></button>
+      <div id="detalhe-${p.id}" class="mt-2" ${aberto ? '' : 'hidden'}>${quadrosDetalhe(p)}</div></div>
+  </article></li>`;
+}
+
+function blocoComoEsta() {
+  const r = resumoCarteira(), idp = Math.round(100 * idpCarteira()), ok = idp >= CONFIG.metaIDP;
+  const grupos = [
+    { k: 'con', simbolo: '●', rotulo: 'em dia ou concluídos', n: r.por.con.length + r.por.and.length },
+    { k: 'ate', simbolo: '▲', rotulo: 'em atenção', n: r.por.ate.length },
+    { k: 'atr', simbolo: '■', rotulo: 'atrasados', n: r.por.atr.length }
+  ];
+  const pctPago = 100 * r.pago / r.orc;
+  return `<section class="panel p-5 grid gap-4 content-start" aria-labelledby="hj-gestao">
+    <h2 id="hj-gestao" class="panel-title">Como está a gestão</h2>
+    <div><div class="flex flex-wrap items-center gap-3"><span class="font-cond text-[48px] leading-none font-semibold text-navy-950 tabular-nums">${idp}%</span>${seloSimples(ok ? 'con' : 'ate', ok ? '●' : '▲', ok ? 'Em dia' : 'Atenção')}</div>
+      <p class="m-0 mt-2 text-[13.5px]">Do trabalho previsto até hoje nos projetos, ${idp}% foi feito. A meta é ${CONFIG.metaIDP}%.</p>
+      <div class="mt-2">${barra(Math.min(100, idp), { planejado: CONFIG.metaIDP, w: 'w-full', mostra: false, rotulo: 'Trabalho feito em relação ao previsto', cor: ok ? 'bg-st-con' : 'bg-st-ate', marca: 'Meta' })}<p class="m-0 mt-1 text-[11.5px] text-ink-3">O traço escuro marca a meta.</p></div></div>
+    <div><h3 class="m-0 mb-1.5 text-[13px] font-semibold">Os ${r.total} projetos</h3>
+      <div class="flex gap-[2px] h-[16px]" aria-hidden="true">${grupos.filter(g => g.n).map(g => `<span style="flex:${g.n} 1 0;background:${STATUS[g.k].cor}"></span>`).join('')}</div>
+      <ul class="list-none m-0 mt-1.5 p-0 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">${grupos.map(g => `<li><span aria-hidden="true" style="color:${STATUS[g.k].cor}">${g.simbolo}</span> <strong class="font-semibold tabular-nums">${g.n}</strong> ${g.rotulo}</li>`).join('')}</ul></div>
+    <div><h3 class="m-0 text-[13px] font-semibold">Dinheiro</h3><p class="m-0 text-[13.5px]">${fMoeda(r.pago)} pagos de ${fMoeda(r.orc)} previstos (${fNum(pctPago)}%).</p></div>
+  </section>`;
+}
+
+function blocoCobre() {
+  const ordens = ordensVencidas(), seg = travas(), mudos = parados();
+  const grupoCobre = (titulo, itens, vazio) => `<div><h3 class="m-0 px-4 py-2 bg-subtle border-y border-line text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-2">${titulo}</h3>
+    ${itens.length ? `<ul class="rows list-none m-0 p-0">${itens.join('')}</ul>` : `<p class="m-0 px-4 py-3 text-ink-3">${vazio}</p>`}</div>`;
+  return `<section aria-labelledby="hj-cobre">${tituloSecao('hj-cobre', 'Cobre hoje')}<div class="panel overflow-hidden">
+    ${grupoCobre('Ordens do Prefeito vencidas', ordens.map(t => {
+      const c = COBRANCAS.get(t.id), p = projDe(t.proj);
+      return `<li class="px-4 py-3 quebra"><p class="m-0"><strong class="font-semibold">${esc(porExtenso(t.resp))}</strong> deveria ${esc(minuscula(semPonto(t.texto)))}.</p>
+        <p class="m-0 text-[13px]">${linkFicha(p)}</p><p class="m-0 mb-2">${seloSimples('atr', '■', `vencida há ${diasTexto(diasEntre(t.prazo, HOJE))}`)}</p>
+        ${c ? `<p class="m-0 font-semibold text-st-con-tx" data-cobrado="${t.id}" tabindex="-1">✓ WhatsApp aberto com a cobrança pronta. Novo prazo: ${horasTexto()}.</p><p class="m-0 text-[13px]"><a class="link hj-link" href="${esc(linkWhatsApp(t))}" target="_blank" rel="noopener noreferrer">Abrir de novo<span class="sr-only"> a cobrança para ${esc(t.resp)}</span></a></p>`
+          : `<button type="button" class="btn-secondary hj-btn" data-cobrar="${t.id}">Cobrar pelo WhatsApp<span class="sr-only">: ${esc(t.resp)}</span></button>`}</li>`;
+    }), 'Nenhuma ordem vencida.')}
+    ${grupoCobre('Quem está segurando quem', seg.map(b => {
+      const venceu = etapaVencida(b.causa);
+      return `<li class="px-4 py-3 quebra"><p class="m-0"><strong class="font-semibold">${nomeSecretaria(b.causa.sec)}</strong> está segurando <strong class="font-semibold">${nomeSecretaria(b.etapa.sec)}</strong>. Falta: ${esc(minuscula(semPonto(b.causa.nome)))}.</p>
+        <p class="m-0 text-[13px]">${linkFicha(b.p)}</p><p class="m-0">${venceu ? seloSimples('atr', '■', `atrasado ${diasTexto(diasEntre(b.causa.fim, HOJE))}`) : seloSimples('ate', '▲', `prazo em ${fData(b.causa.fim)}`)}</p></li>`;
+    }), 'Nenhuma secretaria está segurando outra.')}
+    ${grupoCobre(`Sem notícias há mais de ${CONFIG.diasSemAtualizacao} dias`, mudos.map(p => `<li class="px-4 py-3"><p class="m-0 text-[13px]">${linkFicha(p)}</p><p class="m-0 text-[13px] text-ink-2">${esc(nomeGestor(p.gestor))} · ${diasTexto(diasSemAtu(p))} sem atualização</p></li>`), 'Todos os projetos deram notícia.')}
+  </div></section>`;
+}
+
+function blocoAgenda() {
+  const l = agendaPreventiva();
+  return `<section aria-labelledby="hj-agenda">${tituloSecao('hj-agenda', 'Fique de olho', `O que vence nos próximos ${CONFIG.diasAgenda} dias. Agir agora evita o problema.`)}
+    <div class="panel">${l.length ? `<ul class="rows list-none m-0 p-0">${l.map(i => `<li class="px-4 py-3 flex gap-3 items-start">
+      <time datetime="${isoDe(i.data)}" class="flex-none w-[46px] text-center border border-navy-100 bg-navy-50 rounded-[3px] py-1 leading-tight text-navy-950"><strong class="block font-cond text-[20px] font-semibold tabular-nums">${i.data.getDate()}</strong><span class="block text-[11px] uppercase">${MESES[i.data.getMonth()]}</span></time>
+      <div class="min-w-0 quebra"><p class="m-0 text-[11.5px] font-semibold uppercase tracking-[0.05em] text-ink-3">${esc(i.tipo)}</p><p class="m-0 text-[13.5px]">${esc(porExtenso(i.titulo))}</p><p class="m-0 text-[12.5px]">${linkFicha(i.p)}</p></div></li>`).join('')}</ul>` : '<p class="m-0 p-4 text-ink-3">Nada vence no período.</p>'}</div></section>`;
+}
+
+function detalheSecretaria({ s, d }) {
+  const f = faixaSecretaria(d.ids);
+  const parte = (texto, peso, valor) => `<li>${texto}: <strong class="font-semibold">${fNum(100 * valor)}%</strong> <span class="text-ink-3">(vale ${peso} dos 100 pontos)</span></li>`;
+  return `<div id="hj-secretaria" tabindex="-1" class="panel mt-3 p-4">
+    <h3 class="m-0 text-[15px] font-semibold text-navy-950">Secretaria de ${s.nome} · ${esc(s.titular)}</h3>
+    <p class="m-0 mt-1">Nota ${d.ids} de 100 (${f.rotulo}). Ela é formada por:</p>
+    <ul class="m-0 mt-1 pl-5 text-[13.5px]">${parte('Andamento em relação ao previsto, com mais peso para os projetos de maior valor', 50, d.aderencia)}${parte('Projetos sem atraso', 30, d.pontualidade)}${parte(`Projetos com informação dos últimos ${CONFIG.diasSemAtualizacao} dias`, 20, d.emDia)}</ul>
+    <ul class="rows list-none m-0 mt-2 p-0 border-t border-line">${d.lista.map(p => `<li class="py-1.5 flex flex-wrap items-center justify-between gap-2">${linkFicha(p)}${badge(p.status)}</li>`).join('')}</ul>
+    <p class="m-0 mt-2"><a class="link hj-link" href="#projetos" data-filtro-sec="${s.id}">Ver na lista de projetos</a> <span aria-hidden="true">·</span> <a class="link hj-link" href="#secretarias">Comparar todas as secretarias</a></p>
+  </div>`;
+}
+function blocoSecretarias() {
+  const l = [...ranking()].reverse(), aberta = l.find(x => x.s.id === HOJE_UI.secretaria);
+  return `<section class="mt-8" aria-labelledby="hj-secretarias">${tituloSecao('hj-secretarias', 'Secretarias', `Nota de 0 a 100. ● Bom: ${CONFIG.metaIDS} ou mais. ▲ Atenção: de ${CONFIG.limiteCriticoIDS} a ${CONFIG.metaIDS - 1}. ■ Crítico: abaixo de ${CONFIG.limiteCriticoIDS}.`)}
+    <ul class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 list-none m-0 p-0">${l.map(({ s, d }) => {
+      const f = faixaSecretaria(d.ids);
+      return `<li><button type="button" class="w-full h-full min-h-[88px] text-left ${f.fundo} border border-line-strong rounded-[3px] p-3 cursor-pointer text-ink aria-expanded:border-navy-900 aria-expanded:border-2" data-secretaria="${s.id}" aria-expanded="${HOJE_UI.secretaria === s.id}">
+        <span class="block font-semibold text-navy-950 leading-snug">${s.nome}</span>
+        <span class="flex flex-wrap items-baseline justify-between gap-2 mt-1"><span class="font-cond text-[28px] font-semibold tabular-nums leading-none">${d.ids}</span><span class="text-[12.5px] font-semibold text-st-${f.k}-tx"><span aria-hidden="true">${f.simbolo}</span> ${f.rotulo}</span></span></button></li>`;
+    }).join('')}</ul>
+    ${aberta ? detalheSecretaria(aberta) : ''}
+  </section>`;
+}
+
+function blocoReunioes() {
+  const l = reunioesRecomendadas();
+  return `<section class="mt-8" aria-labelledby="hj-reunioes">${tituloSecao('hj-reunioes', 'Reuniões recomendadas')}
+    <div class="panel">${l.length ? `<ul class="rows list-none m-0 p-0">${l.map(r => `<li class="px-4 py-3 quebra"><p class="m-0 font-semibold text-navy-950">${esc(r.titulo)}</p><p class="m-0 text-[13px] text-ink-2">${esc(r.motivo)}</p></li>`).join('')}</ul>` : '<p class="m-0 p-4 text-ink-3">Nenhuma reunião recomendada hoje.</p>'}
+      <div class="flex flex-wrap items-center gap-3 px-4 py-3 border-t border-line">
+        ${l.length ? '<button type="button" class="btn-primary hj-btn" data-pauta>Montar pauta da semana</button>' : ''}
+        <a class="link hj-link" href="#relatorios">Abrir o relatório da reunião</a></div>
+      ${PAUTA.montada && l.length ? `<div id="hj-pauta" tabindex="-1" class="px-4 py-3 border-t border-line bg-subtle"><p class="m-0 font-semibold">Pauta da semana (também entra no relatório da reunião)</p><ol class="m-0 mt-1 pl-5">${l.map(r => `<li class="quebra">${esc(r.titulo)}. ${esc(r.motivo)}</li>`).join('')}</ol><button type="button" class="btn-secondary hj-btn mt-2" data-copiar-pauta>${icone('copiar')}Copiar pauta</button></div>` : ''}
+    </div></section>`;
+}
+
+const ALERTAS_FUTUROS = [
+  ['Convênio perto do fim', 'Avisar antes de o prazo do convênio acabar, para pedir prorrogação ou prestar contas a tempo.'],
+  ['Contrato vencendo', 'Avisar antes do fim da vigência, para não deixar obra ou serviço sem contrato.'],
+  ['Recurso vinculado no projeto errado', 'Avisar quando um dinheiro com destino obrigatório for ligado a um projeto que não pode usá-lo.']
+];
+const blocoAlertasFuturos = () => `<section class="mt-8 border-2 border-dashed border-line-control rounded-[3px] p-4" aria-labelledby="hj-futuros">
+  <div class="flex flex-wrap items-center gap-3"><h2 id="hj-futuros" class="m-0 text-[16px] font-semibold text-navy-950">Alertas preventivos a ligar</h2><span class="badge-neutro !h-auto min-h-[22px] !whitespace-normal">Ainda não existem no sistema · exemplos</span></div>
+  <ul class="grid gap-3 md:grid-cols-3 list-none m-0 mt-3 p-0">${ALERTAS_FUTUROS.map(([t, d]) => `<li class="bg-white border border-line rounded-[3px] p-3"><p class="m-0 font-semibold">${t}</p><p class="m-0 mt-1 text-[13px] text-ink-3">${d}</p></li>`).join('')}</ul>
+  <p class="m-0 mt-3 text-[12.5px] text-ink-3">Dependem do cadastro de convênios, contratos e fontes de recurso.</p></section>`;
+
+VIEWS.hoje = (agora = new Date()) => {
+  const fila = filaP1(), pendentes = p1Pendentes().length, cobrar = ordensVencidas().length + travas().length, proximos = agendaPreventiva().length;
+  const atalho = (alvo, rotulo, n) => `<li><button type="button" class="w-full h-full min-h-[72px] text-left bg-white border border-line-strong rounded-[3px] px-3 py-2 cursor-pointer hover:bg-navy-100 text-ink" data-ir="${alvo}"><span class="block text-[11.5px] font-semibold uppercase tracking-[0.06em] text-navy-900">${rotulo}</span><span class="block font-cond text-[30px] font-semibold leading-tight tabular-nums" data-contador="${alvo}">${n}</span></button></li>`;
+  return `<div class="hoje">
+  <p class="m-0 mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-2"><span>${dataPorExtenso(agora)}</span><span aria-hidden="true" class="max-sm:hidden">·</span><span>Dados na posição de ${fData(HOJE)}</span><span class="badge-ate !h-auto min-h-[22px] !whitespace-normal">Demonstração: dados fictícios</span></p>
+  <div class="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+    <section class="bg-navy-50 border border-navy-100 rounded-[3px] p-5 grid gap-4 content-between" aria-label="Resumo do dia">
+      <div><h1 id="titulo" tabindex="-1" class="m-0 text-[26px] leading-tight font-semibold text-navy-950 quebra">${saudacao(agora.getHours())}${USUARIO.nome ? `, ${esc(USUARIO.nome)}` : ''}.</h1>
+        <p class="m-0 mt-3 text-[16.5px] leading-relaxed" data-resumo>${resumoDoDia()}</p></div>
+      <ul class="grid gap-2 grid-cols-3 max-[479px]:grid-cols-1 list-none m-0 p-0">${atalho('hj-decida', 'Decida hoje', pendentes)}${atalho('hj-cobre', 'Cobre hoje', cobrar)}${atalho('hj-agenda', `Próximos ${CONFIG.diasAgenda} dias`, proximos)}</ul>
+    </section>
+    ${blocoComoEsta()}
+  </div>
+  <div class="grid gap-6 mt-8 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] items-start">
+    <section class="min-w-0" aria-labelledby="hj-decida">${tituloSecao('hj-decida', 'Decida hoje', 'Projetos de maior urgência, na ordem da fila de prioridades.')}
+      ${fila.length ? `<ol class="grid gap-4 list-none m-0 p-0">${fila.map((p, i) => cartaoDecisao(p, i + 1)).join('')}</ol>` : '<p class="panel m-0 p-5 text-ink-3">Nenhum projeto pede decisão urgente hoje.</p>'}
+      <p class="m-0 mt-3"><a class="link hj-link" href="#sala">Ver toda a fila de prioridades</a></p></section>
+    <div class="grid gap-6 min-w-0">${blocoCobre()}${blocoAgenda()}</div>
+  </div>
+  ${blocoSecretarias()}
+  ${blocoReunioes()}
+  ${blocoAlertasFuturos()}
+  <nav class="mt-6 flex flex-wrap gap-x-5" aria-label="Outras telas">${[['alertas', 'Alertas'], ['pendencias', 'Documentos pendentes'], ['riscos', 'Riscos'], ['indicadores', 'Indicadores']].map(([h, t]) => `<a class="link hj-link" href="#${h}">${t}</a>`).join('')}</nav>
+  </div>`;
+};
+
+function ligarHoje(raiz) {
+  const irPara = alvo => { const el = document.getElementById(alvo); if (!el) return; el.scrollIntoView({ block: 'start' }); el.focus({ preventScroll: true }); };
+  raiz.addEventListener('click', e => {
+    const em = seletor => e.target.closest(`[${seletor}]`);
+    let b;
+    if ((b = em('data-ir'))) return irPara(b.dataset.ir);
+    if ((b = em('data-aprovar'))) {
+      const p = projDe(b.dataset.aprovar);
+      if (!aprovarDecisao(p)) return;
+      return redesenharTela(`[data-confirmacao="${p.id}"] [data-desfazer]`);
+    }
+    if ((b = em('data-ajustar'))) {
+      const p = projDe(b.dataset.ajustar);
+      return abrirDecisao(p, { resp: nomeGestor(p.gestor), prazo: somaDias(HOJE, CONFIG.diasPrazoAprovacao) });
+    }
+    if ((b = em('data-desfazer'))) {
+      const t = tarefaDe(b.dataset.desfazer), id = t && t.proj;
+      if (!t || !desfazerDecisao(t)) return;
+      redesenharTela(`[data-aprovar="${id}"]`);
+      return aviso('Decisão desfeita.');
+    }
+    if ((b = em('data-reuniao'))) { const id = b.dataset.reuniao; pedirReuniao(projDe(id)); return redesenharTela(`[data-pedido="${id}"]`); }
+    if ((b = em('data-cobrar'))) {
+      const t = tarefaDe(b.dataset.cobrar);
+      /* a janela é aberta no próprio clique, para o navegador não bloquear */
+      window.open(linkWhatsApp(t), '_blank', 'noopener,noreferrer');
+      registrarCobranca(t);
+      return redesenharTela(`[data-cobrado="${t.id}"]`);
+    }
+    if ((b = em('data-detalhe'))) {
+      const id = b.dataset.detalhe;
+      HOJE_UI.detalhes.has(id) ? HOJE_UI.detalhes.delete(id) : HOJE_UI.detalhes.add(id);
+      return redesenharTela(`[data-detalhe="${id}"]`);
+    }
+    if ((b = em('data-secretaria'))) {
+      const id = b.dataset.secretaria;
+      HOJE_UI.secretaria = HOJE_UI.secretaria === id ? '' : id;
+      return redesenharTela(`[data-secretaria="${id}"]`);
+    }
+    if (em('data-pauta')) { PAUTA.montada = true; redesenharTela('#hj-pauta'); return; }
+    if (em('data-copiar-pauta')) return copiar(textoPauta(), 'Pauta copiada.');
+  });
+}
+
+/* ============================================================
    ESTRUTURA DA APLICAÇÃO: menu, roteamento e interações globais
    ============================================================ */
-const MENU = [
-  [null, [['painel', 'Dashboard', 'painel']]],
+const MENU_COMPLETO = [
+  [null, [['hoje', 'Hoje', 'sino'], ['painel', 'Dashboard', 'painel']]],
   ['Projetos', [['projetos', 'Todos os Projetos', 'lista'], ['novo-projeto', 'Novo Projeto', 'novo'], ['portfolio', 'Portfólio', 'portfolio']]],
   ['Cadastros', [['secretarias', 'Secretarias', 'predio'], ['gestores', 'Gestores', 'pessoas']]],
   ['Monitoramento Estratégico', [['sala', 'Sala de Situação', 'sala'], ['alertas', 'Alertas', 'sino'], ['pendencias', 'Pendências', 'doc'], ['riscos', 'Riscos', 'escudo'], ['indicadores', 'Indicadores', 'grafico']]],
   [null, [['relatorios', 'Relatórios', 'relatorio'], ['configuracoes', 'Configurações', 'config']]]
 ];
+/* Prefeito, Vice-Prefeito e Assessor de Governança: [rota marcada, texto, ícone, endereço] */
+const MENU_GABINETE = [
+  [null, [['hoje', 'Hoje', 'sino'], ['projetos', 'Projetos', 'lista'], ['secretarias', 'Secretarias', 'predio'], ['pendencias', 'Reuniões e decisões', 'relatorio', 'pendencias-tarefas']]]
+];
+const menuDoUsuario = () => menuCurto() ? MENU_GABINETE : MENU_COMPLETO;
+function blocoUsuario() {
+  if (!USUARIO.nome) return `<div class="hidden xl:block text-right leading-tight"><div class="text-[13px] font-semibold">Gabinete do Prefeito</div><div class="text-[12px] text-ink-3">Dados de ${fData(HOJE)}</div></div>`;
+  return `<div class="flex items-center gap-2 min-w-0"><span aria-hidden="true" class="grid place-items-center w-9 h-9 flex-none rounded-full bg-navy-800 text-white text-[12.5px] font-bold">${esc(iniciais(USUARIO.nome.trim()))}</span>
+    <span class="sr-only md:not-sr-only md:block leading-tight min-w-0 max-w-[220px]"><span class="block text-[13px] font-semibold truncate">${esc(USUARIO.nome)}</span>${USUARIO.cargo ? `<span class="block text-[12px] text-ink-3 truncate">${esc(USUARIO.cargo)}</span>` : ''}</span></div>`;
+}
 
 function montarEstrutura() {
   document.getElementById('app').innerHTML = `
@@ -2403,7 +2836,7 @@ function montarEstrutura() {
       <div class="min-w-0 flex-1"><img src="${LOGO_PREFEITURA}" alt="Prefeitura de Nova Lima: o futuro mora aqui" width="200" height="78" class="block w-full max-w-[200px] h-auto"><div class="mt-2.5 text-[11.5px] font-semibold leading-tight text-navy-900">Governança e Gestão de Projetos</div></div>
       <button type="button" id="fechar-menu" class="lg:hidden bg-transparent border-0 text-ink-2 p-1 cursor-pointer" aria-label="Fechar menu">${icone('fechar')}</button>
     </div>
-    <nav class="flex-1 pb-4 pt-2">${MENU.map(([g, itens]) => `${g ? `<p class="nav-group m-0">${g}</p>` : '<div class="h-2"></div>'}<ul class="list-none m-0 p-0">${itens.map(([r, t, i]) => `<li><a class="nav-link" href="#${r}" data-rota="${r}">${icone(i)}${t}</a></li>`).join('')}</ul>`).join('')}</nav>
+    <nav class="flex-1 pb-4 pt-2">${menuDoUsuario().map(([g, itens]) => `${g ? `<p class="nav-group m-0">${g}</p>` : '<div class="h-2"></div>'}<ul class="list-none m-0 p-0">${itens.map(([r, t, i, destino = r]) => `<li><a class="nav-link" href="#${destino}" data-rota="${r}">${icone(i)}${t}</a></li>`).join('')}</ul>`).join('')}</nav>
     <div class="px-5 py-3 border-t border-line text-[11.5px] text-ink-3">Protótipo com dados fictícios</div>
   </aside>
   <div id="area" class="lg:pl-[256px] min-h-screen flex flex-col">
@@ -2419,7 +2852,7 @@ function montarEstrutura() {
         </div>
         <div class="ml-auto flex items-center gap-3">
           <button type="button" id="apresentar" class="btn-secondary !hidden sm:!inline-flex" aria-pressed="false">${icone('tela')}<span>Modo apresentação</span></button>
-          <div class="hidden xl:block text-right leading-tight"><div class="text-[13px] font-semibold">Gabinete do Prefeito</div><div class="text-[12px] text-ink-3">Dados de ${fData(HOJE)}</div></div>
+          ${blocoUsuario()}
         </div>
       </div>
     </header>
@@ -2432,7 +2865,7 @@ function montarEstrutura() {
   <dialog id="dialogo" class="dialogo panel shadow-xl" aria-labelledby="dialogo-titulo" data-oculta-impressao></dialog>`;
 }
 
-const SIMPLES = ['painel', 'projetos', 'novo-projeto', 'portfolio', 'secretarias', 'gestores', 'sala', 'alertas', 'pendencias', 'riscos', 'indicadores', 'relatorios', 'configuracoes', 'design-system'];
+const SIMPLES = ['hoje', 'painel', 'projetos', 'novo-projeto', 'portfolio', 'secretarias', 'gestores', 'sala', 'alertas', 'pendencias', 'riscos', 'indicadores', 'relatorios', 'configuracoes', 'design-system'];
 function lerRota() {
   const h = location.hash.slice(1);
   let m;
@@ -2441,10 +2874,10 @@ function lerRota() {
   if ((m = h.match(/^gestor-(novo|g\d+)$/))) return { nome: 'gestor', args: [m[1]], menu: 'gestores' };
   if ((m = h.match(/^pendencias-(tarefas|vencidas)$/))) return { nome: 'pendencias', args: [m[1]], menu: 'pendencias' };
   if ((m = h.match(/^tarefa-(t\d+)$/))) return { nome: 'pendencias', args: ['tarefa', m[1]], menu: 'pendencias' };
-  const nome = SIMPLES.includes(h) ? h : 'painel';
+  const nome = SIMPLES.includes(h) ? h : 'hoje';
   return { nome, args: [], menu: nome };
 }
-const LIGAR = { projetos: ligarGrade, 'novo-projeto': ligarNovoProjeto, projeto: ligarProjeto, sala: ligarMonitor, alertas: ligarMonitor, riscos: ligarMonitor, pendencias: ligarPendencias, gestores: ligarCadastros, gestor: ligarCadastros, configuracoes: ligarConfig, relatorios: ligarRelatorio, ficha: ligarRelatorio };
+const LIGAR = { hoje: ligarHoje, projetos: ligarGrade, 'novo-projeto': ligarNovoProjeto, projeto: ligarProjeto, sala: ligarMonitor, alertas: ligarMonitor, riscos: ligarMonitor, pendencias: ligarPendencias, gestores: ligarCadastros, gestor: ligarCadastros, configuracoes: ligarConfig, relatorios: ligarRelatorio, ficha: ligarRelatorio };
 
 function renderizar() {
   const r = lerRota(), main = document.getElementById('conteudo');
