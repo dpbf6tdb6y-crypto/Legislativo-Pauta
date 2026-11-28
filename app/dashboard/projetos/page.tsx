@@ -13,7 +13,7 @@ export default function PaginaProjetos() {
         data-prototipo
         src="/api/projetos-prototipo"
         title="Governança: painel de projetos (demonstração)"
-        sandbox="allow-scripts allow-forms allow-modals allow-popups allow-downloads"
+        sandbox="allow-scripts allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-downloads"
         allow="clipboard-write"
         className="flex-1 w-full border-0 bg-white"
       />

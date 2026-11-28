@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { normalizaAcessos } from "@/lib/acessos-servidor";
 import { normalizaPerfilGestao } from "@/lib/financas/perfis";
+import { normalizaCargo } from "@/lib/cargos";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -18,7 +19,7 @@ export async function GET() {
       id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true, createdAt: true,
       acessos: true, fluxoResumido: true, senhaAreaRestrita: true, podeUsarMicrofone: true, podeVerConfiguracoes: true,
       podeCriar: true, podeEditar: true, podeExcluir: true, podeImportar: true, podeExportar: true,
-      podeGerenciarVereadores: true, podeVerAuditoria: true, gestaoPerfil: true, gestaoOrgaoCod: true,
+      podeGerenciarVereadores: true, podeVerAuditoria: true, gestaoPerfil: true, gestaoOrgaoCod: true, cargo: true,
     },
   });
   return NextResponse.json(usuarios);
@@ -62,6 +63,7 @@ export async function POST(req: Request) {
         podeImportar: !!body.podeImportar, podeExportar: !!body.podeExportar,
         podeGerenciarVereadores: !!body.podeGerenciarVereadores, podeVerAuditoria: !!body.podeVerAuditoria,
         gestaoPerfil: gestao.gestaoPerfil, gestaoOrgaoCod: gestao.gestaoOrgaoCod,
+        cargo: normalizaCargo(body.cargo),
       },
       select: { id: true, nome: true, email: true, perfil: true, ativo: true, podeVerIndicacoes: true },
     });
