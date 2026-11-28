@@ -1034,6 +1034,7 @@ const abaVisao = p => {
     <section class="panel border-t-[3px] border-t-navy-800 bg-navy-50"><div class="p-5"><h2 class="panel-title">Encaminhamento ao Gabinete</h2><p class="m-0 mt-2 text-[15px] leading-relaxed font-medium text-navy-950">${p.status === 'con' ? 'Sem decisão pendente.' : encaminhamento(p)}</p>${prioridade(p) >= 40 ? `<p class="m-0 mt-3"><span class="badge-${nivelPrioridade(prioridade(p)) === 'P1' ? 'atr' : 'ate'}">Prioridade ${nivelPrioridade(prioridade(p))}</span></p>` : ''}${seloDecisoes(p)}${botaoDecidir(p)}</div></section>
   </div>
   ${painelDecisoes(p)}
+  ${painelConversas(p)}
   <div class="grid gap-4 lg:grid-cols-2">
     ${painel('Progresso Físico', graficoLinhas({ ...c, series: [{ ...corLinha[0], valores: c.plan }, { ...corLinha[1], valores: c.real }], altura: 220, descricao: `Execução física realizada de ${p.fisico}% contra ${fNum(planejadoEm(p, HOJE))}% planejados` }), { sub: `Realizado ${p.fisico}% · planejado hoje ${fNum(planejadoEm(p, HOJE))}%` })}
     ${painel('Progresso Financeiro', graficoLinhas({ ...f, series: [{ ...corLinha[0], nome: 'Desembolso previsto', valores: f.plan }, { ...corLinha[1], nome: 'Pago', valores: f.real }], altura: 220, descricao: `Valor pago de ${p.pagP}% do previsto` }), { sub: `Pago ${fMoeda(valorDe(p, p.pagP))} de ${fMoeda(p.orc)}` })}
@@ -1627,14 +1628,29 @@ const lerEnvolvidasNovas = form => [...form.querySelectorAll('[data-linha-env]')
    ============================================================ */
 const TAREFAS = [];
 let seqTarefa = 0;
-const anotarHistorico = (p, data, acao, autor) => (p.registros || (p.registros = [])).push({ data, categoria: 'Decisão', acao: `<span class="quebra">${acao}</span>`, autor });
+const anotarHistorico = (p, data, acao, autor, categoria = 'Decisão') => (p.registros || (p.registros = [])).push({ data, categoria, acao: `<span class="quebra">${acao}</span>`, autor });
+/* a tarefa nasce de uma reunião ou de uma conversa; "reuniao" guarda a data de uma ou de outra */
+const nomeOrigem = t => t.origem === 'conversa' ? 'conversa' : 'reunião';
 
-function registrarDecisao(p, { texto, resp, reuniao, prazo }, { data = HOJE, autor = 'Usuário da demonstração' } = {}) {
-  const t = { id: 't' + String(++seqTarefa).padStart(2, '0'), proj: p.id, texto, resp, reuniao, prazo, concluida: null, feito: '' };
+function registrarDecisao(p, { texto, resp, reuniao, prazo, origem = 'reuniao' }, { data = HOJE, autor = 'Usuário da demonstração' } = {}) {
+  const t = { id: 't' + String(++seqTarefa).padStart(2, '0'), proj: p.id, texto, resp, reuniao, prazo, origem, concluida: null, feito: '' };
   TAREFAS.push(t);
-  anotarHistorico(p, data, `Decisão registrada: “${esc(texto)}” Responsável: ${esc(resp)}. Prazo: ${fData(prazo)}. Reunião de ${fData(reuniao)}.`, autor);
+  anotarHistorico(p, data, `Decisão registrada: “${esc(texto)}” Responsável: ${esc(resp)}. Prazo: ${fData(prazo)}. ${origem === 'conversa' ? 'Conversa' : 'Reunião'} de ${fData(reuniao)}.`, autor);
   return t;
 }
+
+/* Conversa com o Prefeito: registro escrito, em qualquer projeto. Só vira tarefa (com prazo e cobrança) se a pessoa marcar.
+   O texto da conversa fica apenas no bloco da ficha: o Histórico e os documentos em PDF não o repetem. */
+const CONVERSAS = [];
+let seqConversa = 0;
+function registrarConversa(p, { data, participantes, resumo, tarefa = null }) {
+  const t = tarefa ? registrarDecisao(p, { ...tarefa, reuniao: data, origem: 'conversa' }) : null;
+  const c = { id: 'c' + String(++seqConversa).padStart(2, '0'), proj: p.id, data, participantes, resumo, tarefa: t ? t.id : '' };
+  CONVERSAS.push(c);
+  anotarHistorico(p, HOJE, `Conversa registrada, de ${fData(data)}. Participantes: ${esc(participantes)}.${t ? ' Gerou uma tarefa.' : ' Sem tarefa.'}`, 'Usuário da demonstração', 'Conversa');
+  return c;
+}
+const conversasDoProjeto = id => CONVERSAS.filter(c => c.proj === id);
 function concluirTarefa(t, feito, { data = HOJE, autor = 'Usuário da demonstração' } = {}) {
   if (t.concluida) return;
   Object.assign(t, { concluida: data, feito });
@@ -1695,12 +1711,15 @@ const molduraDialogo = (id, titulo, contexto, campos, confirmar) => `<form id="$
   <div class="flex flex-wrap justify-end gap-2 px-5 py-3 border-t border-line bg-subtle"><button type="button" class="btn-secondary" data-fechar-dialogo>Cancelar</button><button type="submit" class="btn-primary">${confirmar}</button></div>
 </form>`;
 
-function formDecisao(p) {
+function seletorResponsavel(id) {
   const r = responsaveisPossiveis();
   const grupoOpcoes = (rotulo, l) => `<optgroup label="${rotulo}">${l.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`;
+  return `<select id="${id}" class="input"><option value="">Selecione o responsável</option>${grupoOpcoes('Gestores ativos', r.gestores)}${grupoOpcoes('Órgãos', r.orgaos)}</select>`;
+}
+function formDecisao(p) {
   return molduraDialogo('form-decisao', 'Registrar decisão', `${secDe(p.sec).sigla} · <strong>${esc(p.nome)}</strong>`,
     campo('dc-texto', 'Decisão', `<textarea id="dc-texto" rows="3" class="input" maxlength="300">${p.status === 'con' ? '' : esc(encaminhamento(p))}</textarea>`, { obrig: true, cls: 'sm:col-span-2', ajuda: p.status === 'con' ? 'Projeto concluído, sem encaminhamento recomendado.' : 'Começa com o encaminhamento recomendado. Pode ser editada.' })
-    + campo('dc-resp', 'Responsável', `<select id="dc-resp" class="input"><option value="">Selecione o responsável</option>${grupoOpcoes('Gestores ativos', r.gestores)}${grupoOpcoes('Órgãos', r.orgaos)}</select>`, { obrig: true, cls: 'sm:col-span-2' })
+    + campo('dc-resp', 'Responsável', seletorResponsavel('dc-resp'), { obrig: true, cls: 'sm:col-span-2' })
     + campo('dc-reuniao', 'Data da reunião', `<input id="dc-reuniao" type="date" class="input" value="${isoDe(HOJE)}">`, { obrig: true })
     + campo('dc-prazo', 'Prazo', '<input id="dc-prazo" type="date" class="input">', { obrig: true, ajuda: 'Igual ou posterior à data da reunião.' }),
     'Salvar decisão');
@@ -1741,6 +1760,60 @@ function abrirConclusao(t) {
   });
 }
 
+/* ---------- Conversa com o Prefeito ---------- */
+/* a data é de uma conversa que já aconteceu; os campos da tarefa só valem quando ela é marcada */
+const regrasConversa = ({ data, gerou }) => ({
+  'cv-data': x => !x ? 'Informe a data da conversa.' : x > isoDe(HOJE) ? `A data não pode ser posterior a ${fData(HOJE)}, a data de posição.` : '',
+  'cv-quem': obrigatorio('Informe quem participou.'),
+  'cv-resumo': obrigatorio('Escreva o que foi conversado.'),
+  ...(gerou ? {
+    'cv-oque': obrigatorio('Escreva o que fazer.'),
+    'cv-resp': obrigatorio('Selecione o responsável.'),
+    'cv-prazo': x => !x ? 'Informe o prazo.' : data && x < data ? 'O prazo não pode ser anterior à data da conversa.' : ''
+  } : {})
+});
+
+const formConversa = p => molduraDialogo('form-conversa', 'Registrar conversa', `${secDe(p.sec).sigla} · <strong>${esc(p.nome)}</strong>`,
+  campo('cv-data', 'Data da conversa', `<input id="cv-data" type="date" class="input" value="${isoDe(HOJE)}" max="${isoDe(HOJE)}">`, { obrig: true })
+  + campo('cv-quem', 'Quem participou', '<input id="cv-quem" class="input" maxlength="200" autocomplete="off">', { obrig: true, cls: 'sm:col-span-2', ajuda: `Por exemplo: Prefeito e ${esc(nomeGestor(p.gestor))}.` })
+  + campo('cv-resumo', 'O que foi conversado', '<textarea id="cv-resumo" rows="4" class="input" maxlength="600"></textarea>', { obrig: true, cls: 'sm:col-span-2', ajuda: 'Registro escrito e curto.' })
+  + `<label class="sm:col-span-2 flex items-start gap-2 cursor-pointer"><input type="checkbox" id="cv-gerou" class="mt-1 accent-[#146484]" aria-controls="cv-tarefa"><span><strong class="font-semibold">Gerou uma tarefa</strong><span class="block text-[12px] text-ink-3">Marque só se algo precisa ser feito. Sem tarefa, não há prazo nem cobrança.</span></span></label>
+  <div id="cv-tarefa" class="sm:col-span-2" hidden><div class="grid gap-4 sm:grid-cols-2">`
+  + campo('cv-oque', 'O que fazer', '<textarea id="cv-oque" rows="2" class="input" maxlength="300"></textarea>', { obrig: true, cls: 'sm:col-span-2' })
+  + campo('cv-resp', 'Responsável', seletorResponsavel('cv-resp'), { obrig: true })
+  + campo('cv-prazo', 'Prazo', '<input id="cv-prazo" type="date" class="input">', { obrig: true, ajuda: 'Igual ou posterior à data da conversa.' })
+  + '</div></div>',
+  'Salvar conversa');
+
+function abrirConversa(p) {
+  abrirDialogo(formConversa(p), (f, d) => {
+    const v = i => f.querySelector('#' + i).value.trim();
+    const gerou = f.querySelector('#cv-gerou').checked;
+    if (!validar(f, regrasConversa({ data: v('cv-data'), gerou }))) return;
+    const c = registrarConversa(p, {
+      data: dISO(v('cv-data')), participantes: v('cv-quem'), resumo: v('cv-resumo'),
+      tarefa: gerou ? { texto: v('cv-oque'), resp: v('cv-resp'), prazo: dISO(v('cv-prazo')) } : null
+    });
+    d.close(); redesenharTela(`[data-conversar="${p.id}"]`);
+    aviso(`Conversa registrada${c.tarefa ? ' e tarefa criada' : ''} nesta demonstração. Some ao recarregar a página.`);
+  });
+  const caixa = document.getElementById('cv-gerou');
+  caixa.addEventListener('change', () => (document.getElementById('cv-tarefa').hidden = !caixa.checked));
+}
+
+function painelConversas(p) {
+  const l = [...conversasDoProjeto(p.id)].reverse().sort((a, b) => b.data - a.data);
+  const botao = `<button type="button" class="btn-secondary !h-8" data-conversar="${p.id}" data-oculta-impressao>${icone('novo', 'w-4 h-4')}Registrar conversa<span class="sr-only"> sobre ${esc(p.nome)}</span></button>`;
+  return painel('Conversas com o Prefeito', l.length ? `<ul class="rows list-none m-0 p-0">${l.map(c => {
+    const t = c.tarefa && tarefaDe(c.tarefa);
+    return `<li class="px-5 py-3 quebra">
+      <div class="text-[12px] text-ink-3">${fData(c.data)} · Participantes: ${esc(c.participantes)}</div>
+      <p class="m-0 mt-1 whitespace-pre-line">${esc(c.resumo)}</p>
+      <div class="mt-1 text-[12.5px] text-ink-2">${t ? `Gerou tarefa para ${esc(t.resp)}, prazo ${fData(t.prazo)}. ${linkTarefa(t)}` : 'Sem tarefa.'}</div></li>`;
+  }).join('')}</ul>` : '<p class="m-0 px-5 py-4 text-ink-3">Nenhuma conversa registrada para este projeto.</p>',
+    { pad: false, acao: botao, sub: 'Registro escrito. Não muda situação, prioridade nem o IDS.' });
+}
+
 /* ---------- Blocos usados na Sala de Situação, na ficha e no Dashboard ---------- */
 const botaoDecidir = p => `<button type="button" class="btn-secondary !h-8 mt-3" data-decidir="${p.id}" data-oculta-impressao>${icone('novo', 'w-4 h-4')}Registrar decisão<span class="sr-only"> em ${esc(p.nome)}</span></button>`;
 const linkTarefa = t => `<a class="link" href="#tarefa-${t.id}" data-link-tarefa="${t.id}">Ver tarefa<span class="sr-only">: ${esc(t.texto)}</span></a>`;
@@ -1757,7 +1830,7 @@ function painelDecisoes(p) {
   const abertas = l.filter(tarefaAberta).length, vencidas = l.filter(tarefaVencida).length;
   return painel('Decisões e cobranças', l.length ? `<ul class="rows list-none m-0 p-0">${l.map(t => `<li class="px-5 py-3 flex flex-wrap items-start justify-between gap-2">
       <div class="min-w-0 flex-1 basis-[240px] quebra"><div class="font-medium">${esc(t.texto)}</div>
-      <div class="text-[12px] text-ink-3">Responsável: ${esc(t.resp)} · Reunião de ${fData(t.reuniao)} · Prazo: ${fData(t.prazo)}</div>
+      <div class="text-[12px] text-ink-3">Responsável: ${esc(t.resp)} · ${t.origem === 'conversa' ? 'Conversa' : 'Reunião'} de ${fData(t.reuniao)} · Prazo: ${fData(t.prazo)}</div>
       ${t.concluida ? `<div class="text-[12.5px] text-ink-2">O que foi feito: ${esc(t.feito)}</div>` : ''}<div class="text-[12.5px]">${linkTarefa(t)}</div></div>
       ${seloTarefa(t)}</li>`).join('')}</ul>` : '<p class="m-0 px-5 py-4 text-ink-3">Nenhuma decisão registrada para este projeto.</p>',
     { pad: false, sub: l.length ? `${abertas} aberta(s), sendo ${vencidas} vencida(s) · ${l.length - abertas} concluída(s)` : '' });
@@ -1792,7 +1865,7 @@ function conteudoTarefas() {
     { t: 'Projeto', f: t => linkProjeto(projDe(t.proj)) },
     { t: 'Secretaria', f: t => secDe(projDe(t.proj).sec).sigla },
     { t: 'Responsável', f: t => `<span class="quebra">${esc(t.resp)}</span>` },
-    { t: 'Reunião', num: true, f: t => fData(t.reuniao) },
+    { t: 'Reunião', num: true, f: t => `${fData(t.reuniao)}${t.origem === 'conversa' ? '<span class="block text-[12px] text-ink-3">conversa</span>' : ''}` },
     { t: 'Prazo', num: true, f: t => fData(t.prazo) },
     { t: 'Situação', f: t => `<span class="inline-flex flex-col items-end md:items-start gap-1.5">${seloTarefa(t)}${t.concluida ? '' : `<button type="button" class="btn-secondary !h-8" data-concluir-tarefa="${t.id}">Concluir<span class="sr-only">: ${esc(t.texto)}</span></button>`}</span>` }
   ], l, { legenda: 'Tarefas das reuniões', vazio: 'Nenhuma tarefa com estes filtros.' });
@@ -2158,7 +2231,7 @@ function docTabela(colunas, itens, legenda, vazio = 'Nenhum registro.') {
 }
 
 /* ---------- 1) Relatório executivo da reunião ---------- */
-const resumoDecisao = t => `Responsável: ${t.resp} · Prazo: ${fData(t.prazo)} · reunião de ${fData(t.reuniao)}${t.concluida ? ` · concluída em ${fData(t.concluida)}` : ''}`;
+const resumoDecisao = t => `Responsável: ${t.resp} · Prazo: ${fData(t.prazo)} · ${nomeOrigem(t)} de ${fData(t.reuniao)}${t.concluida ? ` · concluída em ${fData(t.concluida)}` : ''}`;
 /* sem decisão, a linha fica em branco para ser preenchida na reunião */
 function docDeliberacao(p) {
   const l = tarefasDoProjeto(p.id);
@@ -2431,6 +2504,8 @@ function iniciar() {
     if (e.target.closest('[data-acao="copiar-relatorio"]')) copiar(relatorioTexto(), 'Relatório copiado. Cole no editor de texto.');
     const decidir = e.target.closest('[data-decidir]');
     if (decidir) abrirDecisao(projDe(decidir.dataset.decidir));
+    const conversar = e.target.closest('[data-conversar]');
+    if (conversar) abrirConversa(projDe(conversar.dataset.conversar));
   });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;

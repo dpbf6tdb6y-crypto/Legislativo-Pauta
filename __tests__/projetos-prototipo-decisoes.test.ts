@@ -164,6 +164,79 @@ describe('registrar decisão', () => {
   });
 });
 
+describe('registrar conversa com o Prefeito', () => {
+  /* p03 está em dia e fora do Painel de prioridades */
+  const conversar = (tarefa = 'null', resumo = 'Alinhamento sobre o andamento.') =>
+    rodar<string>(`registrarConversa(projDe('p03'), { data: dISO('2026-11-24'), participantes: 'Prefeito e gestor', resumo: ${JSON.stringify(resumo)}, tarefa: ${tarefa} }).id`);
+  const TAREFA = "{ texto: 'Enviar cronograma', resp: 'Gabinete', prazo: dISO('2026-11-24') }";
+
+  it('o botão está na ficha de qualquer projeto, inclusive em dia e concluído, sem conversas de início', () => {
+    expect(rodar("projDe('p03').status === 'and' && !filaPrioridades().includes(projDe('p03'))")).toBe(true);
+    for (const id of rodar<string>('PROJETOS.map(p => p.id).join()').split(',')) {
+      expect(rodar<string>(`VIEWS.projeto('${id}')`), id).toContain(`data-conversar="${id}"`);
+    }
+    expect(rodar('CONVERSAS.length')).toBe(0);
+    expect(rodar<string>("VIEWS.projeto('p03')")).toContain('Nenhuma conversa registrada');
+  });
+
+  it('exige data, participantes e o que foi conversado; os campos da tarefa só quando marcada', () => {
+    const campos = (gerou: boolean) => rodar<string>(`Object.keys(regrasConversa({ data: '2026-11-24', gerou: ${gerou} })).join()`);
+    expect(campos(false)).toBe('cv-data,cv-quem,cv-resumo');
+    expect(campos(true)).toBe('cv-data,cv-quem,cv-resumo,cv-oque,cv-resp,cv-prazo');
+    const erro = (campo: string, valor: string) => rodar<string>(`regrasConversa({ data: '2026-11-24', gerou: true })['${campo}']('${valor}')`);
+    for (const campo of campos(true).split(',')) expect(erro(campo, ''), campo).not.toBe('');
+    expect(erro('cv-data', '2026-11-26')).toContain('posterior');
+    expect(erro('cv-data', '2026-11-25')).toBe('');
+    expect(erro('cv-prazo', '2026-11-23')).toContain('anterior');
+    expect(erro('cv-prazo', '2026-11-24')).toBe('');
+  });
+
+  it('sem tarefa: aparece na ficha e no Histórico, sem prazo nem cobrança', () => {
+    conversar();
+    expect(rodar('TAREFAS.length')).toBe(6);
+    expect(avisoDashboard()).toBe(2);
+    const ficha = rodar<string>("VIEWS.projeto('p03')");
+    expect(ficha).toContain('Alinhamento sobre o andamento.');
+    expect(ficha).toContain('Participantes: Prefeito e gestor');
+    expect(ficha).toContain('Sem tarefa.');
+    expect(rodar<string>("VIEWS.projeto('p03', 'historico')")).toContain('Conversa registrada, de 24/11/2026');
+  });
+
+  it('com tarefa: cria uma tarefa ligada à conversa, que segue as regras de cobrança', () => {
+    conversar(TAREFA);
+    expect(rodar('TAREFAS.length')).toBe(7);
+    expect(rodar('TAREFAS.at(-1).id === CONVERSAS[0].tarefa')).toBe(true);
+    expect(avisoDashboard()).toBe(3);
+    const ficha = rodar<string>("VIEWS.projeto('p03')");
+    expect(ficha).toContain('Gerou tarefa para Gabinete');
+    expect(ficha).toContain('Conversa de 24/11/2026');
+    expect(rodar<string>("VIEWS.pendencias('tarefas')")).toContain('Enviar cronograma');
+  });
+
+  it('o texto da conversa fica só na ficha: não vai para o Histórico, o relatório nem o PDF', () => {
+    conversar('null', 'Assunto reservado XYZ');
+    expect(rodar<string>("VIEWS.projeto('p03')")).toContain('Assunto reservado XYZ');
+    for (const tela of ["VIEWS.projeto('p03', 'historico')", "VIEWS.ficha('p03')", 'docReuniao()', 'relatorioTexto()', 'VIEWS.painel()']) {
+      expect(rodar<string>(tela), tela).not.toContain('Assunto reservado XYZ');
+    }
+  });
+
+  it('não muda situação, prioridade nem o IDS', () => {
+    const retrato = () => rodar<string>('JSON.stringify([PROJETOS.map(p => [p.status, prioridade(p), +p.atualizado]), ranking().map(x => x.d.ids)])');
+    const antes = retrato();
+    conversar(TAREFA);
+    expect(retrato()).toBe(antes);
+  });
+
+  it('mostra o texto digitado como texto', () => {
+    rodar(`registrarConversa(projDe('p03'), { data: HOJE, participantes: ${JSON.stringify(ATAQUE)}, resumo: ${JSON.stringify(ATAQUE)}, tarefa: { texto: ${JSON.stringify(ATAQUE)}, resp: 'Gabinete', prazo: HOJE } })`);
+    for (const tela of ["VIEWS.projeto('p03')", "VIEWS.projeto('p03', 'historico')", "VIEWS.pendencias('tarefas')", "VIEWS.ficha('p03')"]) {
+      expect(rodar<string>(tela), tela).not.toContain('<img src=x');
+    }
+    expect(rodar<string>("VIEWS.projeto('p03')")).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  });
+});
+
 describe('regras de demonstração', () => {
   it('não chama servidor nem usa armazenamento do navegador, e mantém o aviso', () => {
     expect(PROGRAMA).not.toMatch(/\b(fetch|XMLHttpRequest|sendBeacon|WebSocket|EventSource|localStorage|sessionStorage|indexedDB)\b|document\.cookie/);
