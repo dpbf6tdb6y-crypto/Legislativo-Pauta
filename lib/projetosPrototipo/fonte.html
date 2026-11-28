@@ -125,6 +125,14 @@
     table.tbl-stack tfoot td { display: block; text-align: left; }
     table.tbl-stack tfoot td:empty { display: none; }
   }
+  /* texto digitado sem espaços não alarga a tela */
+  .quebra { overflow-wrap: anywhere; }
+  /* células com botões: em telas estreitas o rótulo fica em cima e o conteúdo usa a largura toda */
+  @media (max-width: 767px) { table.tbl-stack tbody td.celula-bloco { display: block; text-align: left; } }
+  .tarefa-destaque { outline: 3px solid #E0A100; outline-offset: 3px; }
+  /* formulários de decisão e de conclusão */
+  .dialogo { box-sizing: border-box; width: min(560px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow-y: auto; padding: 0; color: #1C2530; }
+  .dialogo::backdrop { background: rgba(11, 58, 76, .6); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
   /* ---------- Documento A4 (pré-visualização = impressão) ---------- */
   .doc-layout { display: grid; gap: 16px; align-items: start; }
@@ -158,6 +166,7 @@
   .doc-tbl .n { text-align: right; font-variant-numeric: tabular-nums; }
   .doc-tbl small { display: block; font-size: 7.5pt; color: #586373; }
   .doc-linha { display: block; margin-top: 3px; padding-bottom: 9px; border-bottom: 1px dotted #7C8796; font-size: 7.5pt; color: #586373; }
+  .doc-deliberacao { display: block; margin-top: 3px; padding: 2px 0 2px 6px; border-left: 2.5px solid #146484; overflow-wrap: anywhere; }
   .doc-nota, .doc-vazio { font-size: 8.5pt; color: #414D5C; }
   .doc .doc-criterios { margin-top: 12px; padding-top: 6px; border-top: 1px solid #C3CBD6; font-size: 7.5pt; color: #586373; break-inside: avoid; }
   .doc-projeto { margin-top: 10px; }
@@ -553,7 +562,7 @@ function tabela(colunas, itens, { legenda, empilha = true, vazio = 'Nenhum regis
   if (!itens.length) return `<p class="m-0 px-5 py-8 text-center text-ink-3">${vazio}</p>`;
   return rolagem(`<table class="tbl ${empilha ? 'tbl-stack' : ''}"><caption class="sr-only">${legenda}</caption>
     <thead><tr>${colunas.map(c => `<th scope="col" class="${c.num ? '!text-right' : ''}">${c.t}</th>`).join('')}</tr></thead>
-    <tbody>${itens.map(it => `<tr>${colunas.map((c, i) => i === 0 ? `<th scope="row">${c.f(it)}</th>` : `<td data-l="${c.t}" class="${c.num ? 'num' : ''}">${c.f(it)}</td>`).join('')}</tr>`).join('')}</tbody></table>`, legenda);
+    <tbody>${itens.map(it => `<tr>${colunas.map((c, i) => i === 0 ? `<th scope="row">${c.f(it)}</th>` : `<td data-l="${c.t}" class="${c.num ? 'num' : ''} ${c.cls || ''}">${c.f(it)}</td>`).join('')}</tr>`).join('')}</tbody></table>`, legenda);
 }
 
 const linkProjeto = (p, aba = '') => `<a class="link" href="#projeto-${p.id}${aba ? '-' + aba : ''}">${esc(p.nome)}</a>`;
@@ -686,6 +695,7 @@ VIEWS.painel = () => {
   return cabecalho('Dashboard Executivo', `Carteira de projetos estratégicos da gestão 2025–2028. Posição em ${fData(HOJE)}.`,
     `<a class="btn-secondary" href="#relatorios">${icone('relatorio')}Relatório da reunião</a>`)
   + sinteseExecutiva()
+  + avisoDecisoesVencidas()
   + kpis([
     { rotulo: 'Total de projetos', valor: r.total, nota: `${SECRETARIAS.length} secretarias` },
     { rotulo: 'Em andamento', valor: r.por.and.length, nota: `${pct(r.por.and.length)} · mais ${r.por.ate.length} em atenção`, marca: STATUS.and.cor },
@@ -833,7 +843,7 @@ function corpoGrade() {
     </div></div>`;
 }
 
-const opcoes = (pares, sel, vazio) => `<option value="">${vazio}</option>` + pares.map(([v, t]) => `<option value="${v}" ${v === sel ? 'selected' : ''}>${esc(t)}</option>`).join('');
+const opcoes = (pares, sel, vazio) => `<option value="">${vazio}</option>` + pares.map(([v, t]) => `<option value="${esc(v)}" ${v === sel ? 'selected' : ''}>${esc(t)}</option>`).join('');
 
 VIEWS.projetos = () => {
   const filtro = (id, rotulo, html) => `<div class="min-w-0"><label class="field-label" for="f-${id}">${rotulo}</label><select id="f-${id}" data-filtro="${id}" class="input">${html}</select></div>`;
@@ -1021,8 +1031,9 @@ const abaVisao = p => {
   return `<div class="grid gap-4">
   <div class="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
     ${painel('Resumo Executivo', `<p class="m-0 text-[14.5px] leading-relaxed max-w-[72ch]">${esc(p.objetivo)}</p><p class="m-0 mt-3 text-ink-2">${situacaoGabinete(p)}</p><dl class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4 mb-0 pt-4 border-t border-line">${[['Eixo estratégico', p.eixo], ['Código', p.codigo], ['Início', fData(p.inicio)]].map(([a, b]) => `<div><dt class="kpi-label">${a}</dt><dd class="m-0 mt-0.5">${b}</dd></div>`).join('')}</dl>`)}
-    <section class="panel border-t-[3px] border-t-navy-800 bg-navy-50"><div class="p-5"><h2 class="panel-title">Encaminhamento ao Gabinete</h2><p class="m-0 mt-2 text-[15px] leading-relaxed font-medium text-navy-950">${p.status === 'con' ? 'Sem decisão pendente.' : encaminhamento(p)}</p>${prioridade(p) >= 40 ? `<p class="m-0 mt-3"><span class="badge-${nivelPrioridade(prioridade(p)) === 'P1' ? 'atr' : 'ate'}">Prioridade ${nivelPrioridade(prioridade(p))}</span></p>` : ''}</div></section>
+    <section class="panel border-t-[3px] border-t-navy-800 bg-navy-50"><div class="p-5"><h2 class="panel-title">Encaminhamento ao Gabinete</h2><p class="m-0 mt-2 text-[15px] leading-relaxed font-medium text-navy-950">${p.status === 'con' ? 'Sem decisão pendente.' : encaminhamento(p)}</p>${prioridade(p) >= 40 ? `<p class="m-0 mt-3"><span class="badge-${nivelPrioridade(prioridade(p)) === 'P1' ? 'atr' : 'ate'}">Prioridade ${nivelPrioridade(prioridade(p))}</span></p>` : ''}${seloDecisoes(p)}${botaoDecidir(p)}</div></section>
   </div>
+  ${painelDecisoes(p)}
   <div class="grid gap-4 lg:grid-cols-2">
     ${painel('Progresso Físico', graficoLinhas({ ...c, series: [{ ...corLinha[0], valores: c.plan }, { ...corLinha[1], valores: c.real }], altura: 220, descricao: `Execução física realizada de ${p.fisico}% contra ${fNum(planejadoEm(p, HOJE))}% planejados` }), { sub: `Realizado ${p.fisico}% · planejado hoje ${fNum(planejadoEm(p, HOJE))}%` })}
     ${painel('Progresso Financeiro', graficoLinhas({ ...f, series: [{ ...corLinha[0], nome: 'Desembolso previsto', valores: f.plan }, { ...corLinha[1], nome: 'Pago', valores: f.real }], altura: 220, descricao: `Valor pago de ${p.pagP}% do previsto` }), { sub: `Pago ${fMoeda(valorDe(p, p.pagP))} de ${fMoeda(p.orc)}` })}
@@ -1609,6 +1620,230 @@ function regrasEnvolvidasNovas(form) {
 const lerEnvolvidasNovas = form => [...form.querySelectorAll('[data-linha-env]')].map(l => ({ ...Object.fromEntries([...l.querySelectorAll('[data-nv]')].map(c => [c.dataset.nv, c.value.trim()])), aporte: 0 }));
 
 /* ============================================================
+   DECISÕES E TAREFAS DAS REUNIÕES
+   Cada decisão registrada vira uma tarefa, com responsável e prazo.
+   Registrar ou concluir não altera situação, prioridade nem o IDS.
+   Como o restante da demonstração, vale até recarregar a página.
+   ============================================================ */
+const TAREFAS = [];
+let seqTarefa = 0;
+const anotarHistorico = (p, data, acao, autor) => (p.registros || (p.registros = [])).push({ data, categoria: 'Decisão', acao: `<span class="quebra">${acao}</span>`, autor });
+
+function registrarDecisao(p, { texto, resp, reuniao, prazo }, { data = HOJE, autor = 'Usuário da demonstração' } = {}) {
+  const t = { id: 't' + String(++seqTarefa).padStart(2, '0'), proj: p.id, texto, resp, reuniao, prazo, concluida: null, feito: '' };
+  TAREFAS.push(t);
+  anotarHistorico(p, data, `Decisão registrada: “${esc(texto)}” Responsável: ${esc(resp)}. Prazo: ${fData(prazo)}. Reunião de ${fData(reuniao)}.`, autor);
+  return t;
+}
+function concluirTarefa(t, feito, { data = HOJE, autor = 'Usuário da demonstração' } = {}) {
+  if (t.concluida) return;
+  Object.assign(t, { concluida: data, feito });
+  anotarHistorico(projDe(t.proj), data, `Tarefa concluída: “${esc(t.texto)}” O que foi feito: ${esc(feito)}`, autor);
+}
+
+/* [projeto, decisão, responsável, prazo, concluída em, o que foi feito] — reunião fictícia de 28/10/2026 */
+[
+  ['p08', 'Obter da concessionária de saneamento o cronograma de remanejamento da adutora.', 'Renata Coutinho', '2026-11-06'],
+  ['p26', 'Concluir a minuta de notificação da contratada pelo ritmo abaixo do mínimo contratual.', 'Daniel Quaresma', '2026-11-13'],
+  ['p23', 'Protocolar a complementação das condicionantes da licença ambiental de instalação.', 'SEMMA', '2026-12-04'],
+  ['p10', 'Apresentar a proposta de plano de contingência elaborada com a Defesa Civil.', 'Renata Coutinho', '2026-11-27'],
+  ['p02', 'Apresentar ao Gabinete o cronograma de entrega das quatro unidades.', 'Fernanda Albuquerque', '2026-11-13', '2026-11-11', 'Cronograma apresentado ao Gabinete, com a data prevista de cada unidade.'],
+  ['p14', 'Confirmar o início dos testes integrados do centro de operações de tráfego.', 'Thiago Amaral', '2026-11-06', '2026-11-05', 'Testes integrados iniciados no centro de operações.']
+].forEach(([id, texto, resp, prazo, concluida, feito]) => {
+  const reuniao = dISO('2026-10-28');
+  const t = registrarDecisao(projDe(id), { texto, resp, reuniao, prazo: dISO(prazo) }, { data: reuniao, autor: 'Gabinete do Prefeito' });
+  if (concluida) concluirTarefa(t, feito, { data: dISO(concluida), autor: resp });
+});
+
+const tarefaDe = id => TAREFAS.find(t => t.id === id);
+const tarefasDoProjeto = id => TAREFAS.filter(t => t.proj === id);
+/* "Hoje" é sempre a data de posição. Aberta inclui as vencidas. */
+const tarefaAberta = t => !t.concluida;
+const tarefaVencida = t => tarefaAberta(t) && t.prazo < HOJE;
+const SIT_TAREFA = { abertas: ['Abertas', tarefaAberta], vencidas: ['Vencidas', tarefaVencida], concluidas: ['Concluídas', t => !!t.concluida] };
+const textoVencida = t => { const n = diasEntre(t.prazo, HOJE); return `Vencida há ${n} ${n === 1 ? 'dia' : 'dias'}`; };
+function seloTarefa(t) {
+  if (t.concluida) return `<span class="badge-con"><span aria-hidden="true" class="text-[10px]">✓</span>Concluída em ${fData(t.concluida)}</span>`;
+  if (tarefaVencida(t)) return `<span class="badge-atr"><span aria-hidden="true" class="text-[10px]">■</span>${textoVencida(t)}</span>`;
+  return `<span class="badge-and"><span aria-hidden="true" class="text-[10px]">●</span>${+t.prazo === +HOJE ? 'Aberta · vence hoje' : 'Aberta no prazo'}</span>`;
+}
+/* vencidas primeiro, depois as abertas no prazo e as concluídas; em cada grupo, do prazo mais antigo ao mais novo */
+const grupoTarefa = t => t.concluida ? 2 : tarefaVencida(t) ? 0 : 1;
+const ordenarTarefas = l => [...l].sort((a, b) => grupoTarefa(a) - grupoTarefa(b) || a.prazo - b.prazo || a.reuniao - b.reuniao);
+
+/* Gestores ativos mais os órgãos que o protótipo já usa como responsáveis por riscos e pendências */
+function responsaveisPossiveis() {
+  const gestores = GESTORES.filter(g => g.status === 'Ativo').map(g => g.nome);
+  const orgaos = [...Object.values(RISCOS_ESPECIFICOS).flatMap(l => l.map(r => r[4])), ...PENDENCIAS.map(d => d.resp)]
+    .filter(n => !GESTORES.some(g => g.nome === n));
+  const emOrdemAlfabetica = l => [...new Set(l)].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  return { gestores: emOrdemAlfabetica(gestores), orgaos: emOrdemAlfabetica(orgaos) };
+}
+
+/* ---------- Formulários em caixa de diálogo ---------- */
+const regrasDecisao = reuniao => ({
+  'dc-texto': obrigatorio('Escreva a decisão.'),
+  'dc-resp': obrigatorio('Selecione o responsável.'),
+  'dc-reuniao': obrigatorio('Informe a data da reunião.'),
+  'dc-prazo': x => !x ? 'Informe o prazo.' : reuniao && x < reuniao ? 'O prazo não pode ser anterior à data da reunião.' : ''
+});
+const regrasConclusao = () => ({ 'cc-feito': obrigatorio('Escreva em uma frase o que foi feito.') });
+
+const molduraDialogo = (id, titulo, contexto, campos, confirmar) => `<form id="${id}" novalidate>
+  <header class="panel-head"><h2 class="panel-title" id="dialogo-titulo">${titulo}</h2></header>
+  <div class="p-5 grid gap-4 sm:grid-cols-2"><p class="m-0 sm:col-span-2 text-ink-2 quebra">${contexto}</p>${campos}</div>
+  <div class="flex flex-wrap justify-end gap-2 px-5 py-3 border-t border-line bg-subtle"><button type="button" class="btn-secondary" data-fechar-dialogo>Cancelar</button><button type="submit" class="btn-primary">${confirmar}</button></div>
+</form>`;
+
+function formDecisao(p) {
+  const r = responsaveisPossiveis();
+  const grupoOpcoes = (rotulo, l) => `<optgroup label="${rotulo}">${l.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('')}</optgroup>`;
+  return molduraDialogo('form-decisao', 'Registrar decisão', `${secDe(p.sec).sigla} · <strong>${esc(p.nome)}</strong>`,
+    campo('dc-texto', 'Decisão', `<textarea id="dc-texto" rows="3" class="input" maxlength="300">${p.status === 'con' ? '' : esc(encaminhamento(p))}</textarea>`, { obrig: true, cls: 'sm:col-span-2', ajuda: p.status === 'con' ? 'Projeto concluído, sem encaminhamento recomendado.' : 'Começa com o encaminhamento recomendado. Pode ser editada.' })
+    + campo('dc-resp', 'Responsável', `<select id="dc-resp" class="input"><option value="">Selecione o responsável</option>${grupoOpcoes('Gestores ativos', r.gestores)}${grupoOpcoes('Órgãos', r.orgaos)}</select>`, { obrig: true, cls: 'sm:col-span-2' })
+    + campo('dc-reuniao', 'Data da reunião', `<input id="dc-reuniao" type="date" class="input" value="${isoDe(HOJE)}">`, { obrig: true })
+    + campo('dc-prazo', 'Prazo', '<input id="dc-prazo" type="date" class="input">', { obrig: true, ajuda: 'Igual ou posterior à data da reunião.' }),
+    'Salvar decisão');
+}
+const formConclusao = t => molduraDialogo('form-conclusao', 'Concluir tarefa', `<strong>${esc(projDe(t.proj).nome)}</strong><br>${esc(t.texto)}`,
+  campo('cc-feito', 'O que foi feito', '<textarea id="cc-feito" rows="3" class="input" maxlength="300"></textarea>', { obrig: true, cls: 'sm:col-span-2', ajuda: 'Uma frase.' }),
+  'Concluir tarefa');
+
+function abrirDialogo(html, aoEnviar) {
+  const d = document.getElementById('dialogo'), origem = document.activeElement;
+  d.innerHTML = html;
+  d.querySelector('[data-fechar-dialogo]').addEventListener('click', () => { d.close(); origem?.focus(); });
+  d.querySelector('form').addEventListener('submit', e => { e.preventDefault(); aoEnviar(e.target, d); });
+  d.showModal();
+  d.querySelector('textarea, select, input')?.focus();
+}
+/* redesenha a tela atual sem perder a posição da rolagem */
+function redesenharTela(foco) {
+  const y = scrollY;
+  renderizar(); scrollTo(0, y);
+  (foco && document.querySelector(foco) || document.getElementById('titulo'))?.focus();
+}
+function abrirDecisao(p) {
+  abrirDialogo(formDecisao(p), (f, d) => {
+    const v = i => f.querySelector('#' + i).value.trim();
+    if (!validar(f, regrasDecisao(v('dc-reuniao')))) return;
+    const t = registrarDecisao(p, { texto: v('dc-texto'), resp: v('dc-resp'), reuniao: dISO(v('dc-reuniao')), prazo: dISO(v('dc-prazo')) });
+    d.close(); redesenharTela(`[data-link-tarefa="${t.id}"]`);
+    aviso('Decisão registrada nesta demonstração. Ela some ao recarregar a página.');
+  });
+}
+function abrirConclusao(t) {
+  abrirDialogo(formConclusao(t), (f, d) => {
+    if (!validar(f, regrasConclusao())) return;
+    concluirTarefa(t, f.querySelector('#cc-feito').value.trim());
+    d.close(); redesenharTela('[data-sit-tarefa][aria-pressed="true"]');
+    aviso('Tarefa concluída nesta demonstração. A alteração some ao recarregar a página.');
+  });
+}
+
+/* ---------- Blocos usados na Sala de Situação, na ficha e no Dashboard ---------- */
+const botaoDecidir = p => `<button type="button" class="btn-secondary !h-8 mt-3" data-decidir="${p.id}" data-oculta-impressao>${icone('novo', 'w-4 h-4')}Registrar decisão<span class="sr-only"> em ${esc(p.nome)}</span></button>`;
+const linkTarefa = t => `<a class="link" href="#tarefa-${t.id}" data-link-tarefa="${t.id}">Ver tarefa<span class="sr-only">: ${esc(t.texto)}</span></a>`;
+function seloDecisoes(p) {
+  const l = tarefasDoProjeto(p.id);
+  if (!l.length) return '';
+  return `<ul class="list-none m-0 mt-2 p-0 grid gap-2">${l.map(t => `<li class="border-l-[3px] border-navy-800 bg-navy-50 px-3 py-1.5 text-[12.5px] quebra">
+    <strong class="block text-navy-900">✓ Decisão registrada</strong>
+    <span class="block">Responsável: ${esc(t.resp)} · Prazo: <span class="tabular-nums">${fData(t.prazo)}</span>${t.concluida ? ' · concluída' : tarefaVencida(t) ? ` · <span class="text-st-atr-tx font-semibold">${textoVencida(t).toLowerCase()}</span>` : ''}</span>
+    ${linkTarefa(t)}</li>`).join('')}</ul>`;
+}
+function painelDecisoes(p) {
+  const l = ordenarTarefas(tarefasDoProjeto(p.id));
+  const abertas = l.filter(tarefaAberta).length, vencidas = l.filter(tarefaVencida).length;
+  return painel('Decisões e cobranças', l.length ? `<ul class="rows list-none m-0 p-0">${l.map(t => `<li class="px-5 py-3 flex flex-wrap items-start justify-between gap-2">
+      <div class="min-w-0 flex-1 basis-[240px] quebra"><div class="font-medium">${esc(t.texto)}</div>
+      <div class="text-[12px] text-ink-3">Responsável: ${esc(t.resp)} · Reunião de ${fData(t.reuniao)} · Prazo: ${fData(t.prazo)}</div>
+      ${t.concluida ? `<div class="text-[12.5px] text-ink-2">O que foi feito: ${esc(t.feito)}</div>` : ''}<div class="text-[12.5px]">${linkTarefa(t)}</div></div>
+      ${seloTarefa(t)}</li>`).join('')}</ul>` : '<p class="m-0 px-5 py-4 text-ink-3">Nenhuma decisão registrada para este projeto.</p>',
+    { pad: false, sub: l.length ? `${abertas} aberta(s), sendo ${vencidas} vencida(s) · ${l.length - abertas} concluída(s)` : '' });
+}
+function avisoDecisoesVencidas() {
+  const n = TAREFAS.filter(tarefaVencida).length;
+  if (!n) return '';
+  return `<a href="#pendencias-vencidas" class="flex flex-wrap items-center justify-between gap-2 mb-4 px-5 py-3 bg-st-atr-bg text-st-atr-tx border border-st-atr border-l-[4px] rounded-[3px]">
+    <span><span aria-hidden="true" class="mr-1.5">■</span><strong class="font-semibold">${n} ${n === 1 ? 'decisão vencida' : 'decisões vencidas'}</strong> nas reuniões de acompanhamento</span>
+    <span class="font-semibold underline underline-offset-2">Cobrar agora</span></a>`;
+}
+
+/* ---------- Aba "Tarefas das reuniões", na tela Pendências ---------- */
+const PEND = { aba: 'documentos', sit: '', sec: '', resp: '', foco: '' };
+/* o endereço escolhe a aba; "vencidas" e o link de uma tarefa limpam os filtros para que ela apareça */
+function aplicarRotaPendencias(modo, id) {
+  PEND.aba = modo ? 'tarefas' : 'documentos';
+  if (modo === 'vencidas') Object.assign(PEND, { sit: 'vencidas', sec: '', resp: '' });
+  if (modo === 'tarefa') Object.assign(PEND, { sit: '', sec: '', resp: '', foco: id });
+}
+const tarefasDosFiltros = () => TAREFAS.filter(t => (!PEND.sec || projDe(t.proj).sec === PEND.sec) && (!PEND.resp || t.resp === PEND.resp));
+/* os cartões respeitam os filtros: o número de cada um é o de linhas da lista que ele abre */
+const listaDeTarefas = (sit = PEND.sit) => ordenarTarefas(tarefasDosFiltros().filter(t => !sit || SIT_TAREFA[sit][1](t)));
+
+function conteudoTarefas() {
+  const l = listaDeTarefas();
+  const responsaveis = [...new Set(TAREFAS.map(t => t.resp))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const marca = { abertas: STATUS.and.cor, vencidas: STATUS.atr.cor, concluidas: STATUS.con.cor };
+  const filtro = (k, rotulo, html) => `<div class="min-w-0"><label class="field-label" for="tf-${k}">${rotulo}</label><select id="tf-${k}" data-filtro-tarefa="${k}" class="input">${html}</select></div>`;
+  const tab = tabela([
+    { t: 'Tarefa', f: t => `<span id="linha-${t.id}" tabindex="-1" class="block md:min-w-[200px] quebra ${PEND.foco === t.id ? 'tarefa-destaque' : ''}"><span class="font-medium">${esc(t.texto)}</span>${t.concluida ? `<span class="block text-[12px] text-ink-2">O que foi feito: ${esc(t.feito)}</span>` : ''}</span>` },
+    { t: 'Projeto', f: t => linkProjeto(projDe(t.proj)) },
+    { t: 'Secretaria', f: t => secDe(projDe(t.proj).sec).sigla },
+    { t: 'Responsável', f: t => `<span class="quebra">${esc(t.resp)}</span>` },
+    { t: 'Reunião', num: true, f: t => fData(t.reuniao) },
+    { t: 'Prazo', num: true, f: t => fData(t.prazo) },
+    { t: 'Situação', f: t => `<span class="inline-flex flex-col items-end md:items-start gap-1.5">${seloTarefa(t)}${t.concluida ? '' : `<button type="button" class="btn-secondary !h-8" data-concluir-tarefa="${t.id}">Concluir<span class="sr-only">: ${esc(t.texto)}</span></button>`}</span>` }
+  ], l, { legenda: 'Tarefas das reuniões', vazio: 'Nenhuma tarefa com estes filtros.' });
+  return `<div class="kpi-strip grid-cols-3" role="group" aria-label="Filtrar tarefas por situação">${Object.entries(SIT_TAREFA).map(([k, [rotulo]]) => `
+      <button type="button" class="kpi !px-3 sm:!px-5 text-left border-0 cursor-pointer hover:bg-navy-50 aria-pressed:bg-navy-100" style="box-shadow: inset 0 3px 0 ${marca[k]}" data-sit-tarefa="${k}" aria-pressed="${PEND.sit === k}">
+        <span class="kpi-label block !tracking-normal sm:!tracking-[0.06em]">${rotulo}</span><span class="kpi-value block">${listaDeTarefas(k).length}</span></button>`).join('')}</div>
+    <p class="m-0 mt-2 text-[12px] text-ink-3">Abertas inclui as vencidas. Clique em um cartão para filtrar; clique de novo para ver todas.</p>
+    <div class="mt-4">${painel('Tarefas das reuniões', `<div class="grid gap-3 p-4 border-b border-line bg-subtle sm:grid-cols-[repeat(2,minmax(0,1fr))_auto] items-end">
+        ${filtro('sec', 'Secretaria', opcoes(SECRETARIAS.map(s => [s.id, s.nome]), PEND.sec, 'Todas'))}
+        ${filtro('resp', 'Responsável', opcoes(responsaveis.map(n => [n, n]), PEND.resp, 'Todos'))}
+        <button type="button" class="btn-ghost" data-limpar-tarefas>Limpar filtros</button></div>${tab}`,
+      { pad: false, sub: `<span role="status">${PEND.sit ? `Mostrando ${SIT_TAREFA[PEND.sit][0].toLowerCase()}` : 'Mostrando todas as tarefas'}: ${l.length}</span>` })}</div>`;
+}
+
+function ligarPendencias(raiz) {
+  const caixa = () => raiz.querySelector('#painel-pendencias');
+  const redesenhar = foco => { caixa().innerHTML = conteudoTarefas(); caixa().querySelector(foco)?.focus(); };
+  const abrirAba = k => {
+    PEND.aba = k;
+    history.replaceState(null, '', k === 'tarefas' ? '#pendencias-tarefas' : '#pendencias');
+    redesenharTela('#aba-pend-' + k);
+  };
+  /* endereços de atalho viram o endereço comum da aba, para um novo clique no atalho voltar a funcionar */
+  if (PEND.aba === 'tarefas') history.replaceState(null, '', '#pendencias-tarefas');
+  raiz.addEventListener('click', e => {
+    const aba = e.target.closest('[data-aba-pend]'); if (aba) return abrirAba(aba.dataset.abaPend);
+    const sit = e.target.closest('[data-sit-tarefa]');
+    if (sit) { const k = sit.dataset.sitTarefa; PEND.sit = PEND.sit === k ? '' : k; return redesenhar(`[data-sit-tarefa="${k}"]`); }
+    if (e.target.closest('[data-limpar-tarefas]')) { Object.assign(PEND, { sit: '', sec: '', resp: '' }); return redesenhar('#tf-sec'); }
+    const c = e.target.closest('[data-concluir-tarefa]'); if (c) abrirConclusao(tarefaDe(c.dataset.concluirTarefa));
+  });
+  raiz.addEventListener('change', e => {
+    const k = e.target.dataset.filtroTarefa;
+    if (k) { PEND[k] = e.target.value; redesenhar('#tf-' + k); }
+  });
+  raiz.addEventListener('keydown', e => {
+    if (!e.target.matches('[data-aba-pend]')) return;
+    const outra = e.target.dataset.abaPend === 'tarefas' ? 'documentos' : 'tarefas';
+    const k = { ArrowRight: outra, ArrowLeft: outra, Home: 'documentos', End: 'tarefas' }[e.key];
+    if (!k) return;
+    e.preventDefault(); abrirAba(k);
+  });
+}
+/* depois de abrir o link de uma tarefa, leva a tela até a linha dela */
+function focarTarefa() {
+  const el = PEND.foco && document.getElementById('linha-' + PEND.foco);
+  PEND.foco = '';
+  if (el) { el.scrollIntoView({ block: 'center' }); el.focus({ preventScroll: true }); }
+}
+
+/* ============================================================
    MONITORAMENTO ESTRATÉGICO
    ============================================================ */
 const NIVEL = { 'Crítico': 'atr', 'Alto': 'ate', 'Moderado': 'neutro' };
@@ -1638,7 +1873,7 @@ VIEWS.sala = () => {
   ${painel('Painel de Prioridades', tabela([
     { t: 'Prioridade e projeto', f: p => `<span class="flex gap-3 items-start"><span class="badge-${nivelPrioridade(prioridade(p)) === 'P1' ? 'atr' : nivelPrioridade(prioridade(p)) === 'P2' ? 'ate' : 'neutro'} !h-6 tabular-nums">${nivelPrioridade(prioridade(p))}</span><span class="min-w-0 block md:min-w-[200px]">${linkProjeto(p)}<span class="block text-[12px] text-ink-3">${secDe(p.sec).sigla} · ${fMoeda(p.orc)}</span></span></span>` },
     { t: 'Situação', f: p => `<span class="inline-flex flex-col items-end md:items-start gap-1.5">${badge(p.status)}${risco(p.risco)}</span>` },
-    { t: 'Encaminhamento recomendado', f: p => `<span class="block md:min-w-[260px] max-w-[52ch]">${encaminhamento(p)}</span>` },
+    { t: 'Encaminhamento recomendado', cls: 'celula-bloco', f: p => `<div class="md:min-w-[260px] max-w-[52ch]"><span class="block">${encaminhamento(p)}</span>${seloDecisoes(p)}${botaoDecidir(p)}</div>` },
     { t: 'Responsável', f: p => esc(nomeGestor(p.gestor)) }
   ], fila, { legenda: 'Fila de prioridades do gabinete', vazio: 'Nenhum projeto atinge a pontuação de prioridade.' }), { pad: false, sub: `${fila.length} projetos em ordem de intervenção`, rodape: 'Pontuação: atraso 40, atenção 15, risco alto 30, risco médio 8, sem atualização 10, cada documento vencido 5, mais até 20 pelo porte do investimento. P1: 75 ou mais. P2: 55 a 74. P3: 40 a 54.' })}
   ${painelCooperacao()}
@@ -1678,17 +1913,24 @@ VIEWS.alertas = () => cabecalho('Alertas', 'Gerados por regra a partir dos dados
     ['Empenho sem liquidação', 'Empenhado 20 pontos ou mais acima do liquidado', 'Moderado']
   ], { legenda: 'Regras de alerta' }), { pad: false }) + '</div>';
 
-VIEWS.pendencias = () => {
+const ABAS_PENDENCIAS = [['documentos', 'Documentos', 'Documentos obrigatórios vencidos ou a vencer, com responsável identificado.'], ['tarefas', 'Tarefas das reuniões', 'Decisões tomadas em reunião, com responsável e prazo.']];
+VIEWS.pendencias = (modo = '', id = '') => {
+  aplicarRotaPendencias(modo, id);
+  const topo = cabecalho('Pendências', ABAS_PENDENCIAS.find(a => a[0] === PEND.aba)[2], '', trilhaMon('Pendências'))
+    + `<div class="mb-4 bg-white border border-line rounded-[3px]"><div role="tablist" aria-label="Tipos de pendência" class="flex flex-wrap">${ABAS_PENDENCIAS.map(([k, t]) => `<button type="button" role="tab" id="aba-pend-${k}" aria-controls="painel-pendencias" aria-selected="${k === PEND.aba}" tabindex="${k === PEND.aba ? 0 : -1}" class="tab !px-3 sm:!px-4 bg-transparent border-x-0 border-t-0 cursor-pointer" data-aba-pend="${k}">${t}</button>`).join('')}</div></div>`;
+  const corpo = PEND.aba === 'tarefas' ? conteudoTarefas() : abaPendenciasDocumentos();
+  return `${topo}<div id="painel-pendencias" role="tabpanel" aria-labelledby="aba-pend-${PEND.aba}">${corpo}</div>`;
+};
+function abaPendenciasDocumentos() {
   const l = [...PENDENCIAS].sort((a, b) => a.venc - b.venc), v = l.filter(d => d.venc < HOJE);
-  return cabecalho('Pendências', 'Documentos obrigatórios vencidos ou a vencer, com responsável identificado.', '', trilhaMon('Pendências'))
-    + kpis([{ rotulo: 'Pendências abertas', valor: l.length }, { rotulo: 'Vencidas', valor: v.length, marca: STATUS.atr.cor }, { rotulo: 'A vencer', valor: l.length - v.length, marca: STATUS.ate.cor }, { rotulo: 'Projetos afetados', valor: new Set(l.map(d => d.proj)).size }], 'grid-cols-2 md:grid-cols-4')
+  return kpis([{ rotulo: 'Pendências abertas', valor: l.length }, { rotulo: 'Vencidas', valor: v.length, marca: STATUS.atr.cor }, { rotulo: 'A vencer', valor: l.length - v.length, marca: STATUS.ate.cor }, { rotulo: 'Projetos afetados', valor: new Set(l.map(d => d.proj)).size }], 'grid-cols-2 md:grid-cols-4')
     + '<div class="mt-4">' + painel('Pendências Documentais', tabela([
       { t: 'Documento', f: d => `<span class="font-medium">${d.doc}</span><span class="block text-[12px] text-ink-3">${d.cat}</span>` },
       { t: 'Projeto', f: d => linkProjeto(projDe(d.proj), 'documentos') }, { t: 'Secretaria', f: d => secDe(projDe(d.proj).sec).sigla },
       { t: 'Responsável', f: d => esc(d.resp) }, { t: 'Vencimento', num: true, f: d => fData(d.venc) },
       { t: 'Prazo', f: d => d.venc < HOJE ? `<span class="badge-atr">■ Vencida há ${diasEntre(d.venc, HOJE)} dias</span>` : `<span class="badge-ate">▲ Vence em ${diasEntre(HOJE, d.venc)} dias</span>` }
     ], l, { legenda: 'Lista de pendências documentais' }), { pad: false }) + '</div>';
-};
+}
 
 const todosRiscos = () => PROJETOS.flatMap(p => riscos(p).map(r => ({ p, desc: r[0], prob: r[1], imp: r[2], resp: r[3], dono: r[4], score: r[1] * r[2] }))).sort((a, b) => b.score - a.score || b.p.orc - a.p.orc);
 let celulaRisco = null;
@@ -1916,6 +2158,13 @@ function docTabela(colunas, itens, legenda, vazio = 'Nenhum registro.') {
 }
 
 /* ---------- 1) Relatório executivo da reunião ---------- */
+const resumoDecisao = t => `Responsável: ${t.resp} · Prazo: ${fData(t.prazo)} · reunião de ${fData(t.reuniao)}${t.concluida ? ` · concluída em ${fData(t.concluida)}` : ''}`;
+/* sem decisão, a linha fica em branco para ser preenchida na reunião */
+function docDeliberacao(p) {
+  const l = tarefasDoProjeto(p.id);
+  if (!l.length) return '<span class="doc-linha">Deliberação:</span>';
+  return l.map(t => `<span class="doc-deliberacao"><strong>Deliberação:</strong> ${esc(t.texto)}<small>${esc(resumoDecisao(t))}</small></span>`).join('');
+}
 function docReuniao() {
   const r = resumoCarteira(), fila = filaPrioridades();
   const p1 = fila.filter(p => nivelPrioridade(prioridade(p)) === 'P1').length;
@@ -1934,7 +2183,7 @@ function docReuniao() {
         ['Prior.', p => `<strong>${nivelPrioridade(prioridade(p))}</strong>`, '7%'],
         ['Projeto', p => `<strong>${esc(p.nome)}</strong><small>${secDe(p.sec).sigla} · ${fMoeda(p.orc)} · risco ${p.risco.toLowerCase()}</small>`, '31%'],
         ['Situação', p => `${situacaoTexto(p.status)}<small>Físico: ${p.fisico}%</small><small>Planejado: ${fNum(planejadoEm(p, HOJE))}%</small>`, '19%'],
-        ['Encaminhamento proposto e deliberação', p => `${esc(encaminhamento(p))}<span class="doc-linha">Deliberação:</span>`]
+        ['Encaminhamento proposto e deliberação', p => `${esc(encaminhamento(p))}${docDeliberacao(p)}`]
       ], fila, 'Decisões solicitadas', 'Nenhum projeto na fila de prioridades.'))
     + docSecao('3. Projetos atrasados', docTabela([
       ['Projeto', p => `${esc(p.nome)}<small>${esc(nomeGestor(p.gestor))}</small>`, '40%'], ['Secretaria', p => secDe(p.sec).sigla],
@@ -2001,7 +2250,7 @@ function relatorioTexto() {
   return [`RELATÓRIO EXECUTIVO · REUNIÃO DE SECRETARIADO`, `${CONFIG.municipio} · posição em ${fData(HOJE)} · dados demonstrativos`, '',
     `1. SÍNTESE DA CARTEIRA`, `${r.total} projetos, ${fMoeda(r.orc)} em investimentos, ${fMoeda(r.pago)} pagos.`,
     ORDEM_STATUS.map(k => `${STATUS[k].rotulo}: ${r.por[k].length}`).join(' | '), `Execução física média: ${fNum(r.execMedia)}% (ponderada: ${fNum(r.execFisica)}%).`, '',
-    `2. DECISÕES SOLICITADAS AO GABINETE`, ...fila.map((p, i) => `${i + 1}. [${nivelPrioridade(prioridade(p))}] ${p.nome} (${secDe(p.sec).sigla}): ${encaminhamento(p)}`), '',
+    `2. DECISÕES SOLICITADAS AO GABINETE`, ...fila.flatMap((p, i) => [`${i + 1}. [${nivelPrioridade(prioridade(p))}] ${p.nome} (${secDe(p.sec).sigla}): ${encaminhamento(p)}`, ...tarefasDoProjeto(p.id).map(t => `   Deliberação: ${t.texto} (${resumoDecisao(t)})`)]), '',
     `3. DESEMPENHO DAS SECRETARIAS (IDS, meta ${CONFIG.metaIDS})`, ...ranking().map((x, i) => `${i + 1}º ${x.s.nome}: ${x.d.ids}`)].join('\n');
 }
 
@@ -2106,7 +2355,8 @@ function montarEstrutura() {
   </div>
   <div id="aviso" role="status" aria-live="polite" class="fixed z-50 bottom-4 right-4 left-4 sm:left-auto max-w-[420px] bg-navy-950 text-white px-4 py-3 rounded-[3px] shadow-lg" hidden></div>
   <div id="copia-manual" class="fixed z-50 bottom-4 right-4 left-4 sm:left-auto sm:w-[460px] panel p-4 shadow-xl" hidden><label class="field-label" for="copia-texto">A cópia automática foi bloqueada. Copie o texto selecionado com Ctrl+C.</label><textarea id="copia-texto" class="input" rows="6" readonly></textarea><button type="button" class="btn-secondary mt-2" id="fechar-copia">Fechar</button></div>
-  <div id="tooltip" role="presentation" hidden></div>`;
+  <div id="tooltip" role="presentation" hidden></div>
+  <dialog id="dialogo" class="dialogo panel shadow-xl" aria-labelledby="dialogo-titulo" data-oculta-impressao></dialog>`;
 }
 
 const SIMPLES = ['painel', 'projetos', 'novo-projeto', 'portfolio', 'secretarias', 'gestores', 'sala', 'alertas', 'pendencias', 'riscos', 'indicadores', 'relatorios', 'configuracoes', 'design-system'];
@@ -2116,10 +2366,12 @@ function lerRota() {
   if ((m = h.match(/^projeto-(p\d+)(?:-([a-z]+))?$/))) return { nome: 'projeto', args: [m[1], m[2]], menu: 'projetos' };
   if ((m = h.match(/^ficha-(p\d+)$/))) return { nome: 'ficha', args: [m[1]], menu: 'relatorios' };
   if ((m = h.match(/^gestor-(novo|g\d+)$/))) return { nome: 'gestor', args: [m[1]], menu: 'gestores' };
+  if ((m = h.match(/^pendencias-(tarefas|vencidas)$/))) return { nome: 'pendencias', args: [m[1]], menu: 'pendencias' };
+  if ((m = h.match(/^tarefa-(t\d+)$/))) return { nome: 'pendencias', args: ['tarefa', m[1]], menu: 'pendencias' };
   const nome = SIMPLES.includes(h) ? h : 'painel';
   return { nome, args: [], menu: nome };
 }
-const LIGAR = { projetos: ligarGrade, 'novo-projeto': ligarNovoProjeto, projeto: ligarProjeto, sala: ligarMonitor, alertas: ligarMonitor, riscos: ligarMonitor, gestores: ligarCadastros, gestor: ligarCadastros, configuracoes: ligarConfig, relatorios: ligarRelatorio, ficha: ligarRelatorio };
+const LIGAR = { projetos: ligarGrade, 'novo-projeto': ligarNovoProjeto, projeto: ligarProjeto, sala: ligarMonitor, alertas: ligarMonitor, riscos: ligarMonitor, pendencias: ligarPendencias, gestores: ligarCadastros, gestor: ligarCadastros, configuracoes: ligarConfig, relatorios: ligarRelatorio, ficha: ligarRelatorio };
 
 function renderizar() {
   const r = lerRota(), main = document.getElementById('conteudo');
@@ -2177,6 +2429,8 @@ function iniciar() {
     const fs = e.target.closest('[data-filtro-sec]');
     if (fs) Object.assign(GRADE, FILTRO_VAZIO, { sec: fs.dataset.filtroSec, pagina: 1 });
     if (e.target.closest('[data-acao="copiar-relatorio"]')) copiar(relatorioTexto(), 'Relatório copiado. Cole no editor de texto.');
+    const decidir = e.target.closest('[data-decidir]');
+    if (decidir) abrirDecisao(projDe(decidir.dataset.decidir));
   });
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
@@ -2198,9 +2452,12 @@ function iniciar() {
   addEventListener('resize', () => { if (innerWidth === larg) return; larg = innerWidth; clearTimeout(tempo); tempo = setTimeout(desenharGraficos, 120); });
   addEventListener('hashchange', () => {
     if (location.hash === '#conteudo') return;
+    $('dialogo').close(); /* o formulário aberto não atravessa telas */
     renderizar(); scrollTo(0, 0); document.getElementById('titulo')?.focus({ preventScroll: true });
+    focarTarefa();
   });
   renderizar();
+  focarTarefa();
   /* Redesenha após o Tailwind aplicar o layout e as fontes carregarem */
   requestAnimationFrame(() => requestAnimationFrame(desenharGraficos));
   addEventListener('load', () => setTimeout(desenharGraficos, 150));
